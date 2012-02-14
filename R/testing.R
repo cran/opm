@@ -19,7 +19,7 @@ source_location <- function() {
   if (is.null(result))
     result
   else
-    path.expand(result)
+    path.expand(normalizePath(result))
 }
 
 
@@ -33,10 +33,14 @@ source_location <- function() {
 #~ @keywords IO
 #~
 test_file_dir <- function(loc) {
-  result <- file.path(sub("/R/.+\\.R$", "", loc), "inst/testdata")
-  if (file.exists(result))
+  dn <- sub("/R$", "", dirname(loc), perl = TRUE)
+  if (file.exists(result <- file.path(dn, "inst", "testdata")))
+    result
+  else if (file.exists(result <- file.path(dn, "opm", "testdata")))
+    result
+  else if (file.exists(result <- file.path(dn, "opm", "inst", "testdata")))
     result
   else
-    sub("/inst/", "/", result, fixed = TRUE)
+    file.path(dn, "testdata")
 }
 

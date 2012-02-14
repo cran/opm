@@ -177,7 +177,7 @@ if (is.null(opt$include))
 if (length(input) == 0L) {
   print_help(option.parser)
   message(listing(RESULT.DESCS, header = "The output modes are:", footer = "",
-    begin = 5, indent = 10))
+    begin = 5L, indent = 10L))
   quit(status = 1L)
 }
 

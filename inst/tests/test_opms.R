@@ -138,13 +138,11 @@ test_that("we can use c to put plates together", {
 test_that("we can use opms and new to put plates together", {
   
   # we need more than one plate
-  expect_error(opms(OPM.1),
-    "invalid class \"OPMS\" object: less than two plates submitted")
+  expect_error(opms(OPM.1), "less than two plates submitted")
   
   # we need a uniform plate type
   expect_error(opms(OPM.1, OPM.3),
-    paste("invalid class \"OPMS\" object:",
-      "plate types are not uniform: PM01 <=> PM20"))
+    "plate types are not uniform: PM01 <=> PM20")
   
   x <- list(a = OPM.1, b = OPM.2)
   x.opms <- opms(x)

@@ -44,7 +44,7 @@
 stopifnot(length(x) == 0)
 
 # Example with temporary files
-(x <- tempfile(pattern = "cb ahi? si--"))
+(x <- tempfile(pattern = "cb& ahi+ si--"))
 write("test", x)
 stopifnot(file.exists(x))
 (y <- clean_filenames(x))

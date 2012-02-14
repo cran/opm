@@ -1,10 +1,10 @@
 b0d1356668150d8eef84e41f29b283e2 *COPYING
-89e824c2264538d5dcc04d9f124ea7cb *DESCRIPTION
+e98212e607ea5d46f6463d70a56a2203 *DESCRIPTION
 a31cc7dfc0ad98f1fadb832479ba4eb7 *NAMESPACE
 a443faad633ed5e8e7e71dd7827efc6f *R/constants.R
 dfd3158a7ebc1d8189f8ad5173b4298a *R/data.R
 d785b247509d658548e5de8e2a480245 *R/helpers.R
-8b07e843f2b031de923fa6df4f6d58d9 *R/io.R
+76bd56975b043d575cd8f965cecfa1b6 *R/io.R
 5ee6fe275fd4b2c4d21d6cc9aef299df *R/list.R
 b7410d317103c0e703724f2d38401120 *R/matrix.R
 b6a31863ee552aa9a7ff58148a03d0d2 *R/numeric.R
@@ -13,7 +13,7 @@ e48cb6bc485b84dd832d33982a9ac578 *R/opm.R
 e558295fb9d89a70231b456ecfacd9b8 *R/opms.R
 6f387f96074e618c007b0be6fb94678b *R/opmx.R
 3495cc1bc09948a8da9936b8d28569ae *R/phylo.R
-334d09a07e038b1d6423fb5afae9cc44 *R/testing.R
+ee59b2c9aa9a78bcff35c53baf3c575c *R/testing.R
 ea7569acf21cf15fab015cde81fcc1d7 *R/well-map.R
 f99f9d87da9694973fc176469bd0abcc *R/wmd.R
 b8b2c424fd40a969ca53808cfb050692 *R/yaml.R
@@ -21,7 +21,7 @@ e922c70785a1ba502373229ed354a97b *data/datalist
 ae97b5718811b7c141a86b8bd7d8f94b *data/vaas_1.rda
 f1c442c8e1e0ab06751bc50ae5a2c519 *data/vaas_4.rda
 ed4bd602ccfcdad22c955fd889ebd45a *data/vaas_et_al.rda
-df0291963d07611e6c02ec1a830d405b *inst/scripts/run_opm.R
+26d66718bd4cef394d8d0c918fbae494 *inst/scripts/run_opm.R
 42aadb989f6f4a8024dc70c29cd3d8f0 *inst/testdata/Example_1.csv.xz
 eed2d157d051e6cc1db3a7cfa20bcba3 *inst/testdata/Example_2.csv.xz
 1ccc9dad635ac505ba7e5f295fa6ab8d *inst/testdata/Example_3.csv.xz
@@ -32,11 +32,11 @@ cb2b85e33c248541e00af1d6f90d31f0 *inst/testdata/Example_Old_Style_3.csv.xz
 e26e611e66d3fd0f102f32a899fef60e *inst/testdata/Example_Old_Style_Multiple.csv.xz
 7474136cbb537477e1b8ba348faaf6f9 *inst/tests/test_constants.R
 fe24675b968dfb6401a1983e7ace353c *inst/tests/test_helpers.R
-293b18cc2dd2bcb22ee3a4d404dc354a *inst/tests/test_io.R
+92d004952546c3939c32fa603af7960c *inst/tests/test_io.R
 e2fa39a96a288908db2c559e01589ca6 *inst/tests/test_list.R
 18736c0d48f7231e4a21eed319bda1c5 *inst/tests/test_numeric.R
 220af08664bc7042d145601c9d820587 *inst/tests/test_opm.R
-f8b5876a19b6c810786968104cdc305e *inst/tests/test_opms.R
+43997f11f4b8bc8d76df2691f5bb3ffe *inst/tests/test_opms.R
 8589129398eb3a9944bac72a6000b2c7 *inst/tests/test_phylo.R
 52ecfad5253ce4bb0a09cc51cc36837d *inst/tests/test_yaml.R
 eefd426da890e05e8c1b095f98d76b00 *man/OPM.Rd
@@ -61,7 +61,7 @@ c6d80286bb4ccdefeef061e4a5e8cb8f *man/bracket-OPMA.Rd
 5f5fb7ffc97bdeb41139028c9a2ea667 *man/c.Rd
 78b28de2ef1f1fe51374376e10bf4dca *man/ci_plot-commaOPMS.Rd
 0d1d28963e499b8cd01b33b8bfe1d5c6 *man/ci_plot.Rd
-8ec34efd12770e62e703ac7e53b4dab0 *man/clean_filenames.Rd
+39fa3810aebb3aff85788c3997aa45c4 *man/clean_filenames.Rd
 e5b88e9d9a12f5427d8ecc456ec21472 *man/collect_template-commaOPM.Rd
 beb5226877e6f2094f2e474f8792f41d *man/collect_template-commaOPMS.Rd
 4e31d24f3631031a40e3d280514d5a0a *man/collect_template.Rd
@@ -206,4 +206,4 @@ bd2017e14793838f8e1d1af902df8fc4 *man/well_to_substrate.Rd
 803aeca2e571de67a6f2eefe063e6418 *man/wells.Rd
 a051bddeee73df0426d66f3b5edf9bbe *man/xy_plot-commaOPMS.Rd
 af524744e826af58f893b6ca72f7dc85 *man/xy_plot.Rd
-4df456a155bdb96fc8f6aa136bd92b4a *tests/run-all.R
+5c5829605c8a8c5bd4b3a863533abee0 *tests/run-all.R

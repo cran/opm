@@ -402,8 +402,8 @@ explode_dir <- function(names,
 #' # ...and get the usage messages of all scripts.
 #'
 opm_files <- function(what = c("scripts", "testdata")) {
-  pattern <- file.path("*", "opm", match.arg(what), "*")
-  explode_dir(.libPaths(), include = pattern)
+  list.files(file.path(.path.package("opm"), match.arg(what)), 
+    full.names = TRUE)
 }
 
 
@@ -1224,7 +1224,7 @@ split_files <- function(files, pattern, outdir = "", demo = FALSE,
 #' stopifnot(length(x) == 0)  
 #'   
 #' # Example with temporary files
-#' (x <- tempfile(pattern = "cb ahi? si--"))  
+#' (x <- tempfile(pattern = "cb& ahi+ si--"))  
 #' write("test", x)
 #' stopifnot(file.exists(x))
 #' (y <- clean_filenames(x))

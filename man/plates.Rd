@@ -16,11 +16,11 @@ x <- plates(vaas_4)
 stopifnot(is.list(x), length(x) == 4L)
 }
 \seealso{
-  list as.list
+  base::list base::as.list
 
   Other conversion-functions: \code{\link{extract}},
   \code{\link{extract_columns}}, \code{\link{flatten}},
-  \code{\link{flatten,OPMS}}, \code{\link{to_yaml}}
+  \code{\link{oapply}}, \code{\link{to_yaml}}
 }
 \keyword{attribute}
 
@@ -29,4 +29,5 @@ stopifnot(is.list(x), length(x) == 4L)
 \alias{plates,OPMS-method}
 \usage{
   \S4method{plates}{OPMS}(object) 
+
 }

@@ -1,6 +1,6 @@
 
 
-
+################################################################################
 ################################################################################
 #
 # Conversions with as()
@@ -56,6 +56,7 @@ setAs(from = "list", to = OPMS, function(from) {
 
 
 ################################################################################
+################################################################################
 #
 # Conditional conversions to OPMS
 #
@@ -110,6 +111,9 @@ setMethod("to_opm_list", "list", function(object, precomputed = TRUE,
 }, sealed = SEALED)
 
 
+################################################################################
+
+
 setGeneric("try_opms", function(object, ...) standardGeneric("try_opms"))
 #' Convert list to OPMS
 #'
@@ -128,6 +132,9 @@ setMethod("try_opms", "list", function(object, precomputed = TRUE,
   tryCatch(new(OPMS, plates = to_opm_list(object, precomputed = precomputed,
     skip = skip)), error = function(e) object)
 }, sealed = SEALED)
+
+
+################################################################################
 
 
 ## Not an S4 method for flexibility regarding its first argument
@@ -174,117 +181,305 @@ opms <- function(..., precomputed = TRUE, skip = FALSE) {
     skip = skip))
 }
 
-  
+
+################################################################################
 ################################################################################
 #
 # Mapping functions
 #
   
 
+setAs(from = "ANY", to = "factor", function(from) as.factor(from))
+setAs(from = "ANY", to = "ordered", function(from) as.ordered(from))
+
+
+################################################################################
+
+
 setGeneric("map_values",
   function(object, mapping, ...) standardGeneric("map_values"))
 #' Map values
 #'
-#' Recursively apply a mapping function to all \sQuote{character} values within
-#' a list. Optionally coerce other datatypes to \sQuote{character}; return
-#' remaing ones unchanged.
+#' Map \sQuote{character} data using another \sQuote{character} vector, or
+#' recursively apply a mapping function to all \sQuote{character} values within
+#' a list, or non-recursively to a dataframe. Optionally coerce other data types
+#' to \sQuote{character}; return remaining ones unchanged. It is also possible
+#' to map between classes using coercion functions. For convenience in 
+#' programming, methods for the \sQuote{NULL} class are also available.
 #'
-#' @param object List (may be nested).
+#' @param object List (may be nested), dataframe or character vector. If it has
+#'   names, they are preserved. \code{NULL} can also be given and yields
+#'   \code{NULL} or an empty named character vector (if \code{mapping} is 
+#'   missing).
 #' @param mapping Character vector used as a mapping from its names to its 
-#'   values.
+#'   values. Values from \code{object} are searched for in the \code{names}
+#'   attribute of \code{mapping}; those found are replaced by the
+#'   corresponding values of \code{mapping}. If \code{mapping} is missing, a 
+#'   character vector is returned (sorted and with duplicates removed) whose
+#'   names are identical to the values. This eases the construction of mapping
+#'   vectors specific for \code{object}. If \code{mapping} is missing, the
+#'   \code{coerce} argument must be named. \code{mapping} changes its usage
+#'   if \code{coerce} is \code{TRUE}.
 #' @param coerce Character vector with the names of classes that are coerced to
 #'   \sQuote{character} to allow the mapping. Other classes are returned 
 #'   unchanged. Note that the coerced data are \strong{not} converted back to
-#'   their original datatype.
+#'   their original data type. \sQuote{ANY} can be used to indicate that all
+#'   classes will be considered.
+#'   Alternatively, \code{coerce} can be \code{TRUE}. \code{mapping} is then
+#'   interpreted as a mapping between the names of classes, and \code{as} from
+#'   the \pkg{methods} package is used for conducting the requested coercions.
+#'   Attempting an undefined coercion will result in an error.
 #' @export
-#' @return List.
-#' @seealso rapply list as.list
+#' @return List, dataframe, character vector or \code{NULL}.
+#' @seealso base::rapply base::list base::as.list methods::as
 #' @family list-functions
 #' @keywords manip list
 #' @note This function is not normally directly called by an \pkg{opm} user 
 #'   because \code{\link{map_metadata}} is available.
 #' @examples
+#'
+#' # Character+character method
+#' map <- letters
+#' names(map) <- rev(LETTERS)
+#' (x <- map_values(LETTERS, map))
+#' stopifnot(rev(x) == letters)
+#'
+#' # Character+missing method
+#' (x <- map_values(letters))
+#' stopifnot(x == letters, names(x) == letters)
+#'
+#' # List+character method
 #' x <- list(a = 1:8, c = 9, d = 'x')
 #' map <- c(a = "b", e = "f", x = "y")
 #' (y <- map_values(x, map))
-#' stopifnot(identical(x[1:2], y[1:2]))
-#' stopifnot(!identical(x[3], y[3]))
-#' # compare with the map_names() example
+#' stopifnot(identical(x[1:2], y[1:2]), !identical(x[3], y[3]))
+#' (y <- map_values(x, map, coerce = "integer"))
+#' stopifnot(identical(x[2], y[2]), !identical(x[1], y[1]), 
+#'   !identical(x[3], y[3]))
+#' (y <- map_values(x, map, coerce = TRUE))
+#' stopifnot(identical(x, y))
+#' (y <- map_values(x, c(numeric = "character"), coerce = TRUE))
+#' stopifnot(identical(x[1], y[1]), !identical(x[2], y[2]), 
+#'   identical(x[3], y[3]))
+#'
+#' # List+missing method
+#' (y <- map_values(x))
+#' stopifnot(y == "x", names(y) == y)
+#' (y <- map_values(x, coerce = "integer"))
+#' stopifnot(length(y) == 9, names(y) == y)
+#' (y <- map_values(x, coerce = c("integer", "numeric")))
+#' stopifnot(length(y) == 10, names(y) == y)
+#' (y <- map_values(x, coerce = "ANY")) # same effect
+#' stopifnot(length(y) == 10, names(y) == y)
+#' (y <- map_values(x, coerce = TRUE))
+#' stopifnot(y == c("character", "integer", "numeric"), names(y) == y)
+#'
+#' # Dataframe+character method
+#' x <- data.frame(a = 1:3, b = letters[1:3])
+#' stopifnot(sapply(x, class) == c("integer", "factor"))
+#' map <- c(a = "A", b = "B", c = "C", `1` = "5")
+#' (y <- map_values(x, map))
+#' stopifnot(identical(x, y))
+#' (y <- map_values(x, map, coerce = "factor"))
+#' stopifnot(!identical(x, y), y[[2]] == c("A", "B", "C"))
+#' (y <- map_values(x, map, coerce = "ANY"))
+#' stopifnot(y[[1]] == c("5", "2", "3"), y[[2]] == c("A", "B", "C"))
+#' (y <- map_values(x, map, coerce = TRUE))
+#' stopifnot(identical(x, y))
+#' map <- c(factor = "character", integer = "complex")
+#' (y <- map_values(x, map, coerce = TRUE))
+#' stopifnot(sapply(y, class) == c("complex", "character"))
+#'
+#' # Dataframe+missing method
+#' (y <- map_values(x))
+#' stopifnot(is.character(y), length(y) == 0)
+#' (y <- map_values(x, coerce = "factor"))
+#' stopifnot(is.character(y), y == letters[1:3], names(y) == y)
+#' (y <- map_values(x, coerce = "ANY"))
+#' stopifnot(is.character(y), length(y) == 6, names(y) == y)
+#' (y <- map_values(x, coerce = TRUE))
+#' stopifnot(is.character(y), y == c("factor", "integer"), names(y) == y)
 #'
 setMethod("map_values", c("list", "character"), function(object, mapping,
     coerce = character()) {
-  classes <- unique(c("character", coerce))
-  mapfun <- if (length(classes) > 1L)
-    function(item, mapping) { 
-      # as.character() drops the names, hence structure()
-      map_values(structure(as.character(item), names = names(item)), mapping)
-    }
-  else
-    map_values
+  if (isTRUE(coerce)) {
+    if (is.null(classes <- names(mapping)))
+      classes <- character()
+    mapfun <- function(item, mapping) as(item, mapping[class(item)])
+  } else {
+    classes <- unique(c("character", coerce))
+    if ("ANY" %in% classes)
+      classes <- "ANY"
+    mapfun <- if (length(classes) > 1L)
+      function(item, mapping) { 
+        # as.character() drops the names, hence structure()
+        map_values(structure(as.character(item), names = names(item)), mapping)
+      }
+    else
+      map_values
+  }
   rapply(object, mapfun, classes = classes, how = "replace", mapping = mapping)
 }, sealed = SEALED)
 
-
-#' Map values
-#'
-#' Map \sQuote{character} data using another \sQuote{character} vector.
-#'
-#' @name map_values,character
-#'
-#' @param object Character vector. If it has names, they are preserved.
-#' @param mapping Mapping character vector. Values from \code{object} are 
-#'   searched for in the \code{names} attribute of \code{mapping}; those found
-#'   are replaced by the corresponding values of \code{mapping}.
 #' @export
-#' @return Character vector.
-#' @family list-functions
-#' @keywords manip character
-#' @note This function is not normally directly called by an \pkg{opm} user 
-#'   because \code{\link{map_metadata}} is available.
-#' @examples
-#' map <- letters
-#' names(map) <- rev(LETTERS)
-#' got <- map_values(LETTERS, map)
-#' stopifnot(rev(got) == letters)
+#'    
+setMethod("map_values", c("list", "missing"), function(object, 
+    coerce = character()) {
+  if (isTRUE(coerce)) {
+    classes <- "ANY"
+    mapfun <- class
+  } else {
+    classes <- unique(c("character", coerce))
+    if ("ANY" %in% classes)
+      classes <- "ANY"
+    mapfun <- as.character
+  }
+  map_values(rapply(object, mapfun, classes = classes))
+}, sealed = SEALED)
+
+#' @export
+#'    
+setMethod("map_values", c("data.frame", "character"), function(object, mapping,
+    coerce = character()) {
+  if (isTRUE(coerce)) {
+    if (is.null(classes <- names(mapping)))
+      classes <- character()
+    mapfun <- function(item, mapping) as(item, mapping[class(item)])
+  } else {
+    classes <- unique(c("character", coerce))
+    if ("ANY" %in% classes)
+      classes <- sapply(object, class)
+    mapfun <- function(item, mapping) map_values(as.character(item), mapping)
+  }
+  for (i in which(sapply(object, class) %in% classes))
+    object[[i]] <- mapfun(object[[i]], mapping)
+  object
+}, sealed = SEALED)
+    
+#' @export
+#'    
+setMethod("map_values", c("data.frame", "missing"), function(object, 
+    coerce = character()) {
+  if (isTRUE(coerce)) {
+    result <- unlist(lapply(object, class))
+  } else {
+    classes <- unique(c("character", coerce))
+    if (!"ANY" %in% classes)
+      object <- object[, sapply(object, class) %in% classes, drop = FALSE]
+    result <- unlist(lapply(object, as.character))
+  }
+  map_values(result)
+}, sealed = SEALED)
+
+#' @export
 #'
 setMethod("map_values", c("character", "character"), function(object, mapping) {
   mapped <- match(object, names(mapping))
   object[found] <- mapping[mapped[found <- !is.na(mapped)]]
   object  
 }, sealed = SEALED)
+
+#' @export
+#'
+setMethod("map_values", c("character", "missing"), function(object) {
+  object <- sort(unique(object))
+  structure(.Data = object, .Names = object)
+}, sealed = SEALED)
+
+#' @export
+#'
+setMethod("map_values", c("NULL", "character"), function(object, mapping) {
+  NULL
+}, sealed = SEALED)
+
+#' @export
+#'
+setMethod("map_values", c("NULL", "missing"), function(object, mapping) {
+  map_values(character())
+}, sealed = SEALED)
   
+  
+################################################################################
+
 
 setGeneric("map_names",
   function(object, mapping, ...) standardGeneric("map_names"))
 #' Map names
 #'
-#' Recursively apply a mapping function to all names of a list. Note that the
+#' Use a character vector or a function for recursively mapping list names, or
+#' mapping the \sQuote{colnames} and \sQuote{rownames} attributes of a 
+#' dataframe. In the case of lists, the
 #' function is not applied to list elements which are not themselves lists,
 #' even if they have a \sQuote{names} attribute. Such elements and their
-#' names, if any, are returned unchanged.
+#' names, if any, are returned unchanged. If a \sQuote{names}, \sQuote{colnames}
+#' or \sQuote{rownames} attribute is \code{NULL}, it is ignored.
+#' Alternatively, instead of mapping the names, 
+#' collect them and return them as a single character vector, sorted and
+#' with duplicates removed. The collected names are added as their own 
+#' \code{names} attribute; this might be useful if the result is later on used 
+#' for some mapping (using this function or \code{\link{map_values}}).
 #'
 #' @param object List.
 #' @param mapping Mapping function that takes a character vector as first 
-#'   argument.
-#' @param ... Optional further arguments to \code{mapping}.
-#' @return List.
+#'   argument, or character vector used for mapping from its names to its 
+#'   values, or missing.
+#' @param ... Optional further arguments to \code{mapping} (if it is a 
+#'   function).
+#' @return Character vector (if \code{mapping} is missing), or list, or 
+#'   dataframe.
 #' @export
 #' @family list-functions
-#' @seealso rapply list as.list
+#' @seealso base::rapply base::list base::as.list
 #' @keywords manip list
 #' @note This function is not normally directly called by an \pkg{opm} user 
-#'   because \code{\link{map_metadata,WMD+function}} is available.
+#'   because \code{\link{map_metadata}} is available.
 #' @examples
+#'
+#' # List+function method
 #' x <- list(a = 1:8, c = 9, d = 'x')
 #' map <- function(x) sprintf("%s%s", x, x)
 #' (y <- map_names(x, map))
 #' stopifnot(identical(as.character(x), as.character(y)))
 #' stopifnot(!identical(names(x), names(y)))
 #'
+#' # List+character method
+#' x <- list(a = 1:8, c = 9, d = 'x')
+#' map <- c(a = "b", e = "f", x = "y")
+#' (y <- map_names(x, map))
+#' stopifnot(identical(as.character(x), as.character(y)))
+#' stopifnot(!identical(names(x), names(y)))
+#' # compare with the map_values() example
+#'
+#' # List+missing method
+#' x <- list(a = 1:8, c = 9, d = 'x')
+#' (y <- map_names(x))
+#' stopifnot(identical(as.vector(y), names(x)))
+#' stopifnot(identical(names(y), names(x)))
+#' # Now a recursive list
+#' x <- list(a = 1:8, c = 9, d = list(d1 = 'x', d2 = 'y'))
+#' (y <- map_names(x))
+#' stopifnot(length(y) > length(names(x)))
+#'
+#' # Dataframe+function method
+#' x <- data.frame(a = 1:3, b = letters[1:3])
+#' (y <- map_names(x, toupper))
+#' stopifnot(identical(y[[1]], x[[1]]), identical(y[[2]], x[[2]]))
+#' stopifnot(identical(names(y), c("A", "B")))
+#'
+#' # Dataframe+character method
+#' (y <- map_names(x, c(a = "b", b = "a")))
+#' stopifnot(identical(y[[1]], x[[1]]), identical(y[[2]], x[[2]]))
+#' stopifnot(identical(names(y), c("b", "a")))
+#'
+#' # Dataframe+missing method
+#' (y <- map_names(x))
+#' stopifnot(is.character(y), y == names(y), length(y) == 5)
+#'
 setMethod("map_names", c("list", "function"), function(object, mapping, ...) {
   map_names_recursively <- function(item) {
     if (is.list(item)) {
-      names(item) <- mapping(names(item), ...)
+      if (!is.null(n <- names(item)))
+        names(item) <- mapping(n, ...)
       lapply(item, FUN = map_names_recursively)
     } else
       item
@@ -292,30 +487,7 @@ setMethod("map_names", c("list", "function"), function(object, mapping, ...) {
   map_names_recursively(object)
 }, sealed = SEALED)
 
-
-#' Map names
-#'
-#' Use a character vector for mapping list names.
-#'
-#' @name map_names,list+character
-#'
-#' @param object List.
-#' @param mapping Character vector used for mapping from its names to its 
-#'   values.
-#' @return List.
 #' @export
-#' @family list-functions
-#' @seealso rapply list as.list
-#' @keywords manip list
-#' @note This function is not normally directly called by an \pkg{opm} user 
-#'   because \code{\link{map_metadata}} is available.
-#' @examples
-#' x <- list(a = 1:8, c = 9, d = 'x')
-#' map <- c(a = "b", e = "f", x = "y")
-#' (y <- map_names(x, map))
-#' stopifnot(identical(as.character(x), as.character(y)))
-#' stopifnot(!identical(names(x), names(y)))
-#' # compare with the map_values() example
 #'
 setMethod("map_names", c("list", "character"), function(object, mapping) {
   map_names_recursively <- function(item) {
@@ -328,35 +500,7 @@ setMethod("map_names", c("list", "character"), function(object, mapping) {
   map_names_recursively(object)
 }, sealed = SEALED)
 
-
-#' Map names
-#'
-#' Like the methods \code{\link{map_names}} and 
-#' \code{\link{map_names,list+character}}, but instead of mapping the names, 
-#' they are collected and returned as a single character vector, sorted and
-#' with duplicates removed. The collected names are added as their own 
-#' \code{names} attribute; this might be useful if the result is later on used 
-#' for some mapping (see \code{\link{map_values,character}}).
-#'
-#' @name map_names,list+missing
-#'
-#' @param object List.
 #' @export
-#' @return Character vector.
-#' @family list-functions
-#' @seealso rapply list as.list
-#' @keywords attribute list
-#' @note This function is not normally directly called by an \pkg{opm} user 
-#'   because \code{\link{metadata_chars}} is available.
-#' @examples
-#' x <- list(a = 1:8, c = 9, d = 'x')
-#' (y <- map_names(x))
-#' stopifnot(identical(as.vector(y), names(x)))
-#' stopifnot(identical(names(y), names(x)))
-#' # Now a recursive list
-#' x <- list(a = 1:8, c = 9, d = list(d1 = 'x', d2 = 'y'))
-#' (y <- map_names(x))
-#' stopifnot(length(y) > length(names(x)))
 #'
 setMethod("map_names", c("list", "missing"), function(object) {
   get_names_recursively <- function(item) {
@@ -365,11 +509,36 @@ setMethod("map_names", c("list", "missing"), function(object) {
     else
       character()
   }
-  result <- sort(unique(get_names_recursively(object)))
-  structure(.Data = result, names = result)
+  map_values(get_names_recursively(object))
+}, sealed = SEALED)
+
+#' @export
+#'
+setMethod("map_names", c("data.frame", "function"), function(object, mapping, 
+    ...) {
+  if (!is.null(n <- colnames(object)))
+    colnames(object) <- mapping(n, ...)
+  if (!is.null(n <- rownames(object)))
+    rownames(object) <- mapping(n, ...)
+  object
+}, sealed = SEALED)
+
+#' @export
+#'
+setMethod("map_names", c("data.frame", "character"), function(object, mapping) {
+  colnames(object) <- map_values(colnames(object), mapping)
+  rownames(object) <- map_values(rownames(object), mapping)
+  object
+}, sealed = SEALED)
+
+#' @export
+#'
+setMethod("map_names", c("data.frame", "missing"), function(object) {
+  map_values(c(colnames(object), rownames(object)))
 }, sealed = SEALED)
 
 
+################################################################################
 ################################################################################
 #
 # Search functions
@@ -394,7 +563,7 @@ setGeneric("contains",
 #' @param other List used as query.
 #' @param values Logical scalar. Compare also the values or only the keys? If
 #'   \code{FALSE}, \code{exact} is ignored.
-#' @param exact Logical scalar. If \code{FALSE}, they data value(s) might by 
+#' @param exact Logical scalar. If \code{FALSE}, the data value(s) might by 
 #'   any of the query value(s), and some coercion is done before comparing (see
 #'   \code{match} for details. If \code{TRUE}, the data value(s) must exactly
 #'   correspond to the query value(s), and no coercion is done (see 
@@ -403,7 +572,7 @@ setGeneric("contains",
 #' @export
 #' @return Logical scalar.
 #' @family list-functions
-#' @seealso list as.list [ [[
+#' @seealso base::list base::as.list base::`[` base::`[[` base::match
 #' @keywords attribute list
 #' @note This function is not normally directly called by an \pkg{opm} user but
 #'   might be useful in other contexts. It forms the basis of a number of
@@ -449,6 +618,7 @@ setMethod("contains", c("list", "list"), function(object, other,
 
 
 ################################################################################
+################################################################################
 #
 # YAML reparation
 #
@@ -459,33 +629,23 @@ setGeneric("repair_na_strings",
 #' Repair NAs
 #'
 #' Replace \sQuote{NA} by \code{NA_character_}.
+#' When reading YAML input previously output by R, \sQuote{NA} values cause
+#' numeric vectors to be interpreted as character. This function fixes this
+#' problem and also takes care of misinterpreted numbers in exponential
+#' notation.
 #'
-#' @name repair_na_strings,character
-#'
-#' @param object Character vector.
-#' @return Character vector.
+#' @param object Character vector or list.
+#' @param type Character scalar denoting the type to which input character 
+#'   vectors shall be tried to be converted.
+#' @return Character vector or list.
 #' @keywords internal
+#' @references \url{http://www.yaml.org/}
 #'
 setMethod("repair_na_strings", "character", function(object) {
   object[grepl("^\\s*NA$", object, perl = TRUE)] <- NA_character_
   object
 }, sealed = SEALED)
 
-
-#' Repair NAs
-#'
-#' When reading YAML input previously output by R, \sQuote{NA} values cause
-#' numeric vectors to be interpreted as character. This function fixes this
-#' problem and also takes care of misinterpreted numbers in exponential
-#' notation.
-#'
-#' @param object List.
-#' @param type Character scalar denoting the type to which input character 
-#'   vectors shall be tried to be converted.
-#' @return List.
-#' @keywords internal
-#' @references \url{http://www.yaml.org/}
-#'
 setMethod("repair_na_strings", "list", function(object,
     type = c("numeric", "integer", "complex")) {
   type <- match.arg(type)
@@ -493,6 +653,9 @@ setMethod("repair_na_strings", "list", function(object,
     tryCatch(as(repair_na_strings(item), type), warning = function(w) item)
   }, classes = "character", how = "replace")
 }, sealed = SEALED)
+
+
+################################################################################
 
 
 setGeneric("repair_names",
@@ -530,7 +693,8 @@ setMethod("repair_names", "list", function(object, fill = TRUE) {
   map_names(object, mapping = repair_fun)
 }, sealed = SEALED)
   
-  
+
+################################################################################
 ################################################################################
 #
 # List traversal
@@ -569,6 +733,7 @@ setMethod("traverse", c("list", "function"), function(object, func, cores,
 }, sealed = SEALED)
 
 
+################################################################################
 ################################################################################
 #
 # List insertion

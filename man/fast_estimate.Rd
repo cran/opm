@@ -57,7 +57,7 @@
   Quickly estimate the curve parameters AUC (area under the
   curve) or A (maximum height). This is not normally
   directly called by an \pkg{opm} user but via
-  \code{\link{do_aggr}} or \code{\link{curve_params}}.
+  \code{\link{do_aggr}}.
 }
 \examples{
 data("vaas_1")
@@ -68,8 +68,8 @@ stopifnot(identical(dim(x), c(3L, 96L)))
   boot::boot grofit::grofit
 
   Other aggregation-functions: \code{\link{aggr_settings}},
-  \code{\link{aggregated}}, \code{\link{curve_params}},
-  \code{\link{do_aggr}}, \code{\link{param_names}}
+  \code{\link{aggregated}}, \code{\link{do_aggr}},
+  \code{\link{param_names}}
 }
 \keyword{smooth}
 
@@ -80,4 +80,5 @@ stopifnot(identical(dim(x), c(3L, 96L)))
   \S4method{fast_estimate}{matrix}(x, what = c("AUC", "A"), 
     boot = 100L, ci = 0.95, as.pe = "median", ci.type = "norm",
     time.pos = 1L, transposed = FALSE, raw = FALSE, ...) 
+
 }

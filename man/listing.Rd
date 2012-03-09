@@ -47,7 +47,7 @@ message(y <- listing(x, header = "Five letters:", footer = "...end here",
 stopifnot(is.character(y), length(y) == 1)
 }
 \seealso{
-  message warning stop formatDL
+  base::message base::warning base::stop base::formatDL
 }
 \keyword{utilities}
 

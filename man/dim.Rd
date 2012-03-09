@@ -2,35 +2,48 @@
 \alias{dim}
 \title{Dimensions}
 \arguments{
-  \item{x}{\code{\link{OPM}} object.}
+  \item{x}{\code{\link{OPM}} or \code{\link{OPMS}} object.}
 }
 \value{
-  Two-element numeric vector (number of time points and
-  number of wells).
+  For the \code{\link{OPM}} method, a two-element numeric
+  vector (number of time points and number of wells). For
+  the \code{\link{OPMS}} method, a numeric vector with (i)
+  the number of contained \code{\link{OPM}} objects, and
+  (ii) and (iii) the dimensions of the first plate.
 }
 \description{
-  Get the dimensions of the measurements.
+  Get the dimensions of the measurements of an
+  \code{\link{OPM}} object, or get the dimensions of an
+  \code{\link{OPMS}} object. Note that this function cannot
+  be used to determine the correspondence of the time
+  points between all plates as it reports only the time
+  points of the first plate. Instead the \code{\link{OPMS}}
+  method of \code{\link{hours}} must be used.
 }
 \examples{
+# OPM method
 data(vaas_1)
 (x <- dim(vaas_1))
 stopifnot(identical(x, c(384L, 96L)))
+
+# OPMS method
+data(vaas_4)
+(x <- dim(vaas_4))
+stopifnot(identical(x, c(4L, 384L, 96L)))
 }
 \seealso{
-  dim
+  base::dim
 
-  Other getter-functions: \code{\link{[}},
-  \code{\link{[,OPMA}}, \code{\link{[,OPMS}},
-  \code{\link{aggr_settings}}, \code{\link{aggregated}},
-  \code{\link{csv_data}}, \code{\link{dim,OPMS}},
+  Other getter-functions: \code{\link{aggr_settings}},
+  \code{\link{aggregated}}, \code{\link{anyDuplicated}},
+  \code{\link{csv_data}}, \code{\link{duplicated}},
   \code{\link{filename}}, \code{\link{has_aggr}},
   \code{\link{hours}}, \code{\link{length}},
-  \code{\link{max}}, \code{\link{max,OPMS}},
-  \code{\link{measurements}}, \code{\link{metadata}},
-  \code{\link{minmax}}, \code{\link{minmax,OPMS}},
+  \code{\link{max}}, \code{\link{measurements}},
+  \code{\link{metadata}}, \code{\link{minmax}},
   \code{\link{plate_type}}, \code{\link{position}},
-  \code{\link{select}}, \code{\link{setup_time}},
-  \code{\link{summary}}, \code{\link{summary,OPMS}},
+  \code{\link{select}}, \code{\link{seq}},
+  \code{\link{setup_time}}, \code{\link{summary}},
   \code{\link{thin_out}}, \code{\link{well}},
   \code{\link{wells}}
 }
@@ -39,6 +52,10 @@ stopifnot(identical(x, c(384L, 96L)))
 \docType{methods}
 \alias{dim-methods}
 \alias{dim,OPM-method}
+\alias{dim,OPMS-method}
 \usage{
   \S4method{dim}{OPM}(x) 
+
+  \S4method{dim}{OPMS}(x) 
+
 }

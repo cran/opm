@@ -16,9 +16,10 @@
   Character scalar, holding a regular expression.
 }
 \description{
-  Create regexp matching certain file extensions. This is
-  not normally directly called by an \pkg{opm} user but by
-  the other IO functions of the package.
+  Create a regular expression matching certain file
+  extensions. This is not normally directly called by an
+  \pkg{opm} user but by the other IO functions of the
+  package.
 }
 \examples{
 (x <- file_pattern())
@@ -26,7 +27,7 @@
 stopifnot(nchar(x) > nchar(y))
 }
 \seealso{
-  file_ext
+  tools::file_ext
 
   Other IO-functions: \code{\link{batch_collect}},
   \code{\link{batch_opm_to_yaml}},
@@ -36,8 +37,7 @@ stopifnot(nchar(x) > nchar(y))
   \code{\link{explode_dir}}, \code{\link{opm_files}},
   \code{\link{phylo_data}}, \code{\link{read_opm}},
   \code{\link{read_single_opm}}, \code{\link{split_files}},
-  \code{\link{to_metadata}},
-  \code{\link{to_metadata,character}}
+  \code{\link{to_metadata}}
 }
 \keyword{utilities}
 

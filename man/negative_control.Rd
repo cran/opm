@@ -25,4 +25,5 @@
 \alias{negative_control,OPMX-method}
 \usage{
   \S4method{negative_control}{OPMX}(object, neg.ctrl) 
+
 }

@@ -9,7 +9,7 @@
   \item{values}{Logical scalar. Compare also the values or
   only the keys? If \code{FALSE}, \code{exact} is ignored.}
 
-  \item{exact}{Logical scalar. If \code{FALSE}, they data
+  \item{exact}{Logical scalar. If \code{FALSE}, the data
   value(s) might by any of the query value(s), and some
   coercion is done before comparing (see \code{match} for
   details. If \code{TRUE}, the data value(s) must exactly
@@ -48,13 +48,10 @@ stopifnot(contains(x, y, exact = TRUE, values = FALSE))
 # see particularly infix-q and infix-k for more examples
 }
 \seealso{
-  list as.list [ [[
+  base::list base::as.list base::`[` base::`[[` base::match
 
   Other list-functions: \code{\link{map_names}},
-  \code{\link{map_names,list+character}},
-  \code{\link{map_names,list+missing}},
-  \code{\link{map_values}},
-  \code{\link{map_values,character}}
+  \code{\link{map_values}}
 }
 \keyword{attribute}
 \keyword{list}
@@ -65,4 +62,5 @@ stopifnot(contains(x, y, exact = TRUE, values = FALSE))
 \usage{
   \S4method{contains}{list,list}(object, other,
     values = TRUE, exact = FALSE) 
+
 }

@@ -55,8 +55,7 @@ if (length(f) > 0L) {
   \code{\link{explode_dir}}, \code{\link{file_pattern}},
   \code{\link{opm_files}}, \code{\link{phylo_data}},
   \code{\link{read_opm}}, \code{\link{read_single_opm}},
-  \code{\link{split_files}}, \code{\link{to_metadata}},
-  \code{\link{to_metadata,character}}
+  \code{\link{split_files}}, \code{\link{to_metadata}}
 }
 \keyword{IO}
 

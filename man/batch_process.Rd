@@ -11,7 +11,7 @@
   \item{out.ext}{Character scalar. The extension of the
   outfile names (without the dot).}
 
-  \item{proc}{Integer scalar. The number pf processes to
+  \item{proc}{Integer scalar. The number of processes to
   spawn.}
 
   \item{outdir}{Character vector. Directories in which to
@@ -94,8 +94,7 @@ if (length(infiles) > 0) {
   \code{\link{explode_dir}}, \code{\link{file_pattern}},
   \code{\link{opm_files}}, \code{\link{phylo_data}},
   \code{\link{read_opm}}, \code{\link{read_single_opm}},
-  \code{\link{split_files}}, \code{\link{to_metadata}},
-  \code{\link{to_metadata,character}}
+  \code{\link{split_files}}, \code{\link{to_metadata}}
 }
 \keyword{IO}
 

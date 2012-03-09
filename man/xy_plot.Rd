@@ -2,10 +2,19 @@
 \alias{xy_plot}
 \title{XY plot}
 \arguments{
-  \item{x}{\code{\link{OPM}} object.}
+  \item{x}{\code{\link{OPM}} or \code{\link{OPMS}} object.}
 
-  \item{col}{Character scalar (color name) determining the
-  line color.}
+  \item{col}{For the \code{\link{OPM}} method, just a
+  character scalar (color name) determining the line color.
+  For the \code{\link{OPMS}} method, either a character
+  vector with color codes or one of the arguments of
+  \code{\link{select_colors}} (for picking one of the
+  predefined color sets). It is an error if fewer colors
+  are chosen than the number of plate grouping levels (see
+  the \code{...} argument below). For user-chosen color
+  sets, keep in mind that the sets are not checked for
+  duplicates. See \code{\link{max_rgb_contrast}} as a
+  method for optimally arranging user-defined colors.}
 
   \item{lwd}{Numeric scalar determining the line width.}
 
@@ -14,10 +23,11 @@
   \code{FALSE}, no baseline will be drawn. If \code{TRUE},
   the baseline's height is the value of
   \code{\link{minmax}}.  If a character scalar,
-  \code{neg.ctrl} is interpreted as the name of the well
-  regarded as negative control. Its overall maximum will
-  determine the height. Set \code{neg.ctrl} to a numeric
-  value to set the height directly (at your own risk).}
+  \code{neg.ctrl} is interpreted as the name of the wells
+  regarded as negative control, and the baseline's height
+  becomes the value of \code{\link{minmax}} applied to
+  these wells only. Set \code{neg.ctrl} to a numeric value
+  for assigning the height directly (at your own risk).}
 
   \item{base.col}{Character scalar. Baseline color (ignored
   if no baseline is drawn).}
@@ -52,6 +62,11 @@
 
   \item{draw.grid}{Logical scalar. Insert background grid?}
 
+  \item{space}{Character scalar indicating the position of
+  the legend; either \sQuote{top}, \sQuote{bottom},
+  \sQuote{left} or \sQuote{right}. Might be overwritten by
+  \code{legend.fmt}.}
+
   \item{strip.fmt}{List controlling the format of the
   description strip above each panel. For instance, the
   background color is set using the \sQuote{bg} key. For
@@ -68,23 +83,51 @@
   \sQuote{par.strip.text} of \code{xyplot} from the
   \pkg{lattice} package for details.}
 
+  \item{legend.fmt}{List controlling where and how to draw
+  the legend. The content of the legend (mainly a
+  description of the assignment of the colors to the
+  curves) is determined automatically. See argument
+  \sQuote{key} of \code{xyplot} from the \pkg{lattice}
+  package for details.}
+
+  \item{legend.sep}{Character scalar. Relevant only if more
+  than one columns of metadata have been selected; will
+  then be used as separator to join their names in the
+  legend.}
+
+  \item{draw.legend}{Logical scalar. If \code{FALSE}, no
+  legend is drawn, and the two aforementioned arguments are
+  ignored.}
+
   \item{...}{Arguments that are passed to
-  \code{\link{flatten}}.}
+  \code{\link{flatten}}. For the \code{\link{OPMS}} method,
+  \code{include} is particularly important: the selected
+  metadata are joined into a single factor, and the
+  assignment of plates to this factor's levels determines
+  the curve color for each plate. That is, each combination
+  of metadata entries as chosen using \code{include} yields
+  one color. If no metadata are selected (the default),
+  each plate gets a color of its own.}
 }
 \value{
   An object of class \sQuote{trellis}. See \code{xyplot}
   from the \pkg{lattice} package for details.
 }
 \description{
-  Customized plotting of a single PM plate, using
-  \code{xyplot} from the \pkg{lattice} package. The optimal
-  number of rows and columns is estimated from the number
-  of selected wells. An optimal font size of the panel
-  headers is also chosen automatically, but can also be
-  adapted by the user, much like most aspects of the
-  resulting graphics output.
+  Customized plotting of a single or multiple PM plate(s),
+  using \code{xyplot} from the \pkg{lattice} package. The
+  optimal number of rows and columns is estimated from the
+  number of selected wells. An optimal font size of the
+  panel headers is also chosen automatically, but can also
+  be adapted by the user, much like most aspects of the
+  resulting graphics output. In the case of the
+  \code{\link{OPMS}} method, if metadata are selected,
+  curve colors are determined according to the combinations
+  of these metadata entries, otherwise each plate gets its
+  own color.
 }
 \examples{
+# OPM method
 data(vaas_1)
 xy_plot(vaas_1) # note the default main title built from the plate type
 
@@ -97,6 +140,14 @@ xy_plot(x, neg.ctrl = NULL)
 xy_plot(x, neg.ctrl = 100)
 # Some like it ugly:
 xy_plot(x, neg.ctrl = 100, col = "pink", base.col = "yellow", main = "Ugly")
+
+# OPMS method
+data(vaas_4)
+# Color by species and strain; note default main title
+xy_plot(vaas_4, include = c("Species", "Strain"))
+# Use the largest of the negative-control maxima as baseline
+xy_plot(vaas_4, include = c("Species", "Strain"),
+  neg.ctrl = max(vaas_4, "A01"))
 }
 \references{
   Sarkar D. Lattice: Multivariate Data Visualization with
@@ -111,17 +162,16 @@ xy_plot(x, neg.ctrl = 100, col = "pink", base.col = "yellow", main = "Ugly")
   lattice::xyplot
 
   Other plotting-functions: \code{\link{ci_plot}},
-  \code{\link{ci_plot,OPMS}}, \code{\link{heat_map}},
-  \code{\link{heat_map,matrix}}, \code{\link{level_plot}},
-  \code{\link{level_plot,OPMS}},
+  \code{\link{heat_map}}, \code{\link{level_plot}},
   \code{\link{max_rgb_contrast}},
-  \code{\link{select_colors}}, \code{\link{xy_plot,OPMS}}
+  \code{\link{select_colors}}
 }
 \keyword{hplot}
 
 \docType{methods}
 \alias{xy_plot-methods}
 \alias{xy_plot,OPM-method}
+\alias{xy_plot,OPMS-method}
 \usage{
   \S4method{xy_plot}{OPM}(x, col = "midnightblue", lwd = 1,
     neg.ctrl = "A01", base.col = "grey10", base.lwd = lwd,
@@ -129,4 +179,13 @@ xy_plot(x, neg.ctrl = 100, col = "pink", base.col = "yellow", main = "Ugly")
     theor.max = TRUE, draw.grid = TRUE,
     strip.fmt = list(), striptext.fmt = list(),
     ...) 
+
+  \S4method{xy_plot}{OPMS}(x, col = "nora", lwd = 1,
+    neg.ctrl = "A01", base.col = "black", base.lwd = lwd,
+    main = list(), xlab = "Time [h]", ylab = "Value [OmniLog units]",
+    theor.max = TRUE, draw.grid = TRUE, space = "top",
+    strip.fmt = list(), striptext.fmt = list(),
+    legend.fmt = list(), legend.sep = " ", draw.legend = TRUE,
+    ...) 
+
 }

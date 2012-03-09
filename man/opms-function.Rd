@@ -48,10 +48,7 @@ stopifnot(is(x, "OPMS"), length(x) == 8L)
 }
 \seealso{
   Other combination-functions: \code{\link{c}},
-  \code{\link{plus}}, \code{\link{plus,OPM+OPMS}},
-  \code{\link{plus,OPM+list}}, \code{\link{plus,OPMS+OPM}},
-  \code{\link{plus,OPMS+OPMS}},
-  \code{\link{plus,OPMS+list}}
+  \code{\link{plus}}
 }
 \keyword{manip}
 

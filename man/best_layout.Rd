@@ -20,4 +20,5 @@
 \alias{best_layout,numeric-method}
 \usage{
   \S4method{best_layout}{numeric}(object, by = 0.75) 
+
 }

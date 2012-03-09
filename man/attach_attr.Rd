@@ -21,4 +21,5 @@
 \alias{attach_attr,OPM-method}
 \usage{
   \S4method{attach_attr}{OPM}(object, other) 
+
 }

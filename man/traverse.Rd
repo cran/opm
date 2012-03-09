@@ -31,4 +31,5 @@
 \usage{
   \S4method{traverse}{list,function}(object, func, cores, 
     ...) 
+
 }

@@ -2,12 +2,14 @@
 \alias{collect_template}
 \title{Collect metadata template}
 \arguments{
-  \item{object}{Character vector. Acts like the
-  \code{names} argument of \code{\link{read_opm}}. That is,
-  if it a directory name, this is automatically scanned for
-  all CSV and YAML files it contains (unless restrictions
-  with patterns are made). One can also provide file names,
-  or a mixture of file and directory names.}
+  \item{object}{Character vector or \code{\link{OPM}} or
+  \code{\link{OPMS}} object. If a character vector is
+  provided, it acts like the \code{names} argument of
+  \code{\link{read_opm}}. That is, if it is a directory
+  name, this is automatically scanned for all CSV and YAML
+  files it contains (unless restrictions with patterns are
+  made). One can also provide file names, or a mixture of
+  file and directory names.}
 
   \item{outfile}{Character scalar. Ignored if \code{NULL}
   or empty string.  Otherwise, interpreted as the name of a
@@ -22,8 +24,7 @@
   \code{outfile}.}
 
   \item{previous}{Ignored if \code{NULL}. Otherwise passed
-  to \code{\link{to_metadata}} or
-  \code{\link{to_metadata,character}}. If it is a filename
+  to \code{\link{to_metadata}}. If it is a filename
   different from \code{outfile}, it is an error if the file
   does not exist.}
 
@@ -31,41 +32,53 @@
   \sQuote{to_metadata} methods.}
 
   \item{add.cols}{Optional character vector with the names
-  of columns to be added to the result. See the eponymous
-  argument of \code{\link{collect_template,OPM}} for
-  details.}
+  of columns to be added to the result, or \code{NULL}. If
+  not empty, names of columns to be added, initially
+  containing \code{NA}.}
 
   \item{selection}{Elements to be extracted from the CSV
-  comments contained in each file. See
-  \code{\link{collect_template,OPM}} for details.}
+  comments contained in each file. Character vector passed
+  to \code{\link{csv_data}}.}
 
   \item{include}{File inclusion pattern (or generator for a
   pattern). Passed to \code{\link{batch_collect}}.}
 
   \item{...}{Other arguments passed to
-  \code{\link{batch_collect}}.}
+  \code{\link{batch_collect}}, or arguments passed from the
+  \code{\link{OPMS}} to the \code{\link{OPM}} method.}
 
   \item{demo}{Logical scalar. Run in \sQuote{demo} mode?
   Also passed to \code{\link{batch_collect}}.}
 }
 \value{
-  Dataframe, returned invisibly if \code{outfile} is given;
-  if \code{demo} is \code{TRUE}, a character vector of
-  filenames instead, also returned invisibly.
+  In the case of the character method, a dataframe,
+  returned invisibly if \code{outfile} is given; if
+  \code{demo} is \code{TRUE}, a character vector of
+  filenames instead, also returned invisibly. The
+  \code{\link{OPM}} method returns a dataframe with one row
+  and the number of columns equal to the sum of the lengths
+  of \code{selection} and \code{add.cols}. The
+  \code{\link{OPM}} method returns such a dataframe with
+  one row per contained plate.
 }
 \description{
-  Batch-collect information from OmniLog(R) CSV comments
-  for later on adding metadata. Optionally add these as
-  novel rows to previously collected data. Write collected
-  template to a file for use with an external editor,
-  and/or create data frame for editing the data directly in
-  R with the \code{edit} function.
+  Collect a metadata template from OmniLog(R) CSV comments
+  assisting in later on adding metadata using
+  \code{\link{include_metadata}}. The character method
+  batch-collects such information from files and optionally
+  add these data as novel rows to previously collected
+  data. It writes the collected template to a file for use
+  with an external editor, and/or creates a data frame for
+  editing the data directly in R with the \code{edit}
+  function. The \code{\link{OPM}} and \code{\link{OPMS}}
+  methods collect a dataframe.
 }
 \note{
   Regarding the CSV format, see the remark to
   \code{\link{read_single_opm}}.
 }
 \examples{
+# Character method
 test.files <- grep("Multiple", opm_files("testdata"), invert = TRUE,
   value = TRUE, fixed = TRUE)
 if (length(test.files) > 0) {
@@ -87,12 +100,29 @@ if (length(test.files) > 0) {
   stopifnot(file.exists(outfile))
   unlink(outfile)
 }
+
+# OPM method
+data(vaas_1)
+(x <- collect_template(vaas_1))
+stopifnot(identical(dim(x), c(1L, 3L)))
+(x <- collect_template(vaas_1, add.cols = c("A", "B")))
+stopifnot(identical(dim(x), c(1L, 5L)))
+# see include_metadata() for how to use this to add metadata information
+
+# OPMS method
+data(vaas_4)
+(x <- collect_template(vaas_4))
+stopifnot(identical(dim(x), c(4L, 3L)))
+(x <- collect_template(vaas_4, add.cols = c("A", "B")))
+stopifnot(identical(dim(x), c(4L, 5L)))
+# again see include_metadata() for how to use this to add metadata
+# information
 }
 \references{
   \url{http://www.biolog.com/}
 }
 \seealso{
-  edit read.delim
+  utils::edit utils::read.delim
 
   Other IO-functions: \code{\link{batch_collect}},
   \code{\link{batch_opm_to_yaml}},
@@ -101,36 +131,33 @@ if (length(test.files) > 0) {
   \code{\link{file_pattern}}, \code{\link{opm_files}},
   \code{\link{phylo_data}}, \code{\link{read_opm}},
   \code{\link{read_single_opm}}, \code{\link{split_files}},
-  \code{\link{to_metadata}},
-  \code{\link{to_metadata,character}}
+  \code{\link{to_metadata}}
 
-  Other metadata-functions:
-  \code{\link{collect_template,OPM}},
-  \code{\link{collect_template,OPMS}},
-  \code{\link{extract_columns}},
+  Other metadata-functions: \code{\link{extract_columns}},
   \code{\link{include_metadata}},
-  \code{\link{map_metadata}},
-  \code{\link{map_metadata,OPMS}},
-  \code{\link{map_metadata,WMD+function}},
-  \code{\link{metadata}}, \code{\link{metadata-set}},
-  \code{\link{metadata-set,OPMS+ANY+ANY}},
-  \code{\link{metadata-set,OPMS+missing+list}},
-  \code{\link{metadata-set,WMD+character+ANY}},
-  \code{\link{metadata-set,WMD+list+list}},
-  \code{\link{metadata-set,WMD+numeric+list}},
-  \code{\link{metadata_chars}},
-  \code{\link{metadata_chars,OPMS}},
-  \code{\link{to_metadata}},
-  \code{\link{to_metadata,character}}
+  \code{\link{map_metadata}}, \code{\link{metadata}},
+  \code{\link{metadata.set}}, \code{\link{metadata.set}},
+  \code{\link{metadata.set}}, \code{\link{metadata.set}},
+  \code{\link{metadata.set}}, \code{\link{metadata.set}},
+  \code{\link{metadata_chars}}, \code{\link{to_metadata}}
 }
 \keyword{IO}
+\keyword{attribute}
 
 \docType{methods}
 \alias{collect_template-methods}
 \alias{collect_template,character-method}
+\alias{collect_template,OPM-method}
+\alias{collect_template,OPMS-method}
 \usage{
   \S4method{collect_template}{character}(object, outfile = NULL,
     sep = "\t", previous = outfile, md.args = list(),
     selection = c(SETUP, POS, FILE), add.cols = NULL, 
     include = list(), ..., demo = FALSE) 
+
+  \S4method{collect_template}{OPM}(object, 
+    selection = c(SETUP, POS, FILE), add.cols = NULL) 
+
+  \S4method{collect_template}{OPMS}(object, ...) 
+
 }

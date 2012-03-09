@@ -2,25 +2,49 @@
 \alias{map_values}
 \title{Map values}
 \arguments{
-  \item{object}{List (may be nested).}
+  \item{object}{List (may be nested), dataframe or
+  character vector. If it has names, they are preserved.
+  \code{NULL} can also be given and yields \code{NULL} or
+  an empty named character vector (if \code{mapping} is
+  missing).}
 
   \item{mapping}{Character vector used as a mapping from
-  its names to its values.}
+  its names to its values. Values from \code{object} are
+  searched for in the \code{names} attribute of
+  \code{mapping}; those found are replaced by the
+  corresponding values of \code{mapping}. If \code{mapping}
+  is missing, a character vector is returned (sorted and
+  with duplicates removed) whose names are identical to the
+  values. This eases the construction of mapping vectors
+  specific for \code{object}. If \code{mapping} is missing,
+  the \code{coerce} argument must be named. \code{mapping}
+  changes its usage if \code{coerce} is \code{TRUE}.}
 
   \item{coerce}{Character vector with the names of classes
   that are coerced to \sQuote{character} to allow the
   mapping. Other classes are returned unchanged. Note that
   the coerced data are \strong{not} converted back to their
-  original datatype.}
+  original data type. \sQuote{ANY} can be used to indicate
+  that all classes will be considered.  Alternatively,
+  \code{coerce} can be \code{TRUE}. \code{mapping} is then
+  interpreted as a mapping between the names of classes,
+  and \code{as} from the \pkg{methods} package is used for
+  conducting the requested coercions.  Attempting an
+  undefined coercion will result in an error.}
 }
 \value{
-  List.
+  List, dataframe, character vector or \code{NULL}.
 }
 \description{
-  Recursively apply a mapping function to all
-  \sQuote{character} values within a list. Optionally
-  coerce other datatypes to \sQuote{character}; return
-  remaing ones unchanged.
+  Map \sQuote{character} data using another
+  \sQuote{character} vector, or recursively apply a mapping
+  function to all \sQuote{character} values within a list,
+  or non-recursively to a dataframe. Optionally coerce
+  other data types to \sQuote{character}; return remaining
+  ones unchanged. It is also possible to map between
+  classes using coercion functions. For convenience in
+  programming, methods for the \sQuote{NULL} class are also
+  available.
 }
 \note{
   This function is not normally directly called by an
@@ -28,21 +52,73 @@
   available.
 }
 \examples{
+# Character+character method
+map <- letters
+names(map) <- rev(LETTERS)
+(x <- map_values(LETTERS, map))
+stopifnot(rev(x) == letters)
+
+# Character+missing method
+(x <- map_values(letters))
+stopifnot(x == letters, names(x) == letters)
+
+# List+character method
 x <- list(a = 1:8, c = 9, d = 'x')
 map <- c(a = "b", e = "f", x = "y")
 (y <- map_values(x, map))
-stopifnot(identical(x[1:2], y[1:2]))
-stopifnot(!identical(x[3], y[3]))
-# compare with the map_names() example
+stopifnot(identical(x[1:2], y[1:2]), !identical(x[3], y[3]))
+(y <- map_values(x, map, coerce = "integer"))
+stopifnot(identical(x[2], y[2]), !identical(x[1], y[1]),
+  !identical(x[3], y[3]))
+(y <- map_values(x, map, coerce = TRUE))
+stopifnot(identical(x, y))
+(y <- map_values(x, c(numeric = "character"), coerce = TRUE))
+stopifnot(identical(x[1], y[1]), !identical(x[2], y[2]),
+  identical(x[3], y[3]))
+
+# List+missing method
+(y <- map_values(x))
+stopifnot(y == "x", names(y) == y)
+(y <- map_values(x, coerce = "integer"))
+stopifnot(length(y) == 9, names(y) == y)
+(y <- map_values(x, coerce = c("integer", "numeric")))
+stopifnot(length(y) == 10, names(y) == y)
+(y <- map_values(x, coerce = "ANY")) # same effect
+stopifnot(length(y) == 10, names(y) == y)
+(y <- map_values(x, coerce = TRUE))
+stopifnot(y == c("character", "integer", "numeric"), names(y) == y)
+
+# Dataframe+character method
+x <- data.frame(a = 1:3, b = letters[1:3])
+stopifnot(sapply(x, class) == c("integer", "factor"))
+map <- c(a = "A", b = "B", c = "C", `1` = "5")
+(y <- map_values(x, map))
+stopifnot(identical(x, y))
+(y <- map_values(x, map, coerce = "factor"))
+stopifnot(!identical(x, y), y[[2]] == c("A", "B", "C"))
+(y <- map_values(x, map, coerce = "ANY"))
+stopifnot(y[[1]] == c("5", "2", "3"), y[[2]] == c("A", "B", "C"))
+(y <- map_values(x, map, coerce = TRUE))
+stopifnot(identical(x, y))
+map <- c(factor = "character", integer = "complex")
+(y <- map_values(x, map, coerce = TRUE))
+stopifnot(sapply(y, class) == c("complex", "character"))
+
+# Dataframe+missing method
+(y <- map_values(x))
+stopifnot(is.character(y), length(y) == 0)
+(y <- map_values(x, coerce = "factor"))
+stopifnot(is.character(y), y == letters[1:3], names(y) == y)
+(y <- map_values(x, coerce = "ANY"))
+stopifnot(is.character(y), length(y) == 6, names(y) == y)
+(y <- map_values(x, coerce = TRUE))
+stopifnot(is.character(y), y == c("factor", "integer"), names(y) == y)
 }
 \seealso{
-  rapply list as.list
+  base::rapply base::list base::as.list methods::as
 
   Other list-functions: \code{\link{contains}},
-  \code{\link{map_names}},
-  \code{\link{map_names,list+character}},
-  \code{\link{map_names,list+missing}},
-  \code{\link{map_values,character}}
+  \code{\link{map_names}}
 }
 \keyword{list}
 \keyword{manip}
@@ -50,7 +126,32 @@ stopifnot(!identical(x[3], y[3]))
 \docType{methods}
 \alias{map_values-methods}
 \alias{map_values,list,character-method}
+\alias{map_values,list,missing-method}
+\alias{map_values,data.frame,character-method}
+\alias{map_values,data.frame,missing-method}
+\alias{map_values,character,character-method}
+\alias{map_values,character,missing-method}
+\alias{map_values,NULL,character-method}
+\alias{map_values,NULL,missing-method}
 \usage{
   \S4method{map_values}{list,character}(object, mapping,
     coerce = character()) 
+
+  \S4method{map_values}{list,missing}(object, 
+    coerce = character()) 
+
+  \S4method{map_values}{data.frame,character}(object, mapping,
+    coerce = character()) 
+
+  \S4method{map_values}{data.frame,missing}(object, 
+    coerce = character()) 
+
+  \S4method{map_values}{character,character}(object, mapping) 
+
+  \S4method{map_values}{character,missing}(object) 
+
+  \S4method{map_values}{NULL,character}(object, mapping) 
+
+  \S4method{map_values}{NULL,missing}(object, mapping) 
+
 }

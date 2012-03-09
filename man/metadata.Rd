@@ -31,39 +31,27 @@ data(vaas_1)
 stopifnot(identical(x, "DSM30083T"))
 }
 \seealso{
-  Other getter-functions: \code{\link{[}},
-  \code{\link{[,OPMA}}, \code{\link{[,OPMS}},
-  \code{\link{aggr_settings}}, \code{\link{aggregated}},
+  Other getter-functions: \code{\link{aggr_settings}},
+  \code{\link{aggregated}}, \code{\link{anyDuplicated}},
   \code{\link{csv_data}}, \code{\link{dim}},
-  \code{\link{dim,OPMS}}, \code{\link{filename}},
+  \code{\link{duplicated}}, \code{\link{filename}},
   \code{\link{has_aggr}}, \code{\link{hours}},
   \code{\link{length}}, \code{\link{max}},
-  \code{\link{max,OPMS}}, \code{\link{measurements}},
-  \code{\link{minmax}}, \code{\link{minmax,OPMS}},
+  \code{\link{measurements}}, \code{\link{minmax}},
   \code{\link{plate_type}}, \code{\link{position}},
-  \code{\link{select}}, \code{\link{setup_time}},
-  \code{\link{summary}}, \code{\link{summary,OPMS}},
+  \code{\link{select}}, \code{\link{seq}},
+  \code{\link{setup_time}}, \code{\link{summary}},
   \code{\link{thin_out}}, \code{\link{well}},
   \code{\link{wells}}
 
   Other metadata-functions: \code{\link{collect_template}},
-  \code{\link{collect_template,OPM}},
-  \code{\link{collect_template,OPMS}},
   \code{\link{extract_columns}},
   \code{\link{include_metadata}},
-  \code{\link{map_metadata}},
-  \code{\link{map_metadata,OPMS}},
-  \code{\link{map_metadata,WMD+function}},
-  \code{\link{metadata-set}},
-  \code{\link{metadata-set,OPMS+ANY+ANY}},
-  \code{\link{metadata-set,OPMS+missing+list}},
-  \code{\link{metadata-set,WMD+character+ANY}},
-  \code{\link{metadata-set,WMD+list+list}},
-  \code{\link{metadata-set,WMD+numeric+list}},
-  \code{\link{metadata_chars}},
-  \code{\link{metadata_chars,OPMS}},
-  \code{\link{to_metadata}},
-  \code{\link{to_metadata,character}}
+  \code{\link{map_metadata}}, \code{\link{metadata.set}},
+  \code{\link{metadata.set}}, \code{\link{metadata.set}},
+  \code{\link{metadata.set}}, \code{\link{metadata.set}},
+  \code{\link{metadata.set}}, \code{\link{metadata_chars}},
+  \code{\link{to_metadata}}
 }
 \keyword{attribute}
 
@@ -73,4 +61,5 @@ stopifnot(identical(x, "DSM30083T"))
 \usage{
   \S4method{metadata}{WMD}(object, key = NULL, exact = TRUE, 
     strict = FALSE) 
+
 }

@@ -24,6 +24,9 @@ NULL
 setClassUnion(OPMX, c(OPM, OPMS))
 
 
+################################################################################
+
+
 setGeneric("main_title", function(object, ...) standardGeneric("main_title"))
 #' Create main title
 #'
@@ -53,6 +56,9 @@ setMethod("main_title", OPMX, function(object, settings) {
   } else
     NULL
 }, sealed = SEALED)
+
+
+################################################################################
 
 
 setGeneric("negative_control",
@@ -91,6 +97,9 @@ setMethod("negative_control", OPMX, function(object, neg.ctrl) {
 }, sealed = SEALED)
 
 
+################################################################################
+
+
 #' Combination
 #'
 #' Combine a \code{\link{OPM}} or \code{\link{OPMS}} object with other objects.
@@ -103,7 +112,7 @@ setMethod("negative_control", OPMX, function(object, neg.ctrl) {
 #' @return \code{\link{OPMS}} object, list, or \code{\link{OPM}} object
 #'   (if \code{...} is not given and \code{x} is such an object).
 #' @family combination-functions
-#' @seealso c
+#' @seealso base::c
 #' @keywords manip
 #'
 #' @examples 
@@ -128,8 +137,41 @@ setMethod("negative_control", OPMX, function(object, neg.ctrl) {
 setMethod("c", OPMX, function(x, ..., recursive = FALSE) {
   if (missing(...))
     return(x)
-  #try_opms(callNextMethod())
   try_opms(list(x, ...))
 }, sealed = SEALED)
+
+
+################################################################################
+
+
+setGeneric("improved_max",
+  function(object, ...) standardGeneric("improved_max"))
+#' Maximum plus offset
+#'
+#' Return the maximal value of an object plus a certain offset.
+#'
+#' @param object Numeric vector or \sQuote{OPMX} object.
+#' @param theor.max Logical scalar. Use the theoretical or the real improved 
+#'   maximum? If \code{TRUE}, \code{by} is ignored.
+#' @param by Numeric scalar.
+#' @return Numeric scalar. Let \code{n} be the smallest integer value for which
+#'   \code{n * by >= object} holds. The result is then equal to
+#'   \code{(n + 1) * by}.
+#' @keywords internal
+#'
+setMethod("improved_max", "numeric", function(object, by = 10) {
+  assert_length(by)
+  ceiling(max(object) / by) * by + by # => error unless 'by' is numeric
+}, sealed = SEALED)
+
+setMethod("improved_max", OPMX, function(object, theor.max = TRUE, by = 10) {
+  assert_length(theor.max)
+  if (theor.max)
+    return(THEOR_MAX)  
+  improved_max(max(object), by)
+}, sealed = SEALED)
+
+
+################################################################################
 
 

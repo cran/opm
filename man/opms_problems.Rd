@@ -20,4 +20,5 @@
 \alias{opms_problems,list-method}
 \usage{
   \S4method{opms_problems}{list}(object) 
+
 }

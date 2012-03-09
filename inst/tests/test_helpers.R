@@ -48,6 +48,47 @@ test_that("listings can be created", {
 })
 
 
+test_that("character vectors can be split regularly", {
+  
+  x <- c(
+    "ibb_blastall.sim2_IS.log",
+    "ibb_blastall.sim2_LS.log",
+    "ibb_blastall.sim2_SS.log",
+    "ibb_blat.sim2_IS.log",
+    "ibb_blat.sim2_LS.log",
+    "ibb_blat.sim2_SS.log",
+    "ibb_megablast.sim2_IS.log",
+    "ibb_megablast.sim2_LS.log",
+    "ibb_megablast.sim2_SS.log"
+  )
+  
+  got <- separate(x, c("#", "?", "%"))
+  expect_is(got, "matrix")
+  expect_equal(ncol(got), 1L)
+  expect_equal(x, got[, 1L])
+
+  got <- separate(x, "")
+  expect_is(got, "matrix")
+  expect_equal(ncol(got), 1L)
+  expect_equal(x, got[, 1L])
+
+  got <- separate(x, c(".", "_"))
+  expect_is(got, "matrix")
+  expect_equal(dim(got), c(length(x), 5L))
+  expect_true(all(got[, 1L] == "ibb"))
+  expect_true(all(got[, 3L] == "sim2"))
+  expect_true(all(got[, 5L] == "log"))
+  
+  got.2 <- separate(x, c("_", "."))
+  expect_equal(got.2, got)
+  got.2 <- separate(x, "_.")
+  expect_equal(got.2, got)
+  got.2 <- separate(x, c("_-.", "#%&()"))
+  expect_equal(got.2, got)
+  
+})
+
+
 ## UNTESTED: glob_to_regex
 
 
@@ -314,6 +355,9 @@ test_that("logical vectors can be converted to factors", {
   x <- c(TRUE, FALSE, FALSE, TRUE, FALSE, TRUE, FALSE) # clean input
   got <- group_by_sep(x)
   expect_equal(as.factor(c(1L, 1L, 1L, 2L, 2L, 3L, 3L)), got)
+
+  got <- group_by_sep(x, include = FALSE)
+  expect_equal(as.factor(c(NA, 1L, 1L, NA, 2L, NA, 3L)), got)
   
   x <- c(FALSE, TRUE, FALSE, FALSE, TRUE, FALSE, TRUE, FALSE) # leading FALSE
   got <- group_by_sep(x)
@@ -338,6 +382,8 @@ test_that("character vectors can be converted to factors", {
   x <- c(">abc", ">def", "acgtagg", ">hij", "gatattag", "aggtagga") # FASTA
   got <- group_by_sep(x, "^>")
   expect_equal(as.factor(c(NA, 1L, 1L, 2L, 2L, 2L)), got)
+  got <- group_by_sep(x, "^>", include = FALSE)
+  expect_equal(as.factor(c(NA, NA, 1L, NA, 2L, 2L)), got)
   
 })
 

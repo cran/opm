@@ -7,10 +7,10 @@
 }
 \arguments{
   \item{names}{Character vector with names of files in one
-  of three formats accepted by \code{read_opm} ((see
-  above), or names of directories containing such files, or
-  both; or convertible to such a vector. See the
-  \code{include} argument below and
+  of three formats accepted by \code{\link{read_opm}}, or
+  names of directories containing such files, or both; or
+  convertible to such a vector. See the \code{include}
+  argument of \code{\link{read_opm}} and
   \code{\link{explode_dir}} for how to select subsets from
   the input files or directories.}
 
@@ -23,7 +23,10 @@
   returned in that case.}
 
   \item{gen.iii}{Logical scalar. If \code{TRUE}, invoke
-  \code{\link{gen_iii}} on each plate.}
+  \code{\link{gen_iii}} on each plate. This is
+  automatically done with CSV input if the plate type is
+  given as \sQuote{OTH} (which is usually the case for
+  plates run in ID mode).}
 
   \item{include}{Pattern for selecting from the input
   files. The default value results in the output of
@@ -84,7 +87,7 @@ x <- read_opm(".")
   \url{http://www.biolog.com/}
 }
 \seealso{
-  read.csv yaml::yaml.load_file
+  utils::read.csv yaml::yaml.load_file
 
   Other IO-functions: \code{\link{batch_collect}},
   \code{\link{batch_opm_to_yaml}},
@@ -94,8 +97,7 @@ x <- read_opm(".")
   \code{\link{explode_dir}}, \code{\link{file_pattern}},
   \code{\link{opm_files}}, \code{\link{phylo_data}},
   \code{\link{read_single_opm}}, \code{\link{split_files}},
-  \code{\link{to_metadata}},
-  \code{\link{to_metadata,character}}
+  \code{\link{to_metadata}}
 }
 \keyword{IO}
 

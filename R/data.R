@@ -1,5 +1,6 @@
 
 ################################################################################
+################################################################################
 #
 # Descriptions of all datasets included in the package
 #
@@ -12,7 +13,7 @@
 #' conducted PM experiments. The plate type is \sQuote{Generation III}, but the
 #' running mode was as for PM plates. Four bacterial strains from two species
 #' were considered in the study. For the three publicly accessible ones, the 
-#' URLs of their DSMZ catalogue entries are given below.
+#' URLs of their DSMZ catalog entries are given below.
 #'
 #' @docType data
 #' @name vaas_et_al
@@ -37,6 +38,9 @@
 #' }
 #'
 NULL
+
+
+################################################################################
 
 
 #' Example dataset from Vaas et al. (2012), four selected plates
@@ -70,11 +74,14 @@ NULL
 NULL
 
 
+################################################################################
+
+
 #' Example dataset from Vaas et al. (2012), a single selected plate
 #'
-#' This \code{\link{OPMA}} object contains measurements from a selected plate
-#' from the study by Vaas et al. (2012). Metadata have been added to fully 
-#' describe the conducted PM experiments: this plate is the 6th technical
+#' This \code{\link{OPMA}} object contains measurements from a single selected 
+#' plate from the study by Vaas et al. (2012). Metadata have been added to 
+#' fully describe the conducted PM experiments: this plate is the 6th technical
 #' replicate from the first biological replicate for the strain 
 #' \emph{Escherichia coli} DSM30083T (yes, the type strain of \emph{E. coli}).
 #'
@@ -96,5 +103,7 @@ NULL
 #'
 NULL
 
+
+################################################################################
 
 

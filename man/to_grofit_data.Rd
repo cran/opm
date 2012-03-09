@@ -20,4 +20,5 @@
 \alias{to_grofit_data,OPM-method}
 \usage{
   \S4method{to_grofit_data}{OPM}(object) 
+
 }

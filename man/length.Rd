@@ -17,20 +17,18 @@ data(vaas_4)
 stopifnot(identical(x, 4L))
 }
 \seealso{
-  length
+  base::length
 
-  Other getter-functions: \code{\link{[}},
-  \code{\link{[,OPMA}}, \code{\link{[,OPMS}},
-  \code{\link{aggr_settings}}, \code{\link{aggregated}},
+  Other getter-functions: \code{\link{aggr_settings}},
+  \code{\link{aggregated}}, \code{\link{anyDuplicated}},
   \code{\link{csv_data}}, \code{\link{dim}},
-  \code{\link{dim,OPMS}}, \code{\link{filename}},
+  \code{\link{duplicated}}, \code{\link{filename}},
   \code{\link{has_aggr}}, \code{\link{hours}},
-  \code{\link{max}}, \code{\link{max,OPMS}},
-  \code{\link{measurements}}, \code{\link{metadata}},
-  \code{\link{minmax}}, \code{\link{minmax,OPMS}},
+  \code{\link{max}}, \code{\link{measurements}},
+  \code{\link{metadata}}, \code{\link{minmax}},
   \code{\link{plate_type}}, \code{\link{position}},
-  \code{\link{select}}, \code{\link{setup_time}},
-  \code{\link{summary}}, \code{\link{summary,OPMS}},
+  \code{\link{select}}, \code{\link{seq}},
+  \code{\link{setup_time}}, \code{\link{summary}},
   \code{\link{thin_out}}, \code{\link{well}},
   \code{\link{wells}}
 }
@@ -41,4 +39,5 @@ stopifnot(identical(x, 4L))
 \alias{length,OPMS-method}
 \usage{
   \S4method{length}{OPMS}(x) 
+
 }

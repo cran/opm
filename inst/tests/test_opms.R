@@ -83,6 +83,25 @@ test_that("read_opm can read three partially incompatible files", {
 
 ################################################################################
 #
+# Method presence
+#
+
+
+test_that("OPMS has all method of OPMA", {
+  m <- tryCatch(as.character(getGenerics("package:opm")),
+    error = function(e) character())
+  if (length(m)) {
+    opm.methods <- m[sapply(m, existsMethod, OPMA) | 
+      sapply(m, existsMethod, OPM) | sapply(m, existsMethod, WMD)]
+    opms.methods <- m[sapply(m, existsMethod, OPMS)]
+    expect_equal(character(), setdiff(opm.methods, opms.methods))
+    expect_true(length(setdiff(opms.methods, opm.methods)) > 0)
+  }
+})
+
+
+################################################################################
+#
 # Combination functions
 #
 
@@ -253,6 +272,9 @@ test_that("we can query information from the plates", {
 })
 
 
+## UNTESTED: oapply (see the example)
+
+
 ################################################################################
 #
 # Getter/setter functions for aggregated data
@@ -269,6 +291,10 @@ test_that("we can aggregate plates", {
   expect_is(ag.got, "list")
   expect_equal(length(ag.got), length(THIN.AGG))
   expect_true(all(sapply(ag.got, is.matrix)))  
+  set.got <- aggr_settings(THIN.AGG)
+  expect_is(set.got, "list")
+  expect_true(all(sapply(set.got, is.list)))
+  expect_true(all(sapply(set.got, function(x) names(x) == c(PROGRAM, OPTIONS))))
 })
 
 
@@ -372,7 +398,7 @@ test_that("we can query the metadata values with little-q", {
 test_that("we can query the metadata characters", {
   chars <- metadata_chars(OPMS.INPUT)
   expect_equal(chars, structure(ORGN, names = ORGN))
-  chars <- metadata_chars(OPMS.INPUT, coerce = "integer")
+  chars <- metadata_chars(OPMS.INPUT, classes = "integer")
   expect_equal(chars, structure(c(3L, 4L, ORGN), names = c(3L, 4L, ORGN)))
   chars <- metadata_chars(OPMS.INPUT, values = FALSE)
   expect_equal(chars, structure(c("organism", "run"), 
@@ -499,6 +525,16 @@ test_that("we can subset the plates based on the metadata", {
   expect_is(subset, "NULL")
 })
   
+
+test_that("we can subset based on common time points", {
+  expect_warning(x <- c(OPM.1[1:50, ], OPM.2))
+  expect_equal(as.vector(oapply(x, dim)), c(50L, 96L, 384L, 96L))
+  got <- select(x, time = TRUE)
+  expect_equal(as.vector(oapply(got, dim)), c(50L, 96L, 50L, 96L))
+  got <- select(x, use = "t")
+  expect_equal(as.vector(oapply(got, dim)), c(50L, 96L, 50L, 96L))
+})
+
 
 ################################################################################
 #
@@ -645,30 +681,31 @@ test_that("we can draw a heatmap", {
   mat.2 <- extract(THIN.AGG, as.labels = list("organism", "run"), 
     subset = "A", as.groups = list("organism"), dataframe = TRUE)
   
-  hm <- heat_map(mat, margins = c(5, 5))
+  hm <- heat_map(mat, margins = c(5, 5), use.fun = "stats")
   expect_is(hm, "list")
   expect_equal(NULL, hm$colColMap)
   expect_equal(names(hm$rowColMap), metadata(THIN.AGG, "organism"))
   
   # Data frame version
   hm.2 <- heat_map(mat.2, as.labels = c("organism", "run"), 
-    as.groups = "organism", margins = c(5, 5))
+    as.groups = "organism", margins = c(5, 5), use.fun = "stats")
   expect_equal(hm.2, hm)
   
   # Distance given as function or list
-  hm.2 <- heat_map(mat, distfun = dist, margins = c(5, 5))
+  hm.2 <- heat_map(mat, distfun = dist, margins = c(5, 5), use.fun = "stats")
   expect_equal(hm.2, hm)
   hm.2 <- heat_map(mat, distfun = list(method = "euclidean"), 
-    margins = c(5, 5))
+    margins = c(5, 5), use.fun = "stats")
   expect_equal(hm.2, hm)
   
   # Clustering function given in distinct ways
-  hm <- heat_map(mat, hclustfun = hclust, margins = c(5, 5))
+  hm <- heat_map(mat, hclustfun = hclust, margins = c(5, 5), use.fun = "stats")
   expect_false(identical(hm.2, hm))
-  hm.2 <- heat_map(mat, hclustfun = "complete", margins = c(5, 5))
+  hm.2 <- heat_map(mat, hclustfun = "complete", margins = c(5, 5), 
+    use.fun = "stats")
   expect_equal(hm, hm.2)
   hm.2 <- heat_map(mat, hclustfun = list(method = "complete"), 
-    margins = c(5, 5))
+    margins = c(5, 5), use.fun = "stats")
   expect_equal(hm, hm.2)
 
   # Column groups

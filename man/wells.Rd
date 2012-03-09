@@ -29,8 +29,8 @@
   remained.}
 
   \item{word.wise}{Logical scalar. If \code{TRUE},
-  abbrevation works by truncating each word separately, and
-  removing vowels first.}
+  abbreviation works by truncating each word separately,
+  and removing vowels first.}
 
   \item{paren.sep}{Character scalar. What to insert before
   the opening parenthesis (or bracket).}
@@ -55,21 +55,19 @@ data(vaas_1)
 stopifnot(nchar(x) < nchar(y), nchar(z) < nchar(y))
 }
 \seealso{
-  strtrim abbreviate
+  base::strtrim base::abbreviate
 
-  Other getter-functions: \code{\link{[}},
-  \code{\link{[,OPMA}}, \code{\link{[,OPMS}},
-  \code{\link{aggr_settings}}, \code{\link{aggregated}},
+  Other getter-functions: \code{\link{aggr_settings}},
+  \code{\link{aggregated}}, \code{\link{anyDuplicated}},
   \code{\link{csv_data}}, \code{\link{dim}},
-  \code{\link{dim,OPMS}}, \code{\link{filename}},
+  \code{\link{duplicated}}, \code{\link{filename}},
   \code{\link{has_aggr}}, \code{\link{hours}},
   \code{\link{length}}, \code{\link{max}},
-  \code{\link{max,OPMS}}, \code{\link{measurements}},
-  \code{\link{metadata}}, \code{\link{minmax}},
-  \code{\link{minmax,OPMS}}, \code{\link{plate_type}},
+  \code{\link{measurements}}, \code{\link{metadata}},
+  \code{\link{minmax}}, \code{\link{plate_type}},
   \code{\link{position}}, \code{\link{select}},
-  \code{\link{setup_time}}, \code{\link{summary}},
-  \code{\link{summary,OPMS}}, \code{\link{thin_out}},
+  \code{\link{seq}}, \code{\link{setup_time}},
+  \code{\link{summary}}, \code{\link{thin_out}},
   \code{\link{well}}
 }
 \keyword{attribute}
@@ -81,4 +79,5 @@ stopifnot(nchar(x) < nchar(y), nchar(z) < nchar(y))
   \S4method{wells}{OPM}(object, full = FALSE, in.parens = TRUE,
     max = 100L, brackets = FALSE, clean = TRUE, word.wise = FALSE,
     paren.sep = " ") 
+
 }

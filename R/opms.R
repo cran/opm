@@ -1,6 +1,7 @@
 
 
 ################################################################################
+################################################################################
 #
 # OPMS class: object construction functions
 #
@@ -42,6 +43,9 @@ setMethod("opms_problems", "list", function(object) {
 }, sealed = SEALED)
 
 
+################################################################################
+
+
 #' OPMS class
 #'
 #' Class for holding multi-plate OmniLog(R) phenotype microarray data with or
@@ -55,7 +59,7 @@ setMethod("opms_problems", "list", function(object) {
 #' @export
 #' @note As a rule, OPMS has the same methods as the \code{\link{OPM}} class,
 #'   but adapted to a collection of more than one \code{\link{OPM}} object.
-#'   Only the additional ones and those with special arguments and/or behaviours
+#'   Only the additional ones and those with special arguments and/or behaviors
 #'   are documented in detail. Also, OPMS can hold \code{\link{OPMA}} as well
 #'   as \code{\link{OPM}} objects, even though this is not indicated for all its
 #'   methods in this manual.
@@ -73,6 +77,9 @@ setClass(OPMS,
   },
   sealed = SEALED
 )
+
+
+################################################################################
 
 
 #' Initialize
@@ -94,6 +101,7 @@ setMethod("initialize", OPMS, function(.Object, ...) {
 
 
 ################################################################################
+################################################################################
 #
 # Combination functions
 #
@@ -101,174 +109,87 @@ setMethod("initialize", OPMS, function(.Object, ...) {
 
 #' Addition
 #'
-#' Combine two \code{\link{OPM}} objects to an \code{\link{OPMS}} object. Raise 
-#' an error if the two objects are incompatible.
+#' Combine an \code{\link{OPM}} or \code{\link{OPMS}} object with another
+#' \code{\link{OPM}} or \code{\link{OPMS}} object or a list of such objects.
+#' Raise an error if the objects are incompatible.
 #'
 #' @name plus
 #' @exportMethod "+"
 #'
-#' @param e1 \code{\link{OPM}} object.
-#' @param e2 \code{\link{OPM}} object.
+#' @param e1 \code{\link{OPM}} or \code{\link{OPMS}} object.
+#' @param e2 \code{\link{OPM}} or \code{\link{OPMS}} object, or list.
 #' @return \code{\link{OPMS}} object that contains the plates from both
 #'   \code{e1} and \code{e2}.
-#' @note See \sQuote{See Also} for the other \sQuote{+} methods of the class.
 #' @family combination-functions
-#' @seealso +
 #' @keywords manip
 #'
 #' @examples 
-#' data("vaas_1")
-#' x <- vaas_1 + vaas_1 # not particularly useful: adding identical plates!
+#'
+#' data(vaas_1)
+#' data(vaas_4)
+#' # the examples do not show particularly useful additions, as the plates
+#' # are either entirely or partially identical
+#'
+#' # OPM+OPM method
+#' x <- vaas_1 + vaas_1
 #' stopifnot(identical(dim(x), c(2L, dim(vaas_1))))
+#'
+#' # OPM+OPMS method
+#' x <- vaas_1 + vaas_4
+#' stopifnot(identical(dim(x), c(5L, dim(vaas_1))))
+#'
+#' # OPM+list method
+#' x <- vaas_1 + list(vaas_1, vaas_1)
+#' stopifnot(identical(dim(x), c(3L, dim(vaas_1))))
+#'
+#' # OPMS+OPMS method
+#' x <- vaas_4 + vaas_4
+#' stopifnot(identical(dim(x), c(8L, dim(vaas_4)[-1L])))
+#'
+#' # OPMS+OPM method
+#' x <- vaas_4 + vaas_1
+#' stopifnot(identical(dim(x), c(5L, dim(vaas_1))))
+#'
+#' # OPMS+list method
+#' x <- vaas_4 + list(vaas_1)
+#' stopifnot(identical(dim(x), c(5L, dim(vaas_1))))
 #'
 setMethod("+", c(OPM, OPM), function(e1, e2) {
   new(OPMS, plates = list(e1, e2))
 }, sealed = SEALED)
 
-
-#' Addition (OPM+OPMS version)
-#'
-#' Add an \code{\link{OPMS}} to an \code{\link{OPM}} object. Raise an error if  
-#' the two objects are incompatible.
-#'
-#' @name plus,OPM+OPMS
-#' @exportMethod "+"
-#'
-#' @param e1 \code{\link{OPM}} object.
-#' @param e2 \code{\link{OPMS}} object.
-#' @return \code{\link{OPMS}} object that contains the plates from both
-#'   \code{e1} and \code{e2}.
-#' @note See \sQuote{See Also} for the other \sQuote{+} methods of the class.
-#' @family combination-functions
-#' @seealso +
-#' @keywords manip
-#'
-#' @examples 
-#' data("vaas_1")
-#' data(vaas_4)
-#' # not particularly useful: adding partially identical plates!
-#' x <- vaas_1 + vaas_4
-#' stopifnot(identical(dim(x), c(5L, dim(vaas_1))))
+#' @export
 #'
 setMethod("+", c(OPM, OPMS), function(e1, e2) {
   new(OPMS, plates = c(list(e1), plates(e2)))
 }, sealed = SEALED)
 
-
-#' Addition (OPM+list version)
-#'
-#' Add a list of \code{\link{OPM}} objects to an \code{\link{OPM}} object.
-#' Raise an error if any of the contained \code{\link{OPM}} objects are not 
-#' compatible.
-#'
-#' @name plus,OPM+list
-#' @exportMethod "+"
-#'
-#' @param e1 \code{\link{OPM}} object.
-#' @param e2 List of \code{\link{OPM}} objects.
-#' @return \code{\link{OPMS}} object that contains the plates from both
-#'   \code{e1} and \code{e2}.
-#' @note See \sQuote{See Also} for the other \sQuote{+} methods of the class.
-#' @family combination-functions
-#' @seealso +
-#' @keywords manip
-#'
-#' @examples 
-#' data("vaas_1")
-#' # not particularly useful: adding identical plates!
-#' x <- vaas_1 + list(vaas_1, vaas_1)
-#' stopifnot(identical(dim(x), c(3L, dim(vaas_1))))
+#' @export
 #'
 setMethod("+", c(OPM, "list"), function(e1, e2) {
   new(OPMS, plates = c(list(e1), e2))
 }, sealed = SEALED)
 
-
-#' Addition (OPMS+OPMS version)
-#'
-#' Add two \code{\link{OPMS}} objects together. Raise an error if the two 
-#' are incompatible.
-#'
-#' @name plus,OPMS+OPMS
-#' @exportMethod "+"
-#'
-#' @param e1 \code{\link{OPMS}} object.
-#' @param e2 \code{\link{OPMS}} object.
-#' @return \code{\link{OPMS}} object that contains the plates from both
-#'   \code{e1} and \code{e2}.
-#' @note See \sQuote{See Also} for the other \sQuote{+} methods of the class.
-#' @family combination-functions
-#' @seealso +
-#' @keywords manip
-#'
-#' @examples 
-#' data(vaas_4)
-#' # not particularly useful: adding partially identical plates!
-#' x <- vaas_4 + vaas_4
-#' stopifnot(identical(dim(x), c(8L, dim(vaas_4)[-1L])))
+#' @export
 #'
 setMethod("+", c(OPMS, OPMS), function(e1, e2) {
   new(OPMS, plates = c(plates(e1), plates(e2)))
 }, sealed = SEALED)
 
-
-#' Addition (OPMS+OPM version)
-#'
-#' Add an \code{\link{OPM}} to an \code{\link{OPMS}} object. Raise an error if 
-#' the two objects are incompatible.
-#'
-#' @name plus,OPMS+OPM
-#' @exportMethod "+"
-#'
-#' @param e1 \code{\link{OPMS}} object.
-#' @param e2 \code{\link{OPM}} object.
-#' @return \code{\link{OPMS}} object that contains the plates from both
-#'   \code{e1} and \code{e2}.
-#' @note See \sQuote{See Also} for the other \sQuote{+} methods of the class.
-#' @family combination-functions
-#' @seealso +
-#' @keywords manip
-#'
-#' @examples 
-#' data("vaas_1")
-#' data(vaas_4)
-#' # not particularly useful: adding partially identical plates!
-#' x <- vaas_4 + vaas_1
-#' stopifnot(identical(dim(x), c(5L, dim(vaas_1))))
+#' @export
 #'
 setMethod("+", c(OPMS, OPM), function(e1, e2) {
   new(OPMS, plates = c(plates(e1), e2))
 }, sealed = SEALED)
 
-  
-#' Addition (OPMS+list version)
-#'
-#' Add a list of \code{\link{OPM}} objects to an \code{\link{OPMS}} object.  
-#' Raise an error if any of the contained objects are incompatible.
-#'
-#' @name plus,OPMS+list
-#' @exportMethod "+"
-#'
-#' @param e1 \code{\link{OPMS}} object.
-#' @param e2 List of \code{\link{OPM}} objects.
-#' @return \code{\link{OPMS}} object that contains the plates from both
-#'   \code{e1} and \code{e2}.
-#' @note See \sQuote{See Also} for the other \sQuote{+} methods of the class.
-#' @family combination-functions
-#' @keywords manip
-#'
-#' @examples 
-#' data("vaas_1")
-#' data(vaas_4)
-#' # not particularly useful: adding partially identical plates!
-#' x <- vaas_4 + list(vaas_1)
-#' stopifnot(identical(dim(x), c(5L, dim(vaas_1))))
+#' @export
 #'
 setMethod("+", c(OPMS, "list"), function(e1, e2) {
   new(OPMS, plates = c(plates(e1), e2))
 }, sealed = SEALED)
 
 
+################################################################################
 ################################################################################
 #
 # Getter functions
@@ -283,7 +204,7 @@ setMethod("+", c(OPMS, "list"), function(e1, e2) {
 #' @return Numeric scalar.
 #' @export
 #' @family getter-functions
-#' @seealso length
+#' @seealso base::length
 #' @keywords attribute
 #' @examples 
 #' data(vaas_4) 
@@ -295,30 +216,44 @@ setMethod("length", OPMS, function(x) {
 }, sealed = SEALED)
 
 
-#' Dimensions (OPMS versions)
-#'
-#' Get the dimensions of an \code{\link{OPMS}} object. Note that this function
-#' cannot be used to determine the correspondence of the time points between
-#' all plates as it reports only the time points of the first plate. Instead
-#' the \code{\link{OPMS}} version of \code{\link{hours}} must be used.
-#'
-#' @name dim,OPMS
-#'
-#' @param x \code{\link{OPMS}} object.
-#' @return Numeric vector with (i) number of contained \code{\link{OPM}}
-#'   objects, (ii) and (iii) dimensions of first plate. See \code{\link{dim}}.
+################################################################################
+
+
 #' @export
-#' @family getter-functions
-#' @seealso dim
-#' @keywords attribute
-#' @examples 
-#' data(vaas_4) 
-#' (x <- dim(vaas_4))
-#' stopifnot(identical(x, c(4L, 384L, 96L)))
 #'
 setMethod("dim", OPMS, function(x) {
   c(length(x@plates), dim(x@plates[[1L]]))
 }, sealed = SEALED)
+
+
+################################################################################
+
+
+setGeneric("seq")
+#' Sequence of plate indexes
+#'
+#' Get the indexes of all plates contained in an \code{\link{OPMS}} object. 
+#' This is mainly useful for looping over such objects. See \code{\link{[}} for
+#' a loop-construct usage example, and note that \code{\link{oapply}} is also
+#' available.
+#'
+#' @param ... \code{\link{OPMS}} objects. Only the first one is used.
+#' @return Integer vector (starting with 1 and at least of length 2).
+#' @export
+#' @family getter-functions
+#' @keywords attribute
+#' @seealso base::seq
+#' @examples 
+#' data(vaas_4)
+#' (x <- seq(vaas_4))
+#' stopifnot(identical(x, 1:4))
+#'
+setMethod("seq", OPMS, function(...) {
+  seq_along(..1@plates)
+}, sealed = SEALED)
+
+
+################################################################################
 
 
 setGeneric("plates", function(object, ...) standardGeneric("plates"))
@@ -331,7 +266,7 @@ setGeneric("plates", function(object, ...) standardGeneric("plates"))
 #' @export
 #' @family conversion-functions
 #' @keywords attribute
-#' @seealso list as.list
+#' @seealso base::list base::as.list
 #' @examples 
 #' data(vaas_4)
 #' x <- plates(vaas_4)
@@ -342,78 +277,30 @@ setMethod("plates", OPMS, function(object) {
 }, sealed = SEALED)
 
 
-#' Maximum (OPMS version)
-#'
-#' Maximum value of all wells or (a) specified one(s). This works by calling
-#' \code{\link{max}} on all plates and then determining the overall maximum.
-#'
-#' @name max,OPMS
-#'
-#' @param x \code{\link{OPMS}} object.
-#' @param ... Passed to to the eponymous method of the \code{\link{OPM}} 
-#'   class, \code{\link{max}}.
-#' @param na.rm Passed to to the eponymous method of the \code{\link{OPM}}
-#'   class, \code{\link{max}}.
-#' @return Single-element numeric vector.
+################################################################################
+
+
 #' @export
-#' @family getter-functions
-#' @seealso max
-#' @keywords attribute dplot
-#' @examples 
-#' data(vaas_4)                                          
-#' (x <- max(vaas_4))
-#' (y <- max(vaas_4, 1)) # this is the negative control
-#' stopifnot(x > y)
 #'
 setMethod("max", OPMS, function(x, ..., na.rm = FALSE) {
   max(sapply(x@plates, FUN = max, ..., na.rm = na.rm), na.rm = na.rm)
 }, sealed = SEALED)
 
 
-#' Smallest maximum (OPMS version)
-#'
-#' Get the smallest maximum among all wells of all plates stored in an
-#' \code{\link{OPMS}} object. This works by calling \code{\link{minmax}} on all
-#' plates and then determining the overall minimum.
-#'
-#' @name minmax,OPMS
-#'
-#' @param x \code{\link{OPMS}} object.
-#' @param ... See \code{\link{minmax}}.
-#' @param na.rm See \code{\link{max}}.
-#' @return Numeric scalar.
+################################################################################
+
+
 #' @export
-#' @family getter-functions
-#' @seealso min max
-#' @keywords attribute dplot
-#' @examples
-#' data(vaas_4)                                          
-#' (x <- max(vaas_4))
-#' (y <- minmax(vaas_4))
-#' stopifnot(x > y)
 #'
 setMethod("minmax", OPMS, function(x, ..., na.rm = FALSE) {
   min(sapply(x@plates, FUN = minmax, ..., na.rm = na.rm))
 }, sealed = SEALED)
 
 
-#' Summary (OPMS version)
-#'
-#' Print summary information to screen.
-#'
-#' @name summary,OPMS
-#'
-#' @param object \code{\link{OPMS}} object.
-#' @param ... See \code{\link{summary}}.
+################################################################################
+
+
 #' @export
-#' @return List of named lists (one per plate), returned invisibly.
-#' @family getter-functions
-#' @keywords attribute
-#' @seealso summary
-#' @examples 
-#' data(vaas_4)
-#' x <- summary(vaas_4)
-#' stopifnot(is.list(x), length(x) == 4L, all(sapply(x, is.list)))
 #'
 setMethod("summary", OPMS, function(object, ...) {
   invisible(lapply(seq_along(object@plates), FUN = function(idx) {
@@ -422,6 +309,111 @@ setMethod("summary", OPMS, function(object, ...) {
   }))
 }, sealed = SEALED)
 
+
+################################################################################
+
+
+setGeneric("oapply", function(object, ...) standardGeneric("oapply"))
+#' Apply method for OPMS objects
+#'
+#' Apply a function to all \code{\link{OPM}} or \code{\link{OPMA}} objects
+#' within an \code{\link{OPMS}} object. Optionally simplify the result to an
+#' \code{\link{OPMS}} object if possible, or other structures simpler than a 
+#' list.
+#'
+#' @param object \code{\link{OPMS}} object.
+#' @param fun A function. Should expect an  \code{\link{OPM}} (or 
+#'   \code{\link{OPMA}}) object as first argument.
+#' @param ... Optional other arguments passed to \code{fun}.
+#' @param simplify Logical scalar. If \code{FALSE}, the result is a list. If
+#'   \code{TRUE}, it is attempted to simplify the result to a vector or matrix
+#'   or to an \code{\link{OPMS}} object (if the result is a list of 
+#'   \code{\link{OPM}} or \code{\link{OPMA}} objects). If this is impossible,
+#'   a list is returned.
+#' @export
+#' @return List, vector, matrix or \code{\link{OPMS}} object.
+#' @family conversion-functions
+#' @keywords manip
+#' @seealso base::sapply
+#' @examples 
+#' data(vaas_4)
+#' x <- oapply(vaas_4, identity)
+#' stopifnot(identical(x, vaas_4))
+#' x <- oapply(vaas_4, identity, simplify = FALSE)
+#' stopifnot(is.list(x), length(x) == 4, sapply(x, class) == "OPMA")
+#'
+setMethod("oapply", OPMS, function(object, fun, ..., simplify = TRUE) {
+  result <- sapply(X = object@plates, FUN = fun, ..., simplify = simplify, 
+    USE.NAMES = FALSE)
+  if (simplify && is.list(result))
+    result <- try_opms(result)
+  result
+}, sealed = SEALED)
+
+
+################################################################################
+
+
+setGeneric("duplicated")
+#' Determine duplicated plates
+#'
+#' Check whether duplicated \code{\link{OPM}} or \code{\link{OPMA}} objects
+#' are contained within an \code{\link{OPMS}} object.
+#'
+#' @param x \code{\link{OPMS}} object.
+#' @param incomparables Vector of values that cannot be compared. See 
+#'   \code{duplicated} from the \pkg{base} package for details.
+#' @param ... Optional other arguments passed to that function.
+#' @export
+#' @return Logical vector.
+#' @family getter-functions
+#' @keywords attribute
+#' @examples 
+#' data(vaas_4)
+#' stopifnot(!duplicated(vaas_4))
+#' x <- vaas_4[c(1, 1)]
+#' stopifnot(c(FALSE, TRUE) == duplicated(x))
+#'
+setMethod("duplicated", OPMS, function(x, incomparables = FALSE, ...) {
+  duplicated(x = x@plates, incomparables = incomparables, ...)
+}, sealed = SEALED)
+
+
+################################################################################
+
+  
+setGeneric("anyDuplicated")
+#' Determine whether plates are duplicated
+#'
+#' Check whether duplicated \code{\link{OPM}} or \code{\link{OPMA}} objects
+#' are contained within an \code{\link{OPMS}} object.
+#'
+#' @param x \code{\link{OPMS}} object.
+#' @param incomparables Vector of values that cannot be compared. See 
+#'   \code{anyDuplicated} from the \pkg{base} package for details.
+#' @param fromLast Logical scalar. See  below and
+#'   \code{anyDuplicated} from the \pkg{base} package for details.
+#' @param ... Optional other arguments passed to that function.
+#' @export
+#' @return Integer scalar. \code{0} if no values are duplicated, the index of
+#'   the first or last (depending on \code{fromLast}) duplicated object 
+#'   otherwise.
+#' @family getter-functions
+#' @keywords attribute
+#' @examples 
+#' data(vaas_4)
+#' stopifnot(!anyDuplicated(vaas_4))
+#' x <- vaas_4[c(1, 1)]
+#' stopifnot(anyDuplicated(x) == 2)
+#'
+setMethod("anyDuplicated", OPMS, function(x, incomparables = FALSE, 
+    fromLast = FALSE, ...) {
+  anyDuplicated(x = x@plates, incomparables = incomparables, 
+    fromLast = fromLast, ...)
+}, sealed = SEALED)
+  
+
+################################################################################
 
 
 ## These are deliberately not defined for OPMS:
@@ -447,11 +439,13 @@ lapply(c(
 #
 lapply(c(
     aggregated,
+    aggr_settings,
     csv_data,
     has_aggr,
     hours,
     measurements,
     metadata,
+    filename,
     position,
     setup_time,
     well
@@ -460,8 +454,7 @@ lapply(c(
     simplify_conditionally <- function(x) { # instead of sapply()
       if (any(sapply(x, is.list)) || any(sapply(x, is.matrix)))
         return(x)
-      len <- unique(sapply(x, length))
-      if (length(len) > 1L)
+      if (length(len <- unique(sapply(x, length))) > 1L)
         return(x)
       if (len > 1L)
         do.call(rbind, x)
@@ -473,6 +466,7 @@ lapply(c(
 })
 
 
+################################################################################
 ################################################################################
 #
 # Setter functions
@@ -495,6 +489,7 @@ lapply(c(
 
 
 ################################################################################
+################################################################################
 #
 # Metadata functions (including the infix operators)
 # 
@@ -511,71 +506,10 @@ lapply(c("%k%", "%K%", "%q%", "%Q%"), FUN = function(func) {
 })
 
 
-#' Collect template (OPMS version)
-#'
-#' Collect a dataframe template assisting in later on adding metadata using 
-#' \code{\link{include_metadata}}. 
-#'
-#' @name collect_template,OPMS
-#'
-#' @param object \code{\link{OPMS}} object.
-#' @param ... Arguments passed to \code{\link{collect_template,OPM}}.
-#' @export
-#' @return Dataframe with one row per contained plate. The number of columns is
-#'   equal to the sum of the lengths of \code{selection} and \code{add.cols}.
-#' @family metadata-functions
-#' @keywords attribute
-#' @examples
-#' data(vaas_4)
-#' (x <- collect_template(vaas_4))
-#' stopifnot(identical(dim(x), c(4L, 3L)))
-#' (x <- collect_template(vaas_4, add.cols = c("A", "B")))
-#' stopifnot(identical(dim(x), c(4L, 5L)))
-#' # see include_metadata() for how to use this to add metadata information
-#'
-setMethod("collect_template", OPMS, function(object, ...) {
-  result <- lapply(object@plates, collect_template, ...)
-  do.call(rbind, result)
-}, sealed = SEALED)
+################################################################################
 
 
-#' Map metadata (OPMS version)
-#'
-#' This applies the eponymous \code{\link{OPM}} methods to all plates in turn
-#' and returns an \code{\link{OPMS}} object with accordingly modified 
-#' metadata.
-#'
-#' @name map_metadata,OPMS
-#'
-#' @param object \code{\link{OPMS}} object.
-#' @param mapping See \code{\link{map_metadata}} and 
-#'   \code{\link{map_metadata,WMD+function}} for possible values.
-#' @param ... Optional other argument passed to one of these two functions.
-#' @return \code{\link{OPMS}} object.
 #' @export
-#' @family metadata-functions    
-#' @keywords manip
-#' @examples 
-#'
-#' data(vaas_4)
-#' # using a function
-#' copy <- map_metadata(vaas_4, identity)
-#' stopifnot(identical(copy, vaas_4))
-#' copy <- map_metadata(vaas_4, identity, values = FALSE)
-#' stopifnot(identical(copy, vaas_4))
-#' copy <- map_metadata(vaas_4, function(x) paste(x, "!"), values = FALSE)
-#' (x <- metadata_chars(vaas_4, values = FALSE))
-#' (y <- metadata_chars(copy, values = FALSE))
-#' stopifnot(identical(as.character(y), paste(x, "!")))
-#'
-#' # using a character vector
-#' map <- metadata_chars(vaas_4)
-#' map["First replicate"] <- "Rep. 1"
-#' copy <- map_metadata(vaas_4, map)
-#' x <- metadata(vaas_4, "Experiment")
-#' stopifnot(x == "First replicate")
-#' y <- metadata(copy, "Experiment")
-#' stopifnot(y == "Rep. 1")
 #'
 setMethod("map_metadata", c(OPMS, "ANY"), function(object, mapping, ...) {
   object@plates <- lapply(object@plates, FUN = map_metadata, mapping = mapping,
@@ -584,31 +518,11 @@ setMethod("map_metadata", c(OPMS, "ANY"), function(object, mapping, ...) {
 }, sealed = SEALED)
 
 
-#' Replace metadata (OPMS version)
-#'
-#' Set the meta-information stored together with the measurements for all plates
-#' at once. This version replaces all metadata by its argument.
-#'
-#' @name metadata-set,OPMS+missing+list
-#' @aliases metadata<-,OPMS+missing+list
-#'
-#' @param object \code{\link{OPMS}} object.
-#' @param value List. Values to be set as metadata. Previous metadata, if any,
-#'   are replaced entirely by \code{value} for all plates.
-#' @return \code{value}.
-#' @exportMethod "metadata<-"
-#' @family metadata-functions
-#' @family setter-functions
-#' @note See \sQuote{See Also} for the other \sQuote{metadata<-} methods.
-#' @keywords manip
-#' @examples
-#' data(vaas_4)
-#' copy <- vaas_4
-#' (metadata(copy) <- list(x = -99))
-#' stopifnot(identical(unique(metadata(copy)), list(list(x = -99))))
-#' # See the metadata()<- methods of the WMD class for further examples. The 
-#' # OPMS version simply works by applying the mapping to each plate in the 
-#' # same way.
+################################################################################
+
+
+#' @name metadata.set
+#' @export
 #'
 setMethod("metadata<-", c(OPMS, "missing", "list"), function(object, value) {
   for (i in seq_along(object@plates))
@@ -616,37 +530,8 @@ setMethod("metadata<-", c(OPMS, "missing", "list"), function(object, value) {
   object    
 }, sealed = SEALED)
 
-
-#' Set metadata (OPMS version)
-#'
-#' Set specified or all meta-information stored together with the measurements
-#' of all plates at once. This version replaces specfied metadata or all by its
-#' \code{value} argument, details depending on the \code{key} argument.
-#'
-#' @name metadata-set,OPMS+ANY+ANY
-#' @aliases metadata<-,OPMS+ANY+ANY
-#'
-#' @param object \code{\link{OPMS}} object.
-#' @param key Any R object that is accepted as the \code{key} argument of one
-#'   of the eponymous methods of the \code{\link{OPM}} class. Must fit to the
-#'   type of \code{value}.
-#' @param value Any R object that is accepted as the \code{value} argument of 
-#'   one of the eponymous methods of the \code{\link{OPM}} class. Must fit to 
-#'   the type of \code{key}.
-#' @return \code{value}.
-#' @exportMethod "metadata<-"
-#' @family metadata-functions
-#' @family setter-functions
-#' @note See \sQuote{See Also} for the other \sQuote{metadata<-} methods.
-#' @keywords manip
-#' @examples
-#' data(vaas_4)
-#' copy <- vaas_4
-#' (metadata(copy, "Species") <- "Bacillus subtilis")
-#' stopifnot(identical(unique(metadata(copy, "Species")), "Bacillus subtilis"))
-#' # See the metadata()<- methods of the WMD class for further examples. The 
-#' # OPMS version simply works by applying the mapping to each plate in the 
-#' # same way.
+#' @name metadata.set
+#' @export
 #'
 setMethod("metadata<-", c(OPMS, "ANY", "ANY"), function(object, key, value) {
   for (i in seq_along(object@plates))
@@ -655,26 +540,10 @@ setMethod("metadata<-", c(OPMS, "ANY", "ANY"), function(object, key, value) {
 }, sealed = SEALED)
 
 
-#' Get metadata characters (OPMS version)
-#'
-#' This just applies \code{\link{metadata_chars}} to all plates in an 
-#' \code{\link{OPMS}} object in turn.
-#'
-#' @name metadata_chars,OPMS
-#'
-#' @param object \code{\link{OPMS}} object.
-#' @param ... Optional arguments to \code{\link{metadata_chars}}.
-#' @return Character vector, sorted and made unique over all plates, containing
-#'   itself as \code{names} attribute. See \code{\link{metadata_chars}} for 
-#'   further details.
+################################################################################
+
+
 #' @export
-#' @family metadata-functions
-#' @keywords attribute
-#' @examples 
-#' data(vaas_4)
-#' (x <- metadata_chars(vaas_4, values = TRUE)) # the values
-#' (y <- metadata_chars(vaas_4, values = FALSE)) # the keys
-#' stopifnot(length(x) > length(y))
 #'
 setMethod("metadata_chars", OPMS, function(object, ...) {
   result <- lapply(object@plates, FUN = metadata_chars, ...)
@@ -683,6 +552,7 @@ setMethod("metadata_chars", OPMS, function(object, ...) {
 }, sealed = SEALED)
 
 
+################################################################################
 ################################################################################
 #
 # Conversion functions: OPMS => lists.
@@ -695,6 +565,7 @@ setAs(from = OPMS, to = "list", function(from) {
 
 
 ################################################################################
+################################################################################
 #
 # Thinning out and subsetting
 #
@@ -703,63 +574,7 @@ setAs(from = OPMS, to = "list", function(from) {
 ## for thin_out() see above
 
 
-#' Select subset (OPMS version)
-#'
-#' Select a subset of the plates and/or the measurements of the individual
-#' plates. Simplify to \code{\link{OPM}} or \code{\link{OPMA}} object if only a
-#' single plate remains. This behaves like subsetting a three-dimensional array
-#' with plates as first dimension, time points as second, and wells as third.
-#'
-#' @rdname bracket-OPMS
-#' @exportMethod "["
-#' @name [,OPMS
-#'
-#' @param x \code{\link{OPMS}} object.
-#' @param i Numeric or logical vector. Position(s) of plate(s) or missing.
-#' @param j Passed as first argument to the eponymous method \code{\link{[}} of
-#'   the \code{\link{OPM}} class. See there for details. If \code{j} is a list,
-#'   its values are passed to the respective \code{\link{OPM}} object 
-#'   separately, allowing for individual choices of time points.
-#' @param ... Passed as second argument to that method (here \code{...} can
-#'   actually only comprise a single parameter).
-#' @param drop Logical scalar. Remove the aggregated values from contained
-#'   \code{\link{OPMA}} objects, if any?
-#' @return \code{NULL} or \code{\link{OPM}} or \code{\link{OPMS}} object
-#'   (depending on \code{i}).
-#' @family getter-functions
-#' @keywords manip
-#' @examples
-#'
-#' data(vaas_4)
-#'
-#' # simple function testing object identity
-#' mustbe <- function(a, b) stopifnot(identical(a, b))
-#' mustbe(dim(vaas_4), c(4L, 384L, 96L))
-#'
-#' # Create OPMS object with fewer plates (the first two ones)
-#' x <- vaas_4[1:2]
-#' mustbe(dim(x), c(2L, 384L, 96L))
-#'
-#' # If only a single plate is selected, this is reduced to OPM(A)
-#' x <- vaas_4[3]
-#' mustbe(dim(x), c(384L, 96L))
-#'
-#' # Create OPMS object with fewer time points (the first 100 in that case;
-#' # usually this would correspond to the first 25 hours)
-#' x <- vaas_4[, 1:100]
-#' mustbe(dim(x), c(4L, 100L, 96L))
-#'
-#' # Create OPMS object with fewer wells
-#' x <- vaas_4[, , 1:12]
-#' mustbe(dim(x), c(4L, 384L, 12L))
-#'
-#' # The same with well names
-#' x <- vaas_4[, , sprintf("A%02i", 1:12)] # this yields A01...A12
-#' mustbe(dim(x), c(4L, 384L, 12L))
-#'
-#' # Select all plates that have aggregated values
-#' x <- vaas_4[has_aggr(vaas_4)]
-#' mustbe(x, vaas_4) # all have such values!
+#' @export
 #'
 setMethod("[", OPMS, function(x, i, j, ..., drop = FALSE) {
   result <- x@plates[i]
@@ -771,15 +586,18 @@ setMethod("[", OPMS, function(x, i, j, ..., drop = FALSE) {
       result, j, SIMPLIFY = FALSE, USE.NAMES = FALSE)
   else
     result <- lapply(result, FUN = function(obj) obj[j, ..., drop = drop])
-  if (length(result) == 0L)
+  if ((len <- length(result)) == 0L)
     NULL
-  else if (length(result) == 1L)
+  else if (len == 1L)
     result[[1L]]
   else {
     x@plates <- result
     x
   }
 }, sealed = SEALED)
+
+
+################################################################################
 
 
 setGeneric("select", function(object, ...) standardGeneric("select"))
@@ -793,23 +611,23 @@ setGeneric("select", function(object, ...) standardGeneric("select"))
 #' @param query Logical, numeric or character vector, or list (other objects 
 #'   can be provided but are coerced to class \sQuote{character}). If a logical
 #'   or numeric vector, \code{query} is directly used as the first argument of
-#'   \code{\link{[,OPMS}}, and all following arguments, if any, are ignored.
+#'   \code{\link{[}}, and all following arguments, if any, are ignored.
 #'   If a list or a character vector, it is used for conducting a query based
 #'   on one of the infix operators as described below.
 #' @param values Logical scalar. If \code{TRUE}, the values of \code{query}
-#'   are also considered (by using \code{\link{infix-q}} or 
-#'   \code{\link{infix-largeq}}). If \code{FALSE} only the keys are considered 
+#'   are also considered (by using \code{\link{infix.q}} or 
+#'   \code{\link{infix.largeq}}). If \code{FALSE} only the keys are considered 
 #'   (by using 
-#'   \code{\link{infix-k}}). That is, choose either the plates for which 
+#'   \code{\link{infix.k}}). That is, choose either the plates for which 
 #'   certain metadata entries contain certain values, or choose the plates
 #'   for which these metadata have been set at all (to some arbitrary value).
-#'   See the mentioned functions for details, and note the special behaviour if
+#'   See the mentioned functions for details, and note the special behavior if
 #'   \code{query} is a character vector and \code{values} is \code{FALSE}.
 #' @param invert Logical scalar. If \code{TRUE}, return the plates for which 
 #'   the condition is not \code{TRUE}.
 #' @param exact Logical scalar. If the values of \code{query} are considered,
-#'   should this be done using \code{\link{infix-q}} (when \code{FALSE}) or
-#'   \code{\link{infix-largeq}} (when \code{TRUE})? See these functions and
+#'   should this be done using \code{\link{infix.q}} (when \code{FALSE}) or
+#'   \code{\link{infix.largeq}} (when \code{TRUE})? See these functions and
 #'   \code{\link{contains}}  for details.
 #' @param time Logical scalar. If \code{TRUE}, all other arguments are ignored
 #'   and the object is reduced to a common subset of time point (measurement
@@ -821,11 +639,11 @@ setGeneric("select", function(object, ...) standardGeneric("select"))
 #'   selection, overriding \code{values} and \code{exact}.
 #' @export
 #' @return \code{NULL} or \code{\link{OPM}} or \code{\link{OPMS}} object. This
-#'   depends on how many plates are selected; see \code{\link{[,OPMS}} for
-#'   details.
+#'   depends on how many plates are selected; see \code{\link{[}} for details.
+#'   
 #' @family getter-functions
 #' @keywords manip
-#' @seealso [ [[ subset
+#' @seealso base::`[` base::`[[` base::subset
 #' @examples 
 #'
 #' data(vaas_4)
@@ -837,7 +655,7 @@ setGeneric("select", function(object, ...) standardGeneric("select"))
 #' mustbe(vaas_4, select(vaas_4, list(Species = "Escherichia coli"), 
 #'   values  = FALSE)) # equivalent
 #'
-#' # two plates also have that value: yielding OPMS object woth only two plates
+#' # two plates also have that value: yielding OPMS object with only two plates
 #' mustbe(vaas_4[1:2], vaas_4[list(Species = "Escherichia coli") %q% vaas_4, ])
 #' mustbe(vaas_4[1:2], select(vaas_4, list(Species = "Escherichia coli")))
 #'
@@ -854,6 +672,7 @@ setGeneric("select", function(object, ...) standardGeneric("select"))
 #' # now restrict to common subset
 #' x <- select(copy, time = TRUE)
 #' mustbe(hours(x), rep(2.25, 4))
+#' # see also the example with split() given under "["
 #' 
 setMethod("select", OPMS, function(object, query, values = TRUE,
     invert = FALSE, exact = FALSE, time = FALSE, 
@@ -876,8 +695,7 @@ setMethod("select", OPMS, function(object, query, values = TRUE,
     tp <- hours(object, what = "all")
     if (is.matrix(tp))
       tp <- lapply(seq.int(nrow(tp)), function(i) tp[i, ])
-    maxs <- unique(sapply(tp, max))
-    if (length(maxs) < 2L)
+    if (length(maxs <- unique(sapply(tp, max))) < 2L)
       return(object)
     min.max <- min(maxs)
     tp <- lapply(tp, function(x) which(x <= min.max))
@@ -900,6 +718,7 @@ setMethod("select", OPMS, function(object, query, values = TRUE,
 }, sealed = SEALED)
 
 
+################################################################################
 ################################################################################
 #
 # Extraction of character matrices
@@ -935,7 +754,7 @@ setGeneric("extract_columns",
 #' @family conversion-functions
 #' @family metadata-functions
 #' @keywords dplot manip
-#' @seealso data.frame as.data.fram cbind
+#' @seealso base::data.frame base::as.data.frame base::cbind
 #' @examples 
 #' data(vaas_4)
 #'
@@ -960,8 +779,8 @@ setMethod("extract_columns", OPMS, function(object, what, join = FALSE,
   result <- lapply(result, FUN = rapply, f = as.character)
   if (join) {
     labels <- unlist(lapply(result, FUN = paste, collapse = sep))
-    msg <- if (any(is.dup <- duplicated(labels)))
-      paste("duplicated label:", labels[is.dup][1L])
+    msg <- if (is.dup <- anyDuplicated(labels))
+      paste("duplicated label:", labels[is.dup])
     else
       NULL
     if (!is.null(msg))
@@ -976,6 +795,9 @@ setMethod("extract_columns", OPMS, function(object, what, join = FALSE,
     tryCatch(as.data.frame(do.call(rbind, result)),
       warning = function(w) stop(w$message))
 }, sealed = SEALED)
+
+
+################################################################################
 
 
 setGeneric("extract", function(object, ...) standardGeneric("extract"))
@@ -1012,7 +834,7 @@ setGeneric("extract", function(object, ...) standardGeneric("extract"))
 #' @export
 #' @return Numeric matrix or dataframe.
 #' @family conversion-functions
-#' @seealso data.frame as.data.frame matrix as.matrix
+#' @seealso base::data.frame base::as.data.frame base::matrix base::as.matrix
 #' @keywords manip dplot
 #' @examples 
 #' data(vaas_4)
@@ -1098,67 +920,38 @@ setMethod("extract", OPMS, function(object, as.labels, subset = "A",
 
 
 ################################################################################
+################################################################################
 #
 # CI plot methods
 #
 
 
 setGeneric("ci_plot", function(object, ...) standardGeneric("ci_plot"))
-#' Plot aggregated values
-#'
-#' Compare aggregated values with their confidence intervals between plates.
-#' This function can in most cases \strong{not} be applied to entire plates but
-#' to selected wells only.
-#'
-#' @name ci_plot,OPMS
-#'
-#' @param object \code{\link{OPMS}} object. It is in most cases necessary to
-#'   restrict the plates at most about one dozen wells. See 
-#'   \code{\link{[,OPMS}} for how to achieve this.
-#' @param as.labels List. Metadata to be joined and used to draw a legend.
-#'   Ignored if \code{NULL}.
-#' @param subset Character scalar. The parameter to plot. Only a single one
-#'   can be selected. See \code{\link{param_names}} for the options.
-#' @param ... Passed to \code{\link{ci_plot}}.
-#' @export
-#' @return See \code{\link{ci_plot}}.
-#' @seealso plot
-#' @family plotting-functions
-#' @keywords hplot
-#' @references Vaas LAI, Sikorski J, Michael V, Goeker M, Klenk H-P. 
-#'   Visualization and curve parameter estimation strategies for efficient 
-#'   exploration of Phenotype Microarray kinetics. PLoS ONE 2012; in press.
-#' @examples 
-#'
-#' data(vaas_4)
-#'
-#' # most of the parameters used here are explained under the data.frame
-#' # method of ci_plot()
-#' x <- ci_plot(vaas_4[, , 1:3], as.labels = list("Species", "Strain"),
-#'    subset = "A", x = "bottomright", legend.field = NULL)
-#' # note that the values on the y axes are drawn to scale
-#' x
-#' stopifnot(is.character(x), identical(length(x), 4L))
-#' # ... and that the return value contains the legend (even if it is not drawn)
-#'
-setMethod("ci_plot", OPMS, function(object, as.labels, subset = "A", ...) {
-  ci_plot(extract(object, as.labels = as.labels, subset = subset,
-    dataframe = TRUE, ci = TRUE), ...)
-}, sealed = SEALED)
-
-
 #' Plot point estimates with CIs
 #'
-#' Draw point estimates with their confidence intervals. This is not normally
-#' directly called by an\pkg{opm} user because \code{\link{ci_plot,OPMS}} is
-#' available. The graphical parameters are described here, however.
+#' Draw point estimates with their confidence intervals. The dataframe method
+#' is not normally directly called by an \pkg{opm} user but via the 
+#' \code{\link{OPMS}} method. This one is used for comparing aggregated values
+#' together with their confidence intervals between plates. This method can in
+#' most cases \strong{not} be applied to entire plates but to selected wells 
+#' only.
 #'
-#' @param object Dataframe as exported by \code{\link{extract}} with \code{ci}
+#' @param object Dataframe or \code{\link{OPMS}} object. If an 
+#'   \code{\link{OPMS}} object, it is in most cases necessary to restrict
+#'   the plates to at most about one dozen wells. See \code{\link{[}}
+#'   for how to achieve this. The dataframe should be as exported by 
+#'   \code{\link{extract}} with \code{ci}
 #'   set to \code{TRUE}. There must be a column named \sQuote{Parameter}
 #'   followed by columns with only numeric values. Columns before the
 #'   \sQuote{Parameter} column, if any, are used for grouping. The rows must
 #'   entirely comprise triplets representing (i) the point estimate, (ii)
 #'   the lower and (iii) the upper confidence interval.
+#'
+#' @param as.labels List. Metadata to be joined and used to draw a legend.
+#'   Ignored if \code{NULL}.
+#' @param subset Character scalar. The parameter to plot. Only a single one
+#'   can be selected. See \code{\link{param_names}} for the options.
+#'
 #' @param rowname.sep Character scalar. Used when joining explanatory columns
 #'   into row labels of the plots.
 #'
@@ -1184,7 +977,8 @@ setMethod("ci_plot", OPMS, function(object, as.labels, subset = "A", ...) {
 #' @param x Legend position, passed to \code{legend} from the \pkg{graphics}
 #'   package. Ignored unless \code{draw.legend} is \code{TRUE}.
 #' @param xpd Logical scalar. Also passed to that function.
-#' @param ... Optional other arguments passed to that function.
+#' @param ... Optional other arguments passed to that function, or arguments
+#'   passed from the \code{\link{OPMS}} method to the dataframe method.
 #'
 #' @note \itemize{
 #'  \item The default placement of the legend is currently not necessarily very
@@ -1194,13 +988,26 @@ setMethod("ci_plot", OPMS, function(object, as.labels, subset = "A", ...) {
 #'     is recommended to plot only subsets of plates, i.e. selected wells.
 #'  }
 #'
+#' @references Vaas LAI, Sikorski J, Michael V, Goeker M, Klenk H-P. 
+#'   Visualization and curve parameter estimation strategies for efficient 
+#'   exploration of Phenotype Microarray kinetics. PLoS ONE 2012; in press.
+#'
 #' @return Character vector describing the plot's legend, returned invisibly.
 #' @family plotting-functions
-#' @seealso plot
+#' @seealso graphics::plot
 #' @keywords hplot
 #' @examples
-#' # This function is usually called via the OPMS method ci_plot(); see
-#' # there for examples.
+#'
+#' data(vaas_4)
+#'
+#' # most of the parameters used here are explained under the data.frame
+#' # method of ci_plot()
+#' x <- ci_plot(vaas_4[, , 1:3], as.labels = list("Species", "Strain"),
+#'    subset = "A", x = "bottomright", legend.field = NULL)
+#' # note that the values on the y axes are drawn to scale
+#' x
+#' stopifnot(is.character(x), identical(length(x), 4L))
+#' # ... and that the return value contains the legend (even if it is not drawn)
 #'
 setMethod("ci_plot", "data.frame", function(object, rowname.sep = " ", 
     prop.offset = 0.04, align = "center", col = "blue", na.action = "warn",
@@ -1272,38 +1079,22 @@ setMethod("ci_plot", "data.frame", function(object, rowname.sep = " ",
 
 }, sealed = SEALED)
 
-    
+#' @export
+#'
+setMethod("ci_plot", OPMS, function(object, as.labels, subset = "A", ...) {
+  ci_plot(extract(object, as.labels = as.labels, subset = subset,
+    dataframe = TRUE, ci = TRUE), ...)
+}, sealed = SEALED)
+
+
+################################################################################
 ################################################################################
 #
 # XY plot and level plot, and their helper functions
 #
 
 
-#' Flatten matrix (OPMS version)
-#'
-#' Convert into \sQuote{flat} dataframe, including all measurements in a
-#' single column (suitable for \pkg{lattice}).
-#'
-#' @name flatten,OPMS
-#'
-#' @param object \code{\link{OPMS}} object.
-#' @param include See \code{\link{flatten}}.
-#' @param fixed See \code{\link{flatten}}.
-#' @param ... Parameters passed to \code{\link{flatten}}.
 #' @export
-#' @return Dataframe. See \code{\link{flatten}}. An additional column name is
-#'   \sQuote{Plate}, which contains each plate's number within \code{object}.
-#' @family conversion-functions
-#' @keywords manip dplot
-#' @seealso reshape
-#' @examples
-#' data(vaas_4)
-#' x <- flatten(vaas_4)
-#' stopifnot(is.data.frame(x), identical(dim(x), c(147456L, 4L)))
-#' x <- flatten(vaas_4, fixed = "TEST")
-#' stopifnot(is.data.frame(x), identical(dim(x), c(147456L, 5L)))
-#' x <- flatten(vaas_4, fixed = "TEST", include = "Strain")
-#' stopifnot(is.data.frame(x), identical(dim(x), c(147456L, 6L)))
 #'
 setMethod("flatten", OPMS, function(object, include = NULL, fixed = list(),
     ...) {
@@ -1313,6 +1104,9 @@ setMethod("flatten", OPMS, function(object, include = NULL, fixed = list(),
       fixed = c(list(Plate = plate.num), fixed), ...)
   }, object@plates, plate.nums, SIMPLIFY = FALSE))
 }, sealed = SEALED)
+
+
+################################################################################
 
 
 setGeneric("flattened_to_factor", 
@@ -1341,102 +1135,10 @@ setMethod("flattened_to_factor", "data.frame", function(object, sep = " ") {
 }, sealed = SEALED)
   
 
-#' XY plot (OPMS version)
-#'
-#' Customized plotting of multiple PM plates, using \code{xyplot} from
-#' \pkg{lattice}. The optimal number of rows and columns is estimated from the
-#' number of selected wells. An optimal font size of the panel headers is also
-#' chosen automatically, but can also be adapted by the user, much like most
-#' aspects of the resulting graphics output. If metadata are selected, curve
-#' colors are determined according to the combinations of these metadata
-#' entries, otherwise each plate gets its own color.
-#'
-#' @name xy_plot,OPMS
-#'
-#' @param x \code{\link{OPMS}} object.
-#'
-#' @param col Line color. Either a character vector with color codes or one of
-#'   the arguments of \code{\link{select_colors}} (for picking one of the
-#'   predefined color sets). It is an error if fewer colors are chosen than the
-#'   number of plate grouping levels (see the \code{...} argument below). For 
-#'   user-chosen color sets, keep in mind that the sets are not checked for 
-#'   duplicates. See \code{\link{max_rgb_contrast}} as a method for optimally 
-#'   arranging user-defined colors.
-#' @param lwd Numeric scalar determining the line width.
-#'
-#' @param neg.ctrl Determine the height of a horizontal baseline drawn in each
-#'   panel. If \code{NULL} or \code{FALSE}, no baseline will be drawn. If
-#'   \code{TRUE}, the baseline's height is the value of \code{\link{minmax}}.
-#'   If a character scalar, \code{neg.ctrl} is interpreted as the name of the
-#'   wells regarded as negative control, and the baseline's height becomes the 
-#'   value of \code{\link{minmax}} applied to these wells only. Set
-#'   \code{neg.ctrl} to a numeric value for assigning the height directly.
-#' @param base.col Character scalar. Baseline color (ignored if no baseline is
-#'   drawn).
-#' @param base.lwd Numeric scalar determining the width of the baseline
-#'   (ignored if no baseline is drawn).
-#'
-#' @param main The settings controlling the construction of the main title.
-#'   Works like the \code{main} argument of \code{\link{xy_plot}}.
-#' @param xlab Character scalar. Title of x-axis. Use \code{NULL} to turn it
-#'   off.
-#' @param ylab Character scalar. Title of y-axis. Use \code{NULL} to turn it
-#'   off.
-#'
-#' @param theor.max Logical scalar. Use the theoretical maximum as maximum of
-#'   the y-axis? If \code{FALSE}, use the empirical maximum with a small 
-#'   offset.
-#'
-#' @param draw.grid Logical scalar. Insert background grid?
-#'
-#' @param space Character scalar indicating the position of the legend; either
-#'   \sQuote{top}, \sQuote{bottom}, \sQuote{left} or \sQuote{right}. Might be
-#'   overwritten by \code{legend.fmt}.
-#'
-#' @param strip.fmt List controlling the format of the description strip above
-#'   each panel. For instance, the background color is set using the \sQuote{bg}
-#'   key. For further details, see \code{strip.custom} from the \pkg{lattice}
-#'   package.
-#' @param striptext.fmt List controlling the textual description at the top of
-#'   each panel. Works like the \code{striptext.fmt} argument of 
-#'   \code{\link{xy_plot}}.
-#'
-#' @param legend.fmt List controlling where and how to draw the legend. The
-#'   content of the legend (mainly a description of the assigment of the colors
-#'   to the curves) is determined automatically. See argument \sQuote{key} of
-#'   \code{xyplot} from the \pkg{lattice} package for details.
-#' @param legend.sep Character scalar. Relevant only if more than one columns
-#'   of metadata have been selected; will then be used as separator to join
-#'   their names in the legend.
-#' @param draw.legend Logical scalar. If \code{FALSE}, no legend is drawn, and
-#'   the two aforementioned arguments are ignored.
-#'
-#' @param ... Arguments that are passed to \code{\link{flatten,OPMS}}.
-#'   Particularly important is \code{include}: the selected metadata are joined
-#'   into a single factor, and the assignment of plates to this factor's levels
-#'   determines the curve color for each plate. That is, each combination of
-#'   metadata entries as chosen using \code{include} yields one color. If no
-#'   metadata are selected (the default), each plate gets a color of its own.
-#'
+################################################################################
+
+
 #' @export
-#' @seealso lattice::xyplot
-#' @family plotting-functions
-#' @return An object of class \sQuote{trellis}. See \code{xyplot} from the
-#'   \pkg{lattice} package for details.
-#' @keywords hplot
-#' @references Sarkar D. Lattice: Multivariate Data Visualization with R. 2008;
-#'   New York: Springer, 265p.
-#' @references Vaas LAI, Sikorski J, Michael V, Goeker M, Klenk H-P. 
-#'   Visualization and curve parameter estimation strategies for efficient 
-#'   exploration of Phenotype Microarray kinetics. PLoS ONE 2012; in press.
-#'
-#' @examples 
-#' data(vaas_4)  
-#' # Color by species and strain; note default main title
-#' xy_plot(vaas_4, include = c("Species", "Strain"))
-#' # Use the largest of the negative-control maxima as baseline
-#' xy_plot(vaas_4, include = c("Species", "Strain"), 
-#'   neg.ctrl = max(vaas_4, "A01"))
 #'
 setMethod("xy_plot", OPMS, function(x, col = "nora", lwd = 1,
     neg.ctrl = "A01", base.col = "black", base.lwd = lwd,
@@ -1450,10 +1152,7 @@ setMethod("xy_plot", OPMS, function(x, col = "nora", lwd = 1,
   
   # Setup
   layout <- best_layout(dim(x)[3L])
-  y.max <- if (theor.max)
-    THEOR_MAX
-  else
-    improved_max(x)
+  y.max <- improved_max(x, theor.max)
   main <- main_title(x, main)
   neg.ctrl <- negative_control(x, neg.ctrl)
 
@@ -1513,59 +1212,10 @@ setMethod("xy_plot", OPMS, function(x, col = "nora", lwd = 1,
 }, sealed = SEALED)
 
 
-#' Levelplot (OPMS version)
-#'
-#' Levelplot for \code{\link{OPMS}} objects using the \pkg{lattice} package.
-#'
-#' @name level_plot,OPMS
-#'
-#' @param x \code{\link{OPMS}} object.
-#'
-#' @param main The settings controlling the construction of the main title.
-#'   Works like the \code{main} argument of \code{\link{xy_plot}}.
-#' @param colors See \code{\link{level_plot}}.
-#'
-#' @param panel.headers \code{NULL}, logical scalar, expression or character
-#'   vector. \code{NULL} and \code{FALSE} turn panel headers off. \code{TRUE}
-#'   causes the panel headers to be constructed from the plate numbers or those
-#'   metadata that were included by \code{\link{flatten}} (see there).
-#'   Character vectors and expressions are directly used for the text within 
-#'   these panel headers.
-#' @param cex See \code{\link{level_plot}}.
-#' @param strip.fmt List controlling the format of the description strip above
-#'   each panel. For instance, the background color is set using the \sQuote{bg}
-#'   key. For further details, see \code{strip.custom} from the \pkg{lattice}
-#'   package. \code{strip.fmt} is ignored if panel.headers is \code{FALSE}.
-#' @param striptext.fmt List controlling the format of the text within the
-#'   strip above each panel. See \code{\link{xy_plot}} for details, which has
-#'   an argument of the same name.
-#' @param legend.sep Character scalar. This works like the eponymous argument
-#'   to \code{\link{flatten}} (see there); it is ignored unless metadata are
-#'   chosen for constructing the panel headers.
-#'
-#' @param ... Arguments that are passed to \code{\link{flatten,OPMS}}.
-#'
+################################################################################
+
+
 #' @export
-#' @seealso lattice::levelplot
-#' @return An object of class \sQuote{trellis}. See \code{levelplot} from the
-#'   \pkg{lattice} package for details.
-#' @references Jacobsen JS, Joyner DC, Borglin SE, Hazen TC, Arkin AP et al. 
-#'   Visualization of growth curve data from phenotype microarray experiments.
-#'   2007; 11th International Conference on Information Visualization (IV07), 
-#'   Zurich, Switzerland, July 4-6, 2007. Published by the IEEE Computer 
-#'   Society.
-#' @references Sarkar D. Lattice: Multivariate Data Visualization with R. 2008;
-#'    New York: Springer, 265p.
-#' @references Vaas LAI, Sikorski J, Michael V, Goeker M, Klenk H-P. 
-#'   Visualization and curve parameter estimation strategies for efficient 
-#'   exploration of Phenotype Microarray kinetics. PLoS ONE 2012; in press.
-#' @family plotting-functions
-#' @keywords hplot
-#'
-#' @examples 
-#' data(vaas_4)  
-#' # headers include species and strain
-#' level_plot(vaas_4, include = c("Species", "Strain"))
 #'
 setMethod("level_plot", OPMS, function(x, main = list(),
     colors = NULL, panel.headers = TRUE, cex = NULL, strip.fmt = list(),
@@ -1592,5 +1242,8 @@ setMethod("level_plot", OPMS, function(x, main = list(),
     par.strip.text = as.list(striptext.fmt),
     scales = list(cex = cex, lineheight = 10))
 }, sealed = SEALED)
+
+
+################################################################################
 
 

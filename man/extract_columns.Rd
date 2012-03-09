@@ -56,29 +56,19 @@ stopifnot(is(x, "try-error"))
 stopifnot(is.character(x), length(x) == 4L)
 }
 \seealso{
-  data.frame as.data.fram cbind
+  base::data.frame base::as.data.frame base::cbind
 
   Other conversion-functions: \code{\link{extract}},
-  \code{\link{flatten}}, \code{\link{flatten,OPMS}},
+  \code{\link{flatten}}, \code{\link{oapply}},
   \code{\link{plates}}, \code{\link{to_yaml}}
 
   Other metadata-functions: \code{\link{collect_template}},
-  \code{\link{collect_template,OPM}},
-  \code{\link{collect_template,OPMS}},
   \code{\link{include_metadata}},
-  \code{\link{map_metadata}},
-  \code{\link{map_metadata,OPMS}},
-  \code{\link{map_metadata,WMD+function}},
-  \code{\link{metadata}}, \code{\link{metadata-set}},
-  \code{\link{metadata-set,OPMS+ANY+ANY}},
-  \code{\link{metadata-set,OPMS+missing+list}},
-  \code{\link{metadata-set,WMD+character+ANY}},
-  \code{\link{metadata-set,WMD+list+list}},
-  \code{\link{metadata-set,WMD+numeric+list}},
-  \code{\link{metadata_chars}},
-  \code{\link{metadata_chars,OPMS}},
-  \code{\link{to_metadata}},
-  \code{\link{to_metadata,character}}
+  \code{\link{map_metadata}}, \code{\link{metadata}},
+  \code{\link{metadata.set}}, \code{\link{metadata.set}},
+  \code{\link{metadata.set}}, \code{\link{metadata.set}},
+  \code{\link{metadata.set}}, \code{\link{metadata.set}},
+  \code{\link{metadata_chars}}, \code{\link{to_metadata}}
 }
 \keyword{dplot}
 \keyword{manip}
@@ -90,4 +80,5 @@ stopifnot(is.character(x), length(x) == 4L)
   \S4method{extract_columns}{OPMS}(object, what, join = FALSE,
     sep = " ", dups = c("warn", "error", "ignore"), exact = TRUE, 
     strict = TRUE) 
+
 }

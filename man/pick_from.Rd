@@ -23,4 +23,5 @@
 \alias{pick_from,data.frame-method}
 \usage{
   \S4method{pick_from}{data.frame}(object, selection) 
+
 }

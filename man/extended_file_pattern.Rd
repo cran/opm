@@ -22,7 +22,7 @@
   Create regexp matching certain file extensions.
 }
 \seealso{
-  file_ext
+  tools::file_ext
 }
 \keyword{internal}
 

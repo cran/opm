@@ -38,13 +38,10 @@ x <- c(vaas_4, vaas_1)
 stopifnot(identical(dim(x), c(5L, dim(vaas_1))))
 }
 \seealso{
-  c
+  base::c
 
   Other combination-functions: \code{\link{opms}},
-  \code{\link{plus}}, \code{\link{plus,OPM+OPMS}},
-  \code{\link{plus,OPM+list}}, \code{\link{plus,OPMS+OPM}},
-  \code{\link{plus,OPMS+OPMS}},
-  \code{\link{plus,OPMS+list}}
+  \code{\link{plus}}
 }
 \keyword{manip}
 
@@ -53,4 +50,5 @@ stopifnot(identical(dim(x), c(5L, dim(vaas_1))))
 \alias{c,OPMX-method}
 \usage{
   \S4method{c}{OPMX}(x, ..., recursive = FALSE) 
+
 }

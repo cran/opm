@@ -26,4 +26,5 @@
 \usage{
   \S4method{try_opms}{list}(object, precomputed = TRUE,
     skip = FALSE) 
+
 }

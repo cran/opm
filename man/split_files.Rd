@@ -4,7 +4,8 @@
 \usage{
   split_files(files, pattern, outdir = "", demo = FALSE,
     single = TRUE, wildcard = FALSE, invert = FALSE,
-    format = "\%s-\%05i.\%s", compressed = TRUE, ...)
+    include = TRUE, format = "\%s-\%05i.\%s",
+    compressed = TRUE, ...)
 }
 \arguments{
   \item{files}{Character vector or convertible to such.
@@ -43,6 +44,9 @@
   \item{invert}{Logical scalar. Invert pattern matching,
   i.e. treat all lines that \strong{not} match
   \code{pattern} as separators?}
+
+  \item{include}{Logical scalar. Also include the separator
+  lines in the output files?}
 
   \item{format}{Character scalar determining the outfile
   name format. It is passed to \code{sprintf} and expects
@@ -95,7 +99,7 @@ if (length(x) > 0) {
 ## This is used by the run_opm.R script
 }
 \seealso{
-  split strsplit
+  base::split base::strsplit
 
   Other IO-functions: \code{\link{batch_collect}},
   \code{\link{batch_opm_to_yaml}},
@@ -105,8 +109,7 @@ if (length(x) > 0) {
   \code{\link{explode_dir}}, \code{\link{file_pattern}},
   \code{\link{opm_files}}, \code{\link{phylo_data}},
   \code{\link{read_opm}}, \code{\link{read_single_opm}},
-  \code{\link{to_metadata}},
-  \code{\link{to_metadata,character}}
+  \code{\link{to_metadata}}
 }
 \keyword{utilities}
 

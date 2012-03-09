@@ -16,7 +16,7 @@
   \code{\link{OPM}} class, but adapted to a collection of
   more than one \code{\link{OPM}} object.  Only the
   additional ones and those with special arguments and/or
-  behaviours are documented in detail. Also, OPMS can hold
+  behaviors are documented in detail. Also, OPMS can hold
   \code{\link{OPMA}} as well as \code{\link{OPM}} objects,
   even though this is not indicated for all its methods in
   this manual.
@@ -47,7 +47,9 @@
 % \alias{+,OPMS,OPMS-method}
 % \alias{+,OPMS,list-method}
 % \alias{[,OPMS-method}
+% \alias{aggr_settings,OPMS-method}
 % \alias{aggregated,OPMS-method}
+% \alias{anyDuplicated,OPMS-method}
 % \alias{ci_plot,OPMS-method}
 % \alias{coerce,OPMS,list-method}
 % \alias{coerce,list,OPMS-method}
@@ -55,8 +57,10 @@
 % \alias{csv_data,OPMS-method}
 % \alias{dim,OPMS-method}
 % \alias{do_aggr,OPMS-method}
+% \alias{duplicated,OPMS-method}
 % \alias{extract,OPMS-method}
 % \alias{extract_columns,OPMS-method}
+% \alias{filename,OPMS-method}
 % \alias{flatten,OPMS-method}
 % \alias{gen_iii,OPMS-method}
 % \alias{has_aggr,OPMS-method}
@@ -73,10 +77,12 @@
 % \alias{metadata<-,OPMS,missing,list-method}
 % \alias{metadata_chars,OPMS-method}
 % \alias{minmax,OPMS-method}
+% \alias{oapply,OPMS-method}
 % \alias{plate_type,OPMS-method}
 % \alias{plates,OPMS-method}
 % \alias{position,OPMS-method}
 % \alias{select,OPMS-method}
+% \alias{seq,OPMS-method}
 % \alias{setup_time,OPMS-method}
 % \alias{summary,OPMS-method}
 % \alias{thin_out,OPMS-method}
@@ -116,7 +122,9 @@ Class \code{"\linkS4class{YAML_VIA_LIST}"}, directly.
     \item{+}{\code{signature(e1 = "OPMS", e2 = "OPMS")}: ... }
     \item{+}{\code{signature(e1 = "OPMS", e2 = "list")}: ... }
     \item{[}{\code{signature(x = "OPMS")}: ... }
+    \item{aggr_settings}{\code{signature(object = "OPMS")}: ... }
     \item{aggregated}{\code{signature(object = "OPMS")}: ... }
+    \item{anyDuplicated}{\code{signature(x = "OPMS")}: ... }
     \item{ci_plot}{\code{signature(object = "OPMS")}: ... }
     \item{coerce}{\code{signature(from = "OPMS", to = "list")}: ... }
     \item{coerce}{\code{signature(from = "list", to = "OPMS")}: ... }
@@ -124,8 +132,10 @@ Class \code{"\linkS4class{YAML_VIA_LIST}"}, directly.
     \item{csv_data}{\code{signature(object = "OPMS")}: ... }
     \item{dim}{\code{signature(x = "OPMS")}: ... }
     \item{do_aggr}{\code{signature(object = "OPMS")}: ... }
+    \item{duplicated}{\code{signature(x = "OPMS")}: ... }
     \item{extract}{\code{signature(object = "OPMS")}: ... }
     \item{extract_columns}{\code{signature(object = "OPMS")}: ... }
+    \item{filename}{\code{signature(object = "OPMS")}: ... }
     \item{flatten}{\code{signature(object = "OPMS")}: ... }
     \item{gen_iii}{\code{signature(object = "OPMS")}: ... }
     \item{has_aggr}{\code{signature(object = "OPMS")}: ... }
@@ -142,10 +152,12 @@ Class \code{"\linkS4class{YAML_VIA_LIST}"}, directly.
     \item{metadata<-}{\code{signature(object = "OPMS", key = "missing", value = "list")}: ... }
     \item{metadata_chars}{\code{signature(object = "OPMS")}: ... }
     \item{minmax}{\code{signature(x = "OPMS")}: ... }
+    \item{oapply}{\code{signature(object = "OPMS")}: ... }
     \item{plate_type}{\code{signature(object = "OPMS")}: ... }
     \item{plates}{\code{signature(object = "OPMS")}: ... }
     \item{position}{\code{signature(object = "OPMS")}: ... }
     \item{select}{\code{signature(object = "OPMS")}: ... }
+    \item{seq}{\code{signature(... = "OPMS")}: ... }
     \item{setup_time}{\code{signature(object = "OPMS")}: ... }
     \item{summary}{\code{signature(object = "OPMS")}: ... }
     \item{thin_out}{\code{signature(object = "OPMS")}: ... }

@@ -12,12 +12,12 @@
 }
 \description{
   This \code{\link{OPMA}} object contains measurements from
-  a selected plate from the study by Vaas et al. (2012).
-  Metadata have been added to fully describe the conducted
-  PM experiments: this plate is the 6th technical replicate
-  from the first biological replicate for the strain
-  \emph{Escherichia coli} DSM30083T (yes, the type strain
-  of \emph{E. coli}).
+  a single selected plate from the study by Vaas et al.
+  (2012). Metadata have been added to fully describe the
+  conducted PM experiments: this plate is the 6th technical
+  replicate from the first biological replicate for the
+  strain \emph{Escherichia coli} DSM30083T (yes, the type
+  strain of \emph{E. coli}).
 }
 \examples{
 \dontrun{

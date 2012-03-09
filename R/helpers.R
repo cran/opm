@@ -3,6 +3,7 @@
 
 
 ################################################################################
+################################################################################
 #
 # Miscellaneous utilities
 #
@@ -20,14 +21,16 @@
 #' @keywords internal
 #'
 assert_length <- function(..., .wanted = 1L) {
-  arg.names <- as.character(match.call())[-1L]
-  arg.names <- arg.names[seq_along(items <- list(...))]
+  arg.names <- as.character(match.call())[-1L][seq_along(items <- list(...))]
   mapply(function(item, name) {
     if (!identical(length(item), .wanted))
       stop(sprintf("need object '%s' of length %i", name, .wanted))
   }, items, arg.names, SIMPLIFY = FALSE, USE.NAMES = FALSE)
   invisible(arg.names)
 }
+
+
+################################################################################
 
 
 ## NOTE: not an S4 method because applicable to any objects
@@ -37,15 +40,44 @@ assert_length <- function(..., .wanted = 1L) {
 #' Assess whether all elements in a collection are identical.
 #'
 #' @param x An R object to which \code{duplicated} can be applied.
+#' @param na.rm Logical scalar. Remove \code{NA} elements before determining
+#'   uniformity?
 #' @return Either \code{TRUE} or a vector of the class of \code{x} containing
 #'   all deviating elements.
 #' @keywords internal
 #'
-is_uniform <- function(x) {
+is_uniform <- function(x, na.rm = FALSE) {
+  if (na.rm)
+    x <- na.exclude(x)
   if (length(x) < 2L || all((dup <- duplicated(x))[-1L]))
     return(TRUE)
   x[!dup]
 }
+
+
+################################################################################
+
+
+## NOTE: not an S4 method because applicable to any objects
+
+#' Check for constantness.
+#'
+#' Assess whether all elements in a collection are identical.
+#'
+#' @param x An R object to which \code{duplicated} can be applied.
+#' @param na.rm Logical scalar. Remove \code{NA} elements before determining
+#'   constantness?
+#' @return Logical scalar.
+#' @keywords internal
+#'
+is_constant <- function(x, na.rm = TRUE) {
+  if (na.rm)
+    x <- na.exclude(x)
+  length(x) < 2L || all(duplicated(x)[-1L])
+}
+
+
+################################################################################
 
 
 ## NOTE: not an S4 method because conversion is done
@@ -68,7 +100,7 @@ is_uniform <- function(x) {
 #' @param ... Optional other arguments passed to \code{formatDL}.
 #' @return Character vector.
 #' @export
-#' @seealso message warning stop formatDL
+#' @seealso base::message base::warning base::stop base::formatDL
 #' @keywords utilities
 #' @examples
 #' x <- letters[1:5]
@@ -82,7 +114,8 @@ listing <- function(x, header = NULL, footer = NULL, begin = NULL,
   result <- formatDL(unlist(x), style = style, ...)
   if (length(begin))
     if (is.numeric(begin))
-      result <- paste(paste(rep(" ", begin), collapse = ""), result, sep = "")
+      result <- paste(paste(rep.int(" ", begin), collapse = ""), result,
+        sep = "")
     else
       result <- paste(begin, result, sep = "")
   if (length(header))
@@ -91,6 +124,120 @@ listing <- function(x, header = NULL, footer = NULL, begin = NULL,
     result <- c(result, footer)
   paste(result, collapse = collapse)
 }
+
+
+################################################################################
+
+
+setGeneric("separate", function(object, ...) standardGeneric("separate"))
+#' Regularly split character vectors if possible
+#'
+#' From a given set of splitting characters select the ones that split a
+#' character vector in a regular way, yielding the same number of parts for all
+#' vector elements. Then apply these splitting characters to create a matrix.
+#' The data frame method applies this to all character vectors (and 
+#' optionally also all factors) within a data frame.
+#'
+#' @param object Character vector to be split, or data frame in which character
+#'   vectors (or factors) shall be attempted to be split.
+#' @param split Character vector or \code{TRUE}. If a character vector, used as
+#'   container of the splitting characters and converted to a vector containing 
+#'   only non-duplicated single-character strings. For instance, the default 
+#'   \code{split} argument \code{".-_"} yields \code{c(".", "-", "_")}. If
+#'   \code{TRUE}, strings with substrings representing fixed-width fields are 
+#'   assumed, and splitting is done at whitespace-only columns. Beforehand,
+#'   equal-length strings are created by padding with spaces at the right.
+#'   After splitting in fixed-width mode, whitespace characters are trimmed 
+#'   from both ends of the resulting strings.
+#' @param coerce Logical scalar indicating whether factors should be coerced
+#'   to \sQuote{character} mode and then also be attempted to be split. The
+#'   resulting columns will be coerced back to factors.
+#' @param name.sep Character scalar to be inserted in the constructed column
+#'   names. If more than one column results from splitting, the names will
+#'   contain (i) the original column name, (ii) \code{name.sep} and (iii)
+#'   their index, thus creating unique column names (if the original ones
+#'   were unique).
+#' @export
+#' @return Character matrix, its number of rows being equal to the length of
+#'   \code{object}, or data frame with the same number of rows as \code{object}
+#'   but potentially more columns.
+#' @family auxiliary-functions
+#' @keywords character manip
+#' @seealso base::strsplit utils::read.fwf
+#' @examples
+#'
+#' # Splitting by characters
+#' x <- c("a-b-cc", "d-ff-g")
+#' (y <- separate(x, ".")) # a split character that does not occur
+#' stopifnot(is.matrix(y), y[, 1L] == x)
+#' (y <- separate(x, "-")) # a split character that does occur
+#' stopifnot(is.matrix(y), dim(y) == c(2, 3))
+#'
+#' # Fixed-with splitting
+#' x <- c("  abd  efgh", " ABCD EFGH ", " xyz")
+#' (y <- separate(x, TRUE))
+#' stopifnot(is.matrix(y), dim(y) == c(3, 2))
+#'
+#' # Data frame method
+#' x <- data.frame(a = 1:2, b = c("a-b-cc", "d-ff-g"))
+#' (y <- separate(x))
+#' stopifnot(is.data.frame(y), dim(y) == c(2, 4))
+#' stopifnot(sapply(y, class) == c("integer", "factor", "factor", "factor"))
+#'
+setMethod("separate", "character", function(object, split = ".-_") {
+  char_group <- function(x) sprintf("[%s]", paste(x, collapse = ""))
+  split_fixed <- function(x) {
+    ws <- c(" ", "\t", "\v", "\r", "\n", "\b", "\a", "\f")
+    max.len <- max(sapply(x <- strsplit(x, split = "", fixed = TRUE), length))
+    x <- lapply(x, function(y) c(y, rep.int(" ", max.len - length(y))))
+    x <- do.call(rbind, x)
+    groups <- group_by_sep(apply(x, 2L, function(y) all(y %in% ws)))
+    x <- apply(x, 1L, split, f = groups)
+    do.call(rbind, lapply(x, function(y, p1, p2) {
+      y <- sapply(y, paste, collapse = "")
+      sub(p2, "", sub(p1, "", y, perl = TRUE), perl = TRUE)
+    }, p1 = sprintf("^%s+", ws <- char_group(ws)), p2 = sprintf("%s+$", ws)))
+  }
+  if (isTRUE(split))
+    return(split_fixed(object))
+  split <- unique(unlist(strsplit(x = split, split = "", fixed = TRUE)))
+  if (length(split) == 0L)
+    return(matrix(object))
+  yields.constant <- sapply(split, function(char) {
+    is_constant(lapply(strsplit(object, char, fixed = TRUE), length))
+  })
+  if (length(split <- split[yields.constant]) == 0L)
+    return(matrix(object))
+  split <- char_group(c(split[!(dash <- split == "-")], split[dash]))
+  do.call(rbind, strsplit(object, split, perl = TRUE))
+}, sealed = SEALED)
+
+#' @export
+#'
+setMethod("separate", "data.frame", function(object, split = ".-_",
+    coerce = TRUE, name.sep = ".") {
+  assert_length(coerce, name.sep)
+  do.call(cbind, mapply(function(x, name) {
+    result <- if (is.fac <- is.factor(x)) {
+      if (coerce)
+        separate(as.character(x), split)
+      else
+        x
+    } else if (is.character(x))
+      separate(x, split)
+    else
+      x
+    result <- as.data.frame(result, stringsAsFactors = is.fac)
+    names(result) <- if ((nc <- ncol(result)) == 1L)
+      name
+    else
+      paste(name, seq_len(nc), sep = name.sep)
+    result
+  }, object, names(object), SIMPLIFY = FALSE, USE.NAMES = FALSE))
+}, sealed = SEALED)
+
+
+################################################################################
 
 
 setGeneric("glob_to_regex", function(x, ...) standardGeneric("glob_to_regex"))
@@ -105,7 +252,7 @@ setGeneric("glob_to_regex", function(x, ...) standardGeneric("glob_to_regex"))
 #' @return Character vector.
 #' @family auxiliary-functions
 #' @keywords character
-#' @seealso glob2rx regex
+#' @seealso utils::glob2rx base::regex
 #' @note This is not normally directly called by an \pkg{opm} user because 
 #'   particularly \code{\link{explode_dir}} and the IO functions calling that
 #'   function internally use \code{glob_to_regex} anyway.
@@ -138,6 +285,7 @@ setMethod("glob_to_regex", "character", function(x) {
 }, sealed = SEALED)
 
 
+################################################################################
 ################################################################################
 #
 # Creating strings
@@ -186,6 +334,9 @@ trim_string <- function(str, max, append = ".", clean = TRUE,
 }
 
 
+################################################################################
+
+
 ## NOTE: not an S4 method because conversion is done
 
 #' Add note in parentheses
@@ -222,6 +373,7 @@ add_in_parens <- function(str.1, str.2, max = 1000L, append = ".",
 }
 
 
+################################################################################
 ################################################################################
 #
 # Plate, substrate, well, and curve parameter names
@@ -278,6 +430,9 @@ map_grofit_names <- function(subset = NULL, ci = TRUE, plain = FALSE,
 }
 
 
+################################################################################
+
+
 ## NOTE: Not an S4 method because there are no arguments
 
 #' Names of curve parameters
@@ -299,6 +454,9 @@ param_names <- function() {
 }
 
 
+################################################################################
+
+
 ## NOTE: not an S4 method because conversion is done
 
 #' Normalize plate name
@@ -313,7 +471,7 @@ param_names <- function() {
 #' @return Character vector of the same length than \code{plate}.
 #' @family naming-functions
 #' @keywords utilities character
-#' @seealso gsub
+#' @seealso base::gsub
 #' @examples
 #' # Entirely unrecognized strings are returned as-is 
 #' x <- normalize_plate_name(letters)
@@ -339,6 +497,9 @@ normalize_plate_name <- function(plate, subtype = FALSE) {
   result[!ok] <- plate[!ok]
   result
 }
+
+
+################################################################################
 
 
 ## NOTE: not an S4 method because conversion is done
@@ -375,6 +536,11 @@ map_well_names <- function(wells, plate, in.parens = FALSE, brackets = FALSE,
     trim_string(WELL_MAP[wells, pos], ...)
 }
 
+
+################################################################################
+
+
+## NOTE: not an S4 method because conversion is done
   
 #' Map well names to substrates
 #'
@@ -407,6 +573,9 @@ well_to_substrate <- function(plate, well = 1L:96L) {
 }
 
 
+################################################################################
+
+
 setGeneric("find_substrate", function(x, ...) standardGeneric("find_substrate"))
 #' Identify substrates
 #'
@@ -424,15 +593,17 @@ setGeneric("find_substrate", function(x, ...) standardGeneric("find_substrate"))
 #'   All matching is case-insensitive except for \sQuote{exact} search mode.
 #' @param max.dev Numeric scalar indicating the maximum allowed deviation. If
 #'   < 1, the proportion of characters that might deviate, otherwise their
-#'   absolute number. Has an effect only if \sQuote{approx} is chosen as
-#'   \code{search} mode.
+#'   absolute number. It can also be a list; see the \sQuote{max.distance}
+#'   argument of \code{agrep} in the \pkg{base} package for details. Has an 
+#'   effect only if \sQuote{approx} is chosen as search mode (see the 
+#'   \code{search} argument).
 #' @export
 #' @return List of character vectors (empty if nothing was found), with
 #'   duplicates removed and the rest sorted. The names of the list correspond
 #'   to \code{names}.
 #' @note See \code{\link{glob_to_regex}} for a description of globbing 
 #'   patterns.
-#' @seealso grep agrep
+#' @seealso base::grep base::agrep
 #' @family naming-functions
 #' @keywords character utilities
 #' @examples
@@ -449,11 +620,11 @@ setGeneric("find_substrate", function(x, ...) standardGeneric("find_substrate"))
 setMethod("find_substrate", "character", function(x,
     search = c("exact", "glob", "approx", "regex"), max.dev = 0.2) {
   find_name <- function(pattern, ...) {
-    grep(pattern = pattern, x = WELL_MAP, value = TRUE, ...)
+    grep(pattern = pattern, x = WELL_MAP, value = TRUE, useBytes = TRUE, ...)
   }
   find_approx <- function(pattern, ...) {
     agrep(pattern = pattern, x = WELL_MAP, ignore.case = TRUE, value = TRUE,
-      ...)
+      useBytes = TRUE, ...)
   }
   search <- match.arg(search)
   sapply(x, FUN = function(name) {
@@ -468,6 +639,9 @@ setMethod("find_substrate", "character", function(x,
 }, sealed = SEALED)
 
 
+################################################################################
+
+
 setGeneric("find_positions", function(x, ...) standardGeneric("find_positions"))
 #' Identify positions of substrates
 #'
@@ -476,16 +650,23 @@ setGeneric("find_positions", function(x, ...) standardGeneric("find_positions"))
 #' plate annotations. To determine their spelling, use
 #' \code{\link{find_substrate}}.
 #'
-#' @param x Query character vector.
+#' @param x Query character vector or query list.
 #' @export
-#' @return List of character matrices (empty if nothing was found), with one row
+#' @return The character method returns a
+#'   list of character matrices (empty if nothing was found), with one row
 #'   per position found, the plate name in the first column and the well name in
-#'   the second. The names of this list correspond to \code{names}.
+#'   the second. The names of this list correspond to \code{names}. The list
+#'   method returns lists of such lists.
 #' @family naming-functions
 #' @keywords utilities
 #' @examples
-#' # Compare correct and misspelled substrate name
+#'
+#' # Character method; compare correct and misspelled substrate name
 #' (x <- find_positions(c("a-D-Glucose", "a-D-Gloucose")))
+#' stopifnot(length(x[[1]]) > length(x[[2]]))
+#'
+#' # List method
+#' (x <- find_positions(find_substrate(c("a-D-Glucose", "a-D-Gloucose"))))
 #' stopifnot(length(x[[1]]) > length(x[[2]]))
 #'
 setMethod("find_positions", "character", function(x) {
@@ -497,29 +678,14 @@ setMethod("find_positions", "character", function(x) {
   }, simplify = FALSE)
 }, sealed = SEALED)
 
-
-#' Identify positions of substrates (list version)
-#'
-#' Identify the positions of substrates, using a list as input (as, e.g.,
-#' output by \code{\link{find_substrate}}.
-#'
-#' @name find_positions,list
-#'
-#' @param x Query list. Values are used as argument of
-#'   \code{\link{find_positions}}. See there for further details and examples.
 #' @export
-#' @return List of lists as returned by \code{\link{find_positions}}.
-#' @family naming-functions
-#' @keywords utilities
-#' @examples
-#' (x <- find_positions(find_substrate(c("a-D-Glucose", "a-D-Gloucose"))))
-#' stopifnot(length(x[[1]]) > length(x[[2]]))
 #'
 setMethod("find_positions", "list", function(x) {
   rapply(x, f = find_positions, classes = "character", how = "list")
 }, sealed = SEALED)
 
 
+################################################################################
 ################################################################################
 #
 # Data selection
@@ -552,6 +718,7 @@ setMethod("pick_from", "data.frame", function(object, selection) {
 
 
 ################################################################################
+################################################################################
 #
 # Colors
 #
@@ -559,14 +726,14 @@ setMethod("pick_from", "data.frame", function(object, selection) {
 
 ## NOTE: not an S4 method because conversion is done
 
-#' Sort colours
+#' Sort colors
 #'
-#' A helper function for methods such as \code{\link{xy_plot,OPMS}}.
-#' Arrange colours to achieve that neighboring colours are most distinct with
+#' A helper function for methods such as \code{\link{xy_plot}}.
+#' Arrange colors to achieve that neighboring colors are most distinct with
 #' respect to their RGB coordinates. This is done as follows: (1) euclidean
-#' distances between the RGB coordinates of the input colours are calculated;
+#' distances between the RGB coordinates of the input colors are calculated;
 #' (2) the distances are inversed; (3) a principal-coordinate analysis is
-#' conducted on these inversed distances; (4) the input colours are sorted
+#' conducted on these inversed distances; (4) the input colors are sorted
 #' according to the first principal coordinate.
 #'
 #' @param col Vector. Names or hexadecimal codes of the colors to be sorted.
@@ -576,7 +743,7 @@ setMethod("pick_from", "data.frame", function(object, selection) {
 #' @export
 #' @return Character vector (rearranged input names).
 #' @family plotting-functions
-#' @seealso col2rgb 
+#' @seealso grDevices::col2rgb 
 #' @keywords color
 #' @note The resulting vector could as well be used in reverse order.
 #' @examples
@@ -592,12 +759,15 @@ max_rgb_contrast <- function(col) {
 }
 
 
+################################################################################
+
+
 ## NOTE: not an S4 method because check is done using match.arg()
 
 #' Select colors
 #'
-#' Select a set of colors for plotting. See \code{\link{xy_plot,OPMS}} for a
-#' a usage example. This is not normally directly called
+#' Select a set of colors for plotting. See \code{\link{xy_plot}} for usage
+#' example. This is not normally directly called
 #' by an \pkg{opm} user but could be used for testing before doing some serious
 #' plotting.
 #'
@@ -610,15 +780,15 @@ max_rgb_contrast <- function(col) {
 #' @return Character vector (names of colors).
 #' @family plotting-functions
 #' @keywords color
-#' @seealso colors rainbow grey
+#' @seealso grDevices::colors grDevices::rainbow grDevices::grey
 #' @references \url{http://www.colorbrewer.org}
 #' @examples
 #' (x <- select_colors("nora"))
 #' (y <- select_colors("nora.i"))
 #' stopifnot(is.character(x), length(x) > 0L, identical(x, rev(y)))
 #'
-select_colors <- function(set = c("w3c", "w3c.i", "nora", "nora.i",
-    "roseobacter", "roseobacter.i")) {
+select_colors <- function(
+    set = c("w3c", "w3c.i", "nora", "nora.i", "roseobacter", "roseobacter.i")) {
   switch(match.arg(set),
     w3c = W3C_COLORS[W3C_NAMES_MAX_CONTRAST],
     w3c.i = rev(W3C_COLORS[W3C_NAMES_MAX_CONTRAST]),
@@ -631,6 +801,9 @@ select_colors <- function(set = c("w3c", "w3c.i", "nora", "nora.i",
     stop(BUG_MSG)
   )
 }
+
+
+################################################################################
 
 
 ## NOTE: not an S4 method because conversion is done
@@ -652,6 +825,7 @@ default_color_regions <- function(colors = NULL) {
 }
 
 
+################################################################################
 ################################################################################
 #
 # Plotting helper functions
@@ -698,6 +872,7 @@ setMethod("draw_ci", "numeric", function(object, col = "blue", cex = 1,
 }, sealed = SEALED)
 
 
+################################################################################
 ################################################################################
 #
 # Easter eggs
@@ -748,6 +923,7 @@ kubrick <- function(movie = character()) {
 
 
 ################################################################################
+################################################################################
 #
 # Grouping utilities
 #
@@ -757,23 +933,34 @@ setGeneric("group_by_sep",
   function(object, ...) standardGeneric("group_by_sep"))
 #' Grouping using a separator
 #'
-#' Treat a logical vector by regarding \code{TRUE} as indicating seperating. 
+#' For the \sQuote{logical} method,
+#' treat a logical vector by regarding \code{TRUE} as indicating separating. 
 #' Create a factor that could be used with \code{split} to split the logical
 #' vector, or any equal-length object from which it was created, into according
-#' groups.
+#' groups. For the character method,
+#' grep for a pattern in a character vector, thus creating a logical vector 
+#' indicating the matches. Then use this to construct a factor with the
+#' \sQuote{logical} method.
 #'
 #' @param object Logical vector.
+#' @param include Logical scalar indicating whether the sepator positions  
+#'   should also be included in the factor levels instead of being coded as 
+#'   \code{NA}.
 #' @param pattern Character scalar passed to \code{grepl}.
-#' @param ... Optional other arguments passed to \code{grepl}.
+#' @param invert Logical scalar. Invert the result of pattern matching with
+#'   \code{grepl}? If so, unmatched lines are treated as separators.
+#' @param ... Optional arguments passed to \code{grepl}.
+#'
 #' @return Factor, its length being the one of \code{object}. The levels 
 #'   correspond to a groups whose indices correspond to the index of a 
 #'   \code{TRUE} value in \code{object} plus the indices of the \code{FALSE}
 #'   values immediately following it. The positions of \code{TRUE} values that 
-#'   are followed by \code{TRUE} values are set to \code{NA}.
-#' @seealso split
+#'   are followed by \code{TRUE} values are set to \code{NA} (irrespective of
+#'   \code{include}).
+#' @seealso base::split base::grepl
 #' @keywords internal
 #'
-setMethod("group_by_sep", "logical", function(object) {
+setMethod("group_by_sep", "logical", function(object, include = TRUE) {
   prepare_clean_part <- function(x) {
     if (prepend <- !x[1L])
       x <- c(TRUE, x)
@@ -781,7 +968,7 @@ setMethod("group_by_sep", "logical", function(object) {
       x <- c(x, FALSE)
     pos <- matrix(cumsum(rle(x)$lengths), ncol = 2L, byrow = TRUE)
     result <- unlist(lapply(seq.int(1L, nrow(pos)), function(i) {
-      rep(i, pos[i, 2L] - pos[i, 1L] + 1L)
+      rep.int(i, pos[i, 2L] - pos[i, 1L] + 1L)
     }))
     if (prepend)
       result <- result[-1L]
@@ -794,35 +981,22 @@ setMethod("group_by_sep", "logical", function(object) {
   result <- integer(len)
   true.runs <- object & c(object[-1L] == object[-len], FALSE)
   result[!true.runs] <- prepare_clean_part(object[!true.runs])
-  result[true.runs] <- NA_integer_
+  if (include)
+    result[true.runs] <- NA_integer_
+  else
+    result[object] <- NA_integer_
   as.factor(result)
 }, sealed = SEALED)
 
-
-#' Grouping using a separator (character version)
-#'
-#' Grep for a pattern in a a character vector, thus creating a logical vector 
-#' indicating the matches. Then use this to construct a factor with
-#' \code{\link{group_by_sep}}.
-#'
-#' @name group_by_sep,character
-#'
-#' @param object Character vector.
-#' @param pattern Character scalar passed to \code{grepl}.
-#' @param invert Logical scalar. Invert the result of pattern matching with
-#'   \code{grepl}? If so, unmatched lines are treated as seperators.
-#' @param ... Optional arguments passed to \code{grepl}.
-#' @return Factor, its length being the one of \code{object}.
-#' @seealso split
-#' @keywords internal
-#'
 setMethod("group_by_sep", "character", function(object, pattern, 
-    invert = FALSE, ...) {
+    invert = FALSE, include = TRUE, ...) {
   matches <- grepl(pattern = pattern, x = object, ...)
   if (invert)
     matches <- !matches
-  group_by_sep(matches)
+  group_by_sep(matches, include)
 }, sealed = SEALED)
 
+
+################################################################################
 
 

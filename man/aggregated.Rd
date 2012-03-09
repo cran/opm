@@ -49,21 +49,19 @@ stopifnot(is.matrix(x), identical(dim(x), c(3L, 96L)), !any(x < 0))
 }
 \seealso{
   Other aggregation-functions: \code{\link{aggr_settings}},
-  \code{\link{curve_params}}, \code{\link{do_aggr}},
-  \code{\link{fast_estimate}}, \code{\link{param_names}}
+  \code{\link{do_aggr}}, \code{\link{fast_estimate}},
+  \code{\link{param_names}}
 
-  Other getter-functions: \code{\link{[}},
-  \code{\link{[,OPMA}}, \code{\link{[,OPMS}},
-  \code{\link{aggr_settings}}, \code{\link{csv_data}},
-  \code{\link{dim}}, \code{\link{dim,OPMS}},
+  Other getter-functions: \code{\link{aggr_settings}},
+  \code{\link{anyDuplicated}}, \code{\link{csv_data}},
+  \code{\link{dim}}, \code{\link{duplicated}},
   \code{\link{filename}}, \code{\link{has_aggr}},
   \code{\link{hours}}, \code{\link{length}},
-  \code{\link{max}}, \code{\link{max,OPMS}},
-  \code{\link{measurements}}, \code{\link{metadata}},
-  \code{\link{minmax}}, \code{\link{minmax,OPMS}},
+  \code{\link{max}}, \code{\link{measurements}},
+  \code{\link{metadata}}, \code{\link{minmax}},
   \code{\link{plate_type}}, \code{\link{position}},
-  \code{\link{select}}, \code{\link{setup_time}},
-  \code{\link{summary}}, \code{\link{summary,OPMS}},
+  \code{\link{select}}, \code{\link{seq}},
+  \code{\link{setup_time}}, \code{\link{summary}},
   \code{\link{thin_out}}, \code{\link{well}},
   \code{\link{wells}}
 }
@@ -75,4 +73,5 @@ stopifnot(is.matrix(x), identical(dim(x), c(3L, 96L)), !any(x < 0))
 \usage{
   \S4method{aggregated}{OPMA}(object, subset = NULL, ci = TRUE,
     trim = c("no", "full", "medium")) 
+
 }

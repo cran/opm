@@ -1,6 +1,7 @@
 
 
 ################################################################################
+################################################################################
 #
 # OPMA class
 #
@@ -8,12 +9,15 @@
 
 setGeneric("opma_problems",
   function(object, ...) standardGeneric("opma_problems"))
-#' Check OPMA matrix
+#' Check OPMA
 #'
 #' Check whether a matrix fulfils the requirements for  \code{\link{OPMA}}
-#' aggregated data. Called when constructing an object of the class.
+#' aggregated data, or
+#' check whether a list fulfils the requirements for \code{\link{OPMA}}
+#' aggregation settings. Called when constructing an object of the class.
 #'
-#' @param object Matrix of aggregated data.
+#' @param object Matrix of aggregated data or list describing the aggregation 
+#'   settings.
 #' @param orig Matrix of original, non-aggregated data.
 #' @param program Character scalar. Program used for aggregating the data
 #'   (currently only \sQuote{grofit} is checked).
@@ -45,20 +49,6 @@ setMethod("opma_problems", "matrix", function(object, orig, program) {
   errs
 }, sealed = SEALED)
 
-
-#' Check settings
-#'
-#' Check whether a list fulfils the requirements for \code{\link{OPMA}}
-#' aggregation settings. Called when constructing an object of the class.
-#'
-#' @rdname opma_problems-list
-#' @name opma_problems,list
-#'
-#' @param object List describing the aggregation settings.
-#' @return Character vector with description of problems, empty if there
-#'   none.
-#' @keywords internal
-#'
 setMethod("opma_problems", "list", function(object) {
   errs <- character()
   program <- object[[PROGRAM]]
@@ -74,6 +64,9 @@ setMethod("opma_problems", "list", function(object) {
     errs <- c(errs, paste("unknown 'aggr_settings' key:", bad[1L]))
   errs
 }, sealed = SEALED)
+
+
+################################################################################
 
 
 #' OPMA class
@@ -109,6 +102,7 @@ setClass(OPMA,
 
 
 ################################################################################
+################################################################################
 #
 # Getter functions
 #
@@ -134,8 +128,8 @@ setGeneric("aggregated", function(object, ...) standardGeneric("aggregated"))
 #'   are set to this value if \code{trim} is \sQuote{medium}; this is a more 
 #'   moderate treatment than setting all negative values to zero, which is done 
 #'   if \code{trim} is \sQuote{full}. Currently the other parameters are  
-#'   not checked, and all \code{NA} values also remain unchanged. If \code{trim} 
-#'   is \sQuote{no}, lambda is not modified either.
+#'   not checked, and all \code{NA} values also remain unchanged. If
+#'   \code{trim} is \sQuote{no}, lambda is not modified either.
 #' @export
 #' @family getter-functions
 #' @family aggregation-functions
@@ -198,6 +192,9 @@ setMethod("aggregated", OPMA, function(object, subset = NULL, ci = TRUE,
 }, sealed = SEALED)
 
 
+################################################################################
+
+
 setGeneric("aggr_settings",
   function(object, ...) standardGeneric("aggr_settings"))
 #' Get aggregation settings
@@ -205,7 +202,7 @@ setGeneric("aggr_settings",
 #' The settings used for aggregating the kinetic data.
 #'
 #' @param object \code{\link{OPMA}} object.
-#' @return Named list.
+#' @return Named list. See the example for details.
 #' @export
 #' @family getter-functions
 #' @family aggregation-functions
@@ -221,44 +218,13 @@ setMethod("aggr_settings", OPMA, function(object) object@aggr_settings,
 
 
 ################################################################################
+################################################################################
 #
 # Subsetting etc.
 #
 
 
-#' Select subset (OPMA version)
-#'
-#' Select a subset of the measurements. This works much like \code{\link{[}},
-#' but the function applies the subsetting to the original and the aggregated
-#' data in parallel. The aggregated data may also be dropped entirely; this 
-#' might be appropriate if a subset of the time points is selected, potentially
-#' yielding aggregated values that do not fit to the measurements anymore.
-#'
-#' @rdname bracket-OPMA
-#' @exportMethod "["
-#' @name [,OPMA
-#'
-#' @param x \code{\link{OPMA}} object.
-#' @param i Row(s). Vector or missing.
-#' @param j Columns(s). Vector or missing.
-#' @param ... Should currently not be set.
-#' @param drop Logical scalar. Remove the aggregated data and return an
-#'   \code{\link{OPM}} object?
-#' @return \code{\link{OPMA}} or \code{\link{OPM}} object.
-#' @family getter-functions
-#' @seealso [ [[
-#' @keywords manip
-#' @examples
-#'
-#' data(vaas_1)
-#'
-#' copy <- vaas_1[]
-#' stopifnot(has_aggr(copy))
-#' stopifnot(identical(copy, vaas_1))
-#'
-#' copy <- vaas_1[drop = TRUE]
-#' stopifnot(!has_aggr(copy))
-#' stopifnot(!identical(copy, vaas_1))
+#' @export
 #'
 setMethod("[", OPMA, function(x, i, j, ..., drop = FALSE) {
   result <- callNextMethod()
@@ -269,6 +235,7 @@ setMethod("[", OPMA, function(x, i, j, ..., drop = FALSE) {
 }, sealed = SEALED)
 
 
+################################################################################
 ################################################################################
 #
 # Conversion functions: OPMA => other objects. For principle, see description
@@ -296,24 +263,72 @@ setAs(from = OPMA, to = "list", function(from) {
 
 
 ################################################################################
+################################################################################
 #
 # Extract curve parameters
 #
 
 
 setGeneric("do_aggr", function(object, ...) standardGeneric("do_aggr"))
-#' Aggregate kinetics
+#' Aggregate kinetics using curve-parameter estimation
 #'
-#' Aggregate data using curve parameter estimation and include them in a novel
+#' Aggregate the kinetic data using curve-parameter estimation, i.e. infer
+#' parameters from the kinetic data stored in an \code{\link{OPM}} 
+#' object using either the \pkg{grofit} package or the built-in method. 
+#' Optionally include the aggregated values in a novel \code{\link{OPMA}}
 #' object together with previously collected information.
 #'
-#' @param object \code{\link{OPM}} object
-#' @param ... Passed to \code{\link{curve_params}}. See there.
+#' @param object \code{\link{OPM}} object.
+#' @param boot Integer scalar. Number of bootstrap replicates used to estimate
+#'   95-percent confidence intervals (CIs) for the parameter. Set this to zero
+#'   to omit bootstrapping, resulting in \code{NA} entries for the CIs.
+#' @param verbose Logical scalar. Print progress messages?
+#' @param cores Integer scalar. Number of cores to use. Setting this to a
+#'   value > 1 requires the \pkg{multicore} package. Has no effect if 
+#'   \sQuote{opm-fast} is chosen (see below).
+#' @param options List. For its use in \sQuote{grofit} mode, see 
+#'   \code{grofit.control} in the \pkg{grofit} package. The \code{boot} and 
+#'   \code{verbose} settings, as the most important ones, are added separately
+#'   (see above). The verbose mode is not very useful in parallel processing.
+#'   For its use in \sQuote{opm-fast} mode, see \code{\link{fast_estimate}}.
+#' @param program Character scalar. The aggregation method to use. Currently
+#'   only the following methods are supported:
+#'   \describe{
+#'     \item{grofit}{The \code{grofit} function in the eponymous package, with
+#'     spline fitting as default.}
+#'     \item{opm-fast}{The native, faster parameter estimation. This will only 
+#'     yield two of the four parameters, the area under the curve and the
+#'     maximum height. The area under the curve is estimated as the sum of the
+#'     areas given by the trapezoids defined by each pair of adjacent time 
+#'     points. The maximum height is just the result of \code{max}. By default,
+#'     however, the median bootstrap value is preferred as point estimate over 
+#'     the real point estimate.}
+#'   }
+#' @param plain Logical scalar. If \code{TRUE}, only the aggregated values are 
+#'   returned (as a matrix, for details see below). Otherwise they are 
+#'   integrated in an \code{\link{OPMA}} object together with \code{object}.
 #' @export
-#' @return \code{\link{OPMA}} object.
+#' @return If \code{plain} is \code{FALSE}, an \code{\link{OPMA}} object.
+#'   Otherwise a numeric matrix of the same structure than the one returned by
+#'   \code{\link{aggregated}} but with an additional \sQuote{settings} 
+#'   attribute containing the (potentially modified) list proved via the
+#'   \code{settings} argument, and a \sQuote{program} attribute corresponding 
+#'   to the \code{program} argument.
 #' @family aggregation-functions
 #' @seealso grofit::grofit
 #' @keywords smooth
+#' @references Brisbin IL, Collins CT, White GC and McCallum DA. A new paradigm 
+#'   for the analysis and interpretation of growth data: the shape of things to 
+#'   come. The Auk 1987; 104:552-553.
+#' @references Efron B. Bootstrap methods: another look at the jackknife. 
+#'   Annals of Statistics 1979; 7:1-26.
+#' @references Kahm M, Hasenbrink G, Lichtenberg-Frate H, Ludwig J, 
+#'   Kschischo M. grofit: Fitting biological growth curves with R. Journal of 
+#'   Statistical Software 2010; 33:1-21. 
+#' @references Vaas LAI, Sikorski J, Michael V, Goeker M, Klenk H-P. 
+#'   Visualization and curve parameter estimation strategies for efficient 
+#'   exploration of Phenotype Microarray kinetics. PLoS ONE 2012; in press.
+#'
 #' @examples 
 #'
 #' data(vaas_1)
@@ -348,15 +363,91 @@ setGeneric("do_aggr", function(object, ...) standardGeneric("do_aggr"))
 #'   aggregated(x)
 #' }
 #'
-setMethod("do_aggr", OPM, function(object, ...) {
-  result <- curve_params(object, ...)
-  settings <- list(program = attr(result, PROGRAM), 
-    options = attr(result, OPTIONS))
-  attr(result, PROGRAM) <- NULL
-  attr(result, OPTIONS) <- NULL
-  new(OPMA, measurements = measurements(object), metadata = metadata(object),
-    csv_data = csv_data(object), aggregated = result, aggr_settings = settings)
-})
+#' # Examples with plain = TRUE are not given, as only the return value is
+#' # different: Let x be the normal result of do_aggr(). The matrix returned if 
+#' # 'plain' is TRUE could then be received using aggregated(x), whereas 
+#' # the 'program' and the 'settings' attributes could be obtained as 
+#' # components of the list returned by aggr_settings(x).
+#'
+setMethod("do_aggr", OPM, function(object, boot = 100L, verbose = FALSE,
+    cores = 1L, options = list(), program = "grofit", plain = FALSE) {
+  
+  # Convert to OPMA
+  integrate_in_opma <- function(object, result) {
+    settings <- list(program = attr(result, PROGRAM), 
+      options = attr(result, OPTIONS))
+    attr(result, PROGRAM) <- NULL
+    attr(result, OPTIONS) <- NULL
+    new(OPMA, measurements = measurements(object), 
+      metadata = metadata(object), csv_data = csv_data(object), 
+      aggregated = result, aggr_settings = settings)
+  }
+  
+  # Add our own changes of the default
+  make_grofit_control <- function(verbose, boot, add) {
+    result <- grofit::grofit.control()
+    orig.class <- class(result)
+    result <- insert(unclass(result), interactive = FALSE,
+      suppress.messages = !verbose, fit.opt = "s", nboot.gc = boot, 
+      .force = TRUE)
+    result <- insert(result, as.list(add), .force = TRUE)
+    class(result) <- orig.class
+    result
+  }
+  
+  run_grofit <- function(time, data, control) {
+    result <- grofit::grofit(time = time, data = data, ec50 = FALSE,
+      control = control)
+    extract_curve_params(result)
+  }
+  
+  switch(program <- match.arg(program, KNOWN_PROGRAMS),
+         
+    grofit = {
+      control <- make_grofit_control(verbose, boot, add = options)  
+      grofit.time <- to_grofit_time(object)
+      grofit.data <- to_grofit_data(object)
+      result <- traverse(as.list(seq.int(nrow(grofit.data))), 
+        fun = function(row) {
+          run_grofit(grofit.time[row, , drop = FALSE],
+            grofit.data[row, , drop = FALSE], control)
+        }, cores = cores)
+      result <- do.call(cbind, result)
+      attr(result, OPTIONS) <- unclass(control)
+    },
+
+    `opm-fast` = {
+      options <- insert(as.list(options), boot = boot, .force = FALSE)
+      mat <- measurements(object)
+      result <- rbind(
+        do.call(fast_estimate, c(list(x = mat, what = "AUC"), options)),
+        do.call(fast_estimate, c(list(x = mat, what = "A"), options)),
+        matrix(nrow = 6L, ncol = ncol(mat) - 1L, data = NA_real_)  
+      )
+      rownames(result)[7L:9L] <- sub("^[^.]+", "lambda",
+        rownames(result)[1L:3L])
+      rownames(result)[10L:12L] <- sub("^[^.]+", "mu",
+        rownames(result)[1L:3L])
+      map <- map_grofit_names(opm.fast = TRUE)
+      result <- result[names(map), ]
+      rownames(result) <- as.character(map)
+      attr(result, OPTIONS) <- options
+    },
+         
+    stop(BUG_MSG)
+
+  )
+         
+  attr(result, PROGRAM) <- program
+  
+  if (plain)
+    return(result)
+  integrate_in_opma(object, result)
+  
+}, sealed = SEALED)
+
+
+################################################################################
 
 
 

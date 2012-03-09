@@ -19,8 +19,8 @@
   plate type is \sQuote{Generation III}, but the running
   mode was as for PM plates. Four bacterial strains from
   two species were considered in the study. For the three
-  publicly accessible ones, the URLs of their DSMZ
-  catalogue entries are given below.
+  publicly accessible ones, the URLs of their DSMZ catalog
+  entries are given below.
 }
 \examples{
 \dontrun{

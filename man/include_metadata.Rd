@@ -6,8 +6,7 @@
 
   \item{md}{Dataframe containing keys as column names, or
   name of file from which to read the dataframe. Handled by
-  \code{\link{to_metadata}} or
-  \code{\link{to_metadata,character}}.}
+  \code{\link{to_metadata}}.}
 
   \item{keys}{Character vector.}
 
@@ -15,17 +14,16 @@
   previous metadata, if any, shall be replaced by the novel
   ones, or whether these shall be appended.}
 
-  \item{stop.on.error}{Logical scalar. Stop with an error
-  message if (unambiguous) selection is impossible?
-  Otherwise, create a warning only.}
+  \item{skip.failure}{Logical scalar. Do not stop with an
+  error message if (unambiguous) selection is impossible
+  but raise a warning only?}
 
-  \item{remove.csv.data}{Logical scalar. Remove all names
-  present in \code{csv_data}, not only those in
-  \code{keys}?}
+  \item{remove.keys}{Logical scalar. When including
+  \code{md} in the metadata, discard the \code{keys}
+  columns?}
 
   \item{...}{Optional argument passed to
-  \code{\link{to_metadata}} or
-  \code{\link{to_metadata,character}}.}
+  \code{\link{to_metadata}}.}
 }
 \value{
   Novel \code{\link{OPM}} object.
@@ -44,22 +42,12 @@ stopifnot(identical(metadata(copy, "Location"), "Braunschweig"))
 }
 \seealso{
   Other metadata-functions: \code{\link{collect_template}},
-  \code{\link{collect_template,OPM}},
-  \code{\link{collect_template,OPMS}},
   \code{\link{extract_columns}},
-  \code{\link{map_metadata}},
-  \code{\link{map_metadata,OPMS}},
-  \code{\link{map_metadata,WMD+function}},
-  \code{\link{metadata}}, \code{\link{metadata-set}},
-  \code{\link{metadata-set,OPMS+ANY+ANY}},
-  \code{\link{metadata-set,OPMS+missing+list}},
-  \code{\link{metadata-set,WMD+character+ANY}},
-  \code{\link{metadata-set,WMD+list+list}},
-  \code{\link{metadata-set,WMD+numeric+list}},
-  \code{\link{metadata_chars}},
-  \code{\link{metadata_chars,OPMS}},
-  \code{\link{to_metadata}},
-  \code{\link{to_metadata,character}}
+  \code{\link{map_metadata}}, \code{\link{metadata}},
+  \code{\link{metadata.set}}, \code{\link{metadata.set}},
+  \code{\link{metadata.set}}, \code{\link{metadata.set}},
+  \code{\link{metadata.set}}, \code{\link{metadata.set}},
+  \code{\link{metadata_chars}}, \code{\link{to_metadata}}
 }
 \keyword{manip}
 
@@ -67,7 +55,7 @@ stopifnot(identical(metadata(copy, "Location"), "Braunschweig"))
 \alias{include_metadata-methods}
 \alias{include_metadata,OPM-method}
 \usage{
-  \S4method{include_metadata}{OPM}(object, md,
-    keys = c(SETUP, POS), replace = FALSE, stop.on.error = TRUE,
-    remove.csv.data = TRUE, ...) 
+  \S4method{include_metadata}{OPM}(object, md, keys = c(SETUP, POS),
+    replace = FALSE, skip.failure = FALSE, remove.keys = TRUE, ...) 
+
 }

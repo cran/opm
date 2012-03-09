@@ -17,9 +17,11 @@
 
   \item{max.dev}{Numeric scalar indicating the maximum
   allowed deviation. If < 1, the proportion of characters
-  that might deviate, otherwise their absolute number. Has
-  an effect only if \sQuote{approx} is chosen as
-  \code{search} mode.}
+  that might deviate, otherwise their absolute number. It
+  can also be a list; see the \sQuote{max.distance}
+  argument of \code{agrep} in the \pkg{base} package for
+  details. Has an effect only if \sQuote{approx} is chosen
+  as search mode (see the \code{search} argument).}
 }
 \value{
   List of character vectors (empty if nothing was found),
@@ -48,10 +50,9 @@ stopifnot(length(x[[1]]) > length(y[[1]]))
 stopifnot(length(z[[1]]) > length(x[[1]]))
 }
 \seealso{
-  grep agrep
+  base::grep base::agrep
 
   Other naming-functions: \code{\link{find_positions}},
-  \code{\link{find_positions,list}},
   \code{\link{normalize_plate_name}},
   \code{\link{well_to_substrate}}
 }
@@ -64,4 +65,5 @@ stopifnot(length(z[[1]]) > length(x[[1]]))
 \usage{
   \S4method{find_substrate}{character}(x,
     search = c("exact", "glob", "approx", "regex"), max.dev = 0.2) 
+
 }

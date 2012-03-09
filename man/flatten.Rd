@@ -2,7 +2,8 @@
 \alias{flatten}
 \title{Flatten matrix}
 \arguments{
-  \item{object}{\code{\link{OPM}} object.}
+  \item{object}{\code{\link{OPM}} or \code{\link{OPMS}}
+  object.}
 
   \item{include}{\code{NULL}, character vector or list. If
   not \code{NULL}, include this meta-information in the
@@ -28,13 +29,16 @@
   full names?}
 
   \item{...}{Optional other arguments passed to
-  \code{\link{wells}}.}
+  \code{\link{wells}}, or from the \code{\link{OPMS}} to
+  the \code{\link{OPM}} method.}
 }
 \value{
   Dataframe. Column names are unchecked (not converted to
   variable names). The three last columns are:
   \sQuote{Time}, \sQuote{Well}, \sQuote{Value}, with the
-  obvious meanings.
+  obvious meanings. The \code{\link{OPMS}} method yields an
+  additional column named \sQuote{Plate}, which contains
+  each plate's number within \code{object}.
 }
 \description{
   Convert into \sQuote{flat} dataframe, including all
@@ -42,6 +46,7 @@
   \pkg{lattice}).
 }
 \examples{
+# OPM method
 data(vaas_1)
 x <- flatten(vaas_1)
 stopifnot(is.data.frame(x), identical(dim(x), c(36864L, 3L)))
@@ -49,14 +54,22 @@ x <- flatten(vaas_1, fixed = "TEST")
 stopifnot(is.data.frame(x), identical(dim(x), c(36864L, 4L)))
 x <- flatten(vaas_1, fixed = "TEST", include = "Strain")
 stopifnot(is.data.frame(x), identical(dim(x), c(36864L, 5L)))
+
+# OPMS method
+data(vaas_4)
+x <- flatten(vaas_4)
+stopifnot(is.data.frame(x), identical(dim(x), c(147456L, 4L)))
+x <- flatten(vaas_4, fixed = "TEST")
+stopifnot(is.data.frame(x), identical(dim(x), c(147456L, 5L)))
+x <- flatten(vaas_4, fixed = "TEST", include = "Strain")
+stopifnot(is.data.frame(x), identical(dim(x), c(147456L, 6L)))
 }
 \seealso{
-  reshape
+  stats::reshape
 
   Other conversion-functions: \code{\link{extract}},
-  \code{\link{extract_columns}},
-  \code{\link{flatten,OPMS}}, \code{\link{plates}},
-  \code{\link{to_yaml}}
+  \code{\link{extract_columns}}, \code{\link{oapply}},
+  \code{\link{plates}}, \code{\link{to_yaml}}
 }
 \keyword{dplot}
 \keyword{manip}
@@ -64,7 +77,12 @@ stopifnot(is.data.frame(x), identical(dim(x), c(36864L, 5L)))
 \docType{methods}
 \alias{flatten-methods}
 \alias{flatten,OPM-method}
+\alias{flatten,OPMS-method}
 \usage{
   \S4method{flatten}{OPM}(object, include = NULL, fixed = NULL,
     factors = TRUE, exact = TRUE, strict = TRUE, full = TRUE, ...) 
+
+  \S4method{flatten}{OPMS}(object, include = NULL, fixed = list(),
+    ...) 
+
 }

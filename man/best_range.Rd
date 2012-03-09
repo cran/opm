@@ -33,4 +33,5 @@
   \S4method{best_range}{numeric}(object, target,
     align = c("center", "left", "right"),
     offset = 0, prop.offset = 0) 
+
 }

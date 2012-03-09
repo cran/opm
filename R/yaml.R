@@ -2,6 +2,7 @@
 
 
 ################################################################################
+################################################################################
 #
 # YAML functions
 #
@@ -24,6 +25,9 @@ NULL
 
 
 setClassUnion(YAML_VIA_LIST, c(OPM, OPMS, "list"))
+
+
+################################################################################
 
 
 setGeneric("to_yaml", function(object, ...) standardGeneric("to_yaml"))
@@ -64,5 +68,8 @@ setMethod("to_yaml", YAML_VIA_LIST, function(object, sep = TRUE,
     result <- sprintf(sprintf("---%s%%s%s", line.sep, line.sep), result)
   result
 }, sealed = SEALED)
+
+
+################################################################################
 
 

@@ -8,7 +8,7 @@
   \item{data}{Object of class \sQuote{grofit}.}
 }
 \value{
-  See \code{\link{curve_params}} (in \code{full} mode).
+  Matrix.
 }
 \description{
   Extract and rename estimated curve parameters.

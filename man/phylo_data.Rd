@@ -42,8 +42,7 @@
 }
 \note{
   For exporting NEXUS format, the matrix should normally be
-  converted beforehand by applying
-  \code{\link{discrete,matrix}}.
+  converted beforehand by applying \code{\link{discrete}}.
 }
 \examples{
 x <- matrix(c(0:9, letters[1:22]), nrow = 2)
@@ -90,7 +89,7 @@ stopifnot(identical(length(y.nexus), nexus.len.1 + 7L))
   Associates, Sunderland [the PAUP* program].
 }
 \seealso{
-  comment write
+  base::comment base::write
 
   Other IO-functions: \code{\link{batch_collect}},
   \code{\link{batch_opm_to_yaml}},
@@ -100,11 +99,10 @@ stopifnot(identical(length(y.nexus), nexus.len.1 + 7L))
   \code{\link{explode_dir}}, \code{\link{file_pattern}},
   \code{\link{opm_files}}, \code{\link{read_opm}},
   \code{\link{read_single_opm}}, \code{\link{split_files}},
-  \code{\link{to_metadata}},
-  \code{\link{to_metadata,character}}
+  \code{\link{to_metadata}}
 
   Other phylogeny-functions: \code{\link{discrete}},
-  \code{\link{discrete,matrix}}, \code{\link{safe_labels}}
+  \code{\link{safe_labels}}
 }
 \keyword{IO}
 \keyword{character}
@@ -116,4 +114,5 @@ stopifnot(identical(length(y.nexus), nexus.len.1 + 7L))
 \usage{
   \S4method{phylo_data}{matrix}(object, format = "epf",
     outfile = "", enclose = TRUE, indent = 3L, paup.block = FALSE) 
+
 }

@@ -16,7 +16,9 @@
   This is currently the only function to change plate
   names. It is intended for Generation-III plates which
   were run like PM plates. Usually they will be annotated
-  as some PM plate by the OmniLog(R) system.
+  as some PM plate by the OmniLog(R) system. In contrast,
+  input ID-mode plates are automatically detected (see
+  \code{\link{read_single_opm}}).
 }
 \examples{
 data(vaas_1)
@@ -30,4 +32,5 @@ stopifnot(identical(vaas_1, copy)) # the dataset already had that plate type
 \alias{gen_iii,OPM-method}
 \usage{
   \S4method{gen_iii}{OPM}(object) 
+
 }

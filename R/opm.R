@@ -1,6 +1,7 @@
 
 
 ################################################################################
+################################################################################
 #
 # OPM class: object construction functions
 #
@@ -8,12 +9,14 @@
 
 setGeneric("opm_problems",
   function(object, ...) standardGeneric("opm_problems"))
-#' Check OPM matrix
+#' Check OPM
 #'
 #' Check whether a matrix fulfils the requirements for \code{\link{OPM}}
-#' measurements. Called when constructing an object of the class.
+#' measurements, or
+#' check whether a character vector fulfils the requirements for 
+#' \code{\link{OPM}} CSV data. Called when constructing an object of the class.
 #'
-#' @param object Matrix.
+#' @param object Matrix or character vector.
 #' @return Character vector with description of problems, empty if there
 #'   are none.
 #' @keywords internal
@@ -35,12 +38,10 @@ setMethod("opm_problems", "matrix", function(object) {
   # Check column names
   col.names <- colnames(object)
   pattern <- sprintf("^([A-H][01]\\d|%s)$", HOUR)
-  bad <- grep(pattern, col.names, invert = TRUE, value = TRUE)
-  if (length(bad))
+  if (length(bad <- grep(pattern, col.names, invert = TRUE, value = TRUE)))
     errs <- c(errs, paste("invalid entry in header:", bad[1L]))
-  bad <- which(duplicated(col.names))
-  if (length(bad))
-    errs <- c(errs, paste("duplicated entry in header:", col.names[bad[1L]]))
+  if (bad <- anyDuplicated(col.names))
+    errs <- c(errs, paste("duplicated entry in header:", col.names[bad]))
   if (col.names[1L] != HOUR)
     errs <- c(errs, paste("first entry in header must be", HOUR))
   if (is.unsorted(col.names[-1L]))
@@ -49,19 +50,6 @@ setMethod("opm_problems", "matrix", function(object) {
   errs
 }, sealed = SEALED)
 
-
-#' Check OPM CSV data
-#'
-#' Check whether a character vector fulfils the requirements for 
-#' \code{\link{OPM}} CSV data. Called when constructing an object of the class.
-#'
-#' @name opm_problems,character
-#'
-#' @param object Character vector.
-#' @return Character vector with description of problems, empty if there are
-#'   none.
-#' @keywords internal
-#'
 setMethod("opm_problems", "character", function(object) {
   errs <- character()
   wanted <- c(FILE, PLATE_TYPE, POS, SETUP)
@@ -70,6 +58,9 @@ setMethod("opm_problems", "character", function(object) {
     errs <- c(errs, sprintf("need '%s' in CSV data", wanted[missing]))
   errs
 }, sealed = SEALED)
+
+
+################################################################################
 
 
 #' OPM class
@@ -118,6 +109,9 @@ setClass(OPM,
 )
 
 
+################################################################################
+
+
 #' Initialize
 #'
 #' Initialize method for the \code{\link{OPM}} class.
@@ -135,6 +129,7 @@ setMethod("initialize", OPM, function(.Object, ...) {
 }, sealed = SEALED)
 
 
+################################################################################
 ################################################################################
 #
 # Getter functions for the measurements
@@ -178,37 +173,116 @@ setMethod("measurements", OPM, function(object, i) {
 }, sealed = SEALED)
 
 
+################################################################################
+
+
 ## NOTE: "[" is a primitive and needs no setGeneric().
+
 
 #' Select subset
 #'
 #' Select a subset of the measurements. Return other slots unchanged. In
 #' contrast to the usual `[` functions, always return a matrix (as a component
-#' of the returned OPM object), even if it could be simplified to a vector.
+#' of the returned object), even if it could be simplified to a vector.
 #' The time column is not counted and always copied. It is an error to delete
 #' the entire matrix. In all other respects, this method behaves like the `[`
-#' functions from the \pkg{base} package.
+#' functions from the \pkg{base} package. The \code{\link{OPMS}} method
+#' selects a subset of the plates and/or the measurements of the individual
+#' plates. It simplifies the outcome to a \code{\link{OPM}} or
+#' \code{\link{OPMA}} object if only a single plate remains and to \code{NULL}
+#' if no plate remains. This behaves like subsetting a three-dimensional array
+#' with plates as first dimension, time points as second, and wells as third.
 #'
 #' @rdname bracket
 #' @exportMethod "["
+#' @export
 #'
-#' @param x \code{\link{OPM}} object.
-#' @param i Row(s). Vector or missing.
-#' @param j Columns(s). Vector or missing.
-#' @param ... Should currently not be set.
-#' @param drop Logical scalar. Has no effect here, but see \code{\link{[,OPMA}}.
-#' @family getter-functions
-#' @return \code{\link{OPM}} object.
-#' @seealso [ [[
+#' @param x \code{\link{OPM}}, \code{\link{OPMA}} or \code{\link{OPMS}} object.
+#' @param i Vector or missing. For the \code{\link{OPM}} and \code{\link{OPMA}}
+#'   method, the indexes of one to several rows. For the \code{\link{OPMS}}
+#'   method, the indexes of one to several plates.
+#' @param j Vector or missing. For the \code{\link{OPM}} and \code{\link{OPMA}}
+#'   method, the indexes of one to several columns. For the \code{\link{OPMS}}
+#'   method, the indexes of one to several rows. In that case, if \code{j} is
+#'   a list, its values are passed to the respective \code{\link{OPM}} object 
+#'   separately, allowing for individual choices of time points.
+#' @param ... For the \code{\link{OPM}} and \code{\link{OPMA}} methods, this
+#'   should \strong{not} be set. For the \code{\link{OPMS}} method, the indexes
+#'   index of one to several columns, or missing. That is, here \code{...} can
+#'   comprise zero arguments or a single one, not more.
+#' @param drop Logical scalar. Remove the aggregated data and turn
+#'   \code{\link{OPMA}} to \code{\link{OPM}} objects? Has no effect if \code{x}
+#'    already is an \code{\link{OPM}} object or contains only such objects.
+#' @return \code{\link{OPM}}, \code{\link{OPMA}} or \code{\link{OPMS}} object,
+#'   or \code{NULL}.
+#'
+#' @details The \code{\link{OPMA}} method works like the \code{\link{OPM}} one,
+#'   but the function applies the subsetting to the original and the aggregated
+#'   data in parallel. The aggregated data may also be dropped entirely; this 
+#'   might be appropriate if a subset of the time points is selected,
+#'   potentially yielding aggregated values that do not fit to the measurements 
+#'   anymore.
+#' @seealso base::`[` base::`[[`
 #' @keywords manip
 #'
 #' @examples
+#'
+#' # OPM(A) method
 #' data(vaas_1)                                          
 #' (x <- dim(vaas_1))
 #' stopifnot(identical(x, c(384L, 96L)))
 #' copy <- vaas_1[, 11:22]
 #' (x <- dim(copy))                                       
-#' stopifnot(identical(x, c(384L, 12L)))                                          
+#' stopifnot(identical(x, c(384L, 12L)))         
+#' copy <- vaas_1[]
+#' stopifnot(has_aggr(copy))
+#' stopifnot(identical(copy, vaas_1))
+#' copy <- vaas_1[drop = TRUE]
+#' stopifnot(!has_aggr(copy))
+#' stopifnot(!identical(copy, vaas_1))                                 
+#'
+#' # OPMS method
+#' data(vaas_4)
+#'
+#' # Create OPMS object with fewer plates (the first two ones)
+#' x <- vaas_4[1:2]
+#' stopifnot(dim(x) == c(2, 384, 96))
+#'
+#' # If only a single plate is selected, this is reduced to OPM(A)
+#' x <- vaas_4[3]
+#' stopifnot(dim(x) == c(384, 96))
+#'
+#' # Create OPMS object with fewer time points (the first 100 in that case;
+#' # usually this would correspond to the first 25 hours)
+#' x <- vaas_4[, 1:100]
+#' stopifnot(dim(x) == c(4, 100, 96))
+#'
+#' # Create OPMS object with fewer wells
+#' x <- vaas_4[, , 1:12]
+#' stopifnot(dim(x) == c(4, 384, 12))
+#'
+#' # The same with well names
+#' x <- vaas_4[, , sprintf("A%02i", 1:12)] # this yields A01...A12
+#' stopifnot(dim(x) == c(4, 384, 12))
+#'
+#' # Select all plates that have aggregated values
+#' x <- vaas_4[has_aggr(vaas_4)]
+#' stopifnot(identical(x, vaas_4)) # all have such values!
+#'
+#' # Split into list of OPMS objects with the same overall measurement hours;
+#' # the default split() method can be applied here based on "["
+#' x <- split(vaas_4, hours(vaas_4))
+#' stopifnot(class(x) == "list", length(x) == 1, class(x[[1]]) == "OPMS")
+#' # ... because the running times were actually already identical, the list
+#' # contains only a single element.
+#'
+#' # Traverse all contained OPM objects
+#' for (i in seq(vaas_4)) { # OR: for (i in 1:length(vaas_4))
+#'   x <- vaas_4[i]
+#'   # now do something with 'x'...
+#'   stopifnot(dim(x) == c(384, 96))
+#' }
+#' # see also opms_apply() for a more elegant approach 
 #'
 setMethod("[", OPM, function(x, i, j, ..., drop = FALSE) {
   mat <- x@measurements[, -1L, ..., drop = FALSE][i, j, ..., drop = FALSE]
@@ -222,6 +296,9 @@ setMethod("[", OPM, function(x, i, j, ..., drop = FALSE) {
 }, sealed = SEALED)
 
 
+################################################################################
+
+
 setGeneric("thin_out", function(object, ...) standardGeneric("thin_out"))
 #' Thin out the measurements
 #'
@@ -231,7 +308,7 @@ setGeneric("thin_out", function(object, ...) standardGeneric("thin_out"))
 #' @param object \code{\link{OPM}} object.
 #' @param factor Numeric scalar >= 1 indicating how much the dataset shall be
 #'   thinned out.
-#' @param drop Logical scalar. See \code{\link{[}} and \code{\link{[,OPMA}}.
+#' @param drop Logical scalar. See \code{\link{[}}.
 #' @export
 #' @return \code{\link{OPM}} object.
 #' @family getter-functions
@@ -259,6 +336,9 @@ setMethod("thin_out", OPM, function(object, factor, drop = FALSE) {
   idx <- idx[idx %% factor == 0L]
   object[idx, , drop = drop]
 }, sealed = SEALED)
+
+
+################################################################################
 
 
 setGeneric("well", function(object, ...) standardGeneric("well"))
@@ -289,6 +369,9 @@ setGeneric("well", function(object, ...) standardGeneric("well"))
 setMethod("well", OPM, function(object, i, drop = TRUE) {
   object@measurements[, -1L, drop = FALSE][, i, drop = drop]
 }, sealed = SEALED)
+
+
+################################################################################
 
 
 setGeneric("hours", function(object, ...) standardGeneric("hours"))
@@ -351,29 +434,42 @@ setMethod("hours", OPM, function(object,
 }, sealed = SEALED)
 
 
+################################################################################
+
+
 ## NOTE: 'max' is part of the S4 summary group generic and needs no
 ## setGeneric().
 
 
 #' Maximum
 #'
-#' Get the maximal value of all wells or (a) specified one(s).
+#' Get the maximal value of all wells or (a) specified one(s). The
+#' \code{\link{OPMS}} method works by calling the \code{\link{OPM}} method
+#' on all plates and then determining the overall maximum.
 #'
-#' @param x \code{\link{OPM}} object.
+#' @param x \code{\link{OPM}} or \code{\link{OPMS}} object.
 #' @param ... Coordinate of one to several wells. If missing, the maximum of 
-#'   all wells is returned. See \code{\link{well}} or details.
+#'   all wells is returned. See \code{\link{well}} for details.
 #' @param na.rm Logical scalar. See \code{max} from the \pkg{base} package. Has
 #'   no effect here because \code{NA} values are not allowed within the
 #'   measurements.
 #' @return Numeric scalar.
 #' @export
-#' @seealso max
+#' @seealso base::max
 #' @family getter-functions
 #' @keywords attribute dplot
 #' @examples
+#'
+#' # OPM method
 #' data(vaas_1)                                          
 #' (x <- max(vaas_1))
 #' (y <- max(vaas_1, 1)) # this is the negative control
+#' stopifnot(x > y)
+#'
+#' # OPMS method
+#' data(vaas_4)                                          
+#' (x <- max(vaas_4))
+#' (y <- max(vaas_4, 1)) # this is the negative control
 #' stopifnot(x > y)
 #'
 setMethod("max", OPM, function(x, ..., na.rm = FALSE) {
@@ -384,12 +480,17 @@ setMethod("max", OPM, function(x, ..., na.rm = FALSE) {
 }, sealed = SEALED)
 
 
+################################################################################
+
+
 setGeneric("minmax", function(x, ...) standardGeneric("minmax"))
 #' Smallest maximum
 #'
-#' Get the smallest maximum among all wells.
+#' Get the smallest maximum among all wells. The
+#' \code{\link{OPMS}} method works by calling the \code{\link{OPM}} method
+#' on all plates and then determining the overall minimum.
 #'
-#' @param x \code{\link{OPM}} object.
+#' @param x \code{\link{OPM}} or \code{\link{OPMS}} object.
 #' @param ... Coordinate of one to several wells. If missing, the smallest
 #'   maximum of all wells is returned. See \code{\link{well}} for details. If
 #'   only as single well is selected, the result is actually identical to the
@@ -397,13 +498,21 @@ setGeneric("minmax", function(x, ...) standardGeneric("minmax"))
 #' @param na.rm Logical scalar. See \code{\link{max}}.
 #' @return Numeric scalar.
 #' @export
-#' @seealso min max
+#' @seealso base::min base::max
 #' @family getter-functions
 #' @keywords attribute dplot
 #' @examples
+#'
+#' # OPM method
 #' data(vaas_1)                                          
 #' (x <- max(vaas_1))
 #' (y <- minmax(vaas_1))
+#' stopifnot(x > y)
+#'
+#' # OPMS method
+#' data(vaas_4)                                          
+#' (x <- max(vaas_4))
+#' (y <- minmax(vaas_4))
 #' stopifnot(x > y)
 #'
 setMethod("minmax", OPM, function(x, ..., na.rm = FALSE) {
@@ -412,27 +521,46 @@ setMethod("minmax", OPM, function(x, ..., na.rm = FALSE) {
 }, sealed = SEALED)
 
 
+################################################################################
+
+
 ## NOTE: 'dim' is a primitive and needs no setGeneric().
 
 #' Dimensions
 #'
-#' Get the dimensions of the measurements.
+#' Get the dimensions of the measurements of an \code{\link{OPM}} object, or
+#' get the dimensions of an \code{\link{OPMS}} object. Note that this function
+#' cannot be used to determine the correspondence of the time points between
+#' all plates as it reports only the time points of the first plate. Instead
+#' the \code{\link{OPMS}} method of \code{\link{hours}} must be used.
 #'
-#' @param x \code{\link{OPM}} object.
-#' @return Two-element numeric vector (number of time points and number of
-#'   wells).
+#' @param x \code{\link{OPM}} or \code{\link{OPMS}} object.
+#' @return For the \code{\link{OPM}} method, a two-element numeric vector 
+#'   (number of time points and number of wells). For the \code{\link{OPMS}}
+#'   method, a numeric vector with (i) the number of contained \code{\link{OPM}}
+#'   objects, and (ii) and (iii) the dimensions of the first plate.
 #' @export
 #' @family getter-functions
 #' @keywords attribute
-#' @seealso dim
+#' @seealso base::dim
 #' @examples
+#'
+#' # OPM method
 #' data(vaas_1)                                          
 #' (x <- dim(vaas_1))
 #' stopifnot(identical(x, c(384L, 96L)))
 #'
+#' # OPMS method
+#' data(vaas_4) 
+#' (x <- dim(vaas_4))
+#' stopifnot(identical(x, c(4L, 384L, 96L)))
+#'
 setMethod("dim", OPM, function(x) {
   dim(measurements(x)[, -1L, drop = FALSE])
 }, sealed = SEALED)
+
+
+################################################################################
 
 
 setGeneric("wells", function(object, ...) standardGeneric("wells"))
@@ -458,14 +586,14 @@ setGeneric("wells", function(object, ...) standardGeneric("wells"))
 #' @param clean Logical scalar. If \code{TRUE}, clean trimmed end of full 
 #'   substrate name from non-word characters; use an empty string if only the 
 #'   dot remained.
-#' @param word.wise Logical scalar. If \code{TRUE}, abbrevation works by 
+#' @param word.wise Logical scalar. If \code{TRUE}, abbreviation works by 
 #'   truncating each word separately, and removing vowels first.
 #' @param paren.sep Character scalar. What to insert before the opening
 #'   parenthesis (or bracket).
 #' @return Character vector.
 #' @export
 #' @family getter-functions
-#' @seealso strtrim abbreviate
+#' @seealso base::strtrim base::abbreviate
 #' @keywords attribute
 #' @note Do not confuse this with \code{\link{well}}.
 #' @examples
@@ -489,6 +617,7 @@ setMethod("wells", OPM, function(object, full = FALSE, in.parens = TRUE,
 
 
 ################################################################################
+################################################################################
 #
 # Getter and setter functions for the CSV data
 #
@@ -502,8 +631,8 @@ setGeneric("csv_data", function(object, ...) standardGeneric("csv_data"))
 #' files.
 #'
 #' @param object \code{\link{OPM}} object.
-#' @param keys Character vector (or other objects useable as vector index). An
-#'   optional subselection. If empty (the default), all CSV data are returned.
+#' @param keys Character vector (or other objects usable as vector index). An
+#'   optional sub-selection. If empty (the default), all CSV data are returned.
 #'   It is an error to select non-existing items.
 #' @return Named character vector.
 #' @export
@@ -526,6 +655,9 @@ setMethod("csv_data", OPM, function(object, keys = character()) {
 }, sealed = SEALED)
 
 
+################################################################################
+
+
 setGeneric("filename", function(object, ...) standardGeneric("filename"))
 #' Original input filename
 #'
@@ -545,6 +677,9 @@ setGeneric("filename", function(object, ...) standardGeneric("filename"))
 setMethod("filename", OPM, function(object) {
   object@csv_data[[FILE]]
 }, sealed = SEALED)
+
+
+################################################################################
 
 
 setGeneric("plate_type", function(object, ...) standardGeneric("plate_type"))
@@ -569,7 +704,7 @@ setGeneric("plate_type", function(object, ...) standardGeneric("plate_type"))
 #' @return Character scalar.
 #' @export
 #' @family getter-functions
-#' @seealso strtrim abbreviate
+#' @seealso base::strtrim base::abbreviate
 #' @keywords attribute
 #' @examples
 #' data(vaas_1)
@@ -597,11 +732,14 @@ setMethod("plate_type", OPM, function(object, full = FALSE, in.parens = TRUE,
 }, sealed = SEALED)
 
 
+################################################################################
+
+
 setGeneric("setup_time", function(object, ...) standardGeneric("setup_time"))
 #' Setup time of the measuring
 #'
 #' Get the setup time of the PM experiment as recorded by the OmniLog(R) 
-#' device. This is a convenience function for one of the more important entries  
+#' device. This is a convenience function for one of the more important entries
 #' of \code{\link{csv_data}}
 #'
 #' @param object \code{\link{OPM}} object.
@@ -619,6 +757,9 @@ setGeneric("setup_time", function(object, ...) standardGeneric("setup_time"))
 setMethod("setup_time", OPM, function(object) {
   object@csv_data[[SETUP]]
 }, sealed = SEALED)
+
+
+################################################################################
 
 
 setGeneric("position", function(object, ...) standardGeneric("position"))
@@ -643,6 +784,9 @@ setMethod("position", OPM, function(object) {
 }, sealed = SEALED)
 
 
+################################################################################
+
+
 setGeneric("gen_iii", function(object, ...) standardGeneric("gen_iii"))
 #' Change to Generation III
 #'
@@ -655,7 +799,9 @@ setGeneric("gen_iii", function(object, ...) standardGeneric("gen_iii"))
 #' @export
 #' @note This is currently the only function to change plate names. It is
 #'   intended for Generation-III plates which were run like PM plates. Usually
-#'   they will be annotated as some PM plate by the OmniLog(R) system.
+#'   they will be annotated as some PM plate by the OmniLog(R) system. In 
+#'   contrast, input ID-mode plates are automatically detected (see 
+#'   \code{\link{read_single_opm}}).
 #' @keywords manip
 #' @examples
 #' data(vaas_1)
@@ -669,6 +815,7 @@ setMethod("gen_iii", OPM, function(object) {
 }, sealed = SEALED)
 
 
+################################################################################
 ################################################################################
 #
 # Other getter functions
@@ -695,23 +842,36 @@ setMethod("has_aggr", OPM, function(object) {
 }, sealed = SEALED)
 
 
-setGeneric("summary", function(object, ...) standardGeneric("summary"))
+################################################################################
+
+
+#setGeneric("summary", function(object, ...) standardGeneric("summary"))
+setGeneric("summary")
 #' Summary
 #'
 #' Print summary information to screen.
 #'
-#' @param object \code{\link{OPM}} object.
+#' @param object \code{\link{OPM}} or \code{\link{OPMS}} object.
 #' @param ... Optional arguments passed to \code{formatDL}.
 #' @export
-#' @return Named list, returned invisibly. The \sQuote{metadata} entry is the
-#'   number of non-list elements in \code{\link{metadata}}.
+#' @return For the \code{\link{OPM}} method, a named list, returned invisibly. 
+#'   The \sQuote{metadata} entry is the number of non-list elements in 
+#'   \code{\link{metadata}}. For the \code{\link{OPMS}} method, a list of such
+#'   lists (one per plate), also returned invisibly.
 #' @family getter-functions
 #' @keywords attribute
-#' @seealso summary
+#' @seealso base::summary
 #' @examples
+#'
+#' # OPM method
 #' data(vaas_1)
 #' x <- summary(vaas_1)
 #' stopifnot(is.list(x))
+#'
+#' # OPMS method
+#' data(vaas_4)
+#' x <- summary(vaas_4)
+#' stopifnot(is.list(x), length(x) == 4L, all(sapply(x, is.list)))
 #'
 setMethod("summary", OPM, function(object, ...) {
   result <- list(
@@ -730,48 +890,10 @@ setMethod("summary", OPM, function(object, ...) {
 
 
 ################################################################################
+################################################################################
 #
 # Metadata functions
 #
-
-
-setGeneric("collect_template",
-  function(object, ...) standardGeneric("collect_template"))
-#' Collect template (OPM version)
-#'
-#' Collect a dataframe template assisting in later on adding metadata using 
-#' \code{\link{include_metadata}}. 
-#'
-#' @name collect_template,OPM
-#'
-#' @param object \code{\link{OPM}} object.
-#' @param selection Character vector passed to \code{\link{csv_data}}.
-#' @param add.cols \code{NULL} or character vector. If not empty, names of 
-#'   columns to add to the dataframe, initially containing \code{NA}.
-#' @export
-#' @return Dataframe with one row and the number columns equal to the sum of
-#'   the lengths of \code{selection} and \code{add.cols}.
-#' @family metadata-functions
-#' @keywords attribute
-#' @examples
-#' data(vaas_1)
-#' (x <- collect_template(vaas_1))
-#' stopifnot(identical(dim(x), c(1L, 3L)))
-#' (x <- collect_template(vaas_1, add.cols = c("A", "B")))
-#' stopifnot(identical(dim(x), c(1L, 5L)))
-#' # see include_metadata() for how to use this to add metadata information
-#'
-setMethod("collect_template", OPM, function(object, 
-    selection = c(SETUP, POS, FILE), add.cols = NULL) {
-  result <- as.list(csv_data(object, selection))
-  result <- as.data.frame(result, stringsAsFactors = FALSE, optional = TRUE)
-  if (length(add.cols) > 0L) {
-    to.add <- matrix(nrow = nrow(result), ncol = length(add.cols), 
-      dimnames = list(NULL, add.cols), data = NA_character_)
-    result <- cbind(result, to.add, stringsAsFactors = FALSE)
-  }
-  result
-}, sealed = SEALED)
 
 
 setGeneric("include_metadata",
@@ -782,18 +904,16 @@ setGeneric("include_metadata",
 #'
 #' @param object \code{\link{OPM}} object.
 #' @param md Dataframe containing keys as column names, or name of file
-#'   from which to read the dataframe. Handled by \code{\link{to_metadata}} or
-#'   \code{\link{to_metadata,character}}.
+#'   from which to read the dataframe. Handled by \code{\link{to_metadata}}.
 #' @param keys Character vector.
 #' @param replace Logical scalar indicating whether the previous metadata, if
 #'   any, shall be replaced by the novel ones, or whether these shall be
 #'   appended.
-#' @param stop.on.error Logical scalar. Stop with an error message if 
-#'   (unambiguous) selection is impossible? Otherwise, create a warning only.
-#' @param remove.csv.data Logical scalar. Remove all names present in
-#'   \code{csv_data}, not only those in \code{keys}?
-#' @param ... Optional argument passed to \code{\link{to_metadata}} or
-#'   \code{\link{to_metadata,character}}.
+#' @param skip.failure Logical scalar. Do not stop with an error message if 
+#'   (unambiguous) selection is impossible but raise a warning only?
+#' @param remove.keys Logical scalar. When including \code{md} in the metadata,
+#'   discard the \code{keys} columns?
+#' @param ... Optional argument passed to \code{\link{to_metadata}}.
 #' @export
 #' @return Novel \code{\link{OPM}} object.
 #' @family metadata-functions
@@ -806,9 +926,8 @@ setGeneric("include_metadata",
 #' stopifnot(is.null(metadata(vaas_1, "Location")))
 #' stopifnot(identical(metadata(copy, "Location"), "Braunschweig"))
 #'
-setMethod("include_metadata", OPM, function(object, md,
-    keys = c(SETUP, POS), replace = FALSE, stop.on.error = TRUE,
-    remove.csv.data = TRUE, ...) {
+setMethod("include_metadata", OPM, function(object, md, keys = c(SETUP, POS),
+    replace = FALSE, skip.failure = FALSE, remove.keys = TRUE, ...) {
 
   selection <- as.list(csv_data(object, keys))
 
@@ -831,18 +950,17 @@ setMethod("include_metadata", OPM, function(object, md,
 
   # Failures.
   if (!is.null(msg)) {
-    if (stop.on.error)
-      stop(msg)
-    else {
+    if (skip.failure) {
       warning(msg)
       return(object)
-    }
+    } else
+      stop(msg)  
   }
 
   # Success.
-  wanted <- setdiff(colnames(found), keys)
-  if (remove.csv.data)
-    wanted <- setdiff(wanted, names(csv_data(object)))
+  wanted <- colnames(found)
+  if (remove.keys)
+    wanted <- setdiff(wanted, keys)
   found <- as.list(found[, wanted, drop = FALSE])
   result <- object
   result@metadata <- if (replace)
@@ -855,6 +973,7 @@ setMethod("include_metadata", OPM, function(object, md,
 }, sealed = SEALED)
 
 
+################################################################################
 ################################################################################
 #
 # Conversion functions: OPM <=> lists. Detailed comments are given close
@@ -876,6 +995,9 @@ setMethod("other_slots", OPM, function(object) {
 }, sealed = SEALED)
 
 
+################################################################################
+
+
 setGeneric("attach_attr", function(object, ...) standardGeneric("attach_attr"))
 #' Attach slots
 #'
@@ -893,6 +1015,9 @@ setMethod("attach_attr", OPM, function(object, other) {
   })
   other
 }, sealed = SEALED)
+
+
+################################################################################
 
 
 setAs(from = OPM, to = "matrix", function(from) {
@@ -915,6 +1040,7 @@ setAs(from = OPM, to = "list", function(from) {
 
 
 ################################################################################
+################################################################################
 #
 # Curve parameter estimation
 #
@@ -933,9 +1059,12 @@ setGeneric("to_grofit_time",
 #'
 setMethod("to_grofit_time", OPM, function(object) {
   tp <- hours(object, "all")
-  as.data.frame(matrix(rep(tp, length(wells(object))), ncol = length(tp),
+  as.data.frame(matrix(rep.int(tp, length(wells(object))), ncol = length(tp),
     byrow = TRUE))
 }, sealed = SEALED)
+
+
+################################################################################
 
 
 setGeneric("to_grofit_data",
@@ -961,6 +1090,9 @@ setMethod("to_grofit_data", OPM, function(object) {
 }, sealed = SEALED)
 
 
+################################################################################
+
+
 ## NOTE: Not an S4 method because 'grofit' is an S3 class
 
 extract_curve_params <- function(data) UseMethod("extract_curve_params")
@@ -969,7 +1101,7 @@ extract_curve_params <- function(data) UseMethod("extract_curve_params")
 #' Extract and rename estimated curve parameters.
 #'
 #' @param data Object of class \sQuote{grofit}.
-#' @return See \code{\link{curve_params}} (in \code{full} mode).
+#' @return Matrix.
 #' @method extract_curve_params grofit
 #' @keywords internal
 #'
@@ -982,131 +1114,7 @@ extract_curve_params.grofit <- function(data) {
 }
 
 
-setGeneric("curve_params",
-  function(object, ...) standardGeneric("curve_params"))
-#' Estimate curve parameters
-#'
-#' Infer curve parameters from the kinetic data stored in an \code{\link{OPM}} 
-#' object using the \pkg{grofit} package. This is not normally directly called
-#' by an \pkg{opm} user because \code{\link{do_aggr}} is available.
-#'
-#' @param object \code{\link{OPM}} object.
-#' @param boot Integer scalar. Number of bootstrap replicates used to estimate
-#'   95-percent confidence intervals (CIs) for the parameter. Set this to zero
-#'   to omit bootstrapping, resulting in \code{NA} entries for the CIs.
-#' @param verbose Logical scalar. Print progress messages?
-#' @param cores Integer scalar. Number of cores to use. Setting this to a
-#'   value > 1 requires the \pkg{multicore} package. Has no effect if 
-#'   \sQuote{opm-fast} is chosen (see below).
-#' @param options List. For its use in \sQuote{grofit} mode, see 
-#'   \code{grofit.control} in the \pkg{grofit} package. The \code{boot} and 
-#'   \code{verbose} settings, as the most important ones, are added separately
-#'   (see above). The verbose mode is not very useful in parallel processing.
-#'   For its use in \sQuote{opm-fast} mode, see \code{\link{fast_estimate}}.
-#' @param program Character scalar. The aggregation method to use. Currently
-#'   only the following methods are supported:
-#'   \describe{
-#'     \item{grofit}{The \code{grofit} function in the eponymous package, with
-#'     spline fitting as default.}
-#'     \item{opm-fast}{The native, faster parameter estimation. This will only 
-#'     yield two of the four parameters, the area under the curve and the
-#'     maximum height. The area under the curve is estimated as the sum of the
-#'     areas given by the trapezoids defined by each pair of adjacent time 
-#'     points. The maximum height is just the result of \code{max}. By default,
-#'     however, the median bootstrap value is preferred as point estimate over 
-#'     the real point estimate.}
-#'   }
-#' @export
-#' @return A numeric matrix of the same structure than the one returned by
-#'   \code{\link{aggregated}} but with an additional \sQuote{settings} 
-#'   attribute containing the (potentially modified) list proved via the
-#'   \code{settings} argument, and a \sQuote{program} attribute corresponding 
-#'   to the \code{program} argument.
-#' @family aggregation-functions
-#' @seealso grofit::grofit
-#' @keywords smooth
-#' @references Brisbin IL, Collins CT, White GC and McCallum DA. A new paradigm 
-#'   for the analysis and interpretation of growth data: the shape of things to 
-#'   come. The Auk 1987; 104:552-553.
-#' @references Efron B. Bootstrap methods: another look at the jackknife. 
-#'   Annals of Statistics 1979; 7:1-26.
-#' @references Kahm M, Hasenbrink G, Lichtenberg-Frate H, Ludwig J, 
-#'   Kschischo M. grofit: Fitting biological growth curves with R. Journal of 
-#'   Statistical Software 2010; 33:1-21. 
-#' @references Vaas LAI, Sikorski J, Michael V, Goeker M, Klenk H-P. 
-#'   Visualization and curve parameter estimation strategies for efficient 
-#'   exploration of Phenotype Microarray kinetics. PLoS ONE 2012; in press.
-#' @examples
-#' # Examples are given under do_aggr(), as only the return value is
-#' # different: Let x be the result of do_aggr(). The matrix returned by 
-#' # curve_params() could then be received using aggregated(x), whereas 
-#' # the 'program' and the 'settings' attributes could be obtained as 
-#' # components of the list returned by aggr_settings(x).
-#'
-setMethod("curve_params", OPM, function(object, boot = 100L, verbose = FALSE,
-    cores = 1L, options = list(), program = "grofit") {
-  
-  # Add our own changes of the default
-  make_grofit_control <- function(verbose, boot, add) {
-    result <- grofit::grofit.control()
-    orig.class <- class(result)
-    result <- insert(unclass(result), interactive = FALSE,
-      suppress.messages = !verbose, fit.opt = "s", nboot.gc = boot, 
-      .force = TRUE)
-    result <- insert(result, as.list(add), .force = TRUE)
-    class(result) <- orig.class
-    result
-  }
-  
-  run_grofit <- function(time, data, control) {
-    result <- grofit::grofit(time = time, data = data, ec50 = FALSE,
-      control = control)
-    extract_curve_params(result)
-  }
-  
-  switch(program <- match.arg(program, KNOWN_PROGRAMS),
-         
-    grofit = {
-      control <- make_grofit_control(verbose, boot, add = options)  
-      grofit.time <- to_grofit_time(object)
-      grofit.data <- to_grofit_data(object)
-      result <- traverse(as.list(seq.int(nrow(grofit.data))), 
-        fun = function(row) {
-          run_grofit(grofit.time[row, , drop = FALSE],
-            grofit.data[row, , drop = FALSE], control)
-        }, cores = cores)
-      result <- do.call(cbind, result)
-      attr(result, OPTIONS) <- unclass(control)
-    },
-
-    `opm-fast` = {
-      options <- insert(as.list(options), boot = boot, .force = FALSE)
-      mat <- measurements(object)
-      result <- rbind(
-        do.call(fast_estimate, c(list(x = mat, what = "AUC"), options)),
-        do.call(fast_estimate, c(list(x = mat, what = "A"), options)),
-        matrix(nrow = 6L, ncol = ncol(mat) - 1L, data = NA_real_)  
-      )
-      rownames(result)[7L:9L] <- sub("^[^.]+", "lambda",
-        rownames(result)[1L:3L])
-      rownames(result)[10L:12L] <- sub("^[^.]+", "mu",
-        rownames(result)[1L:3L])
-      map <- map_grofit_names(opm.fast = TRUE)
-      result <- result[names(map), ]
-      rownames(result) <- as.character(map)
-      attr(result, OPTIONS) <- options
-    },
-         
-    stop(BUG_MSG)
-
-  )
-         
-  attr(result, PROGRAM) <- program
-  result
-  
-}, sealed = SEALED)
-
-
+################################################################################
 ################################################################################
 #
 # Plots (and the flatten() function)
@@ -1119,7 +1127,7 @@ setGeneric("flatten", function(object, ...) standardGeneric("flatten"))
 #' Convert into \sQuote{flat} dataframe, including all measurements in a
 #' single column (suitable, e.g., for \pkg{lattice}).
 #'
-#' @param object \code{\link{OPM}} object.
+#' @param object \code{\link{OPM}} or \code{\link{OPMS}} object.
 #' @param include \code{NULL}, character vector or list. If not \code{NULL},
 #'   include this meta-information in the dataframe, replicated in each row.
 #'   Otherwise it converted to a list and passed to \code{\link{metadata}}. See
@@ -1131,15 +1139,20 @@ setGeneric("flatten", function(object, ...) standardGeneric("flatten"))
 #' @param exact Logical scalar. Passed to \code{\link{metadata}}.
 #' @param strict Logical scalar. Passed to \code{\link{metadata}}.
 #' @param full Logical scalar. Replace well coordinates by full names?
-#' @param ... Optional other arguments passed to \code{\link{wells}}.
+#' @param ... Optional other arguments passed to \code{\link{wells}}, or from
+#'   the \code{\link{OPMS}} to the \code{\link{OPM}} method.
 #' @export
 #' @return Dataframe. Column names are unchecked (not converted to variable
 #'   names). The three last columns are: \sQuote{Time}, \sQuote{Well},
-#'   \sQuote{Value}, with the obvious meanings.
+#'   \sQuote{Value}, with the obvious meanings. The \code{\link{OPMS}} method
+#'   yields an additional column named \sQuote{Plate}, which contains each 
+#'   plate's number within \code{object}.
 #' @family conversion-functions
 #' @keywords manip dplot
-#' @seealso reshape
+#' @seealso stats::reshape
 #' @examples
+#'
+#' # OPM method
 #' data(vaas_1)
 #' x <- flatten(vaas_1)
 #' stopifnot(is.data.frame(x), identical(dim(x), c(36864L, 3L)))
@@ -1147,6 +1160,15 @@ setGeneric("flatten", function(object, ...) standardGeneric("flatten"))
 #' stopifnot(is.data.frame(x), identical(dim(x), c(36864L, 4L)))
 #' x <- flatten(vaas_1, fixed = "TEST", include = "Strain")
 #' stopifnot(is.data.frame(x), identical(dim(x), c(36864L, 5L)))
+#'
+#' # OPMS method
+#' data(vaas_4)
+#' x <- flatten(vaas_4)
+#' stopifnot(is.data.frame(x), identical(dim(x), c(147456L, 4L)))
+#' x <- flatten(vaas_4, fixed = "TEST")
+#' stopifnot(is.data.frame(x), identical(dim(x), c(147456L, 5L)))
+#' x <- flatten(vaas_4, fixed = "TEST", include = "Strain")
+#' stopifnot(is.data.frame(x), identical(dim(x), c(147456L, 6L)))
 #'
 setMethod("flatten", OPM, function(object, include = NULL, fixed = NULL,
     factors = TRUE, exact = TRUE, strict = TRUE, full = TRUE, ...) {
@@ -1164,7 +1186,7 @@ setMethod("flatten", OPM, function(object, include = NULL, fixed = NULL,
     colnames(result)[1L] <- "Time"
   } else {
     times <- hours(object, "all")
-    rep.times <- rep(times, length(well.names))
+    rep.times <- rep.int(times, length(well.names))
     rep.wells <- rep(well.names, each = length(times))
     result <- data.frame(Time = rep.times, Well = rep.wells,
       Value = as.vector(object@measurements[, -1L]), check.names = FALSE,
@@ -1187,26 +1209,41 @@ setMethod("flatten", OPM, function(object, include = NULL, fixed = NULL,
 }, sealed = SEALED)
 
 
+################################################################################
+
+
 setGeneric("xy_plot", function(x, ...) standardGeneric("xy_plot"))
 #' XY plot
 #'
-#' Customized plotting of a single PM plate, using \code{xyplot} from the
-#' \pkg{lattice} package. The optimal number of rows and columns is estimated 
-#' from the number of selected wells. An optimal font size of the panel headers
-#' is also chosen automatically, but can also be adapted by the user, much like
-#' most aspects of the resulting graphics output.
+#' Customized plotting of a single or multiple PM plate(s), using \code{xyplot} 
+#' from the \pkg{lattice} package. The optimal number of rows and columns is 
+#' estimated  from the number of selected wells. An optimal font size of the 
+#' panel headers is also chosen automatically, but can also be adapted by the
+#'  user, much like most aspects of the resulting graphics output.
+#' In the case of the \code{\link{OPMS}} method, if metadata are selected,
+#' curve colors are determined according to the combinations of these metadata
+#' entries, otherwise each plate gets its own color.
 #'
-#' @param x \code{\link{OPM}} object.
+#' @param x \code{\link{OPM}} or \code{\link{OPMS}} object.
 #'
-#' @param col Character scalar (color name) determining the line color.
+#' @param col For the \code{\link{OPM}} method, just a character scalar
+#'   (color name) determining the line color. For the \code{\link{OPMS}}
+#'   method, either a character vector with color codes or one of
+#'   the arguments of \code{\link{select_colors}} (for picking one of the
+#'   predefined color sets). It is an error if fewer colors are chosen than the
+#'   number of plate grouping levels (see the \code{...} argument below). For 
+#'   user-chosen color sets, keep in mind that the sets are not checked for 
+#'   duplicates. See \code{\link{max_rgb_contrast}} as a method for optimally 
+#'   arranging user-defined colors.
 #' @param lwd Numeric scalar determining the line width.
 #'
 #' @param neg.ctrl Determine the height of a horizontal baseline drawn in each
 #'   panel. If \code{NULL} or \code{FALSE}, no baseline will be drawn. If
 #'   \code{TRUE}, the baseline's height is the value of \code{\link{minmax}}.
 #'   If a character scalar, \code{neg.ctrl} is interpreted as the name of the
-#'   well regarded as negative control. Its overall maximum will determine the
-#'   height. Set \code{neg.ctrl} to a numeric value to set the height directly
+#'   wells regarded as negative control, and the baseline's height becomes the 
+#'   value of \code{\link{minmax}} applied to these wells only. Set
+#'   \code{neg.ctrl} to a numeric value for assigning the height directly
 #'   (at your own risk).
 #' @param base.col Character scalar. Baseline color (ignored if no baseline is
 #'   drawn).
@@ -1238,6 +1275,10 @@ setGeneric("xy_plot", function(x, ...) standardGeneric("xy_plot"))
 #'
 #' @param draw.grid Logical scalar. Insert background grid?
 #'
+#' @param space Character scalar indicating the position of the legend; either
+#'   \sQuote{top}, \sQuote{bottom}, \sQuote{left} or \sQuote{right}. Might be
+#'   overwritten by \code{legend.fmt}.
+#'
 #' @param strip.fmt List controlling the format of the description strip above
 #'   each panel. For instance, the background color is set using the \sQuote{bg}
 #'   key. For further details, see \code{strip.custom} from the \pkg{lattice}
@@ -1250,7 +1291,23 @@ setGeneric("xy_plot", function(x, ...) standardGeneric("xy_plot"))
 #'   See the argument \sQuote{par.strip.text} of \code{xyplot} from the 
 #'   \pkg{lattice} package for details.
 #'
-#' @param ... Arguments that are passed to \code{\link{flatten}}.
+#' @param legend.fmt List controlling where and how to draw the legend. The
+#'   content of the legend (mainly a description of the assignment of the colors
+#'   to the curves) is determined automatically. See argument \sQuote{key} of
+#'   \code{xyplot} from the \pkg{lattice} package for details.
+#' @param legend.sep Character scalar. Relevant only if more than one columns
+#'   of metadata have been selected; will then be used as separator to join
+#'   their names in the legend.
+#' @param draw.legend Logical scalar. If \code{FALSE}, no legend is drawn, and
+#'   the two aforementioned arguments are ignored.
+#'
+#' @param ... Arguments that are passed to \code{\link{flatten}}. For the
+#'   \code{\link{OPMS}} method, \code{include} is particularly important:
+#'   the selected metadata are joined
+#'   into a single factor, and the assignment of plates to this factor's levels
+#'   determines the curve color for each plate. That is, each combination of
+#'   metadata entries as chosen using \code{include} yields one color. If no
+#'   metadata are selected (the default), each plate gets a color of its own.
 #'
 #' @export
 #' @family plotting-functions
@@ -1265,6 +1322,7 @@ setGeneric("xy_plot", function(x, ...) standardGeneric("xy_plot"))
 #' @seealso lattice::xyplot
 #' @examples 
 #' 
+#' # OPM method
 #' data(vaas_1)  
 #' xy_plot(vaas_1) # note the default main title built from the plate type
 #'
@@ -1278,6 +1336,14 @@ setGeneric("xy_plot", function(x, ...) standardGeneric("xy_plot"))
 #' # Some like it ugly:
 #' xy_plot(x, neg.ctrl = 100, col = "pink", base.col = "yellow", main = "Ugly")
 #'
+#' # OPMS method
+#' data(vaas_4)  
+#' # Color by species and strain; note default main title
+#' xy_plot(vaas_4, include = c("Species", "Strain"))
+#' # Use the largest of the negative-control maxima as baseline
+#' xy_plot(vaas_4, include = c("Species", "Strain"), 
+#'   neg.ctrl = max(vaas_4, "A01"))
+#'
 setMethod("xy_plot", OPM, function(x, col = "midnightblue", lwd = 1,
     neg.ctrl = "A01", base.col = "grey10", base.lwd = lwd,
     main = list(), xlab = "Time [h]", ylab = "Value [OmniLog units]",
@@ -1289,10 +1355,7 @@ setMethod("xy_plot", OPM, function(x, col = "midnightblue", lwd = 1,
   
   # Setup
   layout <- best_layout(dim(x)[2L])
-  y.max <- if (theor.max)
-    THEOR_MAX
-  else
-    improved_max(x)
+  y.max <- improved_max(x, theor.max)
   main <- main_title(x, main)
   neg.ctrl <- negative_control(x, neg.ctrl)
 
@@ -1330,20 +1393,41 @@ setMethod("xy_plot", OPM, function(x, col = "midnightblue", lwd = 1,
 }, sealed = SEALED)
 
 
+################################################################################
+
+
 setGeneric("level_plot", function(x, ...) standardGeneric("level_plot"))
 #' Levelplot
 #'
-#' Levelplot for \code{\link{OPM}} objects using the \pkg{lattice} package.
+#' Levelplot for \code{\link{OPM}} and \code{\link{OPMS}} objects using the 
+#' function from the \pkg{lattice} package.
 #'
-#' @param x \code{\link{OPM}} object.
+#' @param x \code{\link{OPM}} or \code{\link{OPMS}}  object.
 #'
 #' @param main The settings controlling the construction of the main title.
 #'   Works like the \code{main} argument of \code{\link{xy_plot}}.
 #' @param colors Character vector indicating the colors (at least two).
 #'
+#' @param panel.headers \code{NULL}, logical scalar, expression or character
+#'   vector. \code{NULL} and \code{FALSE} turn panel headers off. \code{TRUE}
+#'   causes the panel headers to be constructed from the plate numbers or those
+#'   metadata that were included by \code{\link{flatten}} (see there).
+#'   Character vectors and expressions are directly used for the text within 
+#'   these panel headers.
 #' @param cex Numeric scalar. Magnification of axis annotation. If \code{NULL},
 #'   automatically adapted to the number of wells (at least a good guess is 
 #'   made).
+#'
+#' @param strip.fmt List controlling the format of the description strip above
+#'   each panel. For instance, the background color is set using the \sQuote{bg}
+#'   key. For further details, see \code{strip.custom} from the \pkg{lattice}
+#'   package. \code{strip.fmt} is ignored if panel.headers is \code{FALSE}.
+#' @param striptext.fmt List controlling the format of the text within the
+#'   strip above each panel. See \code{\link{xy_plot}} for details, which has
+#'   an argument of the same name.
+#' @param legend.sep Character scalar. This works like the eponymous argument
+#'   to \code{\link{flatten}} (see there); it is ignored unless metadata are
+#'   chosen for constructing the panel headers.
 #'
 #' @param ... Arguments that are passed to \code{\link{flatten}}.
 #'
@@ -1352,6 +1436,7 @@ setGeneric("level_plot", function(x, ...) standardGeneric("level_plot"))
 #'   \pkg{lattice} package for details.
 #' @family plotting-functions
 #' @keywords hplot
+#'
 #' @references Jacobsen JS, Joyner DC, Borglin SE, Hazen TC, Arkin AP et al. 
 #'   Visualization of growth curve data from phenotype microarray experiments.
 #'   2007; 11th International Conference on Information Visualization (IV07), 
@@ -1362,10 +1447,18 @@ setGeneric("level_plot", function(x, ...) standardGeneric("level_plot"))
 #' @references Vaas LAI, Sikorski J, Michael V, Goeker M, Klenk H-P. 
 #'   Visualization and curve parameter estimation strategies for efficient 
 #'   exploration of Phenotype Microarray kinetics. PLoS ONE 2012; in press.
+#'
 #' @seealso lattice::levelplot
 #' @examples 
+#'
+#' # OPM method
 #' data(vaas_1)  
 #' level_plot(vaas_1, main = "Levelplot example")
+#'
+#' # OPMS method
+#' data(vaas_4)  
+#' # headers include species and strain
+#' level_plot(vaas_4, include = c("Species", "Strain"))
 #'
 setMethod("level_plot", OPM, function(x, main = list(), colors = NULL,
     cex = NULL, ...) {
@@ -1376,6 +1469,10 @@ setMethod("level_plot", OPM, function(x, main = list(), colors = NULL,
     col.regions = default_color_regions(colors), #as.table = TRUE,
     scales = list(cex = cex, lineheight = 10))
 }, sealed = SEALED)
+
+
+################################################################################
+
 
 
 

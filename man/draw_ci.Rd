@@ -33,4 +33,5 @@
 \usage{
   \S4method{draw_ci}{numeric}(object, col = "blue", cex = 1,
     na.action = c("warn", "error", "ignore")) 
+
 }

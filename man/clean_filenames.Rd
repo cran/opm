@@ -13,10 +13,10 @@
   files, and do not care for duplicate names created by
   cleaning the filenames?}
 
-  \item{demo}{Logical scalar. Do not rename files, just
-  return the usual result indicating the renamings that
-  would be attempted? (Note that this does not indicate
-  whether the renamings would also by successful.)}
+  \item{demo}{Logical scalar. Do not rename files but just
+  return the usual result indicating the renaming actions
+  that would be attempted? (Note that this does not
+  indicate whether the renaming would also by successful.)}
 
   \item{empty.tmpl}{Character scalar. The template to use
   for filenames that become empty after cleaning. Should
@@ -52,7 +52,7 @@ stopifnot(!file.exists(x), file.exists(y))
 unlink(y) # tidy up
 }
 \seealso{
-  file.rename
+  base::file.rename
 
   Other IO-functions: \code{\link{batch_collect}},
   \code{\link{batch_opm_to_yaml}},
@@ -61,8 +61,7 @@ unlink(y) # tidy up
   \code{\link{explode_dir}}, \code{\link{file_pattern}},
   \code{\link{opm_files}}, \code{\link{phylo_data}},
   \code{\link{read_opm}}, \code{\link{read_single_opm}},
-  \code{\link{split_files}}, \code{\link{to_metadata}},
-  \code{\link{to_metadata,character}}
+  \code{\link{split_files}}, \code{\link{to_metadata}}
 }
 \keyword{utilities}
 

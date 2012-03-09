@@ -44,9 +44,10 @@ setGeneric("discrete", function(x, ...) standardGeneric("discrete"))
 #' of this functions is to create character data suitable for phylogenetic
 #' studies with programs such as PAUP* and RAxML. These accept only discrete
 #' characters with at most 32 states, coded as 0 to 9 followed by A to V. For
-#' the full export one additionally needs \code{\link{phylo_data}}.
+#' the full export one additionally needs \code{\link{phylo_data}}. The matrix
+#' method is just a wrapper that takes care of the matrix dimensions.
 #'
-#' @param x Numeric vector.
+#' @param x Numeric vector or matrix.
 #'
 #' @param range In non-\code{gap} mode (see next argument) the assumed real 
 #'   range of the data; must contain all elements of \code{x}, but can be much 
@@ -55,7 +56,8 @@ setGeneric("discrete", function(x, ...) standardGeneric("discrete"))
 #'   \code{x} is used. This makes not much sense in \code{gap} mode, and a 
 #'   warning is issued in that case.
 #'
-#' @param gap Logical scalar. If code{TRUE}, always convert to binary or ternary
+#' @param gap Logical scalar. If \code{TRUE}, always convert to binary or 
+#'   ternary
 #'   characters, ignoring \code{states}. \code{range} then indicates a subrange
 #'   of \code{x} within which character conversion is ambiguous and has to be 
 #'   treated as either missing information or intermediate character state, 
@@ -84,11 +86,15 @@ setGeneric("discrete", function(x, ...) standardGeneric("discrete"))
 #'   latter case, a single integer is interpreted as the upper bound of an 
 #'   integer vector starting at 1.
 #'
+#' @param ... Arguments passed between the methods.
+#'
 #' @export
 #' @return Double, integer, character or logical vector or factor, depending on 
-#'    \code{output}.
+#'   \code{output}. For the matrix method, a matrix composed of a vector as
+#'   produced by the numeric method, the original \code{dimensions} and the
+#'   original \code{dimnames} attributes of \code{x}.
 #' @family phylogeny-functions
-#' @seealso cut
+#' @seealso base::cut
 #' @keywords character category
 #' @references Dougherty J, Kohavi R, Sahami M. Supervised and unsupervised
 #'   discretization of continuous features. In: Prieditis A, Russell S (eds) 
@@ -117,6 +123,11 @@ setGeneric("discrete", function(x, ...) standardGeneric("discrete"))
 #' # beginning of it
 #' (x <- discrete(1:5, range = c(1, 10), states = 5))
 #' stopifnot(identical(x, as.character(c(0, 0, 1, 1, 2))))
+#'
+#' # Matrix method
+#' x <- matrix(1:10, ncol = 2)
+#' (y <- discrete(x, range = c(3.4, 4.5), gap = TRUE))
+#' stopifnot(identical(dim(x), dim(y)))
 #'
 setMethod("discrete", "numeric", function(x, range, gap = FALSE,
     output = c("character", "integer", "logical", "factor", "numeric"),
@@ -195,7 +206,7 @@ setMethod("discrete", "numeric", function(x, range, gap = FALSE,
       cut(x = c(range[1L:2L], x), breaks = nstates, right = FALSE,
         labels = FALSE)[-1L:-2L]
     else
-      rep(1L, length(x))
+      rep.int(1L, length(x))
     switch(output,
       character = states[ints],
       integer = ints,
@@ -207,31 +218,7 @@ setMethod("discrete", "numeric", function(x, range, gap = FALSE,
   }
 }, sealed = SEALED)
 
-
-#' Convert to discrete characters (matrix version)
-#'
-#' Convert a matrix of continuous characters to discrete ones suitable for 
-#' phylogenetic studies with software such as PAUP* and RAxML. This is just a
-#' wrapper for \code{\link{discrete}} which takes care of the matrix 
-#' dimensions.
-#'
-#' @name discrete,matrix
-#'
-#' @param x Numeric matrix or convertible to such.
-#' @param ... Arguments passed to \code{\link{discrete}}. See there for details
-#'   and further examples.
 #' @export
-#' @return Matrix composed of a vector as produced by \code{\link{discrete}}
-#'   and the original \code{dimensions} and \code{dimnames} attributes of 
-#'   \code{x}.
-#' @family phylogeny-functions
-#' @seealso cut
-#' @keywords character category
-#' @examples
-#' x <- matrix(1:10, ncol = 2)
-#' (y <- discrete(x, range = c(3.4, 4.5), gap = TRUE))
-#' stopifnot(identical(dim(x), dim(y)))
-#' # for the discretization approach itself see discrete() for numeric vectors
 #'
 setMethod("discrete", "matrix", function(x, ...) {
   structure(.Data = discrete(as.numeric(x), ...), dim = dim(x),
@@ -250,8 +237,11 @@ setGeneric("join_discrete",
 #' ambiguities, if any. The outcome is suitable for phylogenetic studies with
 #' software such as PAUP*.
 #'
-#' @param object Character vector or convertible to such.
-#' @return Character scalar.
+#' @param object Character vector or convertible to such, or matrix.
+#' @param margin Integer scalar. See \code{apply} from package \pkg{base} and 
+#'   \code{\link{join_discrete}}, which is applied to either rows or columns,
+#'   depending on this argument.
+#' @return Character scalar, for the matrix method a vector.
 #' @keywords internal
 #'
 setMethod("join_discrete", "ANY", function(object) {
@@ -268,22 +258,6 @@ setMethod("join_discrete", "ANY", function(object) {
     object
 }, sealed = SEALED)
 
-
-#' Join phylogenetic characters (matrix version)
-#'
-#' Join discrete characters represented as strings of length 1, considering
-#' ambiguities, if any. The outcome is suitable for phylogenetic studies with
-#' software such as PAUP*.
-#'
-#' @name join_discrete,matrix
-#'
-#' @param object Matrix.
-#' @param margin Integer scalar. See \code{apply} from package \pkg{base} and 
-#'   \code{\link{join_discrete}}, which is applied to either rows or columns,
-#'   depending on this argument.
-#' @return Character vector.
-#' @keywords internal
-#'
 setMethod("join_discrete", "matrix", function(object, margin = 2L) {
   apply(object, margin, join_discrete)
 }, sealed = SEALED)
@@ -310,7 +284,7 @@ setMethod("join_discrete", "matrix", function(object, margin = 2L) {
 #' @return Character vector.
 #' @family phylogeny-functions
 #' @keywords character
-#' @seealso gsub
+#' @seealso base::gsub
 #' @examples
 #' # Some animals you might know
 #' x <- c("Elephas maximus", "Loxodonta africana", "Giraffa camelopardalis")
@@ -347,6 +321,9 @@ safe_labels <- function(chars, format, enclose = TRUE) {
 }
 
 
+################################################################################
+
+
 setGeneric("phylo_header",
   function(object, ...) standardGeneric("phylo_header"))
 #' Header for phylogenetic data
@@ -369,7 +346,7 @@ setMethod("phylo_header", "matrix", function(object, format, enclose = TRUE,
     epf = paste(d, collapse = " "),
     nexus = {
       
-      indent <- paste(rep(" ", indent), collapse = "")
+      indent <- paste(rep.int(" ", indent), collapse = "")
       
       datatype <- switch(class(object[1L]),
         integer =,
@@ -423,6 +400,9 @@ setMethod("phylo_header", "matrix", function(object, format, enclose = TRUE,
 }, sealed = SEALED)
 
 
+################################################################################
+
+
 ## NOTE: not an S4 method because checked using match.arg()
 
 #' Footer for phylogenetic data
@@ -442,7 +422,7 @@ phylo_footer <- function(format, indent = 3L, paup.block = FALSE) {
     epf =,
     phylip = NULL,
     nexus = {
-      indent <- paste(rep(" ", indent), collapse = "")
+      indent <- paste(rep.int(" ", indent), collapse = "")
       block <- if (paup.block)
         c("", "begin paup;", paste(indent, PAUP_BLOCK, sep = ""), "end;")
       else
@@ -460,6 +440,9 @@ phylo_footer <- function(format, indent = 3L, paup.block = FALSE) {
     stop(BUG_MSG)
   )
 }
+
+
+################################################################################
 
 
 setGeneric("phylo_char_mat",
@@ -481,9 +464,8 @@ setMethod("phylo_char_mat", "matrix", function(object, format, enclose = TRUE) {
   if (length(cl) == 0L)
     stop("missing taxon labels (row names)")
   cl <- safe_labels(cl, format = format, enclose = enclose)
-  dups <- duplicated(cl)
-  if (any(dups))
-    stop("duplicate taxon label (row name): ", cl[dups][1L])
+  if (dups <- anyDuplicated(cl))
+    stop("duplicated taxon label (row name): ", cl[dups])
   if (is.logical(object))
     object <- structure(as.integer(object), dim = dim(object), 
       dimnames = dimnames(object))
@@ -503,6 +485,9 @@ setMethod("phylo_char_mat", "matrix", function(object, format, enclose = TRUE) {
   )
   paste(cl, apply(object, 1L, paste, collapse = sep), sep = "\t")
 }, sealed = SEALED)
+
+
+################################################################################
 
 
 setGeneric("phylo_data", function(object, ...) standardGeneric("phylo_data"))
@@ -534,9 +519,9 @@ setGeneric("phylo_data", function(object, ...) standardGeneric("phylo_data"))
 #'   output file, returned invisibly if \code{outfile} is given.
 #' @family phylogeny-functions
 #' @family IO-functions
-#' @seealso comment write
+#' @seealso base::comment base::write
 #' @note For exporting NEXUS format, the matrix should normally be converted
-#'   beforehand by applying \code{\link{discrete,matrix}}.
+#'   beforehand by applying \code{\link{discrete}}.
 #' @keywords character cluster IO
 #'
 #' @references Berger SA, Stamatakis A. Accuracy of morphology-based 

@@ -1,6 +1,7 @@
 
 
 ################################################################################
+################################################################################
 #
 # Fast curve-parameter estimation
 #
@@ -57,12 +58,15 @@ pe_and_ci.boot <- function(x, ci = 0.95, as.pe = c("median", "mean", "pe"),
 }
 
 
+################################################################################
+
+
 setGeneric("fast_estimate", function(x, ...) standardGeneric("fast_estimate"))
 #' Fast curve-parameter estimation
 #'
 #' Quickly estimate the curve parameters AUC (area under the curve) or A
 #' (maximum height). This is not normally directly called by an \pkg{opm} user
-#' but via \code{\link{do_aggr}} or \code{\link{curve_params}}.
+#' but via \code{\link{do_aggr}}.
 #'
 #' @param x Matrix as output by \code{\link{measurements}}, i.e. with the
 #'   time points in the first columns and the measurements in the remaining 
@@ -135,23 +139,35 @@ setMethod("fast_estimate", "matrix", function(x, what = c("AUC", "A"),
 
 
 ################################################################################
+################################################################################
 #
 # Heatmap functions for matrices and dataframes
 #
 
 
 setGeneric("heat_map", function(object, ...) standardGeneric("heat_map"))
-#' Heatmap (matrix version)
+#' Heat map
 #'
 #' A wrapper for \code{heatmap} from the \pkg{stats} package and 
 #' \code{heatmap.2} from the \pkg{gplots} package with some adaptations
-#' likely to be useful for OmniLog(R) data.
+#' likely to be useful for OmniLog(R) data. The dataframe method extracts a 
+#' numeric matrix from a given dataframe and passes the result to the matrix
+#' method.
 #'
-#' @name heat_map,matrix
+#' @param object Matrix or dataframe. The matrix method is mainly designed for
+#'   curve-parameter matrices as created by \code{\link{extract}} but can be
+#'   used with any numeric matrix. If a dataframe, it must contain at least
+#'   one column with numeric data.
 #'
-#' @param object Matrix. This function is mainly designed for curve parameter
-#'   matrices as created by \code{\link{extract}} but can be used with any
-#'   numeric matrix.
+#' @param as.labels Character, numeric or logical vector indicating the 
+#'   positions of the columns to be joined and used as row labels. If 
+#'   \code{NULL} or empty, the row names of \code{object} are used.
+#'
+#' @param as.groups Character, numeric or logical vector indicating the 
+#'   positions of the columns to be joined and used as group indicators. If 
+#'   \code{NULL} or empty, groups are ignored.
+#'
+#' @param sep Character scalar determining how to join row and group names.
 #'
 #' @param hclustfun Determines the clustering method used. If a function, used
 #'   directly. If a character scalar, used as the \sQuote{method} argument of
@@ -198,43 +214,55 @@ setGeneric("heat_map", function(object, ...) standardGeneric("heat_map"))
 #' @param ... Optional arguments passed to \code{heatmap} or \code{heatmap.2}.
 #'   Note that some defaults of \code{heatmap.2} are overwritten even though
 #'   this is not transparent from the argument list of \code{heat_map}. If set
-#'   explicitely, the default \code{heatmap.2} behaviour is restored.
+#'   explicitly, the default \code{heatmap.2} behaviour is restored.
+#'   \code{...} also represents all arguments passed from the data frame to the
+#'   matrix method.
 #'
 #' @param use.fun Character scalar. If \sQuote{gplots}, it is attempted to load 
-#'   the \pkg{gplots} package and use its \code{heatmap.2} function. If this 
-#'   fails, a warning is issued, and \code{heatmap} from the the \pkg{gplots} 
-#'   package (the default) is called instead.
+#'   the \pkg{gplots} package and use its \code{heatmap.2} function (the 
+#'   default). If this fails, a warning is issued, and \code{heatmap} from the
+#'   \pkg{stats} package (the default) is called instead.
 #'
 #' @export
 #' @return A list as output by \code{heatmap} or \code{heatmap.2} with the 
 #'   additional entries \sQuote{rowColMap} or \sQuote{colColMap} giving the
-#'   mapping(s) of group names to colours as named character vector(s), if this 
+#'   mapping(s) of group names to colors as named character vector(s), if this 
 #'   feature was used.
 #'   
 #' @family plotting-functions
-#' @seealso heatmap gplots::heatmap.2
+#' @seealso stats::heatmap gplots::heatmap.2
 #' @keywords hplot
 #'
 #' @examples 
+#'
 #' data("vaas_4")
+#'
+#' # Matrix method
 #' x <- extract(vaas_4, as.labels = list("Strain"), 
 #'   as.groups = list("Species"))
 #' hm <- heat_map(x)
 #' stopifnot(identical(metadata(vaas_4, "Species"), names(hm$rowColMap)))
-#' # Compare this with the dataframe example
+#' 
+#' # Dataframe method
+#' x <- extract(vaas_4, as.labels = list("Species", "Strain"), dataframe = TRUE)
+#' hm <- heat_map(x, as.labels = "Strain", as.groups = "Species")
+#' stopifnot(identical(metadata(vaas_4, "Species"), names(hm$rowColMap)))
 #'
 setMethod("heat_map", "matrix", function(object, 
     hclustfun = "ward", distfun = "euclidean", scale = "none",
     r.groups = "row.groups", r.col = select_colors(),
-    c.groups = "col.groups", c.col = select_colors(),                                     
+    c.groups = "col.groups", c.col = select_colors(), 
     magnif = 4, cexRow = magnif[1L] / sqrt(nrow(object)), 
     cexCol = magnif[length(magnif)] / sqrt(ncol(object)),
     borders = c(0.55, 0.75),
-    margins = c(borders[1L] * cexCol * max(nchar(colnames(object))), 
-      borders[length(borders)] * cexRow * max(nchar(rownames(object)))),
+    margins = if (use.fun[1L] == "gplots") 
+      c(borders[1L] * cexCol * max(nchar(colnames(object))), 
+      borders[length(borders)] * cexRow * max(nchar(rownames(object))))
+    else
+      c(5, 5),
     col = topo.colors(120L),
     ...,
-    use.fun = c("stats", "gplots")) {
+    use.fun = c("gplots", "stats")) {
   
   get_fun <- function(infun, usefun) {
     if (is.character(infun))
@@ -300,38 +328,7 @@ setMethod("heat_map", "matrix", function(object,
 
 }, sealed = SEALED)
 
-
-#' Heatmap
-#'
-#' Extracts a numeric matrix from a given dataframe and passes the result to
-#' \code{\link{heat_map,matrix}}.
-#'
-#' @param object Dataframe. Must contain at least one column with numeric data.
-#'
-#' @param as.labels Character, numeric or logical vector indicating the 
-#'   positions of the columns to be joined and used as row labels. If 
-#'   \code{NULL} or empty, the row names of \code{object} are used.
-#'
-#' @param as.groups Character, numeric or logical vector indicating the 
-#'   positions of the columns to be joined and used as group indicators. If 
-#'   \code{NULL} or empty, groups are ignored.
-#'
-#' @param sep Character scalar determining how to join row and group names.
-#'
-#' @param ... Arguments passed to \code{\link{heat_map,matrix}}.
-#'
 #' @export
-#' @return See \code{\link{heat_map,matrix}}.
-#' @family plotting-functions
-#' @seealso heatmap gplots::heatmap.2
-#' @keywords hplot
-#'
-#' @examples 
-#' data("vaas_4")
-#' x <- extract(vaas_4, as.labels = list("Species", "Strain"), dataframe = TRUE)
-#' hm <- heat_map(x, as.labels = "Strain", as.groups = "Species")
-#' stopifnot(identical(metadata(vaas_4, "Species"), names(hm$rowColMap)))
-#' # Compare this with the matrix example
 #'
 setMethod("heat_map", "data.frame", function(object, as.labels, 
     as.groups = NULL, sep = " ", ...) {
@@ -351,5 +348,8 @@ setMethod("heat_map", "data.frame", function(object, as.labels,
     attr(mat, "row.groups") <- as.factor(get_and_join(as.groups))
   invisible(heat_map(mat, ...))
 }, sealed = SEALED)
+
+
+################################################################################
 
 

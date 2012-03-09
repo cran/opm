@@ -32,7 +32,6 @@ stopifnot(nchar(y) > nchar(x))
 }
 \seealso{
   Other naming-functions: \code{\link{find_positions}},
-  \code{\link{find_positions,list}},
   \code{\link{find_substrate}},
   \code{\link{normalize_plate_name}}
 }

@@ -23,6 +23,7 @@
 % \docType{class}
 \alias{OPMX-class}
 % \alias{c,OPMX-method}
+% \alias{improved_max,OPMX-method}
 % \alias{main_title,OPMX-method}
 % \alias{negative_control,OPMX-method}
 
@@ -34,6 +35,7 @@
 \section{Methods}{
   \describe{
     \item{c}{\code{signature(x = "OPMX")}: ... }
+    \item{improved_max}{\code{signature(object = "OPMX")}: ... }
     \item{main_title}{\code{signature(object = "OPMX")}: ... }
     \item{negative_control}{\code{signature(object = "OPMX")}: ... }
 	 }

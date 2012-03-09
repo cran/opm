@@ -28,4 +28,5 @@
 \alias{repair_names,list-method}
 \usage{
   \S4method{repair_names}{list}(object, fill = TRUE) 
+
 }

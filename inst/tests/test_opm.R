@@ -173,9 +173,17 @@ test_that("metadata can be included in object from from example file 1", {
 
 
 test_that("metadata can be included and CSV keys removed", {
+  x <- include_metadata(OPM.1, MD, remove.keys = FALSE)
+  expect_is(x, "OPM")
+  expect_is(md <- metadata(x), "list")
+  expect_equal(length(md), 4L)
+  expect_true(all(c("Position", "Setup Time") %in% names(md)))
   x <- include_metadata(OPM.1, MD)
   expect_is(x, "OPM")
-  expect_equal(metadata(x), list(Organism = ORGN))
+  expect_is(md <- metadata(x), "list")
+  expect_equal(length(md), 2L)
+  expect_true(setequal(names(md), c("Organism", "File")))
+  expect_equal(md$Organism, ORGN)
 })
 
 
@@ -270,11 +278,11 @@ test_that("metadata characters can be received", {
   metadata(x, "run") <- 4L
   got <- metadata_chars(x)
   expect_equal(got, exp)
-  got <- metadata_chars(x, coerce = "integer")
+  got <- metadata_chars(x, classes = "integer")
   exp <- sort(c(structure(4L, names = 4L), exp))
   expect_equal(got, exp)
   
-  got <- metadata_chars(x, coerce = "not.relevant", values = FALSE)
+  got <- metadata_chars(x, classes = "not.relevant", values = FALSE)
   exp <- sort(names(metadata(x)))
   names(exp) <- exp
   expect_equal(got, exp)  
@@ -537,6 +545,9 @@ test_that("data from example file 1 can be plotted", {
   # Draw xyplot
   got <- xy_plot(SMALL)
   expect_is(got, "trellis")
+  got.2 <- xy_plot(SMALL, theor.max = FALSE)
+  expect_is(got.2, "trellis")
+  expect_false(identical(got, got.2))
   
 })
 

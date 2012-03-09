@@ -19,4 +19,5 @@
 \alias{to_grofit_time,OPM-method}
 \usage{
   \S4method{to_grofit_time}{OPM}(object) 
+
 }

@@ -1,0 +1,60 @@
+
+
+opm 0.2-0
+---------
+
+Bug fixes:
+ 
+- fixed bug that caused xy_plot() to crash if 'theor.max' was set to FALSE
+ 
+New features:
+
+- novel filename(), aggr_settings(), duplicated(), anyDuplicated(), seq() and 
+  oapply() methods for OPMS objects
+
+- novel map_names() and map_values() methods (e.g., for data frames)
+
+- novel separate() function
+ 
+- 'coerce = TRUE' option for map_names(), map_values(), map_metadata() and 
+  metadata_chars()
+
+- novel 'include' argument to split_files()
+
+- novel 'plain' argument for do_aggr()
+
+- file input now automatically changes 'OTH' to generation-III plate type
+
+- improved the 'remove.csv.data' behaviour of include_metadata() (the default 
+  keys were always removed, and 'remove.csv.data' had a distinct effect)
+
+Removed features:
+
+- curve_params() has been deleted (functionality now integrated in do_aggr())
+
+Other changes:
+
+- many improvements of the documentation
+  
+- the 'coerce' argument of map_metadata() and metadata_chars() has been renamed
+  to 'classes' (to make this uniform)
+
+- 'remove.csv.data' argument of include_metadata() was renamed to 
+  'remove.keys',  'stop.on.error' to 'skip.failure' (with the reverse meaning,
+  but the default behaviour remains the same)
+
+- changed 'gplots' to default of 'use.fun' argument of heat_map()
+
+
+opm 0.1-25
+----------
+
+- fixed some problems that caused the tests to crash on Windows and Solaris
+
+
+opm 0.1-24
+----------
+
+- initial release to CRAN
+  
+  

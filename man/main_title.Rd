@@ -21,4 +21,5 @@
 \alias{main_title,OPMX-method}
 \usage{
   \S4method{main_title}{OPMX}(object, settings) 
+
 }

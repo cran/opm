@@ -18,8 +18,8 @@ stopifnot(identical(unique(x), x))
 }
 \seealso{
   Other aggregation-functions: \code{\link{aggr_settings}},
-  \code{\link{aggregated}}, \code{\link{curve_params}},
-  \code{\link{do_aggr}}, \code{\link{fast_estimate}}
+  \code{\link{aggregated}}, \code{\link{do_aggr}},
+  \code{\link{fast_estimate}}
 }
 \keyword{utilities}
 

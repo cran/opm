@@ -1,28 +1,10 @@
 
 
 ################################################################################
+################################################################################
 #
 # Helper functions acting on numeric data
 #
-
-
-setGeneric("improved_max",
-  function(object, ...) standardGeneric("improved_max"))
-#' Maximum plus offset
-#'
-#' Return the maximal value of an object plus a certain offset.
-#'
-#' @param object Numeric vector
-#' @param by Numeric scalar.
-#' @return Numeric scalar. Let \code{n} be the smallest integer value for which
-#'   \code{n * by >= object} holds. The result is then equal to
-#'   \code{(n + 1) * by}.
-#' @keywords internal
-#'
-setMethod("improved_max", "numeric", function(object, by = 10) {
-  assert_length(by)
-  ceiling(max(object) / by) * by + by # => error unless 'by' is numeric
-}, sealed = SEALED)
 
 
 setGeneric("guess_cex", function(object, ...) standardGeneric("guess_cex"))
@@ -38,6 +20,9 @@ setGeneric("guess_cex", function(object, ...) standardGeneric("guess_cex"))
 setMethod("guess_cex", "numeric", function(object) {
   0.5 * sqrt(96 / object)
 }, sealed = SEALED)
+
+
+################################################################################
 
 
 setGeneric("best_layout",
@@ -61,6 +46,9 @@ setMethod("best_layout", "numeric", function(object, by = 0.75) {
   small <- ceiling(object / large)
   c(large, small)
 }, sealed = SEALED)
+
+
+################################################################################
 
 
 setGeneric("best_range",
@@ -107,4 +95,7 @@ setMethod("best_range", "numeric", function(object, target,
     stop(BUG_MSG)
   )
 }, sealed = SEALED)
+
+
+################################################################################
 

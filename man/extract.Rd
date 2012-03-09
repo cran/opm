@@ -71,11 +71,12 @@ x <- lapply(param_names(), function(name) extract(vaas_4, subset = name,
 x <- do.call(rbind, x)
 }
 \seealso{
-  data.frame as.data.frame matrix as.matrix
+  base::data.frame base::as.data.frame base::matrix
+  base::as.matrix
 
   Other conversion-functions:
   \code{\link{extract_columns}}, \code{\link{flatten}},
-  \code{\link{flatten,OPMS}}, \code{\link{plates}},
+  \code{\link{oapply}}, \code{\link{plates}},
   \code{\link{to_yaml}}
 }
 \keyword{dplot}
@@ -89,4 +90,5 @@ x <- do.call(rbind, x)
     ci = FALSE, trim = "full", dataframe = FALSE, as.groups = NULL, sep = " ",
     dups = "warn", exact = TRUE, strict = TRUE, full = TRUE, max = 10000L, 
     ...) 
+
 }

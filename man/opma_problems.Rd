@@ -1,8 +1,9 @@
 \name{opma_problems}
 \alias{opma_problems}
-\title{Check OPMA matrix}
+\title{Check OPMA}
 \arguments{
-  \item{object}{Matrix of aggregated data.}
+  \item{object}{Matrix of aggregated data or list
+  describing the aggregation settings.}
 
   \item{orig}{Matrix of original, non-aggregated data.}
 
@@ -16,14 +17,20 @@
 }
 \description{
   Check whether a matrix fulfils the requirements for
-  \code{\link{OPMA}} aggregated data. Called when
-  constructing an object of the class.
+  \code{\link{OPMA}} aggregated data, or check whether a
+  list fulfils the requirements for \code{\link{OPMA}}
+  aggregation settings. Called when constructing an object
+  of the class.
 }
 \keyword{internal}
 
 \docType{methods}
 \alias{opma_problems-methods}
 \alias{opma_problems,matrix-method}
+\alias{opma_problems,list-method}
 \usage{
   \S4method{opma_problems}{matrix}(object, orig, program) 
+
+  \S4method{opma_problems}{list}(object) 
+
 }

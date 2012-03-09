@@ -22,7 +22,7 @@
 \note{
   \itemize{ \item The expected CSV format is what is output
   by the OmniLog(R) device, one plate per file. Other
-  formats, or OmniLog(R) files resaved with distinct CSV
+  formats, or OmniLog(R) files re-saved with distinct CSV
   settings, are not understood. For this reason, if any
   editing of the files was necessary at all, it is
   advisable to do this in an editor for plain text, not in
@@ -31,7 +31,12 @@
   splitting old-style and new-style CSV files into one file
   per plate, see the example under
   \code{\link{split_files}}.  \item In contrast, input YAML
-  files can contain data from more than one plate. }
+  files can contain data from more than one plate.  \item
+  Plates run in ID mode are automatically detected as such
+  (their plate type is changed from \sQuote{OTH} to the
+  internally used spelling of \sQuote{Generation III}). A
+  generation-III plate type can also be forced later on by
+  using \code{\link{gen_iii}}. }
 }
 \examples{
 test.files <- opm_files("testdata")
@@ -50,7 +55,7 @@ if (length(test.files) > 0) { # if the folder is found
   \url{http://www.biolog.com/}
 }
 \seealso{
-  read.csv
+  utils::read.csv
 
   Other IO-functions: \code{\link{batch_collect}},
   \code{\link{batch_opm_to_yaml}},
@@ -60,8 +65,7 @@ if (length(test.files) > 0) { # if the folder is found
   \code{\link{explode_dir}}, \code{\link{file_pattern}},
   \code{\link{opm_files}}, \code{\link{phylo_data}},
   \code{\link{read_opm}}, \code{\link{split_files}},
-  \code{\link{to_metadata}},
-  \code{\link{to_metadata,character}}
+  \code{\link{to_metadata}}
 }
 \keyword{IO}
 

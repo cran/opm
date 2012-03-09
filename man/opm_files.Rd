@@ -10,7 +10,7 @@
   \describe{ \item{scripts}{R script files for
   non-interactive uses of the \pkg{opm} package,
   particularly for the batch processing of many files. When
-  called withput input arguments or with the \sQuote{-h}
+  called without input arguments or with the \sQuote{-h}
   switch, the scripts output usage information.}
   \item{testdata}{Files as output by the OmniLog(R) device
   for testing data input and metadata management.} }}
@@ -40,7 +40,7 @@ if (length(y) > 0) {
 # ...and get the usage messages of all scripts.
 }
 \seealso{
-  list.files
+  base::list.files
 
   Other IO-functions: \code{\link{batch_collect}},
   \code{\link{batch_opm_to_yaml}},
@@ -50,8 +50,7 @@ if (length(y) > 0) {
   \code{\link{explode_dir}}, \code{\link{file_pattern}},
   \code{\link{phylo_data}}, \code{\link{read_opm}},
   \code{\link{read_single_opm}}, \code{\link{split_files}},
-  \code{\link{to_metadata}},
-  \code{\link{to_metadata,character}}
+  \code{\link{to_metadata}}
 }
 \keyword{utilities}
 

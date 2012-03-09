@@ -19,4 +19,5 @@
 \alias{guess_cex,numeric-method}
 \usage{
   \S4method{guess_cex}{numeric}(object) 
+
 }

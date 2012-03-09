@@ -38,10 +38,10 @@ stopifnot(nchar(y) == nchar(x))
 stopifnot(grepl("^'.*'$", y))
 }
 \seealso{
-  gsub
+  base::gsub
 
   Other phylogeny-functions: \code{\link{discrete}},
-  \code{\link{discrete,matrix}}, \code{\link{phylo_data}}
+  \code{\link{phylo_data}}
 }
 \keyword{character}
 

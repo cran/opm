@@ -5,7 +5,7 @@
   \item{object}{\code{\link{OPMA}} object.}
 }
 \value{
-  Named list.
+  Named list. See the example for details.
 }
 \description{
   The settings used for aggregating the kinetic data.
@@ -18,21 +18,19 @@ stopifnot(identical(x$program, "grofit"))
 }
 \seealso{
   Other aggregation-functions: \code{\link{aggregated}},
-  \code{\link{curve_params}}, \code{\link{do_aggr}},
-  \code{\link{fast_estimate}}, \code{\link{param_names}}
+  \code{\link{do_aggr}}, \code{\link{fast_estimate}},
+  \code{\link{param_names}}
 
-  Other getter-functions: \code{\link{[}},
-  \code{\link{[,OPMA}}, \code{\link{[,OPMS}},
-  \code{\link{aggregated}}, \code{\link{csv_data}},
-  \code{\link{dim}}, \code{\link{dim,OPMS}},
+  Other getter-functions: \code{\link{aggregated}},
+  \code{\link{anyDuplicated}}, \code{\link{csv_data}},
+  \code{\link{dim}}, \code{\link{duplicated}},
   \code{\link{filename}}, \code{\link{has_aggr}},
   \code{\link{hours}}, \code{\link{length}},
-  \code{\link{max}}, \code{\link{max,OPMS}},
-  \code{\link{measurements}}, \code{\link{metadata}},
-  \code{\link{minmax}}, \code{\link{minmax,OPMS}},
+  \code{\link{max}}, \code{\link{measurements}},
+  \code{\link{metadata}}, \code{\link{minmax}},
   \code{\link{plate_type}}, \code{\link{position}},
-  \code{\link{select}}, \code{\link{setup_time}},
-  \code{\link{summary}}, \code{\link{summary,OPMS}},
+  \code{\link{select}}, \code{\link{seq}},
+  \code{\link{setup_time}}, \code{\link{summary}},
   \code{\link{thin_out}}, \code{\link{well}},
   \code{\link{wells}}
 }
@@ -43,4 +41,5 @@ stopifnot(identical(x$program, "grofit"))
 \alias{aggr_settings,OPMA-method}
 \usage{
   \S4method{aggr_settings}{OPMA}(object)
+
 }

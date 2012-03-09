@@ -18,4 +18,5 @@
 \alias{other_slots,OPM-method}
 \usage{
   \S4method{other_slots}{OPM}(object) 
+
 }

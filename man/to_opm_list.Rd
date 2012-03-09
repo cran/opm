@@ -25,4 +25,5 @@
 \usage{
   \S4method{to_opm_list}{list}(object, precomputed = TRUE,
     skip = FALSE) 
+
 }

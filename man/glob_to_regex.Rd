@@ -45,7 +45,9 @@ x <- "*what glob2rx() can't handle because a '+' is included*"
 stopifnot(!identical(y, z))
 }
 \seealso{
-  glob2rx regex
+  utils::glob2rx base::regex
+
+  Other auxiliary-functions: \code{\link{separate}}
 }
 \keyword{character}
 
@@ -54,4 +56,5 @@ stopifnot(!identical(y, z))
 \alias{glob_to_regex,character-method}
 \usage{
   \S4method{glob_to_regex}{character}(x) 
+
 }

@@ -29,10 +29,9 @@ stopifnot(identical(x, letters))
 stopifnot(x != y)
 }
 \seealso{
-  gsub
+  base::gsub
 
   Other naming-functions: \code{\link{find_positions}},
-  \code{\link{find_positions,list}},
   \code{\link{find_substrate}},
   \code{\link{well_to_substrate}}
 }

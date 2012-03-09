@@ -51,7 +51,6 @@
 % \alias{coerce,list,OPM-method}
 % \alias{collect_template,OPM-method}
 % \alias{csv_data,OPM-method}
-% \alias{curve_params,OPM-method}
 % \alias{dim,OPM-method}
 % \alias{do_aggr,OPM-method}
 % \alias{filename,OPM-method}
@@ -111,7 +110,6 @@ Class \code{"\linkS4class{YAML_VIA_LIST}"}, directly.
     \item{coerce}{\code{signature(from = "list", to = "OPM")}: ... }
     \item{collect_template}{\code{signature(object = "OPM")}: ... }
     \item{csv_data}{\code{signature(object = "OPM")}: ... }
-    \item{curve_params}{\code{signature(object = "OPM")}: ... }
     \item{dim}{\code{signature(x = "OPM")}: ... }
     \item{do_aggr}{\code{signature(object = "OPM")}: ... }
     \item{filename}{\code{signature(object = "OPM")}: ... }

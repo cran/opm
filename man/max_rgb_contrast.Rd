@@ -1,6 +1,6 @@
 \name{max_rgb_contrast}
 \alias{max_rgb_contrast}
-\title{Sort colours}
+\title{Sort colors}
 \usage{
   max_rgb_contrast(col)
 }
@@ -16,14 +16,14 @@
 }
 \description{
   A helper function for methods such as
-  \code{\link{xy_plot,OPMS}}. Arrange colours to achieve
-  that neighboring colours are most distinct with respect
-  to their RGB coordinates. This is done as follows: (1)
+  \code{\link{xy_plot}}. Arrange colors to achieve that
+  neighboring colors are most distinct with respect to
+  their RGB coordinates. This is done as follows: (1)
   euclidean distances between the RGB coordinates of the
-  input colours are calculated; (2) the distances are
+  input colors are calculated; (2) the distances are
   inversed; (3) a principal-coordinate analysis is
   conducted on these inversed distances; (4) the input
-  colours are sorted according to the first principal
+  colors are sorted according to the first principal
   coordinate.
 }
 \note{
@@ -36,14 +36,11 @@ y <- c("darkblue", "red", "blue", "darkred")
 stopifnot(identical(x, y) || identical(x, rev(y)))
 }
 \seealso{
-  col2rgb
+  grDevices::col2rgb
 
   Other plotting-functions: \code{\link{ci_plot}},
-  \code{\link{ci_plot,OPMS}}, \code{\link{heat_map}},
-  \code{\link{heat_map,matrix}}, \code{\link{level_plot}},
-  \code{\link{level_plot,OPMS}},
-  \code{\link{select_colors}}, \code{\link{xy_plot}},
-  \code{\link{xy_plot,OPMS}}
+  \code{\link{heat_map}}, \code{\link{level_plot}},
+  \code{\link{select_colors}}, \code{\link{xy_plot}}
 }
 \keyword{color}
 

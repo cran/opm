@@ -19,4 +19,5 @@
 \alias{initialize,OPM-method}
 \usage{
   \S4method{initialize}{OPM}(.Object, ...) 
+
 }

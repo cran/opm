@@ -25,4 +25,5 @@
 \alias{phylo_char_mat,matrix-method}
 \usage{
   \S4method{phylo_char_mat}{matrix}(object, format, enclose = TRUE) 
+
 }

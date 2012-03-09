@@ -2,6 +2,7 @@
 
 
 ################################################################################
+################################################################################
 #
 # Pure metadata functions
 #
@@ -16,7 +17,7 @@
 #'
 #' @details \itemize{
 #'   \item \sQuote{WMD} is an acronym for \sQuote{with metadata}.
-#'   \item Conceptually, this class treats metadata are arbitrarily nested 
+#'   \item Conceptually, this class treats metadata as arbitrarily nested 
 #'     lists with arbitrary content. Containers of objects that inherit from 
 #'     this class are not forced to contain the same metadata entries. Problems
 #'     might arise if such data are queried and attempted to be converted to,
@@ -45,6 +46,7 @@ setClass(WMD,
 )
   
 
+################################################################################
 ################################################################################
 #
 # Getter methods
@@ -102,6 +104,7 @@ setMethod("metadata", WMD, function(object, key = NULL, exact = TRUE,
 
 
 ################################################################################
+################################################################################
 #
 # Setter methods
 #  
@@ -111,94 +114,55 @@ setGeneric("metadata<-",
   function(object, key, ..., value) standardGeneric("metadata<-"))
 #' Replace metadata
 #'
-#' Set the meta-information stored together with the data. This version
-#' replaces all metadata by its argument.
+#' Set the meta-information stored together with the data. The 
+#' \code{\link{OPMS}} methods set the meta-information stored together with the
+#' measurements for all plates at once.
 #'
-#' @name metadata-set
+#' @name metadata.set
 #' @aliases metadata<-
 #'
-#' @param object \code{\link{WMD}} object.
-#' @param value List. Values to be set as metadata. Previous metadata, if any,
-#'   are replaced entirely by \code{value}.
+#' @param object \code{\link{WMD}} or \code{\link{OPMS}} object..
+#' @param key Missing, numeric scalar, character vector, or list.
+#'   If missing, replace all metadata by \code{value}.
+#'   If a numeric scalar, then if positive, prepend \code{value} to
+#'   old metadata. If negative, append \code{value} to old metadata. If zero, 
+#'   replace old metadata entirely by \code{value}.
+#'   If a list, treat it as list of keys; expect \code{value} to be a list 
+#'   of corresponding metadata values to be set. Names are replaced by the
+#'   values of either list if they are missing.
+#'   If a character vector, use it as key and set/replace this metadata 
+#'   entry to/by \code{value}. It is an error if \code{key} has zero length.
+#'   If it contains more than one entry, a nested query is done. See \code{[[}
+#'   from the \pkg{base} package for details.
+#' @param value If \code{key} is a character vector, this can be arbitrary
+#'   value(s) to be included in the metadata (if \code{NULL}, this
+#'   metadata entry is deleted). If \code{key} is otherwise, \code{value} must
+#'   be list of values to be prepended, appended or set as metadata,
+#'   either entirely or specifically, depending on \code{key}.
 #' @return \code{value}.
 #' @exportMethod "metadata<-"
 #' @family metadata-functions
 #' @family setter-functions
-#' @note See \sQuote{See Also} for the other \sQuote{metadata<-} methods.
 #' @keywords manip
 #' @examples
+#'
+#' ############################################################
+#' #
+#' # WMD methods
 #' data(vaas_1)
+#'
+#' # WMD+missing method
 #' copy <- vaas_1
 #' new.md <- list(Species = "Thermomicrobium roseum")
 #' metadata(copy) <- new.md
 #' stopifnot(identical(metadata(copy), new.md))
 #'
-setMethod("metadata<-", c(WMD, "missing", "list"), function(object, value) {
-  object@metadata <- value
-  object
-}, sealed = SEALED)
-
-
-#' Set metadata (WMD+numeric+list version)
-#'
-#' Set meta-information stored together with the data.
-#'
-#' @name metadata-set,WMD+numeric+list
-#' @aliases metadata<-,WMD+numeric+list
-#'
-#' @param object \code{\link{WMD}} object.
-#' @param key Numeric scalar. If positive, prepend \code{value} to old 
-#'   metadata. If negative, append \code{value} to old metadata. If zero, 
-#'   replace old metadata entirely by \code{value}.
-#' @param value List. Values to be prepended, appended or set as metadata,
-#'   depending on \code{key}.
-#' @return \code{value}.
-#' @exportMethod "metadata<-"
-#' @family metadata-functions
-#' @family setter-functions
-#' @note See \sQuote{See Also} for the other \sQuote{metadata<-} methods.
-#' @keywords manip
-#' @examples
-#' data(vaas_1)
+#' # WMD+numeric method
 #' copy <- vaas_1
 #' metadata(copy, 1) <- list(Authors = "Vaas et al.")
 #' stopifnot(length(metadata(copy)) > length(metadata(vaas_1)))
 #'
-setMethod("metadata<-", c(WMD, "numeric", "list"), function(object, key,
-    value) {
-  assert_length(key)
-  object@metadata <- if (key > 0)
-    c(value, object@metadata)
-  else if (key < 0)
-    c(object@metadata, value)
-  else
-    value
-  object
-}, sealed = SEALED)
-
-  
-#' Set metadata (WMD+list+list version)
-#'
-#' Set meta-information stored together with the data.
-#'
-#' @name metadata-set,WMD+list+list
-#' @aliases metadata<-,WMD+list+list
-#'
-#' @param object \code{\link{WMD}} object.
-#' @param key List. Treat it as list of keys; expect \code{value} to be a list 
-#'   of corresponding metadata values to be set. Names are replaced by the
-#'   values of either list if they are missing.
-#' @param value List, Values to be included in the metadata. See \code{key} for 
-#'   details.
-#' @return \code{value}.
-#' @exportMethod "metadata<-"
-#' @family metadata-functions
-#' @family setter-functions
-#' @note See \sQuote{See Also} for the other \sQuote{metadata<-} methods.
-#' @keywords manip
-#' @examples
-#'
-#' data(vaas_1)
+#' # WMD+list method
 #' copy <- vaas_1
 #' stopifnot(identical(metadata(copy, "Species"), "Escherichia coli"))
 #'
@@ -228,6 +192,50 @@ setMethod("metadata<-", c(WMD, "numeric", "list"), function(object, key,
 #' # ...this yields a general mechanism for metadata deletion by providing an 
 #' # empty list as 'value'.
 #'
+#' # WMD+character method
+#' copy <- vaas_1
+#' metadata(copy, "Strain") <- "08/15"
+#' stopifnot(length(metadata(copy)) == length(metadata(vaas_1)))
+#' stopifnot(metadata(copy, "Strain") != metadata(vaas_1, "Strain"))
+#'
+#' ############################################################
+#' #
+#' # OPMS methods
+#' data(vaas_4)
+#'
+#' # OPMS+missing method
+#' copy <- vaas_4
+#' (metadata(copy) <- list(x = -99))
+#' stopifnot(identical(unique(metadata(copy)), list(list(x = -99))))
+#'
+#' # OPMS+ANY method
+#' copy <- vaas_4
+#' (metadata(copy, "Species") <- "Bacillus subtilis")
+#' stopifnot(identical(unique(metadata(copy, "Species")), "Bacillus subtilis"))
+#'
+setMethod("metadata<-", c(WMD, "missing", "list"), function(object, value) {
+  object@metadata <- value
+  object
+}, sealed = SEALED)
+
+#' @name metadata.set
+#' @export
+#'
+setMethod("metadata<-", c(WMD, "numeric", "list"), function(object, key,
+    value) {
+  assert_length(key)
+  object@metadata <- if (key > 0)
+    c(value, object@metadata)
+  else if (key < 0)
+    c(object@metadata, value)
+  else
+    value
+  object
+}, sealed = SEALED)
+
+#' @name metadata.set
+#' @export
+#'
 setMethod("metadata<-", c(WMD, "list", "list"), function(object, key, value) {
   if (is.null(names(key)))
     names(key) <- unlist(key)
@@ -237,33 +245,8 @@ setMethod("metadata<-", c(WMD, "list", "list"), function(object, key, value) {
   object
 }, sealed = SEALED)
 
-  
-#' Set metadata (WMD+character version)
-#'
-#' Set meta-information stored together with the data.
-#'
-#' @name metadata-set,WMD+character+ANY
-#' @aliases metadata<-,WMD+character+ANY
-#'
-#' @param object \code{\link{WMD}} object.
-#' @param key Character vector. Use it as key and set/replace this metadata 
-#'   entry to/by \code{value}. It is an error if \code{key} has zero length.
-#'   If it contains more than one entry, a nested query is done. See \code{[[}
-#'   from the \pkg{base} package for details.
-#' @param value Value(s) to be included in the metadata. If \code{NULL}, this
-#'   metadata entry is deleted.
-#' @return \code{value}.
-#' @exportMethod "metadata<-"
-#' @family metadata-functions
-#' @family setter-functions
-#' @note See \sQuote{See Also} for the other \sQuote{metadata<-} methods.
-#' @keywords manip
-#' @examples
-#' data(vaas_1)
-#' copy <- vaas_1
-#' metadata(copy, "Strain") <- "08/15"
-#' stopifnot(length(metadata(copy)) == length(metadata(vaas_1)))
-#' stopifnot(metadata(copy, "Strain") != metadata(vaas_1, "Strain"))
+#' @name metadata.set
+#' @export
 #'
 setMethod("metadata<-", c(WMD, "character", "ANY"), function(object, key,
     value) {
@@ -271,7 +254,8 @@ setMethod("metadata<-", c(WMD, "character", "ANY"), function(object, key,
   object
 }, sealed = SEALED)
 
-  
+
+################################################################################
 ################################################################################
 #
 # Infix operators
@@ -286,24 +270,32 @@ setGeneric("%k%", function(x, table) standardGeneric("%k%"))
 #' all sublists are ignored here). An empty query vector results in 
 #' \code{TRUE}. Note that the values of the character vector, not its names, if
 #' any, are used for querying the metadata.
+#' Using a list as query, this method tests whether all given keys are present
+#' in the names of the metadata.
+#' This works like the character method, but because a query list is given, the 
+#' comparison of keys can be applied recursively (by using, of course, a nested 
+#' query list). This is based on \code{\link{contains}} with the \code{values} 
+#' argument set to \code{FALSE}.
 #'
 #' @name %k%
-#' @aliases infix-k
-#' @rdname infix-k
+#' @aliases infix.k
+#' @rdname infix.k
 #'
-#' @param x Character vector.
+#' @param x Character vector or list.
 #' @param table \code{\link{WMD}} object.
 #' @return Logical scalar.
 #' @exportMethod "%k%"
 #' @export
 #~ @family getter-functions
 #' @keywords attribute
-#' @note There is also a list-based version, \code{\link{infix-k,list}}.
 #'
 #' @examples 
-#' data(vaas_1)
+#'
 #' # The dataset contains the metadata keys 'Species' and 'Experiment' but
 #' # neither 'Trial' nor 'Organism' nor 'Run':
+#' data(vaas_1)
+#'
+#' # Character method
 #' stopifnot("Experiment" %k% vaas_1)
 #' stopifnot("Species" %k% vaas_1)
 #' stopifnot(!"Run" %k% vaas_1)
@@ -312,38 +304,7 @@ setGeneric("%k%", function(x, table) standardGeneric("%k%"))
 #' stopifnot(!c("Organism", "Experiment") %k% vaas_1)
 #' stopifnot(character() %k% vaas_1)
 #'
-setMethod("%k%", c("character", WMD), function(x, table) {
-  all(x %in% names(table@metadata))
-}, sealed = SEALED)
-
-
-#' Search in metadata keys (list version)
-#'
-#' Using a list as query, this method tests whether all given keys are present
-#' in the names of the metadata.
-#' This works like \code{\link{infix-k}}, but because a query list is given, the 
-#' comparison of keys can be applied recursively (by using, of course, a nested 
-#' query list). This is based on \code{\link{contains}} with the \code{values} 
-#' argument set to \code{FALSE}.
-#'
-#' @name %k%,list
-#' @aliases infix-k,list
-#' @rdname infix-k-list
-#'
-#' @param x List.
-#' @param table \code{\link{WMD}} object.
-#' @return Logical scalar.
-#' @exportMethod "%k%"
-#' @export
-#~ @family getter-functions
-#' @keywords attribute
-#' @note There is also a character-based version, \code{\link{infix-k}}.
-#' @examples
-#'
-#' data(vaas_1)
-#'
-#' # The dataset contains the metadata keys 'Species' and 'Experiment' but
-#' # neither 'Trial' nor 'Organism' nor 'Run':
+#' # List method
 #' stopifnot(list(Experiment = "whatever") %k% vaas_1)
 #' stopifnot(list(Species = "ignored") %k% vaas_1)
 #'
@@ -362,9 +323,18 @@ setMethod("%k%", c("character", WMD), function(x, table) {
 #' stopifnot(!list(Organism = "?", Experiment = NA) %k% vaas_1)
 #' stopifnot(list() %k% vaas_1)
 #'
+setMethod("%k%", c("character", WMD), function(x, table) {
+  all(x %in% names(table@metadata))
+}, sealed = SEALED)
+
+#' @export
+#'
 setMethod("%k%", c("list", WMD), function(x, table) {
   contains(table@metadata, x, values = FALSE)
 }, sealed = SEALED)
+
+
+################################################################################
 
 
 setGeneric("%K%", function(x, table) standardGeneric("%K%"))
@@ -375,25 +345,27 @@ setGeneric("%K%", function(x, table) standardGeneric("%K%"))
 #' the key has a length > 1, sublists are queried. An empty vector results in
 #' \code{TRUE}. Note that the values of the character vector, not its names, if 
 #' any, are used for querying the metadata.
+#' Using a list as query, this function behaves like \code{\link{infix.k}}.
 #'
 #' @name %K%
-#' @aliases infix-largek
-#' @rdname infix-largek
+#' @aliases infix.largek
+#' @rdname infix.largek
 #'
-#' @param x Character vector.
+#' @param x Character vector or list.
 #' @param table \code{\link{WMD}} object.
 #' @return Logical scalar.
 #' @export
 #' @exportMethod "%K%"
 #~ @family getter-functions
 #' @keywords attribute
-#' @note There is also a list-based version, \code{\link{infix-largek,list}}.
 #'
 #' @examples 
 #'
 #' # The dataset contains the metadata keys 'Species' and 'Experiment' but
 #' # neither 'Trial' nor 'Organism' nor 'Run':
 #' data(vaas_1)
+#'
+#' # Character method
 #'
 #' # Single-element queries
 #' stopifnot("Experiment" %K% vaas_1)
@@ -405,9 +377,12 @@ setGeneric("%K%", function(x, table) standardGeneric("%K%"))
 #' # Zero-element queries
 #' stopifnot(character() %K% vaas_1)
 #'
-#' # Querying with vectors of lenght > 1 mean nested queries; compare this to
-#' # the behaviour of %k%!
+#' # Querying with vectors of length > 1 mean nested queries; compare this to
+#' # the behavior of %k%!
 #' stopifnot(!c("Species", "Experiment") %K% vaas_1)
+#'
+#' # List method
+#' # See %k% -- the behavior is identical for lists.
 #'
 setMethod("%K%", c("character", WMD), function(x, table) {
   if (length(x) == 0L)
@@ -415,30 +390,14 @@ setMethod("%K%", c("character", WMD), function(x, table) {
   tryCatch(!is.null(table@metadata[[x]]), error = function(e) FALSE)
 }, sealed = SEALED)
 
-
-#' Search in metadata keys (list version)
-#'
-#' Using a list as query, this function behaves like \code{\link{infix-k}}.
-#'
-#' @name %K%,list
-#' @aliases infix-largek,list
-#' @rdname infix-largek-list
-#'
-#' @param x List.
-#' @param table \code{\link{WMD}} object.
-#' @return Logical scalar.
 #' @export
-#' @exportMethod "%K%"
-#~ @family getter-functions
-#' @keywords attribute
-#' @note There is also a character-based version, \code{\link{infix-largek}}.
-#'
-#' @examples
-#' # See %k% -- the behaviour is identical for lists.
 #'
 setMethod("%K%", c("list", WMD), function(x, table) {
   contains(table@metadata, x, values = FALSE)
 }, sealed = SEALED)
+
+
+################################################################################
 
 
 setGeneric("%q%", function(x, table) standardGeneric("%q%"))
@@ -446,24 +405,29 @@ setGeneric("%q%", function(x, table) standardGeneric("%q%"))
 #'
 #' Using a character vector, test whether all given query keys are present in
 #' the top-level names of the metadata and refer to the same query elements.
+#' Using a list, conduct a non-exact query with a query list.
 #'
 #' @name %q%
-#' @aliases infix-q
-#' @rdname infix-q
+#' @aliases infix.q
+#' @rdname infix.q
 #'
-#' @param x Character vector. Its \code{names} are used to select elements from
+#' @param x Character vector or list used as query. 
+#'   If a character vector, its \code{names} are used to select elements from
 #'   the top level of the metadata. These elements are then converted to 
 #'   \sQuote{character} mode before comparison with the values of \code{x}. A 
 #'   non-empty vector without a \code{names} attribute is accepted but will 
 #'   always yield \code{FALSE}. In contrast, an entirely empty vector yields 
 #'   \code{TRUE}.
+#'   If a list, the comparison is applied recursively using
+#'   \code{\link{contains}} with the \code{values} argument set to \code{TRUE}
+#'   but \code{exact} set to \code{FALSE}. The main advantage of using a list
+#'   over the character-based search is that it allows one a nested query.
 #' @param table \code{\link{WMD}} object.
 #' @return Logical scalar.
 #' @exportMethod "%q%"
 #' @export
 #~ @family getter-functions
 #' @keywords attribute
-#' @note There is also a list-based version, \code{\link{infix-q,list}}.
 #'
 #' @examples 
 #'
@@ -471,6 +435,7 @@ setGeneric("%q%", function(x, table) standardGeneric("%q%"))
 #' # values 'Escherichia coli' and 'First replicate':
 #' data(vaas_1)
 #'
+#' # Character method
 #' stopifnot(!"Experiment" %q% vaas_1) # wrong query here; compare to %k%
 #' stopifnot(!"First replicate" %q% vaas_1) # again wrong query
 #' stopifnot(c(Experiment = "First replicate") %q% vaas_1) # right query
@@ -484,40 +449,7 @@ setGeneric("%q%", function(x, table) standardGeneric("%q%"))
 #'
 #' stopifnot(character() %q% vaas_1) # Empty query
 #'
-setMethod("%q%", c("character", WMD), function(x, table) {
-  keys <- names(x)
-  if (length(keys) == 0L && length(x) > 0L)
-    return(FALSE)
-  all(x == sapply(table@metadata[keys], as.character))
-}, sealed = SEALED)
-
-
-#' Query metadata (non-exact list version)
-#'
-#' Conduct a non-exact query with a query list.
-#'
-#' @name %q%,list
-#' @aliases infix-q,list
-#' @rdname infix-q-list
-#'
-#' @param x A list, used as query. The comparison is applied recursively using
-#'   \code{\link{contains}} with the \code{values} argument set to \code{TRUE}
-#'   but \code{exact} set to \code{FALSE}. The main advantage of using a list
-#'   over the character-based search is that it allows one a nested query.
-#' @param table \code{\link{WMD}} object.
-#' @return Logical scalar.
-#' @exportMethod "%q%"
-#' @export
-#~ @family getter-functions
-#' @keywords attribute
-#' @note There is also a character-based version, \code{\link{infix-k}}.
-#'
-#' @examples 
-#'
-#' # The dataset contains the metadata keys 'Species' and 'Experiment' with the
-#' # values 'Escherichia coli' and 'First replicate':
-#' data(vaas_1)
-#'
+#' # List method
 #' stopifnot(list(Experiment = "First replicate") %q% vaas_1)
 #'
 #' # Choice among alternatives
@@ -532,9 +464,21 @@ setMethod("%q%", c("character", WMD), function(x, table) {
 #'
 #' stopifnot(list() %q% vaas_1) # Empty query
 #'
+setMethod("%q%", c("character", WMD), function(x, table) {
+  keys <- names(x)
+  if (length(keys) == 0L && length(x) > 0L)
+    return(FALSE)
+  all(x == sapply(table@metadata[keys], as.character))
+}, sealed = SEALED)
+
+#' @export
+#'
 setMethod("%q%", c("list", WMD), function(x, table) {
   contains(table@metadata, x, values = TRUE, exact = FALSE)
 }, sealed = SEALED)
+
+
+################################################################################
 
 
 setGeneric("%Q%", function(x, table) standardGeneric("%Q%"))
@@ -543,21 +487,27 @@ setGeneric("%Q%", function(x, table) standardGeneric("%Q%"))
 #' Using a character vector as query, test whether all given query keys are 
 #' present in the top-level names of the metadata and refer to the same query 
 #' elements (without coercion to character).
+#' Using a list, conduct an exact query with this query list.
 #'
 #' @name %Q%
-#' @aliases infix-largeq
-#' @rdname infix-largeq
+#' @aliases infix.largeq
+#' @rdname infix.largeq
 #'
-#' @param x A character vector used as query. The result is identical to the 
-#'   one of \code{\link{infix-q}} except for the fact that metadata elements 
+#' @param x Character vector or list used as query. 
+#'   If a character vector, the result is identical to the 
+#'   one of \code{\link{infix.q}} except for the fact that metadata elements 
 #'   are not coerced to \sQuote{character} mode, making the query more strict.
+#'   If a list, the comparison is applied recursively 
+#'   using \code{\link{contains}} with the arguments \code{values} and 
+#'   \code{exact} set to \code{TRUE}. This might be too strict for most
+#'   applications. The main advantage of using a list over the character-based
+#'   search is that it allows one a nested query.
 #' @param table \code{\link{WMD}} object.
 #' @return Logical scalar.
 #' @exportMethod "%Q%"
 #' @export
 #~ @family getter-functions
 #' @keywords attribute
-#' @note There is also a list-based version, \code{\link{infix-largeq,list}}.
 #'
 #' @examples 
 #'
@@ -565,6 +515,7 @@ setGeneric("%Q%", function(x, table) standardGeneric("%Q%"))
 #' # values 'Escherichia coli' and 'First replicate':
 #' data(vaas_1)
 #'
+#' # Character method
 #' stopifnot(c(Experiment = "First replicate") %Q% vaas_1)
 #'
 #' # This does not work because the value has the wrong type
@@ -578,41 +529,7 @@ setGeneric("%Q%", function(x, table) standardGeneric("%Q%"))
 #'
 #' stopifnot(character() %Q% vaas_1) # Empty query
 #'
-setMethod("%Q%", c("character", WMD), function(x, table) {
-  keys <- names(x)
-  if (length(keys) == 0L && length(x) > 0L)
-    return(FALSE)
-  all(sapply(keys, function(key) identical(x[[key]], table@metadata[[key]])))
-}, sealed = SEALED)
-
-
-#' Query metadata (strict list version)
-#'
-#' Conduct an exact query with a query list.
-#'
-#' @name %Q%,list
-#' @aliases infix-largeq,list
-#' @rdname infix-largeq-list
-#'
-#' @param x A list used as query. The comparison is applied recursively 
-#'   using \code{\link{contains}} with the arguments \code{values} and 
-#'   \code{exact} set to \code{TRUE}. This might be too strict for most
-#'   applications. The main advantage of using a list over the character-based
-#'   search is that it allows one a nested query.
-#' @param table \code{\link{WMD}} object.
-#' @return Logical scalar.
-#' @exportMethod "%Q%"
-#' @export
-#~ @family getter-functions
-#' @keywords attribute
-#' @note There is also a character-based version, \code{\link{infix-largeq}}.
-#'
-#' @examples 
-#'
-#' # The dataset contains the metadata keys 'Species' and 'Experiment' with the
-#' # values 'Escherichia coli' and 'First replicate':
-#' data(vaas_1)
-#'
+#' # List method
 #' stopifnot(list(Experiment = "First replicate") %Q% vaas_1)
 #'
 #' # Choice among alternatives is not done here: this query fails unless this
@@ -622,11 +539,21 @@ setMethod("%Q%", c("character", WMD), function(x, table) {
 #'
 #' stopifnot(list() %Q% vaas_1) # Empty query
 #'
+setMethod("%Q%", c("character", WMD), function(x, table) {
+  keys <- names(x)
+  if (length(keys) == 0L && length(x) > 0L)
+    return(FALSE)
+  all(sapply(keys, function(key) identical(x[[key]], table@metadata[[key]])))
+}, sealed = SEALED)
+
+#' @export
+#'
 setMethod("%Q%", c("list", WMD), function(x, table) {
   contains(table@metadata, x, values = TRUE, exact = TRUE)
 }, sealed = SEALED)
 
 
+################################################################################
 ################################################################################
 #
 # Metadata mapping
@@ -635,29 +562,46 @@ setMethod("%Q%", c("list", WMD), function(x, table) {
 
 setGeneric("map_metadata",
   function(object, mapping, ...) standardGeneric("map_metadata"))
-#' Map metadata using a function
+#' Map metadata
 #'
 #' Modify meta-information stored together with the measurements by using a 
-#' function. (This is just a wrapper for \code{rapply}, with \code{how} set to 
-#' \sQuote{replace}, if \code{values} is \code{TRUE}.)
+#' function (this is just a wrapper for \code{rapply}, with \code{how} set to 
+#' \sQuote{replace}, if \code{values} is \code{TRUE}) or a \sQuote{character}
+#' vector-based mapping.
+#' The \code{\link{OPMS}} method applies this to all plates in turn
+#' and returns an \code{\link{OPMS}} object with accordingly modified 
+#' metadata.
 #'
-#' @name map_metadata,WMD+function
-#'
-#' @param object \code{\link{WMD}} object.
+#' @param object \code{\link{WMD}} object or \code{\link{OPMS}} object.
 #' @param mapping A function. It is applied to all non-list elements of
-#'   \code{\link{metadata}}, which is traversed recursively.
+#'   \code{\link{metadata}}, which is traversed recursively. Alternatively, a
+#'   character vector. See \code{\link{map_values}} for usage
+#'   details. \code{\link{metadata_chars}} can be used to create a template 
+#'   for such a vector.
 #' @param values Logical scalar. If \code{FALSE}, metadata names, not values,
 #'   are mapped, and \code{classes} is ignored (names are always of class
 #'   \sQuote{character}).
-#' @param classes Character vector specifying the classes to be mapped; others
-#'   are returned unchanged.
-#' @param ... Optional argument passed to \code{mapping}.
-#' @return \code{\link{WMD}} object with modified metadata.
+#' @param classes Character vector or (for the character vector-based mapping) 
+#'  \code{TRUE}. For the mapping with a function, this specifies the classes
+#'  that are mapped. For the mapping with a character vector, this specifies the
+#'  classes in addition to \sQuote{character} that are mapped (after converting
+#'  to \sQuote{character} mode). If \code{classes} is \code{TRUE}, 
+#'  \code{mapping} is treated as a mapping between class names, and the 
+#'  according conversions are applied. See the \code{coerce} argument of
+#'  \code{\link{map_values}} for details.
+#' @param ... Optional argument passed to \code{mapping} if it is a function,
+#'   and from the \code{\link{OPMS}} method to the \code{\link{WMD}} method.
+#' @return \code{\link{WMD}} or \code{\link{OPMS}} object with modified 
+#'   metadata.
 #' @export
 #' @family metadata-functions
 #' @keywords manip
 #' @examples
+#'
+#' # WMD methods
 #' data(vaas_1)
+#' 
+#' # WMD+function method
 #' copy <- map_metadata(vaas_1, identity)
 #' stopifnot(identical(copy, vaas_1))
 #' copy <- map_metadata(vaas_1, identity, values = FALSE)
@@ -667,38 +611,7 @@ setGeneric("map_metadata",
 #' (y <- metadata_chars(copy, values = FALSE))
 #' stopifnot(identical(as.character(y), paste(x, "!")))
 #'
-setMethod("map_metadata", c(WMD, "function"), function(object, mapping, 
-    values = TRUE, classes = "ANY", ...) {
-  object@metadata <- if (values)
-    rapply(object@metadata, f = mapping, classes = classes, how = "replace", 
-      ...)
-  else
-    map_names(object@metadata, mapping = mapping, ...)
-  object
-}, sealed = SEALED)
-
-
-#' Map metadata using a character vector
-#'
-#' Map meta-information stored together with the measurements by using a 
-#' \sQuote{character} vector-based mapping.
-#'
-#' @param object \code{\link{WMD}} object.
-#' @param mapping Character vector. See \code{\link{map_values,character}} for
-#'   details. \code{\link{metadata_chars}} can be used to create a template 
-#'   for such a vector.
-#' @param values Logical scalar. If \code{FALSE}, metadata names, not values,
-#'   are mapped, and \code{coerce} is ignored (names are always of class
-#'   \sQuote{character} and need not be coerced).
-#' @param coerce Character vector. See \code{\link{map_values}} for details.
-#' @return \code{\link{WMD}} object with modified metadata.
-#' @export
-#' @family metadata-functions
-#' @keywords manip
-#' @examples
-#' data(vaas_1)
-#'
-#' # Mapping a value
+#' # WMD+character method: mapping a value
 #' map <- metadata_chars(vaas_1)
 #' map["First replicate"] <- "Rep. 1"
 #' copy <- map_metadata(vaas_1, map)
@@ -706,42 +619,82 @@ setMethod("map_metadata", c(WMD, "function"), function(object, mapping,
 #' stopifnot(!identical(metadata(copy, "Experiment"), 
 #'   metadata(vaas_1, "Experiment")))
 #'
-#' # Mapping a name
+#' # WMD+character method: mapping a name
 #' map <- metadata_chars(vaas_1, values = FALSE)
 #' map["Plate number"] <- "Plate no."
 #' copy <- map_metadata(vaas_1, map, values = FALSE)
 #' stopifnot(!identical(names(metadata(copy)), names(metadata(vaas_1))))
 #'
-setMethod("map_metadata", c(WMD, "character"), function(object, mapping,
-    values = TRUE, coerce = "factor") {
+#' # OPMS method
+#' data(vaas_4)
+#'
+#' # using a function
+#' copy <- map_metadata(vaas_4, identity)
+#' stopifnot(identical(copy, vaas_4))
+#' copy <- map_metadata(vaas_4, identity, values = FALSE)
+#' stopifnot(identical(copy, vaas_4))
+#' copy <- map_metadata(vaas_4, function(x) paste(x, "!"), values = FALSE)
+#' (x <- metadata_chars(vaas_4, values = FALSE))
+#' (y <- metadata_chars(copy, values = FALSE))
+#' stopifnot(identical(as.character(y), paste(x, "!")))
+#'
+#' # using a character vector
+#' map <- metadata_chars(vaas_4)
+#' map["First replicate"] <- "Rep. 1"
+#' copy <- map_metadata(vaas_4, map)
+#' x <- metadata(vaas_4, "Experiment")
+#' stopifnot(x == "First replicate")
+#' y <- metadata(copy, "Experiment")
+#' stopifnot(y == "Rep. 1")
+#'
+setMethod("map_metadata", c(WMD, "function"), function(object, mapping, 
+    values = TRUE, classes = "ANY", ...) {
   object@metadata <- if (values)
-    map_values(object@metadata, mapping, coerce)
+    rapply(object = object@metadata, f = mapping, classes = classes,
+       how = "replace", ...)
+  else
+    map_names(object = object@metadata, mapping = mapping, ...)
+  object
+}, sealed = SEALED)
+
+#' @export
+#'
+setMethod("map_metadata", c(WMD, "character"), function(object, mapping,
+    values = TRUE, classes = "factor") {
+  object@metadata <- if (values)
+    map_values(object@metadata, mapping, coerce = classes)
   else
     map_names(object@metadata, mapping)
   object
 }, sealed = SEALED)
 
-  
+
+################################################################################
 ################################################################################
 #
 # Metadata characters
 #  
   
-
 setGeneric("metadata_chars",
   function(object, ...) standardGeneric("metadata_chars"))
 #' Get metadata characters
 #'
 #' Collect all \sQuote{character} entries from the meta-information stored 
 #' together with the measurements. Optionally coerce data of other types. The
-#' result can be used to create a mapping for \code{\link{map_metadata}}.
+#' result can be used to create a mapping for \code{\link{map_metadata}}. The
+#' \code{\link{OPMS}} method just applies the \code{\link{WMD}} method to all
+#' contained plates in turn.
 #'
-#' @param object \code{\link{WMD}} object.
+#' @param object \code{\link{WMD}} or \code{\link{OPMS}} object.
 #' @param values Logical scalar. If \code{FALSE}, metadata names, not values,
-#'   are collected, and \code{coerce} is ignored (names are always of class
+#'   are collected, and \code{classes} is ignored (names are always of class
 #'   \sQuote{character} and need not be coerced).
-#' @param coerce Character vector containing the names of classes that should
-#'   also be collected (and coerced to \sQuote{character}).
+#' @param classes Character vector containing the names of classes that should
+#'   also be collected (and coerced to \sQuote{character}), or \code{TRUE}. In
+#'   that case, a mapping template for the classes themselves is returned. See
+#'   the \code{coerce} argument of \code{map_values} for details.
+#' @param ... Optional argument passed from the \code{\link{OPMS}} to the
+#'   \code{\link{WMD}} method.
 #' @return Character vector, sorted and made unique. Original \code{names}
 #'   attributes, if any, are dropped and replaced by the character vector 
 #'   itself. (This might be convenient regarding its use with 
@@ -750,6 +703,8 @@ setGeneric("metadata_chars",
 #' @family metadata-functions
 #' @keywords attribute
 #' @examples
+#'
+#' # WMD method
 #' data(vaas_1)
 #' (x <- metadata_chars(vaas_1, values = FALSE))
 #' stopifnot(names(x) == x)
@@ -757,17 +712,24 @@ setGeneric("metadata_chars",
 #' stopifnot(names(x) == x)
 #' # See map_metadata() for a potential usage of the metadata_chars() result
 #'
+#' # OPMS method
+#' data(vaas_4)
+#' (x <- metadata_chars(vaas_4, values = TRUE)) # the values
+#' (y <- metadata_chars(vaas_4, values = FALSE)) # the keys
+#' stopifnot(length(x) > length(y))
+#'
 setMethod("metadata_chars", WMD, function(object, values = TRUE, 
-    coerce = "factor") {
-  if (values) {
-    result <- sort(unique(rapply(object@metadata,
-      classes = c("character", coerce), how = "unlist", f = as.character)))
-    structure(.Data = result, names = result)
-  } else
+    classes = "factor") {
+  if (values)
+    map_values(object@metadata, coerce = classes)
+  else
     map_names(object@metadata)
 }, sealed = SEALED)
   
   
+  
+################################################################################
+  
+  
+  
 
-  
-  

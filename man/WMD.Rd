@@ -12,7 +12,7 @@
 \details{
   \itemize{ \item \sQuote{WMD} is an acronym for
   \sQuote{with metadata}.  \item Conceptually, this class
-  treats metadata are arbitrarily nested lists with
+  treats metadata as arbitrarily nested lists with
   arbitrary content. Containers of objects that inherit
   from this class are not forced to contain the same
   metadata entries. Problems might arise if such data are

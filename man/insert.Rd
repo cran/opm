@@ -28,4 +28,5 @@
 \alias{insert,list-method}
 \usage{
   \S4method{insert}{list}(object, other, ..., .force = FALSE) 
+
 }

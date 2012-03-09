@@ -81,7 +81,20 @@ test_that("we can map and get names in lists", {
   exp <- c("a", "b", "c", "d", "xx")
   names(exp) <- exp
   expect_equal(got, exp)
+
+})
+
+
+test_that("we can map and get names in lists with missing names", {
+  x <- list(a = list(1:2, 5:6), b = 3:8)
+  map <- c(a = "A", b = "B")
+  got <- map_names(x, map)
+  expect_equal(got, list(A = list(1:2, 5:6), B = 3:8))
+  got <- map_names(x, toupper)
+  expect_equal(got, list(A = list(1:2, 5:6), B = 3:8))
   
+  x <- list(list(), list())
+  expect_equivalent(character(), map_names(x))
 })
 
 

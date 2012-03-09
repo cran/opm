@@ -43,7 +43,7 @@ write(to_yaml(x), "out.yml")
 
   Other conversion-functions: \code{\link{extract}},
   \code{\link{extract_columns}}, \code{\link{flatten}},
-  \code{\link{flatten,OPMS}}, \code{\link{plates}}
+  \code{\link{oapply}}, \code{\link{plates}}
 }
 \keyword{IO}
 \keyword{character}
@@ -54,4 +54,5 @@ write(to_yaml(x), "out.yml")
 \usage{
   \S4method{to_yaml}{YAML_VIA_LIST}(object, sep = TRUE,
     line.sep = "\n", ...) 
+
 }

@@ -1,6 +1,7 @@
 \docType{package}
-\name{opm-package}
-\alias{opm-package}
+\name{opm.package}
+\alias{opm.package}
+\alias{opm.package-package}
 \title{The opm package}
 \description{
   Package for analysing OmniLog(R) phenotype microarray

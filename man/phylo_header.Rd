@@ -27,4 +27,5 @@
 \usage{
   \S4method{phylo_header}{matrix}(object, format, enclose = TRUE,
     indent = 3L) 
+
 }

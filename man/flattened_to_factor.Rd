@@ -24,4 +24,5 @@
 \alias{flattened_to_factor,data.frame-method}
 \usage{
   \S4method{flattened_to_factor}{data.frame}(object, sep = " ") 
+
 }

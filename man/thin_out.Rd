@@ -7,8 +7,7 @@
   \item{factor}{Numeric scalar >= 1 indicating how much the
   dataset shall be thinned out.}
 
-  \item{drop}{Logical scalar. See \code{\link{[}} and
-  \code{\link{[,OPMA}}.}
+  \item{drop}{Logical scalar. See \code{\link{[}}.}
 }
 \value{
   \code{\link{OPM}} object.
@@ -35,19 +34,17 @@ copy <- thin_out(vaas_1, 10, drop = TRUE) # also remove the parameters
 stopifnot(identical(x, c(38L, 96L)), !has_aggr(copy))
 }
 \seealso{
-  Other getter-functions: \code{\link{[}},
-  \code{\link{[,OPMA}}, \code{\link{[,OPMS}},
-  \code{\link{aggr_settings}}, \code{\link{aggregated}},
+  Other getter-functions: \code{\link{aggr_settings}},
+  \code{\link{aggregated}}, \code{\link{anyDuplicated}},
   \code{\link{csv_data}}, \code{\link{dim}},
-  \code{\link{dim,OPMS}}, \code{\link{filename}},
+  \code{\link{duplicated}}, \code{\link{filename}},
   \code{\link{has_aggr}}, \code{\link{hours}},
   \code{\link{length}}, \code{\link{max}},
-  \code{\link{max,OPMS}}, \code{\link{measurements}},
-  \code{\link{metadata}}, \code{\link{minmax}},
-  \code{\link{minmax,OPMS}}, \code{\link{plate_type}},
+  \code{\link{measurements}}, \code{\link{metadata}},
+  \code{\link{minmax}}, \code{\link{plate_type}},
   \code{\link{position}}, \code{\link{select}},
-  \code{\link{setup_time}}, \code{\link{summary}},
-  \code{\link{summary,OPMS}}, \code{\link{well}},
+  \code{\link{seq}}, \code{\link{setup_time}},
+  \code{\link{summary}}, \code{\link{well}},
   \code{\link{wells}}
 }
 \keyword{manip}
@@ -57,4 +54,5 @@ stopifnot(identical(x, c(38L, 96L)), !has_aggr(copy))
 \alias{thin_out,OPM-method}
 \usage{
   \S4method{thin_out}{OPM}(object, factor, drop = FALSE) 
+
 }

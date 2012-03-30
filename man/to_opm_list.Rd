@@ -2,13 +2,15 @@
 \alias{to_opm_list}
 \title{Convert to OPM list}
 \arguments{
-  \item{List}{the objects that can be passed to
+  \item{object}{List of objects that can be passed to
   \code{\link{opms}}}
 
   \item{precomputed}{Logical scalar. See
   \code{\link{opms}}.}
 
   \item{skip}{Logical scalar. See \code{\link{opms}}.}
+
+  \item{group}{Logical scalar. See \code{\link{opms}}.}
 }
 \value{
   List.
@@ -24,6 +26,6 @@
 \alias{to_opm_list,list-method}
 \usage{
   \S4method{to_opm_list}{list}(object, precomputed = TRUE,
-    skip = FALSE) 
+    skip = FALSE, group = FALSE) 
 
 }

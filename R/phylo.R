@@ -8,10 +8,12 @@
 CHARACTER_STATES <- c(0L:9L, LETTERS)[1L:32L]
 MISSING_CHAR <- "?"
 
-if (MISSING_CHAR %in% CHARACTER_STATES)
+if (length(MISSING_CHAR) != 1L || MISSING_CHAR %in% CHARACTER_STATES)
+  stop(BUG_MSG)
+if (any(nchar(c(MISSING_CHAR, CHARACTER_STATES)) != 1L))
   stop(BUG_MSG)
 
-PHYLO_FORMATS <- c("epf", "nexus", "phylip")
+PHYLO_FORMATS <- c("epf", "nexus", "phylip", "html")
 
 
 PAUP_BLOCK <- c(
@@ -47,14 +49,16 @@ setGeneric("discrete", function(x, ...) standardGeneric("discrete"))
 #' the full export one additionally needs \code{\link{phylo_data}}. The matrix
 #' method is just a wrapper that takes care of the matrix dimensions.
 #'
-#' @param x Numeric vector or matrix.
+#' @param x Numeric vector or a \code{\link{MOA}} object convertible to a
+#'   numeric vector.
 #'
 #' @param range In non-\code{gap} mode (see next argument) the assumed real 
 #'   range of the data; must contain all elements of \code{x}, but can be much 
 #'   wider. In \code{gap} mode, it must, in contrast, lie within the range of 
 #'   \code{x}. If \code{range} is set to \code{TRUE}, the empirical range of 
-#'   \code{x} is used. This makes not much sense in \code{gap} mode, and a 
-#'   warning is issued in that case.
+#'   \code{x} is used in non-\code{gap} mode. In \code{gap} mode, the range is
+#'   determined using \code{\link{run_kmeans}} with the number of clusters set
+#'   to \code{3} and then applying \code{\link{borders}} to the result.
 #'
 #' @param gap Logical scalar. If \code{TRUE}, always convert to binary or 
 #'   ternary
@@ -86,7 +90,8 @@ setGeneric("discrete", function(x, ...) standardGeneric("discrete"))
 #'   latter case, a single integer is interpreted as the upper bound of an 
 #'   integer vector starting at 1.
 #'
-#' @param ... Arguments passed between the methods.
+#' @param ... Arguments passed between the methods or, if requested, to
+#'   \code{\link{run_kmeans}} (except \code{object} and \code{k}, see there).
 #'
 #' @export
 #' @return Double, integer, character or logical vector or factor, depending on 
@@ -96,13 +101,14 @@ setGeneric("discrete", function(x, ...) standardGeneric("discrete"))
 #' @family phylogeny-functions
 #' @seealso base::cut
 #' @keywords character category
-#' @references Dougherty J, Kohavi R, Sahami M. Supervised and unsupervised
-#'   discretization of continuous features. In: Prieditis A, Russell S (eds) 
-#'   Machine Learning: Proceedings of the fifth international conference. 1995.
-#' @references Ventura D, Martinez TR. An empirical comparison of 
-#'   discretization methods. Proceedings of the Tenth International Symposium 
-#'   on Computer and Information Sciences 1995; 443-450.
-#' @references Bunuel L. Le charme discret de la bourgeoisie. 1972;
+#' @references Dougherty, J., Kohavi, R., Sahami, M. 1995 Supervised and 
+#'   unsupervised discretization of continuous features. In: Prieditis, A., 
+#'   Russell, S. (eds.) \emph{Machine Learning: Proceedings of the fifth 
+#'   international conference}.
+#' @references Ventura, D., Martinez, T. R. 1995 An empirical comparison of 
+#'   discretization methods. \emph{Proceedings of the Tenth International  
+#'   Symposium on Computer and Information Sciences}, p. 443--450.
+#' @references Bunuel, L. 1972 \emph{Le charme discret de la bourgeoisie.}
 #'   France/Spain, 96 min.
 #'
 #' @examples
@@ -129,9 +135,16 @@ setGeneric("discrete", function(x, ...) standardGeneric("discrete"))
 #' (y <- discrete(x, range = c(3.4, 4.5), gap = TRUE))
 #' stopifnot(identical(dim(x), dim(y)))
 #'
+#' # K-means based discretization of PM data
+#' data(vaas_4)
+#' x <- extract(vaas_4, as.labels = list("Species", "Strain"), 
+#'   in.parens = FALSE)
+#' head(y <- discrete(x, range = TRUE, gap = TRUE))
+#' stopifnot(c("0", "?", "1") %in% y)
+#'
 setMethod("discrete", "numeric", function(x, range, gap = FALSE,
     output = c("character", "integer", "logical", "factor", "numeric"),
-    middle.na = TRUE, states = 32L) {
+    middle.na = TRUE, states = 32L, ...) {
 
   convert_states <- function(states) {
     if (length(states) == 0L)
@@ -156,14 +169,13 @@ setMethod("discrete", "numeric", function(x, range, gap = FALSE,
 
   output <- match.arg(output)
   
-  if (is.logical(range) && range) {
-    if (gap)
-      warning("using the empirical range of the data in 'gap' mode")
-    range <- range(x)
-  } else {
-    assert_length(range, .wanted = 2L)
-    range <- sort(range[1L:2L])
-  }
+  if (isTRUE(range)) {
+    range <- if (gap)
+      borders(run_kmeans(object = x, k = 3L, ...))[[1L]]
+    else
+      range(x)
+  } else
+    assert_length(range <- sort(range), .wanted = 2L)
 
   if (gap) { # binary-state mode with a gap due to ambiguity
 
@@ -220,9 +232,8 @@ setMethod("discrete", "numeric", function(x, range, gap = FALSE,
 
 #' @export
 #'
-setMethod("discrete", "matrix", function(x, ...) {
-  structure(.Data = discrete(as.numeric(x), ...), dim = dim(x),
-    dimnames = dimnames(x))
+setMethod("discrete", MOA, function(x, ...) {
+  map_values(object = x, mapping = discrete, ...)
 }, sealed = SEALED)
 
 
@@ -238,14 +249,15 @@ setGeneric("join_discrete",
 #' software such as PAUP*.
 #'
 #' @param object Character vector or convertible to such, or matrix.
-#' @param margin Integer scalar. See \code{apply} from package \pkg{base} and 
-#'   \code{\link{join_discrete}}, which is applied to either rows or columns,
-#'   depending on this argument.
+#' @param format Character scalar. 
+#' @param groups Character vector or factor, determining which rows should
+#'   be joined.
 #' @return Character scalar, for the matrix method a vector.
 #' @keywords internal
 #'
-setMethod("join_discrete", "ANY", function(object) {
+setMethod("join_discrete", "ANY", function(object, format) {
   object <- as.character(object)
+  
   if (length(object) == 0L || any(nchar(object) != 1L))
     stop("need strings of length 1")
   object <- sort(unique(object))
@@ -253,13 +265,28 @@ setMethod("join_discrete", "ANY", function(object) {
     object <- grep(MISSING_CHAR, object, fixed = TRUE, value = TRUE,
       invert = TRUE)
   if (length(object) > 1L)
-    sprintf("(%s)", paste(object, collapse = ""))
+    switch(match.arg(format, PHYLO_FORMATS),
+      html = paste(object, collapse = "/"),
+      epf =,
+      phylip = MISSING_CHAR,
+      nexus = sprintf("(%s)", paste(object, collapse = "")),
+      stop(BUG_MSG)
+    )
   else
     object
 }, sealed = SEALED)
 
-setMethod("join_discrete", "matrix", function(object, margin = 2L) {
-  apply(object, margin, join_discrete)
+setMethod("join_discrete", "matrix", function(object, format, 
+    groups = rownames(object)) {
+  if (length(groups <- as.factor(groups)) != nrow(object))
+    stop("length of 'groups' not equal to number of rows")
+  if (identical(format, "html"))
+    object <- map_gapmode(object)
+  object <- aggregate(object, by = list(groups), FUN = join_discrete, 
+    format = format, simplify = TRUE)
+  object <- as.matrix(object[, -1L, drop = FALSE])
+  rownames(object) <- levels(groups)
+  object
 }, sealed = SEALED)
 
 
@@ -267,6 +294,7 @@ setMethod("join_discrete", "matrix", function(object, margin = 2L) {
 #
 # Build matrices for output
 #
+
 
 ## NOTE: not an S4 method because conversion is done
 
@@ -280,6 +308,8 @@ setMethod("join_discrete", "matrix", function(object, margin = 2L) {
 #' @param chars Character vector or convertible to such.
 #' @param format Character scalar. See \code{\link{phylo_data}}.
 #' @param enclose Logical scalar. See \code{\link{phylo_data}}.
+#' @param pad Logical scalar. Bring labels to the same number of characters by
+#'   appending spaces? Has no effect for \sQuote{phylip} output format.
 #' @export
 #' @return Character vector.
 #' @family phylogeny-functions
@@ -298,7 +328,13 @@ setMethod("join_discrete", "matrix", function(object, margin = 2L) {
 #' (y <- safe_labels(x, "nexus", enclose = TRUE))
 #' stopifnot(grepl("^'.*'$", y))
 #'
-safe_labels <- function(chars, format, enclose = TRUE) {
+safe_labels <- function(chars, format, enclose = TRUE, pad = FALSE) {
+  do_pad <- function(x, pad) {
+    if (pad)
+      sprintf(sprintf("%%-%is", max(nchar(x))), x)
+    else
+      x
+  }
   nexus_quote <- function(chars) {
     sprintf("'%s'", gsub("'", "''", chars, fixed = TRUE))
   }
@@ -310,12 +346,13 @@ safe_labels <- function(chars, format, enclose = TRUE) {
   not.newick <- "[\\s,:;()]+"
   not.nexus <- "[\\s()\\[\\]{}\\/\\,;:=*'\"`+<>-]+"
   switch(match.arg(format, PHYLO_FORMATS),
+    html = clean("[<>]+", chars),
     phylip = sprintf("%-10s", substr(clean(not.newick, chars), 1L, 10L)),
-    epf = clean(not.newick, chars),
-    nexus = if (enclose)
+    epf = do_pad(clean(not.newick, chars), pad),
+    nexus = do_pad(if (enclose)
       nexus_quote(chars)
     else
-      clean(not.nexus, chars),
+      clean(not.nexus, chars), pad),
     stop(BUG_MSG)
   )
 }
@@ -340,15 +377,35 @@ setGeneric("phylo_header",
 #'
 setMethod("phylo_header", "matrix", function(object, format, enclose = TRUE,
     indent = 3L) {
+  
   d <- dim(object)
+  
   switch(match.arg(format, PHYLO_FORMATS),
+    
+    html = {
+      result <- sprintf("Strains: %s.", listing(rownames(object),
+         style = "%s, %s", collapse = "; ", force.numbers = TRUE))
+      result <- paste(result, paste(c(
+        "+, Positive metabolic response",
+        "w, weak metabolic response",
+        "-, negative metabolic response."), collapse = "; "))
+      c(
+        "<html>", 
+        "<body>",
+        "",
+        hwriter::hmakeTag("p", data = result), 
+        ""
+      )
+    },
+    
     phylip =,
     epf = paste(d, collapse = " "),
+    
     nexus = {
       
       indent <- paste(rep.int(" ", indent), collapse = "")
       
-      datatype <- switch(class(object[1L]),
+      datatype <- switch(storage.mode(object),
         integer =,
         numeric = {
           warning("continuous data are not supported by PAUP*")
@@ -419,6 +476,7 @@ setMethod("phylo_header", "matrix", function(object, format, enclose = TRUE,
 #'
 phylo_footer <- function(format, indent = 3L, paup.block = FALSE) {
   switch(match.arg(format, PHYLO_FORMATS),
+    html = c("</body>", "</html>", ""),
     epf =,
     phylip = NULL,
     nexus = {
@@ -445,6 +503,36 @@ phylo_footer <- function(format, indent = 3L, paup.block = FALSE) {
 ################################################################################
 
 
+setGeneric("map_gapmode",
+  function(object) standardGeneric("map_gapmode"))
+#' Map gap-mode discretized character codes
+#'
+#' Map character states that have been discretized with \code{\link{discrete}}
+#' and \code{gap} set to \code{TRUE}. This is mainly necessary for creating
+#' HTML tables for IJSEM.  See \code{\link{phylo_data}} for details.
+#'
+#' @param object Matrix. See \code{\link{phylo_data}}.
+#' @return Matrix
+#' @keywords internal
+#'
+setMethod("map_gapmode", "matrix", function(object) {
+  members <- function(x) all(object %in% x)
+  if (members(c("-", "w", "+")) || 
+      all(grepl("^[+w-](/[+w-])*$", object, perl = TRUE)))
+    return(object)
+  if (members(c("0", "?", "1")))
+    mapping <- c(`0` = "-", `?` = "w", `1` = "+")
+  else if (members(c("0", "1", "2")))
+    mapping <- c(`0` = "-", `1` = "w", `2` = "+")
+  else
+    stop("character coding not recognized")
+  map_values(object, mapping, coerce = "character")
+}, sealed = SEALED)
+
+
+################################################################################
+
+
 setGeneric("phylo_char_mat",
   function(object, ...) standardGeneric("phylo_char_mat"))
 #' Phylogenetic character matrix
@@ -455,21 +543,35 @@ setGeneric("phylo_char_mat",
 #' @param object Matrix. See \code{\link{phylo_data}}.
 #' @param format Output format (character scalar). See \code{\link{phylo_data}}.
 #' @param enclose Logical scalar. See \code{\link{phylo_data}}.
+#' @param remove.constant Logical scalar. See \code{\link{phylo_data}}.
+#' @param remove.ambig Logical scalar. See \code{\link{phylo_data}}.
 #' @return Character vector.
 #' @keywords internal
 #'
-setMethod("phylo_char_mat", "matrix", function(object, format, enclose = TRUE) {
+setMethod("phylo_char_mat", "matrix", function(object, format, enclose = TRUE, 
+    remove.constant = TRUE, remove.ambig = TRUE) {
+  assert_length(enclose, remove.constant, remove.ambig)
   format <- match.arg(format, PHYLO_FORMATS)
-  cl <- rownames(object)
-  if (length(cl) == 0L)
+  if (format == "html") {
+    object <- map_gapmode(object)
+    rownames(object) <- seq.int(nrow(object))
+    if (is.null(colnames(object)))
+      stop("missing substrate labels (column names)")
+    if (remove.constant)
+      object <- object[, !apply(object, 2L, is_constant), drop = FALSE]
+    if (remove.ambig)
+      object <- object[, apply(object, 2L,
+        function(x) any(grepl("/", x, fixed = TRUE))), drop = FALSE]
+    return(c(hwriter::hwrite(t(object)), ""))
+  }
+  if (length(cl <- rownames(object)) == 0L)
     stop("missing taxon labels (row names)")
-  cl <- safe_labels(cl, format = format, enclose = enclose)
+  cl <- safe_labels(cl, format = format, enclose = enclose, pad = TRUE)
   if (dups <- anyDuplicated(cl))
     stop("duplicated taxon label (row name): ", cl[dups])
   if (is.logical(object))
-    object <- structure(as.integer(object), dim = dim(object), 
-      dimnames = dimnames(object))
-  sep <- switch(class(object[1L]),
+    storage.mode(object) <- "integer"
+  sep <- switch(storage.mode(object),
     integer =,
     numeric = " ",
     character = {
@@ -495,15 +597,18 @@ setGeneric("phylo_data", function(object, ...) standardGeneric("phylo_data"))
 #'
 #' Create entire character matrix (include header and footer) in a file format
 #' suitable for exporting phylogenetic data. Return it or write it to a file.
+#' This function can also produce HTML tables suitable for displaying PM data
+#' in taxonomic journals such as IJSEM. 
 #'
 #' @param object Matrix. Currently only \sQuote{integer}, \sQuote{logical},
 #'   \sQuote{numeric} and \sQuote{character} content is supported.
 #' @param format Character scalar, either \sQuote{epf} (Extended Phylip Format),
-#'   \sQuote{nexus} or \sQuote{phylip}. The main difference between 
-#'   \sQuote{epf} and \sQuote{phylip} is that the former can use labels with
-#'   more than ten characters, but its labels must not contain whitespace. If
-#'   \sQuote{nexus} format is chosen, a non-empty \code{comment} attribute will
-#'   be output together with the data (and appropriately escaped).
+#'   \sQuote{nexus}, \sQuote{phylip} or \sQuote{html}. The main difference 
+#'   between \sQuote{epf} and \sQuote{phylip} is that the former can use labels 
+#'   with more than ten characters, but its labels must not contain whitespace. 
+#'   (These adaptations are done automatically with \code{\link{safe_labels}}.)
+#'   If \sQuote{nexus} format is chosen, a non-empty \code{comment} attribute 
+#'   will be output together with the data (and appropriately escaped).
 #' @param outfile Character scalar. If a non-empty character scalar, resulting
 #'   lines are directly written to this file. Otherwise, they 
 #'   are returned.
@@ -514,6 +619,15 @@ setGeneric("phylo_data", function(object, ...) standardGeneric("phylo_data"))
 #'   anyway).
 #' @param paup.block Logical scalar. Append a PAUP* block with selected default 
 #'   values?
+#' @param remove.constant Logical scalar. Remove substrates with constant 
+#'   results? This is currently ignored for formats other than \sQuote{html}.
+#' @param remove.ambig Logical scalar. Remove substrates with ambiguous
+#'   results? This is currently ignored for formats other than \sQuote{html}.
+#' @param join Logical scalar. Join rows of \code{object} together according
+#'   to \code{groups}? This can be used to deal with measurements repetitions
+#'   for the same organism or treatment.
+#' @param groups Vector. Only used if \code{join} is \code{TRUE}; see there for
+#'   details.
 #' @export
 #' @return Character vector, each element representing a line in a potential
 #'   output file, returned invisibly if \code{outfile} is given.
@@ -521,25 +635,29 @@ setGeneric("phylo_data", function(object, ...) standardGeneric("phylo_data"))
 #' @family IO-functions
 #' @seealso base::comment base::write
 #' @note For exporting NEXUS format, the matrix should normally be converted
-#'   beforehand by applying \code{\link{discrete}}.
+#'   beforehand by applying \code{\link{discrete}}. Even stricter is the
+#'   \sQuote{html} setting, which requires the data to be discretized with 
+#'   \code{gap} set to \code{TRUE}.
+#'   
 #' @keywords character cluster IO
 #'
-#' @references Berger SA, Stamatakis A. Accuracy of morphology-based 
-#'   phylogenetic fossil placement under maximum likelihood. 2010; 8th ACS/IEEE 
-#'   International Conference on Computer Systems and Applications (AICCSA-10), 
+#' @references Berger, S. A., Stamatakis, A. 2010 Accuracy of morphology-based 
+#'   phylogenetic fossil placement under maximum likelihood. \emph{8th ACS/IEEE 
+#'   International Conference on Computer Systems and Applications (AICCSA-10).} 
 #'   Hammamet, Tunisia [analysis of phenotypic data wih RAxML].
-#' @references Felsenstein J. PHYLIP (Phylogeny Inference Package) version 3.6. 
-#'   Distributed by the author. 2005; Department of Genome Sciences, University
-#'   of Washington, Seattle [the PHYLIP program].
-#' @references Maddison DR, Swofford DL, Maddison WP. Nexus: An extensible file 
-#'   format for systematic information. Syst Biol 1997; 46:590-621 [the NEXUS
-#'   format].
-#' @references Stamatakis A. RAxML-VI-HPC: Maximum likelihood-based 
+#' @references Felsenstein, J. 2005 PHYLIP (Phylogeny Inference Package) 
+#'   version 3.6. Distributed by the author. Seattle: University
+#'   of Washington, Department of Genome Sciences [the PHYLIP program].
+#' @references Maddison, D. R., Swofford, D. L., Maddison, W. P. 1997 Nexus: An
+#'   extensible file format for systematic information. \emph{Syst Biol}
+#'   \strong{46}, 590--621 [the NEXUS format].
+#' @references Stamatakis, A. 2006 RAxML-VI-HPC: Maximum likelihood-based 
 #'   phylogenetic analyses with thousands of taxa and mixed models
-#'   Bioinformatics 2006; 22:2688-2690. [the RAxML program].
-#' @references Swofford DL. PAUP*: Phylogenetic Analysis Using Parsimony (*and 
-#'   Other Methods), Version 4.0 b10. 2002; Sinauer Associates, Sunderland
-#'   [the PAUP* program].
+#'   \emph{Bioinformatics} \strong{22}, 2688--2690. [the RAxML program].
+#' @references Swofford, D. L. 2002 PAUP*: Phylogenetic Analysis Using 
+#'   Parsimony (*and Other Methods), Version 4.0 b10. Sunderland, Mass.:
+#'   Sinauer Associates, [the PAUP* program].
+#' @references \url{http://ijs.sgmjournals.org/} [IJSEM journal]
 #' 
 #' @examples
 #' 
@@ -551,7 +669,7 @@ setGeneric("phylo_data", function(object, ...) standardGeneric("phylo_data"))
 #' stopifnot(is.character(y.epf), length(y.epf) == 3)
 #'
 #' (y.phylip <- phylo_data(x, format = "phylip"))
-#' stopifnot((y.epf == y.phylip) == c(TRUE, TRUE, FALSE))
+#' stopifnot((y.epf == y.phylip) == c(TRUE, FALSE, FALSE))
 #'
 #' (y.nexus <- phylo_data(x, format = "nexus"))
 #' nexus.len.1 <- length(y.nexus)
@@ -561,12 +679,31 @@ setGeneric("phylo_data", function(object, ...) standardGeneric("phylo_data"))
 #' (y.nexus <- phylo_data(x, format = "nexus"))
 #' stopifnot(identical(length(y.nexus), nexus.len.1 + 7L))
 #'
+#' # Example with real data; see discrete() for the conversion
+#' data(vaas_4)
+#' x <- extract(vaas_4, as.labels = list("Species", "Strain"), 
+#'   in.parens = FALSE)
+#' x <- discrete(x, range = TRUE, gap = TRUE)
+#' message(y <- phylo_data(x, format = "html"))
+#' stopifnot(is.character(y), length(y) == 10, y[1:2] == c("<html>", "<body>"))
+#'
+#' # Example with real data, joining the results per species
+#' x <- extract(vaas_4, as.labels = list("Species"), in.parens = FALSE)
+#' x <- discrete(x, range = TRUE, gap = TRUE)
+#' message(y <- phylo_data(x, format = "html", join = TRUE))
+#' stopifnot(is.character(y), length(y) == 10, y[1:2] == c("<html>", "<body>"))
+#'
 setMethod("phylo_data", "matrix", function(object, format = "epf",
-    outfile = "", enclose = TRUE, indent = 3L, paup.block = FALSE) {
-  assert_length(outfile)
+    outfile = "", enclose = TRUE, indent = 3L, paup.block = FALSE, 
+    remove.constant = TRUE, remove.ambig = TRUE, join = FALSE, 
+    groups = rownames(object)) {
+  assert_length(outfile, join)
+  if (join)
+    object <- join_discrete(object, format = format, groups = groups)
   lines <- c(
     phylo_header(object, format = format, enclose = enclose, indent = indent),
-    phylo_char_mat(object, format = format, enclose = enclose),
+    phylo_char_mat(object, format = format, enclose = enclose, 
+      remove.constant = remove.constant, remove.ambig = remove.ambig),
     phylo_footer(format = format, indent = indent, paup.block = paup.block)
   )
   if (nzchar(outfile)) {

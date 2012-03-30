@@ -2,7 +2,8 @@
 \alias{read_opm}
 \title{Read multiple PM files at once}
 \usage{
-  read_opm(names, convert = c("try", "no", "yes"),
+  read_opm(names,
+    convert = c("try", "no", "yes", "sep", "grp"),
     gen.iii = FALSE, include = list(), ..., demo = FALSE)
 }
 \arguments{
@@ -16,11 +17,17 @@
 
   \item{convert}{Character scalar. If \sQuote{no}, always
   return a list. If \sQuote{yes}, convert to \code{NULL},
-  \code{\link{OPM}} object, or OPMS object, depending on
-  the number of files read (0, 1, or more). \sQuote{try}
-  behaves like \sQuote{yes} but does not result in an error
-  message if conversion to OPMS is impossible; a list is
-  returned in that case.}
+  \code{\link{OPM}} object, or \code{\link{OPMS}} object,
+  depending on the number of files read (0, 1, or more).
+  \sQuote{try} behaves like \sQuote{yes} but does not
+  result in an error message if conversion to OPMS is
+  impossible; a list is returned in that case.
+  \sQuote{sep} returns a nested list, each sublist
+  containing \code{\link{OPM}} objects of the same plate
+  type. \sQuote{grp} also splits into such sublists but
+  converts them to \code{\link{OPMS}} objects if more than
+  one plate is encountered. An error is raised if this is
+  impossible (in contrast to \sQuote{try}).}
 
   \item{gen.iii}{Logical scalar. If \code{TRUE}, invoke
   \code{\link{gen_iii}} on each plate. This is
@@ -43,8 +50,9 @@
 }
 \value{
   \code{\link{OPM}} object (maybe \code{\link{OPMA}} in
-  case of YAML input) or \code{\link{OPMS}} object. If
-  \code{demo} is \code{TRUE}, a character vector instead.
+  case of YAML input), or list of such objects, or
+  \code{\link{OPMS}} object. If \code{demo} is \code{TRUE},
+  a character vector instead.
 }
 \description{
   Read OmniLog(R) or \pkg{opm} data file(s) in one of three
@@ -55,7 +63,10 @@
 }
 \note{
   Regarding the CSV format, see the remark to
-  \code{\link{read_single_opm}}.
+  \code{\link{read_single_opm}}. For splitting lists of
+  \code{\link{OPM}} objects according to the plate type,
+  see \code{\link{plate_type}}, and consider the plate-type
+  selection options of \code{\link{opms}}.
 }
 \examples{
 test.files <- grep("Multiple", opm_files("testdata"), invert = TRUE,
@@ -67,7 +78,7 @@ if (length(test.files) > 0L) { # if the folder is found
   class(x)
   dim(x)
   summary(x)
-  stopifnot(inherits(x, "OPMS"), identical(dim(x), c(2L, 384L, 96L)))
+  stopifnot(is(x, "OPMS"), identical(dim(x), c(2L, 384L, 96L)))
 }
 # This can be repeated for the other input test files. Instead of a several
 # file names one can also provide a single one, one to several directory

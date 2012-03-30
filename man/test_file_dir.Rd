@@ -2,10 +2,13 @@
 \alias{test_file_dir}
 \title{Test file directory}
 \usage{
-  test_file_dir(loc)
+  test_file_dir(x = source_location(), files = NULL)
 }
 \arguments{
-  \item{loc}{Location of source file.}
+  \item{x}{Location of source file.}
+
+  \item{files}{Character vector. Optional list of of
+  filenames to append to the directory name.}
 }
 \value{
   Name of the directory in which the input files for

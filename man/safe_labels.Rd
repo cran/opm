@@ -2,7 +2,7 @@
 \alias{safe_labels}
 \title{Safe labels}
 \usage{
-  safe_labels(chars, format, enclose = TRUE)
+  safe_labels(chars, format, enclose = TRUE, pad = FALSE)
 }
 \arguments{
   \item{chars}{Character vector or convertible to such.}
@@ -12,6 +12,10 @@
 
   \item{enclose}{Logical scalar. See
   \code{\link{phylo_data}}.}
+
+  \item{pad}{Logical scalar. Bring labels to the same
+  number of characters by appending spaces? Has no effect
+  for \sQuote{phylip} output format.}
 }
 \value{
   Character vector.

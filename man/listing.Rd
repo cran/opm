@@ -3,11 +3,15 @@
 \title{Nicer message listings}
 \usage{
   listing(x, header = NULL, footer = NULL, begin = NULL,
-    collapse = "\n", style = "list", ...)
+    collapse = "\n", style = "list", force.numbers = FALSE,
+    digits = max(3L, getOption("digits") - 3L), ...)
 }
 \arguments{
   \item{x}{Object convertible via \code{unlist} to a
-  vector.}
+  vector. Afterwards its \sQuote{names} attribute is used
+  as the first column of the resulting listing; if it is
+  \code{NULL} or if \code{force.numbers} is \code{TRUE},
+  numbers are inserted.}
 
   \item{header}{\code{NULL} or character vector. Prepended
   to the result.}
@@ -24,8 +28,17 @@
   \item{collapse}{Character scalar. How to join the
   resulting vector elements.}
 
-  \item{style}{Character scalar. Passed to
-  \code{formatDL}.}
+  \item{style}{Character scalar. If \sQuote{table} or
+  \sQuote{list}, passed to \code{formatDL}. Otherwise, a
+  pattern for \code{sprintf} is assumed taking two
+  arguments, the names of \code{x} and the values \code{x}
+  (after conversion with \code{unlist}).}
+
+  \item{force.numbers}{Logical scalar. Always use numbers
+  instead of the \sQuote{names} attribute?}
+
+  \item{digits}{Numeric scalar. Ignored unless \code{x} is
+  numeric.}
 
   \item{...}{Optional other arguments passed to
   \code{formatDL}.}
@@ -44,6 +57,11 @@ x <- letters[1:5]
 names(x) <- LETTERS[1:5]
 message(y <- listing(x, header = "Five letters:", footer = "...end here",
   begin = 3))
+stopifnot(is.character(y), length(y) == 1)
+
+x <- c("CTMT", "Chryseobacterium soli DSM 19298T",
+  "Chryseobacterium soldanellicola DSM 17072T")
+message(y <- listing(x, style = "\%s, \%s", collapse = "; "))
 stopifnot(is.character(y), length(y) == 1)
 }
 \seealso{

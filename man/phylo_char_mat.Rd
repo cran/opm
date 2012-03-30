@@ -9,6 +9,12 @@
 
   \item{enclose}{Logical scalar. See
   \code{\link{phylo_data}}.}
+
+  \item{remove.constant}{Logical scalar. See
+  \code{\link{phylo_data}}.}
+
+  \item{remove.ambig}{Logical scalar. See
+  \code{\link{phylo_data}}.}
 }
 \value{
   Character vector.
@@ -24,6 +30,7 @@
 \alias{phylo_char_mat-methods}
 \alias{phylo_char_mat,matrix-method}
 \usage{
-  \S4method{phylo_char_mat}{matrix}(object, format, enclose = TRUE) 
+  \S4method{phylo_char_mat}{matrix}(object, format, enclose = TRUE, 
+    remove.constant = TRUE, remove.ambig = TRUE) 
 
 }

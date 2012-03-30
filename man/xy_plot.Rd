@@ -71,7 +71,10 @@
   description strip above each panel. For instance, the
   background color is set using the \sQuote{bg} key. For
   further details, see \code{strip.custom} from the
-  \pkg{lattice} package.}
+  \pkg{lattice} package. Note that the \strong{content} of
+  these descriptions is determined by arguments passed from
+  \code{xy_plot} to \code{\link{wells}}; see there for
+  details.}
 
   \item{striptext.fmt}{List controlling the textual
   description at the top of each panel. For instance, the
@@ -107,7 +110,10 @@
   the curve color for each plate. That is, each combination
   of metadata entries as chosen using \code{include} yields
   one color. If no metadata are selected (the default),
-  each plate gets a color of its own.}
+  each plate gets a color of its own.  Also note that
+  arguments passed via \code{\link{flatten}} to
+  \code{\link{wells}} can be given here which determine the
+  content of the panel description.}
 }
 \value{
   An object of class \sQuote{trellis}. See \code{xyplot}
@@ -150,13 +156,13 @@ xy_plot(vaas_4, include = c("Species", "Strain"),
   neg.ctrl = max(vaas_4, "A01"))
 }
 \references{
-  Sarkar D. Lattice: Multivariate Data Visualization with
-  R. 2008; New York: Springer, 265p.
+  Sarkar, D. 2008 \emph{Lattice: Multivariate Data
+  Visualization with R.} New York: Springer, 265 p.
 
-  Vaas LAI, Sikorski J, Michael V, Goeker M, Klenk H-P.
-  Visualization and curve parameter estimation strategies
-  for efficient exploration of Phenotype Microarray
-  kinetics. PLoS ONE 2012; in press.
+  Vaas, L. A. I., Sikorski, J., Michael, V., Goeker, M.,
+  Klenk H.-P. 2012 Visualization and curve parameter
+  estimation strategies for efficient exploration of
+  Phenotype Microarray kinetics. \emph{PLoS ONE}, in press.
 }
 \seealso{
   lattice::xyplot

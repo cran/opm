@@ -9,8 +9,9 @@
   by an \pkg{opm} user.
 }
 \seealso{
-  Other classes: \code{\link{OPM}}, \code{\link{OPMA}},
-  \code{\link{OPMS}}, \code{\link{OPMX}}, \code{\link{WMD}}
+  Other classes: \code{\link{MOA}}, \code{\link{OPM}},
+  \code{\link{OPMA}}, \code{\link{OPMS}},
+  \code{\link{OPMX}}, \code{\link{WMD}}
 }
 \keyword{methods}
 

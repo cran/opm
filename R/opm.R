@@ -693,15 +693,17 @@ setGeneric("plate_type", function(object, ...) standardGeneric("plate_type"))
 #' @param object \code{\link{OPM}} object.
 #' @param full Logical scalar. If \code{TRUE}, add (or replace by) the full 
 #'   name of the plate type (if available); otherwise, return it as-is.
-#' @param in.parens Logical scalar. This and the following argument work like
+#' @param in.parens Logical scalar. This and the following arguments work like
 #'   the eponymous ones of \code{\link{wells}}, but here are applied to the 
-#'   plate name.
+#'   plate name. See there for details.
 #' @param max Numeric scalar.
 #' @param clean Logical scalar.
 #' @param brackets Logical scalar.
 #' @param word.wise Logical scalar.
 #' @param paren.sep Character scalar.
+#'
 #' @return Character scalar.
+#'
 #' @export
 #' @family getter-functions
 #' @seealso base::strtrim base::abbreviate
@@ -712,6 +714,12 @@ setGeneric("plate_type", function(object, ...) standardGeneric("plate_type"))
 #' (y <- plate_type(vaas_1, full = TRUE))
 #' (z <- plate_type(vaas_1, full = TRUE, in.parens = FALSE))
 #' stopifnot(nchar(x) < nchar(y), nchar(z) < nchar(y))
+#'
+#' \dontrun{
+#'
+#' # Splitting a list of 'OPM' objects according to the plate type is easy:
+#' x <- split(x), sapply(x, plate_type))
+#' }
 #'
 setMethod("plate_type", OPM, function(object, full = FALSE, in.parens = TRUE,
     max = 100L, clean = TRUE, brackets = FALSE, word.wise = FALSE, 
@@ -1282,7 +1290,9 @@ setGeneric("xy_plot", function(x, ...) standardGeneric("xy_plot"))
 #' @param strip.fmt List controlling the format of the description strip above
 #'   each panel. For instance, the background color is set using the \sQuote{bg}
 #'   key. For further details, see \code{strip.custom} from the \pkg{lattice}
-#'   package.
+#'   package. Note that the \strong{content} of these descriptions is 
+#'   determined by arguments passed from \code{xy_plot} to 
+#'   \code{\link{wells}}; see there for details.
 #' @param striptext.fmt List controlling the textual description at the top of
 #'   each panel. For instance, the relative text size is set using the
 #'   \sQuote{cex} key, the color by \sQuote{col}, the font by \sQuote{font}
@@ -1308,16 +1318,20 @@ setGeneric("xy_plot", function(x, ...) standardGeneric("xy_plot"))
 #'   determines the curve color for each plate. That is, each combination of
 #'   metadata entries as chosen using \code{include} yields one color. If no
 #'   metadata are selected (the default), each plate gets a color of its own.
+#'   Also note that arguments passed via \code{\link{flatten}} to 
+#'   \code{\link{wells}} can be given here which determine the content of the
+#'   panel description.
 #'
 #' @export
 #' @family plotting-functions
 #' @return An object of class \sQuote{trellis}. See \code{xyplot} from the
 #'   \pkg{lattice} package for details.
-#' @references Sarkar D. Lattice: Multivariate Data Visualization with R. 2008;
-#'    New York: Springer, 265p.
-#' @references Vaas LAI, Sikorski J, Michael V, Goeker M, Klenk H-P. 
-#'   Visualization and curve parameter estimation strategies for efficient 
-#'   exploration of Phenotype Microarray kinetics. PLoS ONE 2012; in press.
+#' @references Sarkar, D. 2008 \emph{Lattice: Multivariate Data Visualization
+#'    with R.} New York: Springer, 265 p.
+#' @references Vaas, L. A. I., Sikorski, J., Michael, V., Goeker, M., Klenk 
+#'   H.-P. 2012 Visualization and curve parameter estimation strategies for  
+#'   efficient exploration of Phenotype Microarray kinetics. \emph{PLoS ONE},
+#'   in press.
 #' @keywords hplot
 #' @seealso lattice::xyplot
 #' @examples 
@@ -1437,16 +1451,17 @@ setGeneric("level_plot", function(x, ...) standardGeneric("level_plot"))
 #' @family plotting-functions
 #' @keywords hplot
 #'
-#' @references Jacobsen JS, Joyner DC, Borglin SE, Hazen TC, Arkin AP et al. 
-#'   Visualization of growth curve data from phenotype microarray experiments.
-#'   2007; 11th International Conference on Information Visualization (IV07), 
-#'   Zuerich, Switzerland, July 4-6, 2007. Published by the IEEE Computer 
-#'   Society.
-#' @references Sarkar D. Lattice: Multivariate Data Visualization with R. 2008;
-#'    New York: Springer, 265p.
-#' @references Vaas LAI, Sikorski J, Michael V, Goeker M, Klenk H-P. 
-#'   Visualization and curve parameter estimation strategies for efficient 
-#'   exploration of Phenotype Microarray kinetics. PLoS ONE 2012; in press.
+#' @references Jacobsen, J. S., Joyner, D. C., Borglin, S. E., Hazen, T. C.,
+#'   Arkin, A. P. et al. 2007 Visualization of growth curve data from phenotype
+#'   microarray experiments. \emph{11th International Conference on Information
+#'   Visualization (IV07).} Zuerich, Switzerland, July 4-6 2007. Published by
+#'   the IEEE Computer Society.
+#' @references Sarkar, D. 2008 \emph{Lattice: Multivariate Data Visualization
+#'    with R.} New York: Springer, 265 p.
+#' @references Vaas, L. A. I., Sikorski, J., Michael, V., Goeker, M., Klenk 
+#'   H.-P. 2012 Visualization and curve parameter estimation strategies for  
+#'   efficient exploration of Phenotype Microarray kinetics. \emph{PLoS ONE},
+#'   in press.
 #'
 #' @seealso lattice::levelplot
 #' @examples 

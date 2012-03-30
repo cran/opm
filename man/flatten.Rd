@@ -68,8 +68,9 @@ stopifnot(is.data.frame(x), identical(dim(x), c(147456L, 6L)))
   stats::reshape
 
   Other conversion-functions: \code{\link{extract}},
-  \code{\link{extract_columns}}, \code{\link{oapply}},
-  \code{\link{plates}}, \code{\link{to_yaml}}
+  \code{\link{extract_columns}}, \code{\link{merge}},
+  \code{\link{oapply}}, \code{\link{plates}},
+  \code{\link{to_yaml}}
 }
 \keyword{dplot}
 \keyword{manip}

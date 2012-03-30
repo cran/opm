@@ -21,9 +21,10 @@
 #'   114 plates with 384 time points and 96 wells per plate. (10 plates have
 #'   364, 365, 368 or 371 time points, respectively; the remaining 74 plates 
 #'   have 384 time points).
-#' @source Vaas LAI, Sikorski J, Michael V, Goeker M, Klenk H-P. Visualization 
-#'   and curve parameter estimation strategies for efficient exploration of
-#'   Phenotype Microarray kinetics. PLoS ONE 2012; in press.
+#' @references Vaas, L. A. I., Sikorski, J., Michael, V., Goeker, M., Klenk 
+#'   H.-P. 2012 Visualization and curve parameter estimation strategies for  
+#'   efficient exploration of Phenotype Microarray kinetics. \emph{PLoS ONE},
+#'   in press.
 #' @references 
 #'   \url{http://www.dsmz.de/catalogues/details/culture/DSM-1707.html} 
 #' @references
@@ -55,9 +56,10 @@ NULL
 #' @name vaas_4
 #' @format \code{\link{OPMS}} object with the dimensions 4 x 384 x 96, i.e.
 #'   4 plates with 384 time points and 96 wells per plate.
-#' @source Vaas LAI, Sikorski J, Michael V, Goeker M, Klenk H-P. Visualization 
-#'   and curve parameter estimation strategies for efficient exploration of
-#'   Phenotype Microarray kinetics. PLoS ONE 2012; in press.
+#' @references Vaas, L. A. I., Sikorski, J., Michael, V., Goeker, M., Klenk 
+#'   H.-P. 2012 Visualization and curve parameter estimation strategies for  
+#'   efficient exploration of Phenotype Microarray kinetics. \emph{PLoS ONE},
+#'   in press.
 #' @references 
 #'   \url{http://www.dsmz.de/catalogues/details/culture/DSM-1707.html} 
 #' @references
@@ -89,9 +91,10 @@ NULL
 #' @name vaas_1
 #' @format \code{\link{OPMA}} object with the dimensions 384 x 96, i.e. a single
 #'   plate with 384 time points and 96 wells.
-#' @source Vaas LAI, Sikorski J, Michael V, Goeker M, Klenk H-P. Visualization 
-#'   and curve parameter estimation strategies for efficient exploration of
-#'   Phenotype Microarray kinetics. PLoS ONE 2012; in press.
+#' @references Vaas, L. A. I., Sikorski, J., Michael, V., Goeker, M., Klenk 
+#'   H.-P. 2012 Visualization and curve parameter estimation strategies for  
+#'   efficient exploration of Phenotype Microarray kinetics. \emph{PLoS ONE},
+#'   in press.
 #' @references 
 #'   \url{http://www.dsmz.de/catalogues/details/culture/DSM-30083.html}
 #' @examples \dontrun{

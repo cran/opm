@@ -5,10 +5,10 @@
   \item{object}{Character vector or convertible to such, or
   matrix.}
 
-  \item{margin}{Integer scalar. See \code{apply} from
-  package \pkg{base} and \code{\link{join_discrete}}, which
-  is applied to either rows or columns, depending on this
-  argument.}
+  \item{format}{Character scalar.}
+
+  \item{groups}{Character vector or factor, determining
+  which rows should be joined.}
 }
 \value{
   Character scalar, for the matrix method a vector.
@@ -26,8 +26,9 @@
 \alias{join_discrete,ANY-method}
 \alias{join_discrete,matrix-method}
 \usage{
-  \S4method{join_discrete}{ANY}(object) 
+  \S4method{join_discrete}{ANY}(object, format) 
 
-  \S4method{join_discrete}{matrix}(object, margin = 2L) 
+  \S4method{join_discrete}{matrix}(object, format, 
+    groups = rownames(object)) 
 
 }

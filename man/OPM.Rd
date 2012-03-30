@@ -29,9 +29,9 @@
 \seealso{
   Methods
 
-  Other classes: \code{\link{OPMA}}, \code{\link{OPMS}},
-  \code{\link{OPMX}}, \code{\link{WMD}},
-  \code{\link{YAML_VIA_LIST}}
+  Other classes: \code{\link{MOA}}, \code{\link{OPMA}},
+  \code{\link{OPMS}}, \code{\link{OPMX}},
+  \code{\link{WMD}}, \code{\link{YAML_VIA_LIST}}
 }
 \keyword{methods}
 

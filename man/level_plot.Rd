@@ -64,20 +64,20 @@ data(vaas_4)
 level_plot(vaas_4, include = c("Species", "Strain"))
 }
 \references{
-  Jacobsen JS, Joyner DC, Borglin SE, Hazen TC, Arkin AP et
-  al.  Visualization of growth curve data from phenotype
-  microarray experiments.  2007; 11th International
-  Conference on Information Visualization (IV07), Zuerich,
-  Switzerland, July 4-6, 2007. Published by the IEEE
-  Computer Society.
+  Jacobsen, J. S., Joyner, D. C., Borglin, S. E., Hazen, T.
+  C., Arkin, A. P. et al. 2007 Visualization of growth
+  curve data from phenotype microarray experiments.
+  \emph{11th International Conference on Information
+  Visualization (IV07).} Zuerich, Switzerland, July 4-6
+  2007. Published by the IEEE Computer Society.
 
-  Sarkar D. Lattice: Multivariate Data Visualization with
-  R. 2008; New York: Springer, 265p.
+  Sarkar, D. 2008 \emph{Lattice: Multivariate Data
+  Visualization with R.} New York: Springer, 265 p.
 
-  Vaas LAI, Sikorski J, Michael V, Goeker M, Klenk H-P.
-  Visualization and curve parameter estimation strategies
-  for efficient exploration of Phenotype Microarray
-  kinetics. PLoS ONE 2012; in press.
+  Vaas, L. A. I., Sikorski, J., Michael, V., Goeker, M.,
+  Klenk H.-P. 2012 Visualization and curve parameter
+  estimation strategies for efficient exploration of
+  Phenotype Microarray kinetics. \emph{PLoS ONE}, in press.
 }
 \seealso{
   lattice::levelplot

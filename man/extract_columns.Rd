@@ -59,8 +59,9 @@ stopifnot(is.character(x), length(x) == 4L)
   base::data.frame base::as.data.frame base::cbind
 
   Other conversion-functions: \code{\link{extract}},
-  \code{\link{flatten}}, \code{\link{oapply}},
-  \code{\link{plates}}, \code{\link{to_yaml}}
+  \code{\link{flatten}}, \code{\link{merge}},
+  \code{\link{oapply}}, \code{\link{plates}},
+  \code{\link{to_yaml}}
 
   Other metadata-functions: \code{\link{collect_template}},
   \code{\link{include_metadata}},

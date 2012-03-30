@@ -6,12 +6,6 @@
   114 plates with 384 time points and 96 wells per plate. (10 plates have
   364, 365, 368 or 371 time points, respectively; the remaining 74 plates
   have 384 time points).}
-\source{
-  Vaas LAI, Sikorski J, Michael V, Goeker M, Klenk H-P.
-  Visualization and curve parameter estimation strategies
-  for efficient exploration of Phenotype Microarray
-  kinetics. PLoS ONE 2012; in press.
-}
 \description{
   This \code{\link{OPMS}} object contains all measurements
   from the study by Vaas et al. (2012). Metadata have been
@@ -31,6 +25,11 @@ data(vaas_et_al)
 }
 }
 \references{
+  Vaas, L. A. I., Sikorski, J., Michael, V., Goeker, M.,
+  Klenk H.-P. 2012 Visualization and curve parameter
+  estimation strategies for efficient exploration of
+  Phenotype Microarray kinetics. \emph{PLoS ONE}, in press.
+
   \url{http://www.dsmz.de/catalogues/details/culture/DSM-1707.html}
 
   \url{http://www.dsmz.de/catalogues/details/culture/DSM-18039.html}

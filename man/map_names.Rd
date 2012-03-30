@@ -2,18 +2,27 @@
 \alias{map_names}
 \title{Map names}
 \arguments{
-  \item{object}{List.}
+  \item{object}{Any R object. The default method applies
+  the mapping to the \sQuote{names} attribute. The
+  behaviour is special for lists, which are traversed
+  recursively to also consider sublists with names. Data
+  frames and \code{\link{MOA}} objects (that is, including
+  matrices and arrays) are also treated specially because
+  the \sQuote{dimnames} attribute, not the \sQuote{names}
+  attribute is considered.}
 
   \item{mapping}{Mapping function that takes a character
   vector as first argument, or character vector used for
-  mapping from its names to its values, or missing.}
+  mapping from its names to its values, or missing. It is
+  guaranteed that \code{NULL} input remains \code{NULL},
+  irrespective of the value of \code{mapping}.}
 
   \item{...}{Optional further arguments to \code{mapping}
   (if it is a function).}
 }
 \value{
-  Character vector (if \code{mapping} is missing), or list,
-  or dataframe.
+  Character vector if \code{mapping} is missing, otherwise
+  an R object of the same class than \code{object}.
 }
 \description{
   Use a character vector or a function for recursively
@@ -95,6 +104,12 @@ stopifnot(is.character(y), y == names(y), length(y) == 5)
 \alias{map_names,data.frame,function-method}
 \alias{map_names,data.frame,character-method}
 \alias{map_names,data.frame,missing-method}
+\alias{map_names,MOA,function-method}
+\alias{map_names,MOA,character-method}
+\alias{map_names,MOA,missing-method}
+\alias{map_names,ANY,function-method}
+\alias{map_names,ANY,character-method}
+\alias{map_names,ANY,missing-method}
 \usage{
   \S4method{map_names}{list,function}(object, mapping, ...) 
 
@@ -108,5 +123,19 @@ stopifnot(is.character(y), y == names(y), length(y) == 5)
   \S4method{map_names}{data.frame,character}(object, mapping) 
 
   \S4method{map_names}{data.frame,missing}(object) 
+
+  \S4method{map_names}{MOA,function}(object, mapping, 
+    ...) 
+
+  \S4method{map_names}{MOA,character}(object, mapping) 
+
+  \S4method{map_names}{MOA,missing}(object) 
+
+  \S4method{map_names}{ANY,function}(object, mapping, 
+    ...) 
+
+  \S4method{map_names}{ANY,character}(object, mapping) 
+
+  \S4method{map_names}{ANY,missing}(object) 
 
 }

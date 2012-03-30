@@ -416,6 +416,50 @@ setMethod("anyDuplicated", OPMS, function(x, incomparables = FALSE,
 ################################################################################
 
 
+setGeneric("merge")
+#' Merge plates
+#'
+#' Combine all plates in a single \code{\link{OPM}} object by treating them as
+#' originating from subsequent runs of the same experimental plate. Adjust the
+#' times accordingly.
+#'
+#' @param x \code{\link{OPMS}} object.
+#' @param y Numeric vector indicating the time(s) (in hours) between two 
+#'   subsequent plates. Must be positive throughout, and its length should
+#'   fit to the number of plates (e.g., either \code{1} or \code{length(x) - 1}
+#'   would work). If missing, \code{0.25} is used.
+#' @export
+#' @return \code{\link{OPM}} object. The \code{\link{metadata}} and 
+#'   \code{\link{csv_data}} will be taken from the first contained plate, but
+#'   aggregated values, if any, will be dropped.
+#' @family conversion-functions
+#' @keywords manip
+#' @examples 
+#' data(vaas_4)
+#' summary(x <- merge(vaas_4))
+#' stopifnot(is(x, "OPM"), dim(x) == c(sum(hours(vaas_4, "size")), 96))
+#'
+setMethod("merge", c(OPMS, "numeric"), function(x, y) {
+  if (any(y <= 0))
+    stop("'y' must be positive throughout")
+  m <- do.call(rbind, measurements(x))
+  tp <- hours(x, what = "all")
+  to.add <- must(cumsum(tp[-nrow(tp), ncol(tp), drop = FALSE]) + y)
+  m[, 1L] <- as.vector(t(tp + c(0, to.add)))
+  new(OPM, measurements = m, csv_data = csv_data(x[1L]), 
+    metadata = metadata(x[1L]))
+}, sealed = SEALED)
+
+#' @export
+#'
+setMethod("merge", c(OPMS, "missing"), function(x) {
+  merge(x, 0.25)
+}, sealed = SEALED)
+
+
+################################################################################
+
+
 ## These are deliberately not defined for OPMS:
 ## * other_slots()
 ## * attach_attr()
@@ -546,9 +590,7 @@ setMethod("metadata<-", c(OPMS, "ANY", "ANY"), function(object, key, value) {
 #' @export
 #'
 setMethod("metadata_chars", OPMS, function(object, ...) {
-  result <- lapply(object@plates, FUN = metadata_chars, ...)
-  result <- sort(unique(unlist(result)))
-  structure(.Data = result, names = result) # unique() removes the names
+  map_values(unlist(lapply(object@plates, FUN = metadata_chars, ...)))
 }, sealed = SEALED)
 
 
@@ -792,8 +834,7 @@ setMethod("extract_columns", OPMS, function(object, what, join = FALSE,
       )
     labels
   } else
-    tryCatch(as.data.frame(do.call(rbind, result)),
-      warning = function(w) stop(w$message))
+    must(as.data.frame(do.call(rbind, result)))
 }, sealed = SEALED)
 
 
@@ -1118,7 +1159,7 @@ setGeneric("flattened_to_factor",
 #' together; otherwise the plate identifiers (basically numbers) themselves are
 #' used.
 #'
-#' @param data Object as returned by \code{\link{flatten}}.
+#' @param object Object as returned by \code{\link{flatten}}.
 #' @param sep Character scalar. Separator used for joining the columns
 #'   together.
 #' @return Factor with one entry per plate.

@@ -7,13 +7,15 @@
   content is supported.}
 
   \item{format}{Character scalar, either \sQuote{epf}
-  (Extended Phylip Format), \sQuote{nexus} or
-  \sQuote{phylip}. The main difference between \sQuote{epf}
-  and \sQuote{phylip} is that the former can use labels
-  with more than ten characters, but its labels must not
-  contain whitespace. If \sQuote{nexus} format is chosen, a
-  non-empty \code{comment} attribute will be output
-  together with the data (and appropriately escaped).}
+  (Extended Phylip Format), \sQuote{nexus}, \sQuote{phylip}
+  or \sQuote{html}. The main difference between
+  \sQuote{epf} and \sQuote{phylip} is that the former can
+  use labels with more than ten characters, but its labels
+  must not contain whitespace.  (These adaptations are done
+  automatically with \code{\link{safe_labels}}.)  If
+  \sQuote{nexus} format is chosen, a non-empty
+  \code{comment} attribute will be output together with the
+  data (and appropriately escaped).}
 
   \item{outfile}{Character scalar. If a non-empty character
   scalar, resulting lines are directly written to this
@@ -29,6 +31,22 @@
 
   \item{paup.block}{Logical scalar. Append a PAUP* block
   with selected default values?}
+
+  \item{remove.constant}{Logical scalar. Remove substrates
+  with constant results? This is currently ignored for
+  formats other than \sQuote{html}.}
+
+  \item{remove.ambig}{Logical scalar. Remove substrates
+  with ambiguous results? This is currently ignored for
+  formats other than \sQuote{html}.}
+
+  \item{join}{Logical scalar. Join rows of \code{object}
+  together according to \code{groups}? This can be used to
+  deal with measurements repetitions for the same organism
+  or treatment.}
+
+  \item{groups}{Vector. Only used if \code{join} is
+  \code{TRUE}; see there for details.}
 }
 \value{
   Character vector, each element representing a line in a
@@ -38,11 +56,16 @@
 \description{
   Create entire character matrix (include header and
   footer) in a file format suitable for exporting
-  phylogenetic data. Return it or write it to a file.
+  phylogenetic data. Return it or write it to a file. This
+  function can also produce HTML tables suitable for
+  displaying PM data in taxonomic journals such as IJSEM.
 }
 \note{
   For exporting NEXUS format, the matrix should normally be
   converted beforehand by applying \code{\link{discrete}}.
+  Even stricter is the \sQuote{html} setting, which
+  requires the data to be discretized with \code{gap} set
+  to \code{TRUE}.
 }
 \examples{
 x <- matrix(c(0:9, letters[1:22]), nrow = 2)
@@ -53,7 +76,7 @@ rownames(x) <- c("Ahoernchen", "Behoernchen") # Chip and Dale in German
 stopifnot(is.character(y.epf), length(y.epf) == 3)
 
 (y.phylip <- phylo_data(x, format = "phylip"))
-stopifnot((y.epf == y.phylip) == c(TRUE, TRUE, FALSE))
+stopifnot((y.epf == y.phylip) == c(TRUE, FALSE, FALSE))
 
 (y.nexus <- phylo_data(x, format = "nexus"))
 nexus.len.1 <- length(y.nexus)
@@ -62,31 +85,50 @@ stopifnot(is.character(y.nexus), nexus.len.1 > 10)
 comment(x) <- c("This", "is", "a", "test")
 (y.nexus <- phylo_data(x, format = "nexus"))
 stopifnot(identical(length(y.nexus), nexus.len.1 + 7L))
+
+# Example with real data; see discrete() for the conversion
+data(vaas_4)
+x <- extract(vaas_4, as.labels = list("Species", "Strain"),
+  in.parens = FALSE)
+x <- discrete(x, range = TRUE, gap = TRUE)
+message(y <- phylo_data(x, format = "html"))
+stopifnot(is.character(y), length(y) == 10, y[1:2] == c("<html>", "<body>"))
+
+# Example with real data, joining the results per species
+x <- extract(vaas_4, as.labels = list("Species"), in.parens = FALSE)
+x <- discrete(x, range = TRUE, gap = TRUE)
+message(y <- phylo_data(x, format = "html", join = TRUE))
+stopifnot(is.character(y), length(y) == 10, y[1:2] == c("<html>", "<body>"))
 }
 \references{
-  Berger SA, Stamatakis A. Accuracy of morphology-based
-  phylogenetic fossil placement under maximum likelihood.
-  2010; 8th ACS/IEEE International Conference on Computer
-  Systems and Applications (AICCSA-10), Hammamet, Tunisia
-  [analysis of phenotypic data wih RAxML].
+  Berger, S. A., Stamatakis, A. 2010 Accuracy of
+  morphology-based phylogenetic fossil placement under
+  maximum likelihood. \emph{8th ACS/IEEE International
+  Conference on Computer Systems and Applications
+  (AICCSA-10).} Hammamet, Tunisia [analysis of phenotypic
+  data wih RAxML].
 
-  Felsenstein J. PHYLIP (Phylogeny Inference Package)
-  version 3.6.  Distributed by the author. 2005; Department
-  of Genome Sciences, University of Washington, Seattle
+  Felsenstein, J. 2005 PHYLIP (Phylogeny Inference Package)
+  version 3.6. Distributed by the author. Seattle:
+  University of Washington, Department of Genome Sciences
   [the PHYLIP program].
 
-  Maddison DR, Swofford DL, Maddison WP. Nexus: An
-  extensible file format for systematic information. Syst
-  Biol 1997; 46:590-621 [the NEXUS format].
+  Maddison, D. R., Swofford, D. L., Maddison, W. P. 1997
+  Nexus: An extensible file format for systematic
+  information. \emph{Syst Biol} \strong{46}, 590--621 [the
+  NEXUS format].
 
-  Stamatakis A. RAxML-VI-HPC: Maximum likelihood-based
-  phylogenetic analyses with thousands of taxa and mixed
-  models Bioinformatics 2006; 22:2688-2690. [the RAxML
+  Stamatakis, A. 2006 RAxML-VI-HPC: Maximum
+  likelihood-based phylogenetic analyses with thousands of
+  taxa and mixed models \emph{Bioinformatics} \strong{22},
+  2688--2690. [the RAxML program].
+
+  Swofford, D. L. 2002 PAUP*: Phylogenetic Analysis Using
+  Parsimony (*and Other Methods), Version 4.0 b10.
+  Sunderland, Mass.: Sinauer Associates, [the PAUP*
   program].
 
-  Swofford DL. PAUP*: Phylogenetic Analysis Using Parsimony
-  (*and Other Methods), Version 4.0 b10. 2002; Sinauer
-  Associates, Sunderland [the PAUP* program].
+  \url{http://ijs.sgmjournals.org/} [IJSEM journal]
 }
 \seealso{
   base::comment base::write
@@ -113,6 +155,8 @@ stopifnot(identical(length(y.nexus), nexus.len.1 + 7L))
 \alias{phylo_data,matrix-method}
 \usage{
   \S4method{phylo_data}{matrix}(object, format = "epf",
-    outfile = "", enclose = TRUE, indent = 3L, paup.block = FALSE) 
+    outfile = "", enclose = TRUE, indent = 3L, paup.block = FALSE, 
+    remove.constant = TRUE, remove.ambig = TRUE, join = FALSE, 
+    groups = rownames(object)) 
 
 }

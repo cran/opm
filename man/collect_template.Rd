@@ -16,9 +16,9 @@
   CSV output file. If metadata have already been collected
   in an older file with the same name, old metadata will be
   kept, identifiers for novel files will be included, their
-  so far empty entries set to NA. Users who wish to keep
-  the old version will use two distinct names for novel and
-  old files; see \code{previous}.}
+  so far empty entries set to \code{NA}. Users who wish to
+  keep the old version can use two distinct names for novel
+  and old files; see \code{previous}.}
 
   \item{sep}{Character scalar. CSV field separator for
   \code{outfile}.}

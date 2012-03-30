@@ -1,5 +1,29 @@
 
 
+
+#' MOA class
+#'
+#' This is a virtual class facilitating the implementation of functionality for
+#' both matrices and arrays. Methods defined for objects from the class can be
+#' applied to either kind of object, but this class is not directly dealt with
+#' by an \pkg{opm} user.
+#'
+#' @details
+#'   \sQuote{MOA} is an acronym for \sQuote{matrix or array}.
+#'
+#' @name MOA
+#'
+#' @docType class
+#' @export
+#' @family classes
+#' @keywords methods
+#'
+NULL
+
+
+setClassUnion(MOA, c("matrix", "array"))
+
+
 ################################################################################
 ################################################################################
 #

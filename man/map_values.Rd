@@ -6,7 +6,8 @@
   character vector. If it has names, they are preserved.
   \code{NULL} can also be given and yields \code{NULL} or
   an empty named character vector (if \code{mapping} is
-  missing).}
+  missing). \code{object} may also belong to the virtual
+  class \code{\link{MOA}}, comprising matrices and arrays.}
 
   \item{mapping}{Character vector used as a mapping from
   its names to its values. Values from \code{object} are
@@ -18,7 +19,16 @@
   values. This eases the construction of mapping vectors
   specific for \code{object}. If \code{mapping} is missing,
   the \code{coerce} argument must be named. \code{mapping}
-  changes its usage if \code{coerce} is \code{TRUE}.}
+  changes its usage if \code{coerce} is \code{TRUE}. For
+  \code{\link{MOA}} objects, \code{mapping} can also be a
+  function. The function would be applied to \code{object}
+  after conversion with \code{as.vector}, and it would be
+  attempted to add the original attributes (particularly
+  important are \sQuote{dim} and \sQuote{dimnames} back to
+  the result. For \code{\link{MOA}} objects, if
+  \code{mapping} is the usual character vector, it then is
+  used for mapping the \code{storage.mode}, not the
+  \code{class} of \code{object}.}
 
   \item{coerce}{Character vector with the names of classes
   that are coerced to \sQuote{character} to allow the
@@ -31,9 +41,12 @@
   and \code{as} from the \pkg{methods} package is used for
   conducting the requested coercions.  Attempting an
   undefined coercion will result in an error.}
+
+  \item{...}{Optional further arguments to \code{mapping}
+  (if it is a function).}
 }
 \value{
-  List, dataframe, character vector or \code{NULL}.
+  List, data frame, character vector or \code{NULL}.
 }
 \description{
   Map \sQuote{character} data using another
@@ -116,6 +129,7 @@ stopifnot(is.character(y), y == c("factor", "integer"), names(y) == y)
 }
 \seealso{
   base::rapply base::list base::as.list methods::as
+  base::class base::storage.mode base::as.vector
 
   Other list-functions: \code{\link{contains}},
   \code{\link{map_names}}
@@ -126,9 +140,15 @@ stopifnot(is.character(y), y == c("factor", "integer"), names(y) == y)
 \docType{methods}
 \alias{map_values-methods}
 \alias{map_values,list,character-method}
+\alias{map_values,list,function-method}
 \alias{map_values,list,missing-method}
+\alias{map_values,data.frame,function-method}
 \alias{map_values,data.frame,character-method}
 \alias{map_values,data.frame,missing-method}
+\alias{map_values,MOA,character-method}
+\alias{map_values,MOA,missing-method}
+\alias{map_values,MOA,function-method}
+\alias{map_values,character,function-method}
 \alias{map_values,character,character-method}
 \alias{map_values,character,missing-method}
 \alias{map_values,NULL,character-method}
@@ -137,14 +157,30 @@ stopifnot(is.character(y), y == c("factor", "integer"), names(y) == y)
   \S4method{map_values}{list,character}(object, mapping,
     coerce = character()) 
 
+  \S4method{map_values}{list,function}(object, mapping,
+    coerce = character(), ...) 
+
   \S4method{map_values}{list,missing}(object, 
     coerce = character()) 
+
+  \S4method{map_values}{data.frame,function}(object, mapping,
+    coerce = character(), ...) 
 
   \S4method{map_values}{data.frame,character}(object, mapping,
     coerce = character()) 
 
   \S4method{map_values}{data.frame,missing}(object, 
     coerce = character()) 
+
+  \S4method{map_values}{MOA,character}(object, mapping,
+    coerce = TRUE) 
+
+  \S4method{map_values}{MOA,missing}(object, coerce = TRUE) 
+
+  \S4method{map_values}{MOA,function}(object, mapping, ...) 
+
+  \S4method{map_values}{character,function}(object, mapping, 
+    ...) 
 
   \S4method{map_values}{character,character}(object, mapping) 
 

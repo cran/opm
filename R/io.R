@@ -76,6 +76,33 @@ extended_file_pattern <- function(arg, wildcard) {
 
 
 ################################################################################
+
+setGeneric("repair_oth", function(x, ...) standardGeneric("repair_oth"))
+#' Repair OTH plates
+#'
+#' Plates run in generation-III mode, if converted to CSV by the OmniLog(R)
+#' software, comprise duplicated rows with only two sets of distinct values, 
+#' the first set containing only \code{0}. This function checks for such a 
+#' matrix and, if identified, reduces it to its single informative row.
+#'
+#' @param x Numeric matrix.
+#' @return Matrix. Either equal to \code{x} or conatining a single row only.
+#' @keywords internal
+#'
+setMethod("repair_oth", "matrix", function(x) {
+  result <- unique(x[, -1L, drop = FALSE], MARGIN = 1L)
+  if ((nr <- nrow(result)) > 2L || !all(result[1L, ] == 0))
+    return(x)
+  result <- if (nr == 2L)
+    cbind(0.25, result[2L, , drop = FALSE])
+  else
+    cbind(0, result) # in the unexpected case that ONLY 0s are encountered
+  colnames(result)[1L] <- colnames(x)[1L]
+  result 
+}, sealed = SEALED)
+
+
+################################################################################
 ################################################################################
 #
 # Input of single OPM files
@@ -116,9 +143,7 @@ read_old_opm <- function(filename) {
   # Process comments
   comments <- fold_comments(c(FILE, filename, data[pos]))
   names(comments)[names(comments) == "Set up Time"] <- SETUP
-  comments[PLATE_TYPE] <- map_values(comments[PLATE_TYPE],
-    c(OTH = GEN_III, `PM 1-` = "PM01"))
-
+      
   # Process data
   data <- data[-pos]
   data <- data[nzchar(data)]
@@ -128,6 +153,12 @@ read_old_opm <- function(filename) {
   data <- matrix(as.numeric(data[-seq(ncol)]), ncol = ncol, byrow = TRUE,
     dimnames = list(NULL, data[seq(ncol)]))
 
+  # Repair OTH
+  if (comments[PLATE_TYPE] == "OTH") {
+    comments[PLATE_TYPE] <- GEN_III
+    data <- repair_oth(data)
+  }
+      
   new(OPM, measurements = data, metadata = list(), csv_data = comments)
 }
 
@@ -160,8 +191,11 @@ read_new_opm <- function(filename) {
   pos <- seq_len(pos - 1L)
   comments <- structure(.Data = c(filename, data[1L, pos]),
     names = c(FILE, colnames(data)[pos]))
-  comments[PLATE_TYPE] <- map_values(comments[PLATE_TYPE], c(OTH = GEN_III))
   data <- apply(data[, -pos], MARGIN = 2L, FUN = as.numeric)
+  if (comments[PLATE_TYPE] == "OTH") {
+    comments[PLATE_TYPE] <- GEN_III
+    data <- repair_oth(data)
+  }  
   new(OPM, measurements = data, metadata = list(), csv_data = comments)
 }
 
@@ -243,33 +277,27 @@ read_opm_yaml <- function(filename) {
 #'   class(x)
 #'   dim(x)
 #'   summary(x)
-#'   stopifnot(inherits(x, "OPM"), identical(dim(x), c(384L, 96L)))
+#'   stopifnot(is(x, "OPM"), identical(dim(x), c(384L, 96L)))
 #' }
 #' # this can be repeated for the other input test files
 #'
 read_single_opm <- function(filename) {
   assert_length(filename)
-  filename <- as.character(filename)
-  if (!file.exists(filename))
+  if (!file.exists(filename <- as.character(filename)))
     stop(sprintf("file '%s' does not exist", filename))
-  e <- function(error) error$message
+  taste <- function(expr) tryCatch(expr, error = function(e) e$message)  
   errs <- list()
-  result <- tryCatch(read_new_opm(filename), error = e)
-  if (is.character(result)) {
-    errs$`New CSV` <- result
-    result <- tryCatch(read_old_opm(filename), error = e)
+  routines <- list(`New CSV` = read_new_opm, `Old CSV` = read_old_opm,
+    YAML = read_opm_yaml)
+  for (name in names(routines)) {
+    result <- taste(routines[[name]](filename))
+    if (!is.character(result))
+      return(result)
+    errs[[name]] <- result
   }
-  if (is.character(result)) {
-    errs$`Old CSV` <- result
-    result <- tryCatch(read_opm_yaml(filename), error = e)
-  }
-  if (is.character(result)) {
-    errs$YAML <- result
-    names(errs) <- paste(names(errs), "error")
-    errs$Filename <- filename
-    stop(listing(errs, header = "Unknown file format:"))
-  }
-  result
+  names(errs) <- paste(names(errs), "error")
+  errs$Filename <- filename
+  stop(listing(errs, header = "Unknown file format:"))
 }
 
 
@@ -426,8 +454,10 @@ explode_dir <- function(names,
 #' # ...and get the usage messages of all scripts.
 #'
 opm_files <- function(what = c("scripts", "testdata")) {
-  list.files(file.path(.path.package("opm"), match.arg(what)), 
-    full.names = TRUE)
+  if (length(result <- path.package("opm", quiet = TRUE)) == 0L)
+    return(character())
+  result <- list.files(file.path(result, match.arg(what)), full.names = TRUE)
+  normalizePath(result)
 }
 
 
@@ -451,10 +481,16 @@ opm_files <- function(what = c("scripts", "testdata")) {
 #'   select subsets from the input files or directories.
 #'
 #' @param convert Character scalar. If \sQuote{no}, always return a list. If
-#'   \sQuote{yes}, convert to \code{NULL}, \code{\link{OPM}} object, or OPMS
+#'   \sQuote{yes}, convert to \code{NULL}, \code{\link{OPM}} object, or 
+#'   \code{\link{OPMS}}
 #'   object, depending on the number of files read (0, 1, or more). \sQuote{try}
 #'   behaves like \sQuote{yes} but does not result in an error message if
 #'   conversion to OPMS is impossible; a list is returned in that case.
+#'   \sQuote{sep} returns a nested list, each sublist containing 
+#'   \code{\link{OPM}} objects of the same plate type. \sQuote{grp} also 
+#'   splits into such sublists but converts them to \code{\link{OPMS}} 
+#'   objects if more than one plate is encountered. An error is raised if
+#'   this is impossible (in contrast to \sQuote{try}).
 #' @param gen.iii Logical scalar. If \code{TRUE}, invoke \code{\link{gen_iii}} 
 #'   on each plate. This is automatically done with CSV input if the plate 
 #'   type is given as \sQuote{OTH} (which is usually the case for plates run 
@@ -471,11 +507,13 @@ opm_files <- function(what = c("scripts", "testdata")) {
 #'   invisibly?
 #'
 #' @return \code{\link{OPM}} object (maybe \code{\link{OPMA}} in case of YAML
-#'   input) or \code{\link{OPMS}} object. If \code{demo} is \code{TRUE}, a
-#'   character vector instead.
+#'   input), or list of such objects, or \code{\link{OPMS}} object. If 
+#'   \code{demo} is \code{TRUE}, a character vector instead.
 #'
 #' @note Regarding the CSV format, see the remark to 
-#'   \code{\link{read_single_opm}}.
+#'   \code{\link{read_single_opm}}. For splitting lists of \code{\link{OPM}}
+#'   objects according to the plate type, see \code{\link{plate_type}}, and
+#'   consider the plate-type selection options of \code{\link{opms}}.
 #'
 #' @export
 #' @family IO-functions
@@ -493,7 +531,7 @@ opm_files <- function(what = c("scripts", "testdata")) {
 #'   class(x)
 #'   dim(x)
 #'   summary(x)
-#'   stopifnot(inherits(x, "OPMS"), identical(dim(x), c(2L, 384L, 96L)))
+#'   stopifnot(is(x, "OPMS"), identical(dim(x), c(2L, 384L, 96L)))
 #' }
 #' # This can be repeated for the other input test files. Instead of a several
 #' # file names one can also provide a single one, one to several directory 
@@ -507,8 +545,15 @@ opm_files <- function(what = c("scripts", "testdata")) {
 #' x <- read_opm(".")  
 #' }
 #'
-read_opm <- function(names, convert = c("try", "no", "yes"), gen.iii = FALSE,
-    include = list(), ..., demo = FALSE) {
+read_opm <- function(names, convert = c("try", "no", "yes", "sep", "grp"), 
+    gen.iii = FALSE, include = list(), ..., demo = FALSE) {
+  do_split <- function(x) split(x, sapply(x, plate_type))
+  do_opms <- function(x) {
+    if (length(x) > 1L)
+      new(OPMS, plates = x)
+    else
+      x[[1L]]
+  }
   convert <- match.arg(convert)
   names <- explode_dir(names = names, include = include, ...)
   if (demo) {
@@ -527,6 +572,8 @@ read_opm <- function(names, convert = c("try", "no", "yes"), gen.iii = FALSE,
     switch(convert,
       no = result,
       yes = new(OPMS, plates = result),
+      grp = lapply(do_split(result), do_opms),
+      sep = do_split(result),
       try = tryCatch(new(OPMS, plates = result), error = function(e) {
         warning("the data from distinct files could not be converted to a ",
           "single OPMS object and will be returned as a list")
@@ -685,8 +732,8 @@ setGeneric("collect_template",
 #'   Otherwise, interpreted as the name of a CSV output file. If metadata have 
 #'   already been collected in an older file with the same name, old metadata
 #'   will be kept, identifiers for novel files will be included, their so far
-#'   empty entries set to NA. Users who wish to keep the old version will use 
-#'   two distinct names for novel and old files; see \code{previous}.
+#'   empty entries set to \code{NA}. Users who wish to keep the old version
+#'   can use two distinct names for novel and old files; see \code{previous}.
 #' @param sep Character scalar. CSV field separator for \code{outfile}.
 #' @param previous Ignored if \code{NULL}. Otherwise passed to 
 #'   \code{\link{to_metadata}}. If it is a filename different from

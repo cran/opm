@@ -24,9 +24,9 @@
 \seealso{
   Methods
 
-  Other classes: \code{\link{OPM}}, \code{\link{OPMA}},
-  \code{\link{OPMX}}, \code{\link{WMD}},
-  \code{\link{YAML_VIA_LIST}}
+  Other classes: \code{\link{MOA}}, \code{\link{OPM}},
+  \code{\link{OPMA}}, \code{\link{OPMX}},
+  \code{\link{WMD}}, \code{\link{YAML_VIA_LIST}}
 }
 \keyword{methods}
 
@@ -72,6 +72,8 @@
 % \alias{map_metadata,OPMS,ANY-method}
 % \alias{max,OPMS-method}
 % \alias{measurements,OPMS-method}
+% \alias{merge,OPMS,missing-method}
+% \alias{merge,OPMS,numeric-method}
 % \alias{metadata,OPMS-method}
 % \alias{metadata<-,OPMS,ANY,ANY-method}
 % \alias{metadata<-,OPMS,missing,list-method}
@@ -147,6 +149,8 @@ Class \code{"\linkS4class{YAML_VIA_LIST}"}, directly.
     \item{map_metadata}{\code{signature(object = "OPMS", mapping = "ANY")}: ... }
     \item{max}{\code{signature(x = "OPMS")}: ... }
     \item{measurements}{\code{signature(object = "OPMS")}: ... }
+    \item{merge}{\code{signature(x = "OPMS", y = "missing")}: ... }
+    \item{merge}{\code{signature(x = "OPMS", y = "numeric")}: ... }
     \item{metadata}{\code{signature(object = "OPMS")}: ... }
     \item{metadata<-}{\code{signature(object = "OPMS", key = "ANY", value = "ANY")}: ... }
     \item{metadata<-}{\code{signature(object = "OPMS", key = "missing", value = "list")}: ... }

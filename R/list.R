@@ -9,11 +9,10 @@
 
 setAs(from = "list", to = OPM, function(from) {
   convert_measurements <- function(mat) {
-    mat <- do.call(cbind, lapply(mat, as.numeric))
-    hour.pos <- which(colnames(mat) == HOUR)
-    if (length(hour.pos) != 1L)
-      stop(
-        "uninterpretable column names in 'measurements' entry of input list")
+    mat <- must(do.call(cbind, lapply(mat, as.numeric)))
+    if (length(hour.pos <- which(colnames(mat) == HOUR)) != 1L)
+      stop("uninterpretable column names in 'measurements' entry of ",
+        "input list")
     sorted.names <- c(colnames(mat)[hour.pos], sort(colnames(mat)[-hour.pos]))
     mat[, sorted.names, drop = FALSE]
   }
@@ -69,14 +68,16 @@ setGeneric("to_opm_list", function(object, ...) standardGeneric("to_opm_list"))
 #' \code{\link{OPMS}} object. This method is used by \code{\link{opms}} and
 #' \code{\link{try_opms}}.
 #'
-#' @param List the objects that can be passed to \code{\link{opms}}
+#' @param object List of objects that can be passed to \code{\link{opms}}
 #' @param precomputed Logical scalar. See \code{\link{opms}}.
 #' @param skip Logical scalar. See \code{\link{opms}}.
+#' @param group Logical scalar. See \code{\link{opms}}.
 #' @return List.
 #' @keywords internal
 #'
 setMethod("to_opm_list", "list", function(object, precomputed = TRUE,
-    skip = FALSE) {
+    skip = FALSE, group = FALSE) {
+  assert_length(precomputed, skip, group)
   opm.slots <- slotNames(OPM)
   opma.slots <- setdiff(slotNames(OPMA), opm.slots)
   convert_recursively <- function(item) {
@@ -95,19 +96,22 @@ setMethod("to_opm_list", "list", function(object, precomputed = TRUE,
       lapply(item, FUN = convert_recursively)
   }
   get_plates <- function(item) {
-    if (inherits(item, OPM))
+    if (is(item, OPM))
       item
-    else if (inherits(item, OPMS))
+    else if (is(item, OPMS))
       plates(item)
     else if (skip)
       NULL
     else
       stop("need object derived from ", OPM, " or ", OPMS)
   }
-  if (precomputed)
+  result <- if (precomputed)
     rapply(object, f = get_plates, how = "unlist")
   else
     c(convert_recursively(object), recursive = TRUE)
+  if (group)
+    result <- split(result, sapply(result, plate_type))
+  result
 }, sealed = SEALED)
 
 
@@ -130,7 +134,7 @@ setGeneric("try_opms", function(object, ...) standardGeneric("try_opms"))
 setMethod("try_opms", "list", function(object, precomputed = TRUE,
     skip = FALSE) {
   tryCatch(new(OPMS, plates = to_opm_list(object, precomputed = precomputed,
-    skip = skip)), error = function(e) object)
+    skip = skip, group = FALSE)), error = function(e) object)
 }, sealed = SEALED)
 
 
@@ -141,7 +145,7 @@ setMethod("try_opms", "list", function(object, precomputed = TRUE,
 
 #' OPMS constructor
 #'
-#' Easily build an \code{\link{OPMS}} object.
+#' Easily build \code{\link{OPMS}} objects.
 #'
 #' @rdname opms-function
 #'
@@ -157,28 +161,71 @@ setMethod("try_opms", "list", function(object, precomputed = TRUE,
 #'   \code{FALSE}, silently skip objects that do not belong to the three
 #'   target classes? Otherwise, an error is generated if such a list element
 #'   is encountered.
+#' @param group Logical or character scalar. If \code{TRUE}, split the list of
+#'   collected \code{\link{OPM}} objects according to the plate type and convert 
+#'   the sublists seperately if they contain more than one plate; otherwise just
+#'   keep the \code{\link{OPM}} object. \code{FALSE} is the default: all 
+#'   plates are tried to be forced into a single \code{\link{OPMS}} object.
+#'   If a character scalar, the name of the plate type to be extracted.
 #' @export
-#' @return \code{\link{OPMS}} object.
+#' @return \code{\link{OPMS}} object, or list of such objects (and/or 
+#'   \code{\link{OPM}} objects), or \code{\link{OPM}} object, or \code{NULL}.
 #' @family combination-functions
 #' @keywords manip
-#' @note While otherwise rather flexible, this function will fail to construct
+#' @details While otherwise rather flexible, this function will fail to return
 #'   an \code{\link{OPMS}} object if the plate types do not match (simply
-#'   because such \code{\link{OPMS}} objects are disallowed).
+#'   because such \code{\link{OPMS}} objects are disallowed) and \code{group}
+#'   is set to \code{FALSE}. But if \code{group} is set to \code{TRUE}, a
+#'   list, not a single \code{\link{OPMS}} object will be returned; and if
+#'   \code{group} is of mode \sQuote{character}, this extracts the plate type(s)
+#'   of interest.
+#' @note Consider also the plate-type selection options of 
+#'   \code{\link{read_opm}}.
 #' @examples
 #' # Testing distinct OPM/OPMS combinations -- all should work
 #' data(vaas_1, vaas_4)
-#' x <- opms(vaas_1, vaas_1)
+#' (x <- opms())
+#' stopifnot(is.null(x))
+#' summary((x <- opms(vaas_1)))
+#' stopifnot(identical(x, vaas_1))
+#' summary((x <- opms(vaas_4, group = plate_type(vaas_4))))
+#' stopifnot(identical(x, vaas_4))
+#' summary((x <- opms(vaas_4, group = "PM01")))
+#' stopifnot(is.null(x))
+#' summary(x <- opms(vaas_1, vaas_1))
 #' stopifnot(is(x, "OPMS"), length(x) == 2L)
-#' x <- opms(vaas_4, vaas_1)
+#' summary(x <- opms(vaas_4, vaas_1))
 #' stopifnot(is(x, "OPMS"), length(x) == 5L)
-#' x <- opms(vaas_1, vaas_4)
+#' summary(x <- opms(vaas_1, vaas_4))
 #' stopifnot(is(x, "OPMS"), length(x) == 5L)
-#' x <- opms(vaas_4, vaas_4)
+#' summary(x <- opms(vaas_4, vaas_4))
 #' stopifnot(is(x, "OPMS"), length(x) == 8L)
 #'
-opms <- function(..., precomputed = TRUE, skip = FALSE) {
-  new(OPMS, plates = to_opm_list(list(...), precomputed = precomputed,
-    skip = skip))
+opms <- function(..., precomputed = TRUE, skip = FALSE, group = FALSE) {
+  opms_or_opm <- function(x)  {
+    if ((len <- length(x)) == 0L)
+      NULL
+    else if (len == 1L)
+      x[[1L]]
+    else
+      new(OPMS, plates = x)
+  }
+  if (is.character(group)) {
+    wanted <- group
+    group <- TRUE
+  } else {
+    wanted <- NULL
+    group <- as.logical(group)
+  }
+  plates <- to_opm_list(list(...), precomputed = precomputed, skip = skip, 
+    group = group)
+  if (is.null(wanted)) {
+    if (group)
+      lapply(plates, opms_or_opm)
+    else
+      opms_or_opm(plates)
+  } else
+    opms_or_opm(plates[[wanted]])
 }
 
 
@@ -196,6 +243,30 @@ setAs(from = "ANY", to = "ordered", function(from) as.ordered(from))
 ################################################################################
 
 
+setGeneric("prepare_class_names",
+  function(object) standardGeneric("prepare_class_names"))
+#' Prepare class names
+#'
+#' Ensure that a vector of class names contains only unique values and 
+#' \sQuote{character}. Reduce it to \sQuote{ANY} if \sQuote{ANY} is contained.
+#' See \code{\link{map_values}} for a use.
+#'
+#' @param object Character vector.
+#' @return Character vector.
+#' @keywords internal
+#'
+setMethod("prepare_class_names", "character", function(object) {
+  object <- unique(c("character", object))
+  if ("ANY" %in% object)
+    "ANY"
+  else
+    object
+}, sealed = SEALED)
+
+  
+################################################################################
+
+  
 setGeneric("map_values",
   function(object, mapping, ...) standardGeneric("map_values"))
 #' Map values
@@ -210,7 +281,8 @@ setGeneric("map_values",
 #' @param object List (may be nested), dataframe or character vector. If it has
 #'   names, they are preserved. \code{NULL} can also be given and yields
 #'   \code{NULL} or an empty named character vector (if \code{mapping} is 
-#'   missing).
+#'   missing). \code{object} may also belong to the virtual class 
+#'   \code{\link{MOA}}, comprising matrices and arrays.
 #' @param mapping Character vector used as a mapping from its names to its 
 #'   values. Values from \code{object} are searched for in the \code{names}
 #'   attribute of \code{mapping}; those found are replaced by the
@@ -219,7 +291,14 @@ setGeneric("map_values",
 #'   names are identical to the values. This eases the construction of mapping
 #'   vectors specific for \code{object}. If \code{mapping} is missing, the
 #'   \code{coerce} argument must be named. \code{mapping} changes its usage
-#'   if \code{coerce} is \code{TRUE}.
+#'   if \code{coerce} is \code{TRUE}. For \code{\link{MOA}} objects,
+#'   \code{mapping} can also be a function. The function would be applied to 
+#'   \code{object} after conversion with \code{as.vector}, and it would be 
+#'   attempted to add the original attributes (particularly important are 
+#'   \sQuote{dim} and \sQuote{dimnames} back to the result. For 
+#'   \code{\link{MOA}} objects, if \code{mapping} is the usual character
+#'   vector, it then is used for mapping the \code{storage.mode}, not the
+#'   \code{class} of \code{object}.
 #' @param coerce Character vector with the names of classes that are coerced to
 #'   \sQuote{character} to allow the mapping. Other classes are returned 
 #'   unchanged. Note that the coerced data are \strong{not} converted back to
@@ -229,9 +308,12 @@ setGeneric("map_values",
 #'   interpreted as a mapping between the names of classes, and \code{as} from
 #'   the \pkg{methods} package is used for conducting the requested coercions.
 #'   Attempting an undefined coercion will result in an error.
+#' @param ... Optional further arguments to \code{mapping} (if it is a 
+#'   function).
 #' @export
-#' @return List, dataframe, character vector or \code{NULL}.
-#' @seealso base::rapply base::list base::as.list methods::as
+#' @return List, data frame, character vector or \code{NULL}.
+#' @seealso base::rapply base::list base::as.list methods::as base::class
+#'   base::storage.mode base::as.vector
 #' @family list-functions
 #' @keywords manip list
 #' @note This function is not normally directly called by an \pkg{opm} user 
@@ -303,22 +385,27 @@ setGeneric("map_values",
 setMethod("map_values", c("list", "character"), function(object, mapping,
     coerce = character()) {
   if (isTRUE(coerce)) {
-    if (is.null(classes <- names(mapping)))
-      classes <- character()
-    mapfun <- function(item, mapping) as(item, mapping[class(item)])
-  } else {
-    classes <- unique(c("character", coerce))
-    if ("ANY" %in% classes)
-      classes <- "ANY"
-    mapfun <- if (length(classes) > 1L)
-      function(item, mapping) { 
-        # as.character() drops the names, hence structure()
-        map_values(structure(as.character(item), names = names(item)), mapping)
-      }
+    if (is.null(coerce <- names(mapping)))
+      return(object)
+    mapfun <- function(item) as(item, map_values(class(item), mapping))
+  } else
+    mapfun <- if (length(coerce) == 0L || all(coerce == "character"))
+      function(item) map_values(item, mapping)
     else
-      map_values
-  }
-  rapply(object, mapfun, classes = classes, how = "replace", mapping = mapping)
+      function(item) {
+        result <- map_values(as.character(item), mapping)
+        mostattributes(result) <- attributes(item)
+        result
+      }
+  map_values(object, mapping = mapfun, coerce = coerce)
+}, sealed = SEALED)
+
+#' @export
+#'    
+setMethod("map_values", c("list", "function"), function(object, mapping,
+    coerce = character(), ...) {
+  rapply(object = object, f = mapping, classes = prepare_class_names(coerce), 
+    how = "replace", ...)
 }, sealed = SEALED)
 
 #' @export
@@ -329,9 +416,7 @@ setMethod("map_values", c("list", "missing"), function(object,
     classes <- "ANY"
     mapfun <- class
   } else {
-    classes <- unique(c("character", coerce))
-    if ("ANY" %in% classes)
-      classes <- "ANY"
+    classes <- prepare_class_names(coerce)
     mapfun <- as.character
   }
   map_values(rapply(object, mapfun, classes = classes))
@@ -339,36 +424,89 @@ setMethod("map_values", c("list", "missing"), function(object,
 
 #' @export
 #'    
+setMethod("map_values", c("data.frame", "function"), function(object, mapping,
+    coerce = character(), ...) {
+  if (identical("ANY", coerce <- prepare_class_names(coerce)))
+    coerce <- unique(sapply(object, class))
+  for (i in which(sapply(object, class) %in% coerce))
+    object[[i]] <- mapping(object[[i]], ...)
+  object
+}, sealed = SEALED)
+    
+#' @export
+#'    
 setMethod("map_values", c("data.frame", "character"), function(object, mapping,
     coerce = character()) {
   if (isTRUE(coerce)) {
-    if (is.null(classes <- names(mapping)))
-      classes <- character()
-    mapfun <- function(item, mapping) as(item, mapping[class(item)])
-  } else {
-    classes <- unique(c("character", coerce))
-    if ("ANY" %in% classes)
-      classes <- sapply(object, class)
-    mapfun <- function(item, mapping) map_values(as.character(item), mapping)
-  }
-  for (i in which(sapply(object, class) %in% classes))
-    object[[i]] <- mapfun(object[[i]], mapping)
-  object
+    if (is.null(coerce <- names(mapping)))
+      return(object)
+    mapfun <- function(item) as(item, map_values(class(item), mapping))
+  } else
+    mapfun <- function(item) map_values(as.character(item), mapping)
+  map_values(object, mapping = mapfun, coerce = coerce)
 }, sealed = SEALED)
     
 #' @export
 #'    
 setMethod("map_values", c("data.frame", "missing"), function(object, 
     coerce = character()) {
-  if (isTRUE(coerce)) {
+  if (isTRUE(coerce))
     result <- unlist(lapply(object, class))
-  } else {
-    classes <- unique(c("character", coerce))
-    if (!"ANY" %in% classes)
-      object <- object[, sapply(object, class) %in% classes, drop = FALSE]
+  else {
+    coerce <- prepare_class_names(coerce)
+    if (!"ANY" %in% coerce)
+      object <- object[, sapply(object, class) %in% coerce, drop = FALSE]
     result <- unlist(lapply(object, as.character))
   }
   map_values(result)
+}, sealed = SEALED)
+
+#' @export
+#'    
+setMethod("map_values", c(MOA, "character"), function(object, mapping,
+    coerce = TRUE) {
+  if (isTRUE(coerce)) {
+    storage.mode(object) <- map_values(storage.mode(object), mapping)
+    object
+  } else {
+    coerce <- prepare_class_names(coerce)
+    if (!identical("ANY", coerce) && !storage.mode(object) %in% coerce)
+      stop("storage mode of 'object' not contained in 'coerce'")
+    result <- map_values(as.character(object), mapping)
+    attributes(result) <- attributes(object)
+    result
+  }
+}, sealed = SEALED)
+
+#' @export
+#'    
+setMethod("map_values", c(MOA, "missing"), function(object, coerce = TRUE) {
+  if (isTRUE(coerce))
+    result <- storage.mode(object)
+  else {
+    coerce <- prepare_class_names(coerce)
+    if (!identical("ANY", coerce) && !storage.mode(object) %in% coerce)
+      stop("storage mode of 'object' not contained in 'coerce'")
+    result <- as.character(object)
+  }
+  map_values(result)
+}, sealed = SEALED)
+
+#' @export
+#'
+setMethod("map_values", c(MOA, "function"), function(object, mapping, ...) {
+  result <- mapping(as.vector(object), ...)
+  mostattributes(result) <- attributes(object)
+  result
+}, sealed = SEALED)
+
+#' @export
+#'
+setMethod("map_values", c("character", "function"), function(object, mapping, 
+    ...) {
+  result <- mapping(object, ...)
+  mostattributes(result) <- attributes(object)
+  result
 }, sealed = SEALED)
 
 #' @export
@@ -419,14 +557,20 @@ setGeneric("map_names",
 #' \code{names} attribute; this might be useful if the result is later on used 
 #' for some mapping (using this function or \code{\link{map_values}}).
 #'
-#' @param object List.
+#' @param object Any R object. The default method applies the mapping to the
+#'   \sQuote{names} attribute. The behaviour is special for lists, which are
+#'   traversed recursively to also consider sublists with names. Data frames
+#'   and \code{\link{MOA}} objects (that is, including matrices and arrays)
+#'   are also treated specially because the \sQuote{dimnames} attribute, not
+#'   the \sQuote{names} attribute is considered.
 #' @param mapping Mapping function that takes a character vector as first 
 #'   argument, or character vector used for mapping from its names to its 
-#'   values, or missing.
+#'   values, or missing. It is guaranteed that \code{NULL} input remains 
+#'   \code{NULL}, irrespective of the value of \code{mapping}.
 #' @param ... Optional further arguments to \code{mapping} (if it is a 
 #'   function).
-#' @return Character vector (if \code{mapping} is missing), or list, or 
-#'   dataframe.
+#' @return Character vector if \code{mapping} is missing, otherwise an R object
+#'   of the same class than \code{object}.
 #' @export
 #' @family list-functions
 #' @seealso base::rapply base::list base::as.list
@@ -516,25 +660,85 @@ setMethod("map_names", c("list", "missing"), function(object) {
 #'
 setMethod("map_names", c("data.frame", "function"), function(object, mapping, 
     ...) {
-  if (!is.null(n <- colnames(object)))
-    colnames(object) <- mapping(n, ...)
-  if (!is.null(n <- rownames(object)))
-    rownames(object) <- mapping(n, ...)
+  if (is.null(dn <- dimnames(object)))
+    return(object)
+  dimnames(object) <- lapply(dn, function(n) {
+    if (is.null(n))
+      n
+    else
+      mapping(n, ...)
+  })
   object
 }, sealed = SEALED)
 
 #' @export
 #'
 setMethod("map_names", c("data.frame", "character"), function(object, mapping) {
-  colnames(object) <- map_values(colnames(object), mapping)
-  rownames(object) <- map_values(rownames(object), mapping)
+  dimnames(object) <- if (is.null(dn <- dimnames(object)))
+    map_values(dn, mapping)
+  else
+    lapply(dn, map_values, mapping = mapping)
   object
 }, sealed = SEALED)
 
 #' @export
 #'
 setMethod("map_names", c("data.frame", "missing"), function(object) {
-  map_values(c(colnames(object), rownames(object)))
+  map_values(dimnames(object))
+}, sealed = SEALED)
+
+#' @export
+#'
+setMethod("map_names", c(MOA, "function"), function(object, mapping, 
+    ...) {
+  if (is.null(dn <- dimnames(object)))
+    return(object)
+  dimnames(object) <- lapply(dn, function(n) {
+    if (is.null(n))
+      n
+    else
+      mapping(n, ...)
+  })
+  object
+}, sealed = SEALED)
+
+#' @export
+#'
+setMethod("map_names", c(MOA, "character"), function(object, mapping) {
+  dimnames(object) <- if (is.null(dn <- dimnames(object)))
+    map_values(dn, mapping)
+  else
+    lapply(dn, map_values, mapping = mapping)
+  object
+}, sealed = SEALED)
+
+#' @export
+#'
+setMethod("map_names", c(MOA, "missing"), function(object) {
+  map_values(dimnames(object))
+}, sealed = SEALED)
+
+#' @export
+#'
+setMethod("map_names", c("ANY", "function"), function(object, mapping, 
+    ...) {
+  if (is.null(n <- names(object)))
+    return(object)
+  names(object) <- mapping(n, ...)
+  object
+}, sealed = SEALED)
+
+#' @export
+#'
+setMethod("map_names", c("ANY", "character"), function(object, mapping) {
+  names(object) <- map_values(names(object), mapping)
+  object
+}, sealed = SEALED)
+
+#' @export
+#'
+setMethod("map_names", c("ANY", "missing"), function(object) {
+  map_values(names(object))
 }, sealed = SEALED)
 
 
@@ -740,8 +944,7 @@ setMethod("traverse", c("list", "function"), function(object, func, cores,
 #
 
 
-setGeneric("insert",
-  function(object, ...) standardGeneric("insert"))
+setGeneric("insert", function(object, ...) standardGeneric("insert"))
 #' Insert a list in a list
 #'
 #' Insert all values from another list in a list, either by overwriting the
@@ -752,7 +955,7 @@ setGeneric("insert",
 #' @param object List.
 #' @param other R object to insert. List.
 #' @param ... Optional other items to insert.
-#' @param .force Logical scalar. Overwite items that are not there?
+#' @param .force Logical scalar. Overwite items that are already there?
 #' @return List.
 #' @keywords internal
 #'
@@ -771,4 +974,7 @@ setMethod("insert", "list", function(object, other, ..., .force = FALSE) {
 }, sealed = SEALED)
 
 
-  
+################################################################################  
+
+    
+    

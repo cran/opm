@@ -9,9 +9,9 @@
   available); otherwise, return it as-is.}
 
   \item{in.parens}{Logical scalar. This and the following
-  argument work like the eponymous ones of
+  arguments work like the eponymous ones of
   \code{\link{wells}}, but here are applied to the plate
-  name.}
+  name. See there for details.}
 
   \item{max}{Numeric scalar.}
 
@@ -38,6 +38,12 @@ data(vaas_1)
 (y <- plate_type(vaas_1, full = TRUE))
 (z <- plate_type(vaas_1, full = TRUE, in.parens = FALSE))
 stopifnot(nchar(x) < nchar(y), nchar(z) < nchar(y))
+
+\dontrun{
+
+# Splitting a list of 'OPM' objects according to the plate type is easy:
+x <- split(x), sapply(x, plate_type))
+}
 }
 \seealso{
   base::strtrim base::abbreviate

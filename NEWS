@@ -1,5 +1,42 @@
 
 
+opm 0.3-2
+---------
+
+Bug fixes:
+
+- fixed some testing problems that caused the tests to fail with the novel R 
+  for Windows
+
+New features:
+
+- novel methods for the automated discretization of curve heights into 
+  positive (+), weak (w) and negative (-) and the subsequent generation
+  of reports in HTML for taxonomic journals such as IJSEM; accordingly, quite 
+  a few novel helper functions for k-means based discretization: to_kmeans(),  
+  borders(), calinski(), and, of course, run_kmeans()
+
+- novel arguments to read_opm() (automatically assorting according to the 
+  plate type); similar novel option for opms() to recognize plate types and
+  construct OPMS objects separately, or select those with a certain plate type
+
+- redundancies in input plates with 'OTH' as plate type (from runs in 
+  identification mode) are now automatically removed
+
+- novel merge() method for OPMS objects, i.e. a function for merging plates 
+  from subsequent runs of the same physical plate (of interest for slowly
+  reacting organisms)
+
+- map_values() and map_names() have been considerably extended
+
+- novel 'digits' argument to listing(), novel 'pad' argument of safe_labels(),
+  novel 'keep.const' and 'simplify' arguments to separate()
+
+Other changes:
+
+- some further improvements of the documentation
+
+
 opm 0.2-0
 ---------
 

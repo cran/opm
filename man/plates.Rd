@@ -20,7 +20,8 @@ stopifnot(is.list(x), length(x) == 4L)
 
   Other conversion-functions: \code{\link{extract}},
   \code{\link{extract_columns}}, \code{\link{flatten}},
-  \code{\link{oapply}}, \code{\link{to_yaml}}
+  \code{\link{merge}}, \code{\link{oapply}},
+  \code{\link{to_yaml}}
 }
 \keyword{attribute}
 

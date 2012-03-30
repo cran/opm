@@ -2,7 +2,8 @@
 \alias{flattened_to_factor}
 \title{Factor from flattened data}
 \arguments{
-  \item{data}{Object as returned by \code{\link{flatten}}.}
+  \item{object}{Object as returned by
+  \code{\link{flatten}}.}
 
   \item{sep}{Character scalar. Separator used for joining
   the columns together.}

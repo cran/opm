@@ -15,7 +15,7 @@
 #' is mainly used to generate meaningful error messages for function arguments.
 #'
 #' @param ... Any R objects to test.
-#' @param wanted Integer scalar giving the desired length.
+#' @param .wanted Integer scalar giving the desired length.
 #' @return The names of the arguments contained in \code{...}, returned 
 #'   invisibly.
 #' @keywords internal
@@ -27,6 +27,23 @@ assert_length <- function(..., .wanted = 1L) {
       stop(sprintf("need object '%s' of length %i", name, .wanted))
   }, items, arg.names, SIMPLIFY = FALSE, USE.NAMES = FALSE)
   invisible(arg.names)
+}
+
+################################################################################
+
+
+#' Convert warnings to errors
+#'
+#' Raise an error if a warning occurs. Useful for making certain tests more
+#' strict.
+#'
+#' @param expr R expression to evaluate.
+#' @param ... Optional further arguments to \code{tryCatch}.
+#' @return The result of \code{expr} (if no error occurs).
+#' @keywords internal
+#'
+must <- function(expr, ...) {
+  tryCatch(expr = expr, warning = function(w) stop(w$message), ...)
 }
 
 
@@ -88,7 +105,10 @@ is_constant <- function(x, na.rm = TRUE) {
 #' by an \pkg{opm} user but by, e.g., the scripts accompanying the package; see 
 #' \code{\link{opm_files}} for details.
 #'
-#' @param x Object convertible via \code{unlist} to a vector.
+#' @param x Object convertible via \code{unlist} to a vector. Afterwards its
+#'   \sQuote{names} attribute is used as the first column of the resulting
+#'   listing; if it is \code{NULL} or if \code{force.numbers} is \code{TRUE}, 
+#'   numbers are inserted.
 #' @param header \code{NULL} or character vector. Prepended to the result.
 #' @param footer \code{NULL} or character vector. Appended to the result.
 #' @param begin \code{NULL} or numeric or character vector. Prepended to each
@@ -96,33 +116,53 @@ is_constant <- function(x, na.rm = TRUE) {
 #'   number of spaces. Otherwise converted to \sQuote{character} mode and used
 #'   directly.
 #' @param collapse Character scalar. How to join the resulting vector elements.
-#' @param style Character scalar. Passed to \code{formatDL}.
+#' @param style Character scalar. If \sQuote{table} or \sQuote{list}, passed 
+#'   to \code{formatDL}. Otherwise, a pattern for \code{sprintf} is assumed
+#'   taking two arguments, the names of \code{x} and the values \code{x} (after
+#'   conversion with \code{unlist}).
+#' @param force.numbers Logical scalar. Always use numbers instead of the 
+#'   \sQuote{names} attribute?
+#' @param digits Numeric scalar. Ignored unless \code{x} is numeric.
 #' @param ... Optional other arguments passed to \code{formatDL}.
 #' @return Character vector.
 #' @export
 #' @seealso base::message base::warning base::stop base::formatDL
 #' @keywords utilities
 #' @examples
+#'
 #' x <- letters[1:5]
 #' names(x) <- LETTERS[1:5]
 #' message(y <- listing(x, header = "Five letters:", footer = "...end here", 
 #'   begin = 3))
 #' stopifnot(is.character(y), length(y) == 1)
 #'
+#' x <- c("CTMT", "Chryseobacterium soli DSM 19298T", 
+#'   "Chryseobacterium soldanellicola DSM 17072T")
+#' message(y <- listing(x, style = "%s, %s", collapse = "; "))
+#' stopifnot(is.character(y), length(y) == 1)
+#'
 listing <- function(x, header = NULL, footer = NULL, begin = NULL,
-    collapse = "\n", style = "list", ...) {
-  result <- formatDL(unlist(x), style = style, ...)
+    collapse = "\n", style = "list", force.numbers = FALSE,
+    digits = max(3L, getOption("digits") - 3L), ...) {
+  assert_length(style, collapse, digits, force.numbers)
+  if (is.double(x))
+    x <- signif(x, digits)
+  if (is.null(names(x <- unlist(x))) || force.numbers)
+    names(x) <- seq_along(x)
+  if (style %in% c("table", "list"))
+    x <- formatDL(x, style = style, ...)
+  else
+    x <- sprintf(style, names(x), x)
   if (length(begin))
     if (is.numeric(begin))
-      result <- paste(paste(rep.int(" ", begin), collapse = ""), result,
-        sep = "")
+      x <- paste(paste(rep.int(" ", begin), collapse = ""), x, sep = "")
     else
-      result <- paste(begin, result, sep = "")
+      x <- paste(begin, x, sep = "")
   if (length(header))
-    result <- c(header, result)
+    x <- c(header, x)
   if (length(footer))
-    result <- c(result, footer)
-  paste(result, collapse = collapse)
+    x <- c(x, footer)
+  paste(x, collapse = collapse)
 }
 
 
@@ -139,16 +179,22 @@ setGeneric("separate", function(object, ...) standardGeneric("separate"))
 #' optionally also all factors) within a data frame.
 #'
 #' @param object Character vector to be split, or data frame in which character
-#'   vectors (or factors) shall be attempted to be split.
+#'   vectors (or factors) shall be attempted to be split, or factor.
 #' @param split Character vector or \code{TRUE}. If a character vector, used as
 #'   container of the splitting characters and converted to a vector containing 
 #'   only non-duplicated single-character strings. For instance, the default 
 #'   \code{split} argument \code{".-_"} yields \code{c(".", "-", "_")}. If
+#'   a vector of only empty strings or
 #'   \code{TRUE}, strings with substrings representing fixed-width fields are 
 #'   assumed, and splitting is done at whitespace-only columns. Beforehand,
 #'   equal-length strings are created by padding with spaces at the right.
 #'   After splitting in fixed-width mode, whitespace characters are trimmed 
 #'   from both ends of the resulting strings.
+#' @param simplify Logical scalar indicating whether a resulting matrix with
+#'   one column should be simplified to a vector (or such a data frame to a 
+#'   factor).
+#' @param keep.const Logical scalar indicating whether constant columns
+#'   should be kept or removed. Ignored if only a single column is present.
 #' @param coerce Logical scalar indicating whether factors should be coerced
 #'   to \sQuote{character} mode and then also be attempted to be split. The
 #'   resulting columns will be coerced back to factors.
@@ -160,7 +206,8 @@ setGeneric("separate", function(object, ...) standardGeneric("separate"))
 #' @export
 #' @return Character matrix, its number of rows being equal to the length of
 #'   \code{object}, or data frame with the same number of rows as \code{object}
-#'   but potentially more columns.
+#'   but potentially more columns. May be character vector of factor with
+#'   character or factor input and \code{simplify} set to \code{TRUE}.
 #' @family auxiliary-functions
 #' @keywords character manip
 #' @seealso base::strsplit utils::read.fwf
@@ -179,12 +226,38 @@ setGeneric("separate", function(object, ...) standardGeneric("separate"))
 #' stopifnot(is.matrix(y), dim(y) == c(3, 2))
 #'
 #' # Data frame method
-#' x <- data.frame(a = 1:2, b = c("a-b-cc", "d-ff-g"))
+#' x <- data.frame(a = 1:2, b = c("a-b-cc", "a-ff-g"))
+#' (y <- separate(x, coerce = FALSE))
+#' stopifnot(identical(x, y))
 #' (y <- separate(x))
 #' stopifnot(is.data.frame(y), dim(y) == c(2, 4))
 #' stopifnot(sapply(y, class) == c("integer", "factor", "factor", "factor"))
+#' (y <- separate(x, keep.const = FALSE))
+#' stopifnot(is.data.frame(y), dim(y) == c(2, 3))
+#' stopifnot(sapply(y, class) == c("integer", "factor", "factor"))
 #'
-setMethod("separate", "character", function(object, split = ".-_") {
+setMethod("separate", "character", function(object, split = "/.-_", 
+    simplify = FALSE, keep.const = TRUE) {
+  simple_if <- function(x) {
+    assert_length(simplify, keep.const)
+    if (is.matrix(x)) {
+      if (!keep.const && ncol(x) > 1L) {
+        if (all(const <- apply(x, 2L, is_constant)))
+          x <- x[, 1L, drop = FALSE]
+        else
+          x <- x[, !const, drop = FALSE]
+      }
+      if (simplify && ncol(x) == 1L)
+        x[, 1L]
+      else
+        x
+    } else  if (simplify)
+      x
+    else if (length(x))
+      matrix(x)
+    else
+      matrix(ncol = 0L, nrow = 0L, data = NA_character_)
+  }
   char_group <- function(x) sprintf("[%s]", paste(x, collapse = ""))
   split_fixed <- function(x) {
     ws <- c(" ", "\t", "\v", "\r", "\n", "\b", "\a", "\f")
@@ -198,36 +271,47 @@ setMethod("separate", "character", function(object, split = ".-_") {
       sub(p2, "", sub(p1, "", y, perl = TRUE), perl = TRUE)
     }, p1 = sprintf("^%s+", ws <- char_group(ws)), p2 = sprintf("%s+$", ws)))
   }
-  if (isTRUE(split))
-    return(split_fixed(object))
+  if (isTRUE(split) || all(!nzchar(split)))
+    return(simple_if(split_fixed(object)))
   split <- unique(unlist(strsplit(x = split, split = "", fixed = TRUE)))
   if (length(split) == 0L)
-    return(matrix(object))
+    return(simple_if(object))
   yields.constant <- sapply(split, function(char) {
     is_constant(lapply(strsplit(object, char, fixed = TRUE), length))
   })
   if (length(split <- split[yields.constant]) == 0L)
-    return(matrix(object))
+    return(simple_if(object))
   split <- char_group(c(split[!(dash <- split == "-")], split[dash]))
-  do.call(rbind, strsplit(object, split, perl = TRUE))
+  simple_if(do.call(rbind, strsplit(object, split, perl = TRUE)))
 }, sealed = SEALED)
 
 #' @export
 #'
-setMethod("separate", "data.frame", function(object, split = ".-_",
-    coerce = TRUE, name.sep = ".") {
+setMethod("separate", "factor", function(object, split = "/.-_",
+    simplify = FALSE, keep.const = TRUE) {
+  assert_length(simplify)
+  result <- separate(as.character(object), split = split, 
+    keep.const = keep.const, simplify = FALSE)
+  if (simplify && ncol(result) == 1L)
+    as.factor(result[, 1L])
+  else
+    as.data.frame(result, stringsAsFactors = TRUE)
+}, sealed = SEALED)
+
+#' @export
+#'
+setMethod("separate", "data.frame", function(object, split = "/.-_",
+    keep.const = TRUE, coerce = TRUE, name.sep = ".") {
   assert_length(coerce, name.sep)
   do.call(cbind, mapply(function(x, name) {
-    result <- if (is.fac <- is.factor(x)) {
-      if (coerce)
-        separate(as.character(x), split)
-      else
-        x
-    } else if (is.character(x))
-      separate(x, split)
+    result <- if (is.character(x))
+      as.data.frame(separate(x, split = split, keep.const = keep.const, 
+        simplify = FALSE), stringsAsFactors = FALSE)
+    else if (coerce && is.factor(x))
+      separate(x, split = split, keep.const = keep.const, 
+        simplify = FALSE)
     else
-      x
-    result <- as.data.frame(result, stringsAsFactors = is.fac)
+      as.data.frame(x)
     names(result) <- if ((nc <- ncol(result)) == 1L)
       name
     else
@@ -511,7 +595,7 @@ normalize_plate_name <- function(plate, subtype = FALSE) {
 #'
 #' @param wells Character vector of original well names (coordinates on the
 #'   plate).
-#' @param plate_type Character scalar. The type of the plate. See
+#' @param plate Character scalar. The type of the plate. See
 #'   \code{\link{plate_type}}.
 #' @param in.parens Logical scalar. See \code{\link{wells}}.
 #' @param brackets Logical scalar. See \code{\link{wells}}.

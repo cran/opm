@@ -4,12 +4,6 @@
 \title{Example dataset from Vaas et al. (2012), a single selected plate}
 \format{\code{\link{OPMA}} object with the dimensions 384 x 96, i.e. a single
   plate with 384 time points and 96 wells.}
-\source{
-  Vaas LAI, Sikorski J, Michael V, Goeker M, Klenk H-P.
-  Visualization and curve parameter estimation strategies
-  for efficient exploration of Phenotype Microarray
-  kinetics. PLoS ONE 2012; in press.
-}
 \description{
   This \code{\link{OPMA}} object contains measurements from
   a single selected plate from the study by Vaas et al.
@@ -28,6 +22,11 @@ data(vaas_1)
 }
 }
 \references{
+  Vaas, L. A. I., Sikorski, J., Michael, V., Goeker, M.,
+  Klenk H.-P. 2012 Visualization and curve parameter
+  estimation strategies for efficient exploration of
+  Phenotype Microarray kinetics. \emph{PLoS ONE}, in press.
+
   \url{http://www.dsmz.de/catalogues/details/culture/DSM-30083.html}
 }
 \keyword{dataset}

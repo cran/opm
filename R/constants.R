@@ -71,15 +71,16 @@
 #'     details.}
 #' }
 #' @references \url{http://www.biolog.com/}
-#' @references Bochner BR, Gadzinski P, Panomitros E. Phenotype MicroArrays for 
-#'   high throughput phenotypic testing and assay of gene function. Genome 
-#'   Research 2001; 11: 1246-1255.
-#' @references Bochner BR. Global phenotypic characterization of bacteria. FEMS 
-#'   Microbiological Reviews 2009; 33:191-205.
+#' @references Bochner, B. R., Gadzinski, P., Panomitros, E. 2001 Phenotype
+#'   MicroArrays for high throughput phenotypic testing and assay of gene 
+#'   function. \emph{Genome Research} \strong{11}, 1246--1255.
+#' @references Bochner, B. R. 2009 Global phenotypic characterization of
+#'   bacteria. \emph{FEMS Microbiological Reviews} \strong{33}, 191--205.
 #' @references \url{http://www.dsmz.de/}
-#' @references Vaas LAI, Sikorski J, Michael V, Goeker M, Klenk H-P. 
-#'   Visualization and curve parameter estimation strategies for efficient 
-#'   exploration of Phenotype Microarray kinetics. PLoS ONE 2012; in press.
+#' @references Vaas, L. A. I., Sikorski, J., Michael, V., Goeker, M., Klenk 
+#'   H.-P. 2012 Visualization and curve parameter estimation strategies for  
+#'   efficient exploration of Phenotype Microarray kinetics. \emph{PLoS ONE},
+#'   in press.
 #' @references \url{http://www.yaml.org/}
 #~ @export
 #' @keywords package
@@ -108,6 +109,7 @@ OPMA <- "OPMA"
 OPMS <- "OPMS"
 OPMX <- "OPMX"
 YAML_VIA_LIST <- "YAML_VIA_LIST"
+MOA <- "MOA"
 SEALED <- FALSE
 
 

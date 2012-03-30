@@ -9,8 +9,8 @@
   \item{wells}{Character vector of original well names
   (coordinates on the plate).}
 
-  \item{plate_type}{Character scalar. The type of the
-  plate. See \code{\link{plate_type}}.}
+  \item{plate}{Character scalar. The type of the plate. See
+  \code{\link{plate_type}}.}
 
   \item{in.parens}{Logical scalar. See
   \code{\link{wells}}.}

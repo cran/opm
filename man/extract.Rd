@@ -76,8 +76,8 @@ x <- do.call(rbind, x)
 
   Other conversion-functions:
   \code{\link{extract_columns}}, \code{\link{flatten}},
-  \code{\link{oapply}}, \code{\link{plates}},
-  \code{\link{to_yaml}}
+  \code{\link{merge}}, \code{\link{oapply}},
+  \code{\link{plates}}, \code{\link{to_yaml}}
 }
 \keyword{dplot}
 \keyword{manip}

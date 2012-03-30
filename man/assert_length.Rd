@@ -7,7 +7,7 @@
 \arguments{
   \item{...}{Any R objects to test.}
 
-  \item{wanted}{Integer scalar giving the desired length.}
+  \item{.wanted}{Integer scalar giving the desired length.}
 }
 \value{
   The names of the arguments contained in \code{...},

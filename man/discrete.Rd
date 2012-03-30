@@ -2,16 +2,19 @@
 \alias{discrete}
 \title{Convert to discrete characters}
 \arguments{
-  \item{x}{Numeric vector or matrix.}
+  \item{x}{Numeric vector or a \code{\link{MOA}} object
+  convertible to a numeric vector.}
 
   \item{range}{In non-\code{gap} mode (see next argument)
   the assumed real range of the data; must contain all
   elements of \code{x}, but can be much wider. In
   \code{gap} mode, it must, in contrast, lie within the
   range of \code{x}. If \code{range} is set to \code{TRUE},
-  the empirical range of \code{x} is used. This makes not
-  much sense in \code{gap} mode, and a warning is issued in
-  that case.}
+  the empirical range of \code{x} is used in non-\code{gap}
+  mode. In \code{gap} mode, the range is determined using
+  \code{\link{run_kmeans}} with the number of clusters set
+  to \code{3} and then applying \code{\link{borders}} to
+  the result.}
 
   \item{gap}{Logical scalar. If \code{TRUE}, always convert
   to binary or ternary characters, ignoring \code{states}.
@@ -50,7 +53,9 @@
   case, a single integer is interpreted as the upper bound
   of an integer vector starting at 1.}
 
-  \item{...}{Arguments passed between the methods.}
+  \item{...}{Arguments passed between the methods or, if
+  requested, to \code{\link{run_kmeans}} (except
+  \code{object} and \code{k}, see there).}
 }
 \value{
   Double, integer, character or logical vector or factor,
@@ -93,20 +98,27 @@ stopifnot(identical(x, as.character(c(0, 0, 1, 1, 2))))
 x <- matrix(1:10, ncol = 2)
 (y <- discrete(x, range = c(3.4, 4.5), gap = TRUE))
 stopifnot(identical(dim(x), dim(y)))
+
+# K-means based discretization of PM data
+data(vaas_4)
+x <- extract(vaas_4, as.labels = list("Species", "Strain"),
+  in.parens = FALSE)
+head(y <- discrete(x, range = TRUE, gap = TRUE))
+stopifnot(c("0", "?", "1") \%in\% y)
 }
 \references{
-  Dougherty J, Kohavi R, Sahami M. Supervised and
+  Dougherty, J., Kohavi, R., Sahami, M. 1995 Supervised and
   unsupervised discretization of continuous features. In:
-  Prieditis A, Russell S (eds) Machine Learning:
-  Proceedings of the fifth international conference. 1995.
+  Prieditis, A., Russell, S. (eds.) \emph{Machine Learning:
+  Proceedings of the fifth international conference}.
 
-  Ventura D, Martinez TR. An empirical comparison of
-  discretization methods. Proceedings of the Tenth
+  Ventura, D., Martinez, T. R. 1995 An empirical comparison
+  of discretization methods. \emph{Proceedings of the Tenth
   International Symposium on Computer and Information
-  Sciences 1995; 443-450.
+  Sciences}, p. 443--450.
 
-  Bunuel L. Le charme discret de la bourgeoisie. 1972;
-  France/Spain, 96 min.
+  Bunuel, L. 1972 \emph{Le charme discret de la
+  bourgeoisie.} France/Spain, 96 min.
 }
 \seealso{
   base::cut
@@ -120,12 +132,12 @@ stopifnot(identical(dim(x), dim(y)))
 \docType{methods}
 \alias{discrete-methods}
 \alias{discrete,numeric-method}
-\alias{discrete,matrix-method}
+\alias{discrete,MOA-method}
 \usage{
   \S4method{discrete}{numeric}(x, range, gap = FALSE,
     output = c("character", "integer", "logical", "factor", "numeric"),
-    middle.na = TRUE, states = 32L) 
+    middle.na = TRUE, states = 32L, ...) 
 
-  \S4method{discrete}{matrix}(x, ...) 
+  \S4method{discrete}{MOA}(x, ...) 
 
 }

@@ -102,22 +102,24 @@ stopifnot(cor.test(auc.fast, auc.grofit)$estimate > 0.999)
 # components of the list returned by aggr_settings(x).
 }
 \references{
-  Brisbin IL, Collins CT, White GC and McCallum DA. A new
-  paradigm for the analysis and interpretation of growth
-  data: the shape of things to come. The Auk 1987;
-  104:552-553.
+  Brisbin, I. L., Collins, C. T., White, G. C., McCallum,
+  D. A.  1986 A new paradigm for the analysis and
+  interpretation of growth data: the shape of things to
+  come. \emph{The Auk} \strong{104}, 552--553.
 
-  Efron B. Bootstrap methods: another look at the
-  jackknife.  Annals of Statistics 1979; 7:1-26.
+  Efron, B. 1979 Bootstrap methods: another look at the
+  jackknife.  \emph{Annals of Statistics} \strong{7},
+  1--26.
 
-  Kahm M, Hasenbrink G, Lichtenberg-Frate H, Ludwig J,
-  Kschischo M. grofit: Fitting biological growth curves
-  with R. Journal of Statistical Software 2010; 33:1-21.
+  Kahm, M., Hasenbrink, G., Lichtenberg-Frate, H., Ludwig,
+  J., Kschischo, M. grofit: Fitting biological growth
+  curves with R.  \emph{Journal of Statistical Software}
+  \strong{33}, 1--21.
 
-  Vaas LAI, Sikorski J, Michael V, Goeker M, Klenk H-P.
-  Visualization and curve parameter estimation strategies
-  for efficient exploration of Phenotype Microarray
-  kinetics. PLoS ONE 2012; in press.
+  Vaas, L. A. I., Sikorski, J., Michael, V., Goeker, M.,
+  Klenk H.-P. 2012 Visualization and curve parameter
+  estimation strategies for efficient exploration of
+  Phenotype Microarray kinetics. \emph{PLoS ONE}, in press.
 }
 \seealso{
   grofit::grofit

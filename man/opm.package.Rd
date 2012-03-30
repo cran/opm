@@ -79,20 +79,21 @@
 \references{
   \url{http://www.biolog.com/}
 
-  Bochner BR, Gadzinski P, Panomitros E. Phenotype
-  MicroArrays for high throughput phenotypic testing and
-  assay of gene function. Genome Research 2001; 11:
-  1246-1255.
+  Bochner, B. R., Gadzinski, P., Panomitros, E. 2001
+  Phenotype MicroArrays for high throughput phenotypic
+  testing and assay of gene function. \emph{Genome
+  Research} \strong{11}, 1246--1255.
 
-  Bochner BR. Global phenotypic characterization of
-  bacteria. FEMS Microbiological Reviews 2009; 33:191-205.
+  Bochner, B. R. 2009 Global phenotypic characterization of
+  bacteria. \emph{FEMS Microbiological Reviews}
+  \strong{33}, 191--205.
 
   \url{http://www.dsmz.de/}
 
-  Vaas LAI, Sikorski J, Michael V, Goeker M, Klenk H-P.
-  Visualization and curve parameter estimation strategies
-  for efficient exploration of Phenotype Microarray
-  kinetics. PLoS ONE 2012; in press.
+  Vaas, L. A. I., Sikorski, J., Michael, V., Goeker, M.,
+  Klenk H.-P. 2012 Visualization and curve parameter
+  estimation strategies for efficient exploration of
+  Phenotype Microarray kinetics. \emph{PLoS ONE}, in press.
 
   \url{http://www.yaml.org/}
 }

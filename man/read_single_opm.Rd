@@ -45,7 +45,7 @@ if (length(test.files) > 0) { # if the folder is found
   class(x)
   dim(x)
   summary(x)
-  stopifnot(inherits(x, "OPM"), identical(dim(x), c(384L, 96L)))
+  stopifnot(is(x, "OPM"), identical(dim(x), c(384L, 96L)))
 }
 # this can be repeated for the other input test files
 }

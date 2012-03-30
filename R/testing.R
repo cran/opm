@@ -16,11 +16,10 @@
 #' @keywords internal
 #'
 source_location <- function() {
-  result <- attr(body(source_location), "srcfile")$filename
-  if (is.null(result))
-    result
-  else
-    path.expand(normalizePath(result))
+  result <- attr(body(match.fun(source_location)), "srcfile")$filename
+  if (length(result) == 0L)
+    return(result)
+  path.expand(normalizePath(result))
 }
 
 
@@ -31,21 +30,29 @@ source_location <- function() {
 #'
 #' Name of directory with test files. Auxiliary function.
 #'
-#' @param loc Location of source file.
+#' @param x Location of source file.
+#' @param files Character vector. Optional list of of filenames to append
+#'   to the directory name.
 #' @return Name of the directory in which the input files for testing reside.
 #' @family testing-functions
 #' @keywords internal
 #'
-test_file_dir <- function(loc) {
-  dn <- sub("/R$", "", dirname(loc), perl = TRUE)
-  if (file.exists(result <- file.path(dn, "inst", "testdata")))
-    result
-  else if (file.exists(result <- file.path(dn, "opm", "testdata")))
-    result
-  else if (file.exists(result <- file.path(dn, "opm", "inst", "testdata")))
-    result
-  else
-    file.path(dn, "testdata")
+test_file_dir <- function(x = source_location(), files = NULL) {
+  if (length(x)) {
+    x <- sub("[\\/][Rr]$", "", dirname(x), perl = TRUE)
+    x <- file.path(x, c("inst", "opm", file.path("inst", "opm"), ""), 
+      "testdata")
+  } else
+    x <- dirname(opm_files("testdata"))
+  x <- x[file.access(x, 1L) >= 0L]
+  if (length(x) == 0L)
+    return(x)
+  x <- x[1L]
+  if (length(files) == 0L)
+    return(normalizePath(x))
+  if (!all(file.access(x <- file.path(x, files), 4L) >= 0L))
+    x <- character()
+  normalizePath(x)
 }
 
 

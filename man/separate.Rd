@@ -4,20 +4,29 @@
 \arguments{
   \item{object}{Character vector to be split, or data frame
   in which character vectors (or factors) shall be
-  attempted to be split.}
+  attempted to be split, or factor.}
 
   \item{split}{Character vector or \code{TRUE}. If a
   character vector, used as container of the splitting
   characters and converted to a vector containing only
   non-duplicated single-character strings. For instance,
   the default \code{split} argument \code{".-_"} yields
-  \code{c(".", "-", "_")}. If \code{TRUE}, strings with
-  substrings representing fixed-width fields are assumed,
-  and splitting is done at whitespace-only columns.
-  Beforehand, equal-length strings are created by padding
-  with spaces at the right.  After splitting in fixed-width
-  mode, whitespace characters are trimmed from both ends of
-  the resulting strings.}
+  \code{c(".", "-", "_")}. If a vector of only empty
+  strings or \code{TRUE}, strings with substrings
+  representing fixed-width fields are assumed, and
+  splitting is done at whitespace-only columns. Beforehand,
+  equal-length strings are created by padding with spaces
+  at the right.  After splitting in fixed-width mode,
+  whitespace characters are trimmed from both ends of the
+  resulting strings.}
+
+  \item{simplify}{Logical scalar indicating whether a
+  resulting matrix with one column should be simplified to
+  a vector (or such a data frame to a factor).}
+
+  \item{keep.const}{Logical scalar indicating whether
+  constant columns should be kept or removed. Ignored if
+  only a single column is present.}
 
   \item{coerce}{Logical scalar indicating whether factors
   should be coerced to \sQuote{character} mode and then
@@ -35,7 +44,8 @@
   Character matrix, its number of rows being equal to the
   length of \code{object}, or data frame with the same
   number of rows as \code{object} but potentially more
-  columns.
+  columns. May be character vector of factor with character
+  or factor input and \code{simplify} set to \code{TRUE}.
 }
 \description{
   From a given set of splitting characters select the ones
@@ -59,10 +69,15 @@ x <- c("  abd  efgh", " ABCD EFGH ", " xyz")
 stopifnot(is.matrix(y), dim(y) == c(3, 2))
 
 # Data frame method
-x <- data.frame(a = 1:2, b = c("a-b-cc", "d-ff-g"))
+x <- data.frame(a = 1:2, b = c("a-b-cc", "a-ff-g"))
+(y <- separate(x, coerce = FALSE))
+stopifnot(identical(x, y))
 (y <- separate(x))
 stopifnot(is.data.frame(y), dim(y) == c(2, 4))
 stopifnot(sapply(y, class) == c("integer", "factor", "factor", "factor"))
+(y <- separate(x, keep.const = FALSE))
+stopifnot(is.data.frame(y), dim(y) == c(2, 3))
+stopifnot(sapply(y, class) == c("integer", "factor", "factor"))
 }
 \seealso{
   base::strsplit utils::read.fwf
@@ -75,11 +90,16 @@ stopifnot(sapply(y, class) == c("integer", "factor", "factor", "factor"))
 \docType{methods}
 \alias{separate-methods}
 \alias{separate,character-method}
+\alias{separate,factor-method}
 \alias{separate,data.frame-method}
 \usage{
-  \S4method{separate}{character}(object, split = ".-_") 
+  \S4method{separate}{character}(object, split = "/.-_", 
+    simplify = FALSE, keep.const = TRUE) 
 
-  \S4method{separate}{data.frame}(object, split = ".-_",
-    coerce = TRUE, name.sep = ".") 
+  \S4method{separate}{factor}(object, split = "/.-_",
+    simplify = FALSE, keep.const = TRUE) 
+
+  \S4method{separate}{data.frame}(object, split = "/.-_",
+    keep.const = TRUE, coerce = TRUE, name.sep = ".") 
 
 }

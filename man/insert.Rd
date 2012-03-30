@@ -8,8 +8,8 @@
 
   \item{...}{Optional other items to insert.}
 
-  \item{.force}{Logical scalar. Overwite items that are not
-  there?}
+  \item{.force}{Logical scalar. Overwite items that are
+  already there?}
 }
 \value{
   List.

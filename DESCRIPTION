@@ -1,12 +1,12 @@
 Package: opm
-Version: 0.3-3
-Date: 2012-03-30
+Version: 0.4-0
+Date: 2012-04-21
 Title: Tools for analysing OmniLog(R) Phenotype Microarray data
-Author: Markus Goeker, with contributions by Lea Vaas, Johannes
+Author: Markus Goeker, with contributions by Lea A.I. Vaas, Johannes
         Sikorski, Nora Buddruhs and Anne Fiebig
 Maintainer: Markus Goeker <markus.goeker@dsmz.de>
 Depends: R (>= 2.10.0), grofit
-Imports: methods, lattice, boot, hwriter
+Imports: methods, lattice, boot, hwriter, plotrix
 Suggests: testthat, yaml (>= 2.1.3), multicore, optparse, gplots,
         Ckmeans.1d.dp
 Description: Tools for analysing OmniLog(R) Phenotype Microarray (PM)
@@ -19,9 +19,9 @@ Description: Tools for analysing OmniLog(R) Phenotype Microarray (PM)
 License: GPL (>= 2)
 URL:
         http://www.dsmz.de/research/microorganisms/projects/analysis-of-omnilog-phenotype-microarray-data.html
-Collate: 'well-map.R' 'constants.R' 'helpers.R' 'numeric.R' 'wmd.R'
+Collate: 'well-map.R' 'constants.R' 'numeric.R' 'helpers.R' 'wmd.R'
         'opm.R' 'opma.R' 'opms.R' 'opmx.R' 'matrix.R' 'list.R' 'yaml.R'
         'io.R' 'phylo.R' 'data.R' 'testing.R'
-Packaged: 2012-03-30 19:38:43 UTC; goeker
+Packaged: 2012-04-20 22:37:00 UTC; goeker
 Repository: CRAN
-Date/Publication: 2012-03-31 05:20:05
+Date/Publication: 2012-04-21 04:11:55

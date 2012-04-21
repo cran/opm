@@ -9,7 +9,7 @@
   margins can also be \code{NA} depends on
   \code{na.action}.}
 
-  \item{col}{Character scalar. Name of the color to be
+  \item{col}{Character scalar. Name of the colour to be
   used.}
 
   \item{cex}{Numeric scalar. Magnification for CI margin

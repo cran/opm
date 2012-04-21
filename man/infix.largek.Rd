@@ -48,11 +48,19 @@ stopifnot(!c("Species", "Experiment") \%K\% vaas_1)
 
 \docType{methods}
 \alias{infix.largek-methods}
+\alias{infix.largek,list,OPMS-method}
+\alias{\%K\%,list,OPMS-method}
+\alias{infix.largek,character,OPMS-method}
+\alias{\%K\%,character,OPMS-method}
 \alias{infix.largek,character,WMD-method}
 \alias{\%K\%,character,WMD-method}
 \alias{infix.largek,list,WMD-method}
 \alias{\%K\%,list,WMD-method}
 \usage{
+  \S4method{\%K\%}{list,OPMS}(x, table) 
+
+  \S4method{\%K\%}{character,OPMS}(x, table) 
+
   \S4method{\%K\%}{character,WMD}(x, table) 
 
   \S4method{\%K\%}{list,WMD}(x, table) 

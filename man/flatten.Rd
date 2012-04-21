@@ -7,12 +7,12 @@
 
   \item{include}{\code{NULL}, character vector or list. If
   not \code{NULL}, include this meta-information in the
-  dataframe, replicated in each row.  Otherwise it
+  data frame, replicated in each row.  Otherwise it
   converted to a list and passed to \code{\link{metadata}}.
   See there for details.}
 
   \item{fixed}{\code{NULL} or list. If not \code{NULL},
-  include these items in the dataframe, replicated in each
+  include these items in the data frame, replicated in each
   row.}
 
   \item{factors}{Logical scalar. See the
@@ -41,7 +41,7 @@
   each plate's number within \code{object}.
 }
 \description{
-  Convert into \sQuote{flat} dataframe, including all
+  Convert into \sQuote{flat} data frame, including all
   measurements in a single column (suitable, e.g., for
   \pkg{lattice}).
 }
@@ -70,7 +70,7 @@ stopifnot(is.data.frame(x), identical(dim(x), c(147456L, 6L)))
   Other conversion-functions: \code{\link{extract}},
   \code{\link{extract_columns}}, \code{\link{merge}},
   \code{\link{oapply}}, \code{\link{plates}},
-  \code{\link{to_yaml}}
+  \code{\link{sort}}, \code{\link{to_yaml}}
 }
 \keyword{dplot}
 \keyword{manip}

@@ -40,7 +40,7 @@ source_location <- function() {
 test_file_dir <- function(x = source_location(), files = NULL) {
   if (length(x)) {
     x <- sub("[\\/][Rr]$", "", dirname(x), perl = TRUE)
-    x <- file.path(x, c("inst", "opm", file.path("inst", "opm"), ""), 
+    x <- file.path(x, c("inst", "opm", file.path("inst", "opm"), ""),
       "testdata")
   } else
     x <- dirname(opm_files("testdata"))

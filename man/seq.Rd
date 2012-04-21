@@ -2,8 +2,10 @@
 \alias{seq}
 \title{Sequence of plate indexes}
 \arguments{
-  \item{...}{\code{\link{OPMS}} objects. Only the first one
-  is used.}
+  \item{...}{\code{\link{OPMS}} objects. Several ones can
+  be provided, but only the first one is used. Passing
+  \code{\link{OPMS}} objects together with other objects to
+  this function makes the results uninterpretable.}
 }
 \value{
   Integer vector (starting with 1 and at least of length

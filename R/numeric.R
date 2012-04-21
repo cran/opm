@@ -1,10 +1,87 @@
 
 
+#' MOA class
+#'
+#' This is a virtual class facilitating the implementation of functionality for
+#' both matrices and arrays. Methods defined for objects from the class can be
+#' applied to either kind of object, but this class is not directly dealt with
+#' by an \pkg{opm} user.
+#'
+#' @details
+#'   \sQuote{MOA} is an acronym for \sQuote{matrix or array}.
+#'
+#' @name MOA
+#'
+#' @docType class
+#' @export
+#' @family classes
+#' @keywords methods
+#'
+NULL
+
+
+setClassUnion(MOA, c("matrix", "array"))
+
+
 ################################################################################
 ################################################################################
 #
 # Helper functions acting on numeric data
 #
+
+
+setGeneric("ranging", function(object, ...) standardGeneric("ranging"))
+#' Conduct ranging
+#'
+#' Range numbers, i.e. divide them by their maximum. In \sQuote{extended} mode,
+#' the minimum is subtracted beforehand. It is possible to replace ranging by
+#' standardization (z-scores).
+#'
+#' @param object Numeric vector or array.
+#' @param extended Logical scalar. Subtract the minimum in both numerator and
+#'   denominator of the ranging formula? If \code{zscores} is \code{TRUE}, the
+#'   meaning is different.
+#' @param zscores Logical scalar. Calculate z-scores instead of ranging? If
+#'   \code{extended} is \code{FALSE}, this is done using the mean and the
+#'   standard deviation; otherwise, the median and the MAD are used.
+#' @param na.rm Logical scalar. Remove \code{NA} values when calculating the
+#'   relevant aggregated values (minimum, maximum, mean, standard deviation,
+#'   median and/or MAD)?
+#' @param fac Numeric scalar. After conducting the proper ranging process,
+#'   \code{object} is multiplied by \code{fac}.
+#' @param ... Optional arguments passed between the methods.
+#' @export
+#' @return Numeric vector or matrix.
+#' @keywords internal
+#'
+setMethod("ranging", "numeric", function(object, extended = !zscores,
+    zscores = FALSE, na.rm = TRUE, fac = 1) {
+  assert_length(extended, zscores, na.rm)
+  result <- if (zscores) {
+    if (extended) {
+      center <- median(x, na.rm = na.rm)
+      (x - center) / mad(x, center = center, na.rm = na.rm)
+    } else
+      (x - mean(x, na.rm = na.rm)) / sd(x, na.rm = na.rm)
+  } else {
+    if (extended) {
+      min.x <- min(x, na.rm = na.rm)
+      (x - min.x) / (max(x, na.rm = na.rm) - min.x)
+    } else
+      x / max(abs(x), na.rm = na.rm)
+  }
+  must(result * fac)
+}, sealed = SEALED)
+
+
+#' @export
+#'
+setMethod("ranging", MOA, function(object, ...) {
+  map_values(object, mapping = ranging, ...)
+}, sealed = SEALED)
+
+
+################################################################################
 
 
 setGeneric("guess_cex", function(object, ...) standardGeneric("guess_cex"))
@@ -109,9 +186,10 @@ setMethod("best_range", "numeric", function(object, target,
 #' Convert an object to one of class \sQuote{kmeans}.
 #'
 #' @param x Object to be converted.
-#' @param y Original numeric vector that was used to create a 
-#'   \sQuote{Ckmeans.1d.dp} object.
-#' @param ... Optional arguments passed to and from other methods, and/or 
+#' @param y Original numeric vector that was used to create a
+#'   \sQuote{Ckmeans.1d.dp} object, or index of an element of a
+#'   \sQuote{kmeanss} object.
+#' @param ... Optional arguments passed to and from other methods, and/or
 #'   between the methods.
 #' @return Object of class \sQuote{kmeans}.
 #' @keywords manip
@@ -132,7 +210,15 @@ to_kmeans <- function(x, ...) UseMethod("to_kmeans")
 #' @export
 #'
 to_kmeans.kmeans <- function(x, ...) {
-  x  
+  x
+}
+
+#' @rdname to_kmeans
+#' @method to_kmeans kmeanss
+#' @export
+#'
+to_kmeans.kmeanss <- function(x, y, ...) {
+  x[[y]]
 }
 
 #' @rdname to_kmeans
@@ -159,7 +245,7 @@ to_kmeans.Ckmeans.1d.dp <- function(x, y, ...) {
 
 #' Calinski-Harabasz statistics
 #'
-#' Calculate or plot the Calinski-Harabasz statistics from \code{kmeans} 
+#' Calculate or plot the Calinski-Harabasz statistics from \code{kmeans}
 #' results. The result of \code{plot} is a simple scatterplot which can be
 #' modified with arguments passed to \code{plot} from the \pkg{graphics}
 #' package.
@@ -170,20 +256,19 @@ to_kmeans.Ckmeans.1d.dp <- function(x, y, ...) {
 #'   package.
 #' @param ylab Character scalar passed to \code{plot}.
 #' @inheritParams to_kmeans
-#' @return \code{calinksi} returns a numeric vector with one element per 
-#'   \sQuote{kmeans} object. \code{plot} returns it invisibly. Its 
-#'   \sQuote{names} attribute indicates the original numbers of clusters 
+#' @return \code{calinksi} returns a numeric vector with one element per
+#'   \sQuote{kmeans} object. \code{plot} returns it invisibly. Its
+#'   \sQuote{names} attribute indicates the original numbers of clusters
 #'   requested.
 #' @keywords hplot cluster
 #' @family kmeans-functions
 #' @export
-#' @examples 
+#' @examples
 #' data(vaas_4)
 #' x <- as.vector(extract(vaas_4, as.labels = NULL, subset = "A"))
 #' x.km <- run_kmeans(x, k = 1:10)
 #' # the usual arguments of plot() are available
-#' y <- plot(x.km, col = "blue", pch = 19)
-#' show(y)
+#' show(y <- plot(x.km, col = "blue", pch = 19))
 #' stopifnot(is.numeric(y), names(y) == 1:10)
 #'
 calinski <- function(x, ...) UseMethod("calinski")
@@ -221,7 +306,7 @@ calinski.kmeanss <- function(x, ...) {
 #' @method plot kmeanss
 #' @export
 #'
-plot.kmeanss <- function(x, xlab = "Number of clusters", 
+plot.kmeanss <- function(x, xlab = "Number of clusters",
     ylab = "Calinski-Harabasz statistics", ...) {
   x <- as.numeric(names(y <- calinski(x)))
   graphics::plot(x, y, xlab = xlab, ylab = ylab, ...)
@@ -234,23 +319,23 @@ plot.kmeanss <- function(x, xlab = "Number of clusters",
 
 #' Cluster borders
 #'
-#' Determine the borders between clusters of one-dimensional data. They are 
+#' Determine the borders between clusters of one-dimensional data. They are
 #' calculated as the mean of the maximum of the cluster with the lower values
 #' and the minimum of the neighboring cluster with the higher values. The
-#' \code{hist} method plots a histogram of one-dimensional data subjected to 
+#' \code{hist} method plots a histogram of one-dimensional data subjected to
 #' k-means partitioning in which these borders can be drawn.
 #'
-#' @param x Object of class \sQuote{kmeans}, \sQuote{Ckmeans.1d.dp} or 
+#' @param x Object of class \sQuote{kmeans}, \sQuote{Ckmeans.1d.dp} or
 #'   \sQuote{kmeanss}.
 #' @param y Vector of original data subjected to clustering. Automatically
 #'   determined for the \sQuote{kmeanss} methods.
-#' @param k Numeric vector or \code{NULL}. If non-empty, it indicates 
-#'   the number of groups (previously used as input for \code{kmeans}) for 
-#'   which vertical lines should be drawn in the plot that represent the 
+#' @param k Numeric vector or \code{NULL}. If non-empty, it indicates
+#'   the number of groups (previously used as input for \code{kmeans}) for
+#'   which vertical lines should be drawn in the plot that represent the
 #'   cluster borders. If empty, the smallest non-trivial number of clusters is
 #'   chosen.
-#' @param col Graphical parameter assed to \code{abline}. If several values of
-#'   \code{k} are given, recycled as necessary.
+#' @param col Graphical parameter passed to \code{abline}. If several values of
+#'   \code{k} are given, \code{col} is recycled as necessary.
 #' @param lwd Like \code{col}.
 #' @param lty Like \code{col}.
 #' @param main Passed to \code{hist.default}.
@@ -267,7 +352,7 @@ plot.kmeanss <- function(x, xlab = "Number of clusters",
 #'   might preferable in most cases because they contain a copy of the input
 #'   data.
 #' @seealso graphics::hist graphics::abline
-#' @examples 
+#' @examples
 #'
 #' data(vaas_4)
 #' x <- as.vector(extract(vaas_4, as.labels = NULL, subset = "A"))
@@ -319,7 +404,7 @@ borders.kmeanss <- function(x, ...) {
 #' @method hist kmeans
 #' @export
 #'
-hist.kmeans <- function(x, y, col = "black", lwd = 1L, lty = 1L, main = NULL, 
+hist.kmeans <- function(x, y, col = "black", lwd = 1L, lty = 1L, main = NULL,
     xlab = "Clustered values", ...) {
   b <- borders(x, y)
   result <- hist(y, main = main, xlab = xlab, ...)
@@ -339,7 +424,7 @@ hist.Ckmeans.1d.dp <- function(x, y, ...) {
 #' @method hist kmeanss
 #' @export
 #'
-hist.kmeanss <- function(x, k = NULL, col = "black", lwd = 1L, lty = 1L, 
+hist.kmeanss <- function(x, k = NULL, col = "black", lwd = 1L, lty = 1L,
     main = NULL, xlab = "Clustered values", ...) {
   smallest_k <- function(x) {
     y <- (y <- as.integer(names(x)))[y > 1L]
@@ -378,7 +463,7 @@ setGeneric("run_kmeans",
 #'
 #' @param object Numeric vector.
 #' @param k Numeric vector. Number of clusters requested.
-#' @param program Character scalar. The underlying clustering program to use. 
+#' @param program Character scalar. The underlying clustering program to use.
 #'   \sQuote{Ckmeans.1d.dp} is recommended because it exactly solves the
 #'   k-means optimization problem for one-dimensional data, but it requires the
 #'   installation of the eponymous package.
@@ -396,18 +481,18 @@ setGeneric("run_kmeans",
 #' stopifnot(inherits(x.km, "kmeanss"), length(x.km) == 10)
 #' stopifnot(sapply(x.km, class) == "kmeans", names(x.km) == 1:10)
 #'
-setMethod("run_kmeans", "numeric", function(object, k, 
+setMethod("run_kmeans", "numeric", function(object, k,
     program = c("Ckmeans.1d.dp", "kmeans"), kmeans.args = list()) {
   improve_k <- function(x) {
-     vector_centers <- function(n) {
-       n <- 2L * n
-       n <- seq.int(1L, n - 1L, 2L) / n
-       quantile(object, n, names = FALSE)
-     }
-     y <- as.list(x)
-     y[large] <- lapply(y[large <- x > 1L], vector_centers)
-     names(y) <- names(x)
-     y
+    vector_centers <- function(n) {
+      n <- 2L * n
+      n <- seq.int(1L, n - 1L, 2L) / n
+      quantile(object, n, names = FALSE)
+    }
+    y <- as.list(x)
+    y[large] <- lapply(y[large <- x > 1L], vector_centers)
+    names(y) <- names(x)
+    y
   }
   k <- unique(must(as.integer(k)))
   if (length(k) < 1L || any(k) < 1L)
@@ -430,9 +515,9 @@ setMethod("run_kmeans", "numeric", function(object, k,
       result <- sapply(k, Ckmeans.1d.dp::Ckmeans.1d.dp, x = object,
         simplify = FALSE)
       result <- lapply(result, to_kmeans, y = object)
-    },   
+    },
     stop(BUG_MSG)
-  )        
+  )
   class(result) <- "kmeanss"
   attr(result, "input") <- object
   result

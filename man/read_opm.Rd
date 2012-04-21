@@ -21,13 +21,13 @@
   depending on the number of files read (0, 1, or more).
   \sQuote{try} behaves like \sQuote{yes} but does not
   result in an error message if conversion to OPMS is
-  impossible; a list is returned in that case.
-  \sQuote{sep} returns a nested list, each sublist
-  containing \code{\link{OPM}} objects of the same plate
-  type. \sQuote{grp} also splits into such sublists but
-  converts them to \code{\link{OPMS}} objects if more than
-  one plate is encountered. An error is raised if this is
-  impossible (in contrast to \sQuote{try}).}
+  impossible; a list is returned in that case. \sQuote{sep}
+  returns a nested list, each sublist containing
+  \code{\link{OPM}} objects of the same plate type.
+  \sQuote{grp} also splits into such sublists but converts
+  them to \code{\link{OPMS}} objects if more than one plate
+  is encountered. An error is raised if this is impossible
+  (in contrast to \sQuote{try}).}
 
   \item{gen.iii}{Logical scalar. If \code{TRUE}, invoke
   \code{\link{gen_iii}} on each plate. This is

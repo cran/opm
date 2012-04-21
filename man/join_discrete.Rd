@@ -2,13 +2,15 @@
 \alias{join_discrete}
 \title{Join phylogenetic characters}
 \arguments{
-  \item{object}{Character vector or convertible to such, or
-  matrix.}
+  \item{object}{Character or numeric vector or matrix.}
 
   \item{format}{Character scalar.}
 
   \item{groups}{Character vector or factor, determining
   which rows should be joined.}
+
+  \item{digits}{Number of digits used for rounding. Has an
+  effect only for numeric data.}
 }
 \value{
   Character scalar, for the matrix method a vector.
@@ -23,12 +25,15 @@
 
 \docType{methods}
 \alias{join_discrete-methods}
-\alias{join_discrete,ANY-method}
+\alias{join_discrete,character-method}
+\alias{join_discrete,numeric-method}
 \alias{join_discrete,matrix-method}
 \usage{
-  \S4method{join_discrete}{ANY}(object, format) 
+  \S4method{join_discrete}{character}(object, format, digits = 3L) 
 
-  \S4method{join_discrete}{matrix}(object, format, 
-    groups = rownames(object)) 
+  \S4method{join_discrete}{numeric}(object, format, digits = 3L) 
+
+  \S4method{join_discrete}{matrix}(object, format,
+    groups = TRUE, digits = 3L) 
 
 }

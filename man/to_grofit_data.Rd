@@ -10,7 +10,7 @@
   each well.
 }
 \description{
-  Construct dataframe with measurements as required by
+  Construct data frame with measurements as required by
   \code{grofit}.
 }
 \keyword{internal}

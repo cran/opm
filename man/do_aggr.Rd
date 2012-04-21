@@ -43,6 +43,9 @@
   aggregated values are returned (as a matrix, for details
   see below). Otherwise they are integrated in an
   \code{\link{OPMA}} object together with \code{object}.}
+
+  \item{...}{Optional arguments passed between the
+  methods.}
 }
 \value{
   If \code{plain} is \code{FALSE}, an \code{\link{OPMA}}
@@ -61,6 +64,19 @@
   include the aggregated values in a novel
   \code{\link{OPMA}} object together with previously
   collected information.
+}
+\note{
+  \itemize{ \item The \sQuote{OPMS} method just applies the
+  \sQuote{OPM} method to each contained plate in turn;
+  there are not interdependencies.  \item Examples with
+  \code{plain = TRUE} are not given, as only the return
+  value is different: Let x be the normal result of
+  \code{do_aggr()}. The matrix returned if \code{plain} is
+  \code{TRUE} could then be received using
+  \code{aggregated(x)}, whereas the \sQuote{program} and
+  the \sQuote{settings} attributes could be obtained as
+  components of the list returned by
+  \code{aggr_settings(x)}. }
 }
 \examples{
 data(vaas_1)
@@ -94,12 +110,6 @@ stopifnot(cor.test(auc.fast, auc.grofit)$estimate > 0.999)
   aggr_settings(x)
   aggregated(x)
 }
-
-# Examples with plain = TRUE are not given, as only the return value is
-# different: Let x be the normal result of do_aggr(). The matrix returned if
-# 'plain' is TRUE could then be received using aggregated(x), whereas
-# the 'program' and the 'settings' attributes could be obtained as
-# components of the list returned by aggr_settings(x).
 }
 \references{
   Brisbin, I. L., Collins, C. T., White, G. C., McCallum,
@@ -119,7 +129,8 @@ stopifnot(cor.test(auc.fast, auc.grofit)$estimate > 0.999)
   Vaas, L. A. I., Sikorski, J., Michael, V., Goeker, M.,
   Klenk H.-P. 2012 Visualization and curve parameter
   estimation strategies for efficient exploration of
-  Phenotype Microarray kinetics. \emph{PLoS ONE}, in press.
+  Phenotype Microarray kinetics. \emph{PLoS ONE}
+  \strong{7}, e34846.
 }
 \seealso{
   grofit::grofit
@@ -133,8 +144,11 @@ stopifnot(cor.test(auc.fast, auc.grofit)$estimate > 0.999)
 \docType{methods}
 \alias{do_aggr-methods}
 \alias{do_aggr,OPM-method}
+\alias{do_aggr,OPMS-method}
 \usage{
   \S4method{do_aggr}{OPM}(object, boot = 100L, verbose = FALSE,
     cores = 1L, options = list(), program = "grofit", plain = FALSE) 
+
+  \S4method{do_aggr}{OPMS}(object, ...) 
 
 }

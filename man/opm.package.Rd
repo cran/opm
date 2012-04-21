@@ -24,42 +24,38 @@
   contain aggregated values (OPMA), and whether they
   contain more than a single plate (OPMS). Note that
   objects of the class OPMS may also contain aggregated
-  values.} \item{input}{Most \pkg{opm} users will start
-  with data input using either
+  values.} \item{methods}{The class \code{\link{OPMA}}
+  inherits from the class \code{\link{OPM}} and, hence, has
+  all its methods, even though they are not listed as
+  \code{\link{OPMA}} methods. \code{\link{OPM}} itself
+  inherits from \code{\link{WMD}} and has all its methods.
+  Objects of the \code{\link{OPMS}} class act as containers
+  for \code{\link{OPM}} and/or \code{\link{OPMA}} objects,
+  and its methods usually traverse the contained objects in
+  some manner.} \item{input}{Most \pkg{opm} users will
+  start with data input using either
   \code{\link{read_single_opm}} or \code{\link{read_opm}},
   which create the appropriate objects. OmniLog(R)
   phenotype microarray data are structured in
   \strong{plates}. Each plate has 12 x 8 \strong{well}
   layout, and each well contains the respiration
   measurements on one substrate or inhibitor, or
-  combination of substrates or inhibitors.}
-  \item{undocumented methods}{Some \code{\link{OPMS}}
-  methods with the same use as the eponymous
-  \code{\link{OPM}} method are only briefly listed in the
-  documentation of the \code{\link{OPMS}} class.
-  \code{\link{OPMA}} inherits from \code{\link{OPM}} and
-  has all its methods, even though they are not listed as
-  \code{\link{OPMA}} methods. \code{\link{OPM}} itself
-  inherits from \code{\link{WMD}} and has all its methods.
-  Objects of the \code{\link{OPMS}} class act as containers
-  for \code{\link{OPM}} and/or \code{\link{OPMA}} objects,
-  and its methods usually traverse the contained objects in
-  some manner.} \item{coercion functions}{Coercion
-  functions for the three classes are only briefly listed
-  under each class documentation entry. For details, see
-  the documentation of \code{as} from the \pkg{methods}
-  package.} \item{scalars}{This documentation uses the term
-  \sQuote{scalar} for single-element vectors, even though
-  technically these are, well, vectors.} \item{YAML}{Input
-  and output of YAML files needs the \pkg{yaml} package.
-  Because this package is not required for the installation
-  of \pkg{opm}, warnings or error messages will not occur
-  before any of the YAML-dependent functions are called. We
-  recommend installing one of the newer versions of
-  \pkg{yaml} (>= v2.1.3) which are based on libyaml as
-  parser instead of Syck, are faster and contain some bug
-  fixes. The YAML-related functions of \pkg{opm} are
-  \code{\link{to_yaml}} and
+  combination of substrates or inhibitors.} \item{coercion
+  functions}{Coercion functions for the three classes are
+  only briefly listed under each class documentation entry.
+  For details, see the documentation of \code{as} from the
+  \pkg{methods} package.} \item{scalars}{This documentation
+  uses the term \sQuote{scalar} for single-element vectors,
+  even though technically these are, well, vectors.}
+  \item{YAML}{Input and output of YAML files needs the
+  \pkg{yaml} package.  Because this package is not required
+  for the installation of \pkg{opm}, warnings or error
+  messages will not occur before any of the YAML-dependent
+  functions are called. We recommend installing one of the
+  newer versions of \pkg{yaml} (>= v2.1.3) which are based
+  on libyaml as parser instead of Syck, are faster and
+  contain some bug fixes. The YAML-related functions of
+  \pkg{opm} are \code{\link{to_yaml}} and
   \code{\link{batch_opm_to_yaml}}.} \item{running
   time}{Computations on such high-dimensional data may take
   some time. The limiting steps are aggregating
@@ -88,12 +84,15 @@
   bacteria. \emph{FEMS Microbiological Reviews}
   \strong{33}, 191--205.
 
-  \url{http://www.dsmz.de/}
+  \url{
+  http://www.dsmz.de/research/microorganisms/projects/analysis-of-omnilog-phenotype-microarray-data.html
+  }
 
   Vaas, L. A. I., Sikorski, J., Michael, V., Goeker, M.,
   Klenk H.-P. 2012 Visualization and curve parameter
   estimation strategies for efficient exploration of
-  Phenotype Microarray kinetics. \emph{PLoS ONE}, in press.
+  Phenotype Microarray kinetics. \emph{PLoS ONE}
+  \strong{7}, e34846.
 
   \url{http://www.yaml.org/}
 }

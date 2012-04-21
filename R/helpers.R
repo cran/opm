@@ -16,7 +16,7 @@
 #'
 #' @param ... Any R objects to test.
 #' @param .wanted Integer scalar giving the desired length.
-#' @return The names of the arguments contained in \code{...}, returned 
+#' @return The names of the arguments contained in \code{...}, returned
 #'   invisibly.
 #' @keywords internal
 #'
@@ -28,6 +28,7 @@ assert_length <- function(..., .wanted = 1L) {
   }, items, arg.names, SIMPLIFY = FALSE, USE.NAMES = FALSE)
   invisible(arg.names)
 }
+
 
 ################################################################################
 
@@ -44,6 +45,28 @@ assert_length <- function(..., .wanted = 1L) {
 #'
 must <- function(expr, ...) {
   tryCatch(expr = expr, warning = function(w) stop(w$message), ...)
+}
+
+
+################################################################################
+
+
+## NOTE: not an S4 method because applicable to any subsettable objects
+
+#' Fetch the last elements
+#'
+#' Fetch the last element(s) from a subsettable objject.
+#'
+#' @param x An R object to which \code{[} can be applied.
+#' @param i Integer scalar. Number of elements to fetch.
+#' @return Object of the same class than \code{x}.
+#' @keywords internal
+#'
+last <- function(x, i = 1L) {
+  assert_length(i)
+  if ((len <- length(x)) < i)
+    stop("more elements requested than available")
+  x[seq.int(len - i + 1L, len)]
 }
 
 
@@ -75,25 +98,52 @@ is_uniform <- function(x, na.rm = FALSE) {
 ################################################################################
 
 
-## NOTE: not an S4 method because applicable to any objects
-
+setGeneric("is_constant", function(x, ...) standardGeneric("is_constant"))
 #' Check for constantness.
 #'
-#' Assess whether all elements in a collection are identical.
+#' Assess whether all elements in a collection are identical. This uses
+#' \code{duplicated} by default, but there is also an \sQuote{extended} mode
+#' for list-like objects.
 #'
 #' @param x An R object to which \code{duplicated} can be applied.
+#' @param set.like Logical scalar. Consider objects as identical if there 
+#'   intersection is non-empty?
 #' @param na.rm Logical scalar. Remove \code{NA} elements before determining
 #'   constantness?
 #' @return Logical scalar.
 #' @keywords internal
 #'
-is_constant <- function(x, na.rm = TRUE) {
+setMethod("is_constant", "vector", function(x, na.rm = TRUE) {
   if (na.rm)
     x <- na.exclude(x)
   length(x) < 2L || all(duplicated(x)[-1L])
-}
+}, sealed = SEALED)
 
+setMethod("is_constant", "list", function(x, set.like = FALSE, na.rm = TRUE) {
+  if (na.rm)
+    x <- lapply(x, na.exclude)
+  dup_fun <- if (set.like)
+    function(x) {
+      for (i in seq_along(x)[-1L]) {
+        v1 <- x[[i]]
+        for (j in seq.int(1L, i - 1L))
+          if (length(intersect(v1, x[[j]])) == 0L)
+            return(FALSE)
+      }
+      TRUE
+    }
+  else
+    function(x) all(duplicated(x)[-1L])
+  length(x) < 2L || dup_fun(x)
+}, sealed = SEALED)
+  
+setMethod("is_constant", "MOA", function(x, margin = 1L, na.rm = TRUE) {
+  if (margin == 0L)
+    return(is_constant(as.vector(x), na.rm = na.rm))
+  apply(X = x, MARGIN = margin, FUN = is_constant, na.rm = na.rm)
+}, sealed = SEALED)
 
+          
 ################################################################################
 
 
@@ -102,12 +152,12 @@ is_constant <- function(x, na.rm = TRUE) {
 #' Nicer message listings
 #'
 #' Create a nice-looking message listing. This is not normally directly called
-#' by an \pkg{opm} user but by, e.g., the scripts accompanying the package; see 
+#' by an \pkg{opm} user but by, e.g., the scripts accompanying the package; see
 #' \code{\link{opm_files}} for details.
 #'
 #' @param x Object convertible via \code{unlist} to a vector. Afterwards its
 #'   \sQuote{names} attribute is used as the first column of the resulting
-#'   listing; if it is \code{NULL} or if \code{force.numbers} is \code{TRUE}, 
+#'   listing; if it is \code{NULL} or if \code{force.numbers} is \code{TRUE},
 #'   numbers are inserted.
 #' @param header \code{NULL} or character vector. Prepended to the result.
 #' @param footer \code{NULL} or character vector. Appended to the result.
@@ -116,11 +166,11 @@ is_constant <- function(x, na.rm = TRUE) {
 #'   number of spaces. Otherwise converted to \sQuote{character} mode and used
 #'   directly.
 #' @param collapse Character scalar. How to join the resulting vector elements.
-#' @param style Character scalar. If \sQuote{table} or \sQuote{list}, passed 
+#' @param style Character scalar. If \sQuote{table} or \sQuote{list}, passed
 #'   to \code{formatDL}. Otherwise, a pattern for \code{sprintf} is assumed
 #'   taking two arguments, the names of \code{x} and the values \code{x} (after
 #'   conversion with \code{unlist}).
-#' @param force.numbers Logical scalar. Always use numbers instead of the 
+#' @param force.numbers Logical scalar. Always use numbers instead of the
 #'   \sQuote{names} attribute?
 #' @param digits Numeric scalar. Ignored unless \code{x} is numeric.
 #' @param ... Optional other arguments passed to \code{formatDL}.
@@ -132,11 +182,11 @@ is_constant <- function(x, na.rm = TRUE) {
 #'
 #' x <- letters[1:5]
 #' names(x) <- LETTERS[1:5]
-#' message(y <- listing(x, header = "Five letters:", footer = "...end here", 
+#' message(y <- listing(x, header = "Five letters:", footer = "...end here",
 #'   begin = 3))
 #' stopifnot(is.character(y), length(y) == 1)
 #'
-#' x <- c("CTMT", "Chryseobacterium soli DSM 19298T", 
+#' x <- c("CTMT", "Chryseobacterium soli DSM 19298T",
 #'   "Chryseobacterium soldanellicola DSM 17072T")
 #' message(y <- listing(x, style = "%s, %s", collapse = "; "))
 #' stopifnot(is.character(y), length(y) == 1)
@@ -175,23 +225,23 @@ setGeneric("separate", function(object, ...) standardGeneric("separate"))
 #' From a given set of splitting characters select the ones that split a
 #' character vector in a regular way, yielding the same number of parts for all
 #' vector elements. Then apply these splitting characters to create a matrix.
-#' The data frame method applies this to all character vectors (and 
+#' The data frame method applies this to all character vectors (and
 #' optionally also all factors) within a data frame.
 #'
 #' @param object Character vector to be split, or data frame in which character
 #'   vectors (or factors) shall be attempted to be split, or factor.
 #' @param split Character vector or \code{TRUE}. If a character vector, used as
-#'   container of the splitting characters and converted to a vector containing 
-#'   only non-duplicated single-character strings. For instance, the default 
+#'   container of the splitting characters and converted to a vector containing
+#'   only non-duplicated single-character strings. For instance, the default
 #'   \code{split} argument \code{".-_"} yields \code{c(".", "-", "_")}. If
 #'   a vector of only empty strings or
-#'   \code{TRUE}, strings with substrings representing fixed-width fields are 
+#'   \code{TRUE}, strings with substrings representing fixed-width fields are
 #'   assumed, and splitting is done at whitespace-only columns. Beforehand,
 #'   equal-length strings are created by padding with spaces at the right.
-#'   After splitting in fixed-width mode, whitespace characters are trimmed 
+#'   After splitting in fixed-width mode, whitespace characters are trimmed
 #'   from both ends of the resulting strings.
 #' @param simplify Logical scalar indicating whether a resulting matrix with
-#'   one column should be simplified to a vector (or such a data frame to a 
+#'   one column should be simplified to a vector (or such a data frame to a
 #'   factor).
 #' @param keep.const Logical scalar indicating whether constant columns
 #'   should be kept or removed. Ignored if only a single column is present.
@@ -225,6 +275,11 @@ setGeneric("separate", function(object, ...) standardGeneric("separate"))
 #' (y <- separate(x, TRUE))
 #' stopifnot(is.matrix(y), dim(y) == c(3, 2))
 #'
+#' # Applied to factors
+#' xx <- as.factor(x)
+#' (yy <- separate(xx, TRUE))
+#' stopifnot(identical(yy, as.data.frame(y)))
+#'
 #' # Data frame method
 #' x <- data.frame(a = 1:2, b = c("a-b-cc", "a-ff-g"))
 #' (y <- separate(x, coerce = FALSE))
@@ -236,13 +291,13 @@ setGeneric("separate", function(object, ...) standardGeneric("separate"))
 #' stopifnot(is.data.frame(y), dim(y) == c(2, 3))
 #' stopifnot(sapply(y, class) == c("integer", "factor", "factor"))
 #'
-setMethod("separate", "character", function(object, split = "/.-_", 
+setMethod("separate", "character", function(object, split = "/.-_",
     simplify = FALSE, keep.const = TRUE) {
   simple_if <- function(x) {
     assert_length(simplify, keep.const)
     if (is.matrix(x)) {
       if (!keep.const && ncol(x) > 1L) {
-        if (all(const <- apply(x, 2L, is_constant)))
+        if (all(const <- is_constant(x, 2L)))
           x <- x[, 1L, drop = FALSE]
         else
           x <- x[, !const, drop = FALSE]
@@ -290,7 +345,7 @@ setMethod("separate", "character", function(object, split = "/.-_",
 setMethod("separate", "factor", function(object, split = "/.-_",
     simplify = FALSE, keep.const = TRUE) {
   assert_length(simplify)
-  result <- separate(as.character(object), split = split, 
+  result <- separate(as.character(object), split = split,
     keep.const = keep.const, simplify = FALSE)
   if (simplify && ncol(result) == 1L)
     as.factor(result[, 1L])
@@ -305,10 +360,10 @@ setMethod("separate", "data.frame", function(object, split = "/.-_",
   assert_length(coerce, name.sep)
   do.call(cbind, mapply(function(x, name) {
     result <- if (is.character(x))
-      as.data.frame(separate(x, split = split, keep.const = keep.const, 
+      as.data.frame(separate(x, split = split, keep.const = keep.const,
         simplify = FALSE), stringsAsFactors = FALSE)
     else if (coerce && is.factor(x))
-      separate(x, split = split, keep.const = keep.const, 
+      separate(x, split = split, keep.const = keep.const,
         simplify = FALSE)
     else
       as.data.frame(x)
@@ -337,22 +392,22 @@ setGeneric("glob_to_regex", function(x, ...) standardGeneric("glob_to_regex"))
 #' @family auxiliary-functions
 #' @keywords character
 #' @seealso utils::glob2rx base::regex
-#' @note This is not normally directly called by an \pkg{opm} user because 
+#' @note This is not normally directly called by an \pkg{opm} user because
 #'   particularly \code{\link{explode_dir}} and the IO functions calling that
 #'   function internally use \code{glob_to_regex} anyway.
 #' @details The here used globbing search patterns contain only two special
 #'   characters, \sQuote{?} and \sQuote{*}, and are thus more easy to master
 #'   than regular expressions. \sQuote{?} matches a single arbitrary character,
-#'   whereas \sQuote{*} matches zero to an arbitrary number of arbitrary 
+#'   whereas \sQuote{*} matches zero to an arbitrary number of arbitrary
 #'   characters. Some examples:
 #'   \describe{
 #'     \item{a?c}{Matches \sQuote{abc}, \sQuote{axc}, \sQuote{a c} etc. but not
 #'       \sQuote{abbc}, \sQuote{abbbc}, \sQuote{ac} etc.}
 #'     \item{a*c}{Matches \sQuote{abc}, \sQuote{abbc}, \sQuote{ac} etc. but not
 #'       \sQuote{abd} etc.}
-#'     \item{ab*}{Matches \sQuote{abc}, \sQuote{abcdefg}, \sQuote{abXYZ} etc. 
+#'     \item{ab*}{Matches \sQuote{abc}, \sQuote{abcdefg}, \sQuote{abXYZ} etc.
 #'       but not \sQuote{acdefg} etc.}
-#'     \item{?bc}{Matches \sQuote{abc}, \sQuote{Xbc}, \sQuote{ bc} etc. 
+#'     \item{?bc}{Matches \sQuote{abc}, \sQuote{Xbc}, \sQuote{ bc} etc.
 #'       but not \sQuote{aabc}, \sQuote{abbc}, \sQuote{bc} etc.}
 #'   }
 #'   Despite their simplicity, globbing patterns are often sufficient for
@@ -389,12 +444,12 @@ setMethod("glob_to_regex", "character", function(x) {
 #'   trimmed, for indicating just that.
 #' @param clean Logical scalar. If \code{TRUE}, clean trimmed end from non-word
 #'   characters, and return empty string if only \code{append} remains.
-#' @param word.wise Logical scalar. If \code{TRUE}, abbreviate words 
+#' @param word.wise Logical scalar. If \code{TRUE}, abbreviate words
 #'   separately, deleting vowels first.
 #' @return Character vector.
 #' @keywords internal
 #'
-trim_string <- function(str, max, append = ".", clean = TRUE, 
+trim_string <- function(str, max, append = ".", clean = TRUE,
     word.wise = FALSE) {
   do_trim <- function(x) {
     trim.len <- max(0L, max - nchar(append))
@@ -429,7 +484,7 @@ trim_string <- function(str, max, append = ".", clean = TRUE,
 #'
 #' @inheritParams trim_string
 #' @param str.1 Character vector or convertible to such.
-#' @param str.2 Character vector or convertible to such, to be added in 
+#' @param str.2 Character vector or convertible to such, to be added in
 #'   parentheses. Trimming only affects \code{str.2}, and not the parentheses.
 #' @param brackets Logical scalar. Should brackets instead of parentheses be
 #'   used?
@@ -442,7 +497,7 @@ trim_string <- function(str, max, append = ".", clean = TRUE,
 add_in_parens <- function(str.1, str.2, max = 1000L, append = ".",
     clean = TRUE, brackets = FALSE, word.wise = FALSE, paren.sep = " ") {
   max <- max - nchar(str.1) - 3L
-  str.2 <- trim_string(str.2, max, append = append, clean = clean, 
+  str.2 <- trim_string(str.2, max, append = append, clean = clean,
     word.wise = word.wise)
   if (brackets) {
     template <- "%s%s[%s]"
@@ -474,7 +529,7 @@ add_in_parens <- function(str.1, str.2, max = 1000L, append = ".",
 #' @param ci Logical scalar. Also return CI names?
 #' @param plain Logical scalar. Return the plain basenames only, ignoring
 #'   \code{subset} and \code{ci}?
-#' @param opm.fast Logical scalar. Produce the mapping gfor the 
+#' @param opm.fast Logical scalar. Produce the mapping gfor the
 #'   \sQuote{opm-fast} method instead?
 #' @return Named list with old names as keys, new ones as values.
 #' @keywords internal
@@ -498,7 +553,7 @@ map_grofit_names <- function(subset = NULL, ci = TRUE, plain = FALSE,
     if (opm.fast) {
       names(part.2) <- sprintf("%s.ci.low", names(part.1))
       names(part.3) <- sprintf("%s.ci.high", names(part.1))
-    } else { 
+    } else {
       names(part.2) <- sprintf("ci95.%s.bt.lo", names(part.1))
       names(part.3) <- sprintf("ci95.%s.bt.up", names(part.1))
     }
@@ -534,7 +589,7 @@ map_grofit_names <- function(subset = NULL, ci = TRUE, plain = FALSE,
 #' stopifnot(identical(unique(x), x))
 #'
 param_names <- function() {
-  CURVE_PARAMS  
+  CURVE_PARAMS
 }
 
 
@@ -557,7 +612,7 @@ param_names <- function() {
 #' @keywords utilities character
 #' @seealso base::gsub
 #' @examples
-#' # Entirely unrecognized strings are returned as-is 
+#' # Entirely unrecognized strings are returned as-is
 #' x <- normalize_plate_name(letters)
 #' stopifnot(identical(x, letters))
 #'
@@ -571,7 +626,7 @@ normalize_plate_name <- function(plate, subtype = FALSE) {
     repl <- if (subtype)
       "-\\1"
     else
-      ""  
+      ""
     x <- sub("([A-Z]+)$", repl, x, perl = TRUE)
     sub("([^\\d])(\\d)([^\\d]|$)", "\\10\\2\\3", x, perl = TRUE)
   }
@@ -590,7 +645,7 @@ normalize_plate_name <- function(plate, subtype = FALSE) {
 
 #' Map well names to substrates
 #'
-#' Translate well names (which are basically their coordinates on the plate) to 
+#' Translate well names (which are basically their coordinates on the plate) to
 #' substrate names, given the name of the plate.
 #'
 #' @param wells Character vector of original well names (coordinates on the
@@ -600,7 +655,7 @@ normalize_plate_name <- function(plate, subtype = FALSE) {
 #' @param in.parens Logical scalar. See \code{\link{wells}}.
 #' @param brackets Logical scalar. See \code{\link{wells}}.
 #' @param paren.sep Character scalar. See \code{\link{wells}}.
-#' @param ... Arguments that can be passed to both 
+#' @param ... Arguments that can be passed to both
 #'   \code{\link{add_in_parens}} and \code{\link{trim_string}}.
 #' @return Character vector.
 #' @keywords internal
@@ -625,10 +680,10 @@ map_well_names <- function(wells, plate, in.parens = FALSE, brackets = FALSE,
 
 
 ## NOTE: not an S4 method because conversion is done
-  
+
 #' Map well names to substrates
 #'
-#' Translate well names (which are basically their coordinates on the plate) to 
+#' Translate well names (which are basically their coordinates on the plate) to
 #' substrate names, given the name of the plate.
 #'
 #' @param plate Character vector. The type(s) of the plate(s). See
@@ -651,7 +706,7 @@ well_to_substrate <- function(plate, well = 1L:96L) {
   pos <- pmatch(normalize_plate_name(plate), colnames(WELL_MAP))
   found <- !is.na(pos)
   result <- WELL_MAP[well, pos[found], drop = FALSE]
-  others <- matrix(data = NA_character_, nrow = length(well), 
+  others <- matrix(data = NA_character_, nrow = length(well),
     ncol = length(plate[!found]), dimnames = list(well, plate[!found]))
   cbind(result, others)[]
 }
@@ -678,14 +733,14 @@ setGeneric("find_substrate", function(x, ...) standardGeneric("find_substrate"))
 #' @param max.dev Numeric scalar indicating the maximum allowed deviation. If
 #'   < 1, the proportion of characters that might deviate, otherwise their
 #'   absolute number. It can also be a list; see the \sQuote{max.distance}
-#'   argument of \code{agrep} in the \pkg{base} package for details. Has an 
-#'   effect only if \sQuote{approx} is chosen as search mode (see the 
+#'   argument of \code{agrep} in the \pkg{base} package for details. Has an
+#'   effect only if \sQuote{approx} is chosen as search mode (see the
 #'   \code{search} argument).
 #' @export
 #' @return List of character vectors (empty if nothing was found), with
 #'   duplicates removed and the rest sorted. The names of the list correspond
 #'   to \code{names}.
-#' @note See \code{\link{glob_to_regex}} for a description of globbing 
+#' @note See \code{\link{glob_to_regex}} for a description of globbing
 #'   patterns.
 #' @seealso base::grep base::agrep
 #' @family naming-functions
@@ -779,12 +834,12 @@ setMethod("find_positions", "list", function(x) {
 setGeneric("pick_from", function(object, ...) standardGeneric("pick_from"))
 #' Pick rows
 #'
-#' Pick rows from a dataframe if selected columns are identical to keys.
+#' Pick rows from a data frame if selected columns are identical to keys.
 #'
 #' @param object Dataframe. At least two rows are needed.
 #' @param selection Named list, keys should correspond to column names of
-#'   \code{object}, values to one to several alternative values that should 
-#'   occur in the respective dataframe column.
+#'   \code{object}, values to one to several alternative values that should
+#'   occur in the respective data-frame column.
 #' @return Dataframe.
 #' @keywords internal
 #'
@@ -804,30 +859,30 @@ setMethod("pick_from", "data.frame", function(object, selection) {
 ################################################################################
 ################################################################################
 #
-# Colors
+# Colours
 #
 
 
 ## NOTE: not an S4 method because conversion is done
 
-#' Sort colors
+#' Sort colours
 #'
 #' A helper function for methods such as \code{\link{xy_plot}}.
-#' Arrange colors to achieve that neighboring colors are most distinct with
-#' respect to their RGB coordinates. This is done as follows: (1) euclidean
-#' distances between the RGB coordinates of the input colors are calculated;
+#' Arrange colours to achieve that neighboring colours are most distinct with
+#' respect to their RGB coordinates. This is done as follows: (1) Euclidean
+#' distances between the RGB coordinates of the input colours are calculated;
 #' (2) the distances are inversed; (3) a principal-coordinate analysis is
-#' conducted on these inversed distances; (4) the input colors are sorted
+#' conducted on these inversed distances; (4) the input colours are sorted
 #' according to the first principal coordinate.
 #'
-#' @param col Vector. Names or hexadecimal codes of the colors to be sorted.
-#'   Might also be an integer vector, see \code{col2rgb} from the 
+#' @param col Vector. Names or hexadecimal codes of the colours to be sorted.
+#'   Might also be an integer vector, see \code{col2rgb} from the
 #'   \pkg{grDevices} package for details. Duplicate RGB coordinates and
 #'   unknown names will cause an error.
 #' @export
 #' @return Character vector (rearranged input names).
 #' @family plotting-functions
-#' @seealso grDevices::col2rgb 
+#' @seealso grDevices::col2rgb
 #' @keywords color
 #' @note The resulting vector could as well be used in reverse order.
 #' @examples
@@ -848,20 +903,20 @@ max_rgb_contrast <- function(col) {
 
 ## NOTE: not an S4 method because check is done using match.arg()
 
-#' Select colors
+#' Select colours
 #'
-#' Select a set of colors for plotting. See \code{\link{xy_plot}} for usage
+#' Select a set of colours for plotting. See \code{\link{xy_plot}} for usage
 #' example. This is not normally directly called
 #' by an \pkg{opm} user but could be used for testing before doing some serious
 #' plotting.
 #'
-#' @param set Character scalar. Name of the color vector to use. Color vectors
-#'   have been optimized for maximum contrast between adjacent colors, either
+#' @param set Character scalar. Name of the colour vector to use. Colour vectors
+#'   have been optimized for maximum contrast between adjacent colours, either
 #'   manually or using \code{\link{max_rgb_contrast}}. Names
 #'   ending in \sQuote{.i} indicate vectors in inverse order (compared to the
 #'   vector with the same name except \sQuote{.i}).
 #' @export
-#' @return Character vector (names of colors).
+#' @return Character vector (names of colours).
 #' @family plotting-functions
 #' @keywords color
 #' @seealso grDevices::colors grDevices::rainbow grDevices::grey
@@ -892,13 +947,13 @@ select_colors <- function(
 
 ## NOTE: not an S4 method because conversion is done
 
-#' Color regions
+#' Colour regions
 #'
-#' Create default color regions for use with \code{\link{level_plot}}.
+#' Create default colour regions for use with \code{\link{level_plot}}.
 #'
-#' @param colors Character or integer vector with at least two distinct colors. 
-#'   If \code{NULL} or empty, default colors are chosen.
-#' @return Character vector of color codes.
+#' @param colors Character or integer vector with at least two distinct
+#'   colours. If \code{NULL} or empty, default colours are chosen.
+#' @return Character vector of colour codes.
 #' @keywords internal
 #'
 default_color_regions <- function(colors = NULL) {
@@ -921,11 +976,11 @@ setGeneric("draw_ci", function(object, ...) standardGeneric("draw_ci"))
 #'
 #' Draw a confidence interval.
 #'
-#' @param object Four-element numeric vector containing (i) the left margin of 
-#'   the CI; (ii) the point estimate; (iii) the right margin; (iv) the position 
+#' @param object Four-element numeric vector containing (i) the left margin of
+#'   the CI; (ii) the point estimate; (iii) the right margin; (iv) the position
 #'   on the y axis. The point estimate can be \code{NA} at any time; whether
 #'   the margins can also be \code{NA} depends on \code{na.action}.
-#' @param col Character scalar. Name of the color to be used.
+#' @param col Character scalar. Name of the colour to be used.
 #' @param cex Numeric scalar. Magnification for CI margin symbols and point
 #'   estimate. Also affects line width, and proportionally so.
 #' @param na.action Character scalar. What to do if a margin value is
@@ -1013,32 +1068,32 @@ kubrick <- function(movie = character()) {
 #
 
 
-setGeneric("group_by_sep", 
+setGeneric("group_by_sep",
   function(object, ...) standardGeneric("group_by_sep"))
 #' Grouping using a separator
 #'
 #' For the \sQuote{logical} method,
-#' treat a logical vector by regarding \code{TRUE} as indicating separating. 
+#' treat a logical vector by regarding \code{TRUE} as indicating separating.
 #' Create a factor that could be used with \code{split} to split the logical
 #' vector, or any equal-length object from which it was created, into according
 #' groups. For the character method,
-#' grep for a pattern in a character vector, thus creating a logical vector 
+#' grep for a pattern in a character vector, thus creating a logical vector
 #' indicating the matches. Then use this to construct a factor with the
 #' \sQuote{logical} method.
 #'
 #' @param object Logical vector.
-#' @param include Logical scalar indicating whether the sepator positions  
-#'   should also be included in the factor levels instead of being coded as 
+#' @param include Logical scalar indicating whether the sepator positions
+#'   should also be included in the factor levels instead of being coded as
 #'   \code{NA}.
 #' @param pattern Character scalar passed to \code{grepl}.
 #' @param invert Logical scalar. Invert the result of pattern matching with
 #'   \code{grepl}? If so, unmatched lines are treated as separators.
 #' @param ... Optional arguments passed to \code{grepl}.
 #'
-#' @return Factor, its length being the one of \code{object}. The levels 
-#'   correspond to a groups whose indices correspond to the index of a 
+#' @return Factor, its length being the one of \code{object}. The levels
+#'   correspond to a groups whose indices correspond to the index of a
 #'   \code{TRUE} value in \code{object} plus the indices of the \code{FALSE}
-#'   values immediately following it. The positions of \code{TRUE} values that 
+#'   values immediately following it. The positions of \code{TRUE} values that
 #'   are followed by \code{TRUE} values are set to \code{NA} (irrespective of
 #'   \code{include}).
 #' @seealso base::split base::grepl
@@ -1072,12 +1127,68 @@ setMethod("group_by_sep", "logical", function(object, include = TRUE) {
   as.factor(result)
 }, sealed = SEALED)
 
-setMethod("group_by_sep", "character", function(object, pattern, 
+setMethod("group_by_sep", "character", function(object, pattern,
     invert = FALSE, include = TRUE, ...) {
   matches <- grepl(pattern = pattern, x = object, ...)
   if (invert)
     matches <- !matches
   group_by_sep(matches, include)
+}, sealed = SEALED)
+
+
+################################################################################
+
+
+setGeneric("tidy",  function(x, ...) standardGeneric("tidy"))
+#' Check HTML using the Tidy program
+#'
+#' Run the HTML Tidy program for check or converting HTML character vectors.
+#'
+#' @param x Query character vector, or list of such vectors, or missing. If
+#'   missing, the location of the tidy executable is returned
+#' @param check Logical scalar. If \code{TRUE}, the Tidy checking results,
+#'   potentially including warnings and error messages, are captured in a
+#'   character vector. Otherwise the converted HTML is returned.
+#' @param args Character vector with arguments passed to HTML Tidy. Is is
+#'   currently an error to set any of its \sQuote{File manipulation} options.
+#' @param ... Optional arguments passed between the methods.
+#' @export
+#' @return Character vector, or list of such vectors. If \code{x} is missing,
+#'   the method returns the location of the HTML Tidy executable and \code{NULL}
+#'   if it cannot be found.
+#'
+#' @keywords internal
+#'
+setMethod("tidy", "missing", function() {
+  if (nzchar(result <- Sys.which("tidy")))
+    result
+  else
+    NULL
+}, sealed = SEALED)
+
+#' @export
+#'
+setMethod("tidy", "character", function(x, check = TRUE, args = c("-u", "-i")) {
+  assert_length(check, program <- tidy())
+  #if (!length(program <- tidy()))
+  #  stop("executable 'tidy' not found")
+  bad <- c("-o", "-output", "-config", "-file", "-f", "-modify", "-m")
+  if (any(bad %in% (args <- as.character(args))))
+    stop("you cannot set any of the 'File manipulation' options")
+  if (stderr <- check)
+    args <- c(args, "-e")
+  else
+    args <- setdiff(args, "-e")
+  # The combination of stderr = TRUE and stdout = FALSE/"" is impossible.
+  # '-e' turns the output of converted HTML off within Tidy.
+  suppressWarnings(system2(command = program, args = unique(args), input = x,
+    stderr = stderr, stdout = TRUE))
+}, sealed = SEALED)
+
+#' @export
+#'
+setMethod("tidy", "list", function(x, ...) {
+  lapply(X = x, FUN = tidy, ...)
 }, sealed = SEALED)
 
 

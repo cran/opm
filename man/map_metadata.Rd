@@ -18,14 +18,13 @@
 
   \item{classes}{Character vector or (for the character
   vector-based mapping) \code{TRUE}. For the mapping with a
-  function, this specifies the classes that are mapped. For
-  the mapping with a character vector, this specifies the
-  classes in addition to \sQuote{character} that are mapped
-  (after converting to \sQuote{character} mode). If
-  \code{classes} is \code{TRUE}, \code{mapping} is treated
-  as a mapping between class names, and the according
-  conversions are applied. See the \code{coerce} argument
-  of \code{\link{map_values}} for details.}
+  function or vector, this specifies the classes in
+  addition to \sQuote{character} that are mapped (after
+  converting to \sQuote{character} mode). If \code{classes}
+  is \code{TRUE}, \code{mapping} is treated as a mapping
+  between class names, and the according conversions are
+  applied. See the \code{coerce} argument of
+  \code{\link{map_values}} for details.}
 
   \item{...}{Optional argument passed to \code{mapping} if
   it is a function, and from the \code{\link{OPMS}} method
@@ -114,7 +113,7 @@ stopifnot(y == "Rep. 1")
 \usage{
   \S4method{map_metadata}{OPMS,ANY}(object, mapping, ...) 
 
-  \S4method{map_metadata}{WMD,function}(object, mapping, 
+  \S4method{map_metadata}{WMD,function}(object, mapping,
     values = TRUE, classes = "ANY", ...) 
 
   \S4method{map_metadata}{WMD,character}(object, mapping,

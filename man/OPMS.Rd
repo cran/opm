@@ -64,6 +64,7 @@
 % \alias{flatten,OPMS-method}
 % \alias{gen_iii,OPMS-method}
 % \alias{has_aggr,OPMS-method}
+% \alias{heat_map,OPMS-method}
 % \alias{hours,OPMS-method}
 % \alias{include_metadata,OPMS-method}
 % \alias{initialize,OPMS-method}
@@ -80,12 +81,15 @@
 % \alias{metadata_chars,OPMS-method}
 % \alias{minmax,OPMS-method}
 % \alias{oapply,OPMS-method}
+% \alias{phylo_data,OPMS-method}
 % \alias{plate_type,OPMS-method}
 % \alias{plates,OPMS-method}
 % \alias{position,OPMS-method}
+% \alias{radial_plot,OPMS-method}
 % \alias{select,OPMS-method}
 % \alias{seq,OPMS-method}
 % \alias{setup_time,OPMS-method}
+% \alias{sort,OPMS-method}
 % \alias{summary,OPMS-method}
 % \alias{thin_out,OPMS-method}
 % \alias{well,OPMS-method}
@@ -141,6 +145,7 @@ Class \code{"\linkS4class{YAML_VIA_LIST}"}, directly.
     \item{flatten}{\code{signature(object = "OPMS")}: ... }
     \item{gen_iii}{\code{signature(object = "OPMS")}: ... }
     \item{has_aggr}{\code{signature(object = "OPMS")}: ... }
+    \item{heat_map}{\code{signature(object = "OPMS")}: ... }
     \item{hours}{\code{signature(object = "OPMS")}: ... }
     \item{include_metadata}{\code{signature(object = "OPMS")}: ... }
     \item{initialize}{\code{signature(.Object = "OPMS")}: ... }
@@ -157,12 +162,15 @@ Class \code{"\linkS4class{YAML_VIA_LIST}"}, directly.
     \item{metadata_chars}{\code{signature(object = "OPMS")}: ... }
     \item{minmax}{\code{signature(x = "OPMS")}: ... }
     \item{oapply}{\code{signature(object = "OPMS")}: ... }
+    \item{phylo_data}{\code{signature(object = "OPMS")}: ... }
     \item{plate_type}{\code{signature(object = "OPMS")}: ... }
     \item{plates}{\code{signature(object = "OPMS")}: ... }
     \item{position}{\code{signature(object = "OPMS")}: ... }
+    \item{radial_plot}{\code{signature(object = "OPMS")}: ... }
     \item{select}{\code{signature(object = "OPMS")}: ... }
     \item{seq}{\code{signature(... = "OPMS")}: ... }
     \item{setup_time}{\code{signature(object = "OPMS")}: ... }
+    \item{sort}{\code{signature(x = "OPMS")}: ... }
     \item{summary}{\code{signature(object = "OPMS")}: ... }
     \item{thin_out}{\code{signature(object = "OPMS")}: ... }
     \item{well}{\code{signature(object = "OPMS")}: ... }

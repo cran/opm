@@ -3,6 +3,9 @@
 \title{Position of a plate}
 \arguments{
   \item{object}{\code{\link{OPM}} object.}
+
+  \item{...}{Optional arguments passed between the
+  methods.}
 }
 \value{
   Character scalar.
@@ -13,9 +16,15 @@
   more important entries of \code{\link{csv_data}}.
 }
 \examples{
+# 'OPM' method
 data(vaas_1)
 (x <- position(vaas_1))
 stopifnot(identical(x, " 7-B"))
+
+# 'OPMS' method
+data(vaas_4)
+(x <- position(vaas_4))
+stopifnot(is.character(x), length(x) == length(vaas_4))
 }
 \seealso{
   Other getter-functions: \code{\link{aggr_settings}},
@@ -36,7 +45,10 @@ stopifnot(identical(x, " 7-B"))
 \docType{methods}
 \alias{position-methods}
 \alias{position,OPM-method}
+\alias{position,OPMS-method}
 \usage{
   \S4method{position}{OPM}(object) 
+
+  \S4method{position}{OPMS}(object, ...) 
 
 }

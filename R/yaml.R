@@ -11,7 +11,7 @@
 #' YAML_VIA_LIST class
 #'
 #' This is a virtual class facilitating the conversion to YAML format. It can
-#' currently be used by any class that can be coerced to a list, but it is not 
+#' currently be used by any class that can be coerced to a list, but it is not
 #' directly applied by an \pkg{opm} user.
 #'
 #' @name YAML_VIA_LIST
@@ -61,9 +61,10 @@ setGeneric("to_yaml", function(object, ...) standardGeneric("to_yaml"))
 #'
 setMethod("to_yaml", YAML_VIA_LIST, function(object, sep = TRUE,
     line.sep = "\n", ...) {
+  assert_length(sep, line.sep)
   if (!require("yaml", quietly = TRUE, warn.conflicts = FALSE))
     stop("package 'yaml' is not available")
-  result <- yaml::as.yaml(as(object, "list"), line.sep = line.sep, ...)
+  result <- yaml::as.yaml(x = as(object, "list"), line.sep = line.sep, ...)
   if (sep)
     result <- sprintf(sprintf("---%s%%s%s", line.sep, line.sep), result)
   result

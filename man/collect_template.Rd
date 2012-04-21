@@ -51,14 +51,14 @@
   Also passed to \code{\link{batch_collect}}.}
 }
 \value{
-  In the case of the character method, a dataframe,
+  In the case of the character method, a data frame,
   returned invisibly if \code{outfile} is given; if
   \code{demo} is \code{TRUE}, a character vector of
   filenames instead, also returned invisibly. The
-  \code{\link{OPM}} method returns a dataframe with one row
-  and the number of columns equal to the sum of the lengths
-  of \code{selection} and \code{add.cols}. The
-  \code{\link{OPM}} method returns such a dataframe with
+  \code{\link{OPM}} method returns a data frame with one
+  row and the number of columns equal to the sum of the
+  lengths of \code{selection} and \code{add.cols}. The
+  \code{\link{OPM}} method returns such a data frame with
   one row per contained plate.
 }
 \description{
@@ -71,7 +71,7 @@
   with an external editor, and/or creates a data frame for
   editing the data directly in R with the \code{edit}
   function. The \code{\link{OPM}} and \code{\link{OPMS}}
-  methods collect a dataframe.
+  methods collect a data frame.
 }
 \note{
   Regarding the CSV format, see the remark to
@@ -152,10 +152,10 @@ stopifnot(identical(dim(x), c(4L, 5L)))
 \usage{
   \S4method{collect_template}{character}(object, outfile = NULL,
     sep = "\t", previous = outfile, md.args = list(),
-    selection = c(SETUP, POS, FILE), add.cols = NULL, 
+    selection = c(SETUP, POS, FILE), add.cols = NULL,
     include = list(), ..., demo = FALSE) 
 
-  \S4method{collect_template}{OPM}(object, 
+  \S4method{collect_template}{OPM}(object,
     selection = c(SETUP, POS, FILE), add.cols = NULL) 
 
   \S4method{collect_template}{OPMS}(object, ...) 

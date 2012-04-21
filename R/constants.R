@@ -14,35 +14,33 @@
 #' @name opm.package
 #' @docType package
 #'
-#' @note As a brief guideline for using this manual, including the definition 
+#' @note As a brief guideline for using this manual, including the definition
 #'   of frequently used terms, consider the following:
 #' \describe{
 #'   \item{families}{All functions and methods are assigned to one or several
-#'     families of functions and methods with similar purposes. The respective 
+#'     families of functions and methods with similar purposes. The respective
 #'     other family members are listed under each \sQuote{See Also} entry.}
 #'   \item{classes}{To make sense of this package, one usually has to create
 #'     at least one object of one of the classes \code{\link{OPM}},
 #'     \code{\link{OPMA}} or \code{\link{OPMS}}. The documentation entry for
 #'     each class contains a complete list of its user-level methods.
 #'     Conceptually, all these classes store PM data; they differ in whether
-#'     they also contain aggregated values (OPMA), and whether they contain 
-#'     more than a single plate (OPMS). Note that objects of the class OPMS 
+#'     they also contain aggregated values (OPMA), and whether they contain
+#'     more than a single plate (OPMS). Note that objects of the class OPMS
 #'     may also contain aggregated values.}
-#'   \item{input}{Most \pkg{opm} users will start with data input using either
-#'     \code{\link{read_single_opm}} or \code{\link{read_opm}}, which create
-#'     the appropriate objects. OmniLog(R) phenotype microarray data are 
-#'     structured in \strong{plates}. Each plate has 12 x 8 \strong{well} 
-#'     layout, and each well contains the respiration measurements on one
-#'     substrate or inhibitor, or combination of substrates or inhibitors.}
-#'   \item{undocumented methods}{Some \code{\link{OPMS}} methods with the same
-#'     use as the eponymous \code{\link{OPM}} method are only briefly listed
-#'     in the documentation of the \code{\link{OPMS}} class. \code{\link{OPMA}}
-#'     inherits from \code{\link{OPM}} and has all its methods, even though
+#'   \item{methods}{The class \code{\link{OPMA}} inherits from the class
+#'     \code{\link{OPM}} and, hence, has all its methods, even though
 #'     they are not listed as \code{\link{OPMA}} methods. \code{\link{OPM}}
 #'     itself inherits from \code{\link{WMD}} and has all its methods. Objects
-#'     of the \code{\link{OPMS}} class act as containers for \code{\link{OPM}} 
+#'     of the \code{\link{OPMS}} class act as containers for \code{\link{OPM}}
 #'     and/or \code{\link{OPMA}} objects, and its methods usually traverse the
 #'     contained objects in some manner.}
+#'   \item{input}{Most \pkg{opm} users will start with data input using either
+#'     \code{\link{read_single_opm}} or \code{\link{read_opm}}, which create
+#'     the appropriate objects. OmniLog(R) phenotype microarray data are
+#'     structured in \strong{plates}. Each plate has 12 x 8 \strong{well}
+#'     layout, and each well contains the respiration measurements on one
+#'     substrate or inhibitor, or combination of substrates or inhibitors.}
 #'   \item{coercion functions}{Coercion functions for the three classes are only
 #'     briefly listed under each class documentation entry. For details, see
 #'     the documentation of \code{as} from the \pkg{methods} package.}
@@ -55,10 +53,10 @@
 #'     YAML-dependent functions are called. We recommend installing one of
 #'     the newer versions of \pkg{yaml} (>= v2.1.3) which are based on libyaml
 #'     as parser instead of Syck, are faster and contain some bug fixes. The
-#'     YAML-related functions of \pkg{opm} are \code{\link{to_yaml}} and 
+#'     YAML-related functions of \pkg{opm} are \code{\link{to_yaml}} and
 #'     \code{\link{batch_opm_to_yaml}}.}
 #'   \item{running time}{Computations on such high-dimensional data may take
-#'     some time. The limiting steps are aggregating (curve-parameter 
+#'     some time. The limiting steps are aggregating (curve-parameter
 #'     estimation) and plotting many curves together. The former step can be
 #'     conducted in parallel if the \pkg{multicore} package is available. It is
 #'     not required for the installation of \pkg{opm}. There is also fast
@@ -66,21 +64,23 @@
 #'     \sQuote{maximum height}. See \code{\link{do_aggr}} and the methods it
 #'     refers to for details.}
 #'   \item{advanced plotting}{The \pkg{gplots} package is also not required for
-#'     the installation of \pkg{opm} but can be used to draw more advanced 
+#'     the installation of \pkg{opm} but can be used to draw more advanced
 #'     heatmaps. See \code{\link{heat_map}} and its accompanying methods for
 #'     details.}
 #' }
 #' @references \url{http://www.biolog.com/}
 #' @references Bochner, B. R., Gadzinski, P., Panomitros, E. 2001 Phenotype
-#'   MicroArrays for high throughput phenotypic testing and assay of gene 
+#'   MicroArrays for high throughput phenotypic testing and assay of gene
 #'   function. \emph{Genome Research} \strong{11}, 1246--1255.
 #' @references Bochner, B. R. 2009 Global phenotypic characterization of
 #'   bacteria. \emph{FEMS Microbiological Reviews} \strong{33}, 191--205.
-#' @references \url{http://www.dsmz.de/}
-#' @references Vaas, L. A. I., Sikorski, J., Michael, V., Goeker, M., Klenk 
-#'   H.-P. 2012 Visualization and curve parameter estimation strategies for  
-#'   efficient exploration of Phenotype Microarray kinetics. \emph{PLoS ONE},
-#'   in press.
+#' @references \url{
+#'   http://www.dsmz.de/research/microorganisms/projects/analysis-of-omnilog-phenotype-microarray-data.html
+#' }
+#' @references Vaas, L. A. I., Sikorski, J., Michael, V., Goeker, M., Klenk
+#'   H.-P. 2012 Visualization and curve parameter estimation strategies for
+#'   efficient exploration of Phenotype Microarray kinetics. \emph{PLoS ONE}
+#'   \strong{7}, e34846.
 #' @references \url{http://www.yaml.org/}
 #~ @export
 #' @keywords package
@@ -161,11 +161,11 @@ KNOWN_PROGRAMS <- c("grofit", "opm-fast")
 ################################################################################
 ################################################################################
 #
-# Colors
+# Colours
 #
 
 
-# Basic color keywords from http://www.w3.org/TR/css3-color/ (accessed on
+# Basic colour keywords from http://www.w3.org/TR/css3-color/ (accessed on
 # 29-8-2011), sorted darkest-first.
 #
 W3C_COLORS <- structure(
@@ -207,15 +207,15 @@ W3C_COLORS <- structure(
 )
 
 
-# Names of W3c colors (except white) sorted so as to maximize contrast between
-# adjacent colors.
+# Names of W3c colours (except white) sorted so as to maximize contrast between
+# adjacent colours.
 #
 W3C_NAMES_MAX_CONTRAST <- c("teal", "purple", "olive", "black", "silver",
   "blue", "lime", "red", "aqua", "fuchsia", "yellow", "navy", "green",
   "maroon", "gray")
 
 
-# Colors manually selected and sorted by Nora Buddruhs for maximum contrast.
+# Colours manually selected and sorted by Nora Buddruhs for maximum contrast.
 #
 NORAS_COLORS <- c("midnightblue", "darkred", "darkgreen", "orange",
   "lightslateblue", "seashell4", "saddlebrown", "firebrick2",
@@ -229,13 +229,13 @@ ROSEOBACTER_COLORS <- c("maroon1", "palevioletred3", "hotpink1",
   "indianred3", "magenta1")
 
 
-# Colors from two ColorBrewer palettes, sorted so as to maximize contrast 
-# between adjacent colors.
+# Colours from two ColorBrewer palettes, sorted so as to maximize contrast
+# between adjacent colours.
 #
 BREWER_COLORS <- c(
-  "#CAB2D6", "#A6CEE3", "#80B1D3", "#CCEBC5", "#FDB462", "#8DD3C7", 
-  "#33A02C", "#B3DE69", "#B15928", "#FF7F00", "#1F78B4", "#B2DF8A", 
-  "#6A3D9A", "#E31A1C", "#FFED6F", "#FFFF99", "#FB8072", "#FFFFB3", 
+  "#CAB2D6", "#A6CEE3", "#80B1D3", "#CCEBC5", "#FDB462", "#8DD3C7",
+  "#33A02C", "#B3DE69", "#B15928", "#FF7F00", "#1F78B4", "#B2DF8A",
+  "#6A3D9A", "#E31A1C", "#FFED6F", "#FFFF99", "#FB8072", "#FFFFB3",
   "#FDBF6F", "#D9D9D9", "#FB9A99", "#FCCDE5", "#BC80BD", "#BEBADA"
 )
 

@@ -51,7 +51,7 @@ stopifnot(anyDuplicated(x) == 2)
 \alias{anyDuplicated-methods}
 \alias{anyDuplicated,OPMS-method}
 \usage{
-  \S4method{anyDuplicated}{OPMS}(x, incomparables = FALSE, 
+  \S4method{anyDuplicated}{OPMS}(x, incomparables = FALSE,
     fromLast = FALSE, ...) 
 
 }

@@ -2,7 +2,7 @@
 \alias{extract}
 \title{Extract aggregated values}
 \arguments{
-  \item{object}{\code{\link{OPMS}} object.}
+  \item{object}{\code{\link{OPMS}} object or data frame.}
 
   \item{as.labels}{List. Metadata to be joined and used as
   row names (if \code{dataframe} is \code{FALSE}) or
@@ -17,13 +17,14 @@
   \item{trim}{Character scalar. See
   \code{\link{aggregated}} for details.}
 
-  \item{dataframe}{Logical scalar. Return dataframe or
+  \item{dataframe}{Logical scalar. Return data frame or
   matrix?}
 
   \item{as.groups}{List. Metadata to be joined and used as
   \sQuote{row.groups} attribute of the output matrix. See
   \code{\link{heat_map}} for its usage.  Ignored if
-  \code{NULL} and if \code{dataframe} is \code{FALSE}.}
+  \code{NULL} and if \code{dataframe} is \code{FALSE}. For
+  the data-frame method, a vector.}
 
   \item{sep}{Character scalar. See
   \code{\link{extract_columns}}.}
@@ -48,15 +49,22 @@
 
   \item{...}{Optional other arguments passed to
   \code{\link{wells}}.}
+
+  \item{what}{Character scalar. The name of the class to
+  extract from the data frame to form the matrix values.}
 }
 \value{
-  Numeric matrix or dataframe.
+  Numeric matrix or data frame; always a numeric matrix for
+  the data-frame method.
 }
 \description{
   Extract selected aggregated values into common matrix or
-  dataframe.
+  data frame. The data-frame method creates a matrix by
+  extracting the numeric columns and optionally adds row
+  names.
 }
 \examples{
+# 'OPMS' method
 data(vaas_4)
 # Matrix
 (x <- extract(vaas_4, as.labels = list("Species", "Strain")))
@@ -65,10 +73,16 @@ stopifnot(is.matrix(x), identical(dim(x), c(4L, 96L)))
 (x <- extract(vaas_4, as.labels = list("Species", "Strain"),
   dataframe = TRUE))
 stopifnot(is.data.frame(x), identical(dim(x), c(4L, 99L)))
-# All parameters in a single dataframe
+# All parameters in a single data frame
 x <- lapply(param_names(), function(name) extract(vaas_4, subset = name,
   as.labels = list("Species", "Strain"), dataframe = TRUE))
 x <- do.call(rbind, x)
+
+# data-frame method
+x <- data.frame(a = 1:26, b = letters, c = LETTERS)
+(y <- extract(x, as.labels = "b", what = "integer", as.groups = "c"))
+stopifnot(is.matrix(y), dim(y) == c(26, 1), rownames(y) == x$b)
+stopifnot(identical(attr(y, "row.groups"), x$c))
 }
 \seealso{
   base::data.frame base::as.data.frame base::matrix
@@ -77,7 +91,8 @@ x <- do.call(rbind, x)
   Other conversion-functions:
   \code{\link{extract_columns}}, \code{\link{flatten}},
   \code{\link{merge}}, \code{\link{oapply}},
-  \code{\link{plates}}, \code{\link{to_yaml}}
+  \code{\link{plates}}, \code{\link{sort}},
+  \code{\link{to_yaml}}
 }
 \keyword{dplot}
 \keyword{manip}
@@ -85,10 +100,14 @@ x <- do.call(rbind, x)
 \docType{methods}
 \alias{extract-methods}
 \alias{extract,OPMS-method}
+\alias{extract,data.frame-method}
 \usage{
-  \S4method{extract}{OPMS}(object, as.labels, subset = "A", 
+  \S4method{extract}{OPMS}(object, as.labels, subset = "A",
     ci = FALSE, trim = "full", dataframe = FALSE, as.groups = NULL, sep = " ",
-    dups = "warn", exact = TRUE, strict = TRUE, full = TRUE, max = 10000L, 
+    dups = "warn", exact = TRUE, strict = TRUE, full = TRUE, max = 10000L,
     ...) 
+
+  \S4method{extract}{data.frame}(object, as.labels, 
+    as.groups = NULL, sep = " ", what = "numeric") 
 
 }

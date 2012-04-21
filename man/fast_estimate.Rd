@@ -77,7 +77,7 @@ stopifnot(identical(dim(x), c(3L, 96L)))
 \alias{fast_estimate-methods}
 \alias{fast_estimate,matrix-method}
 \usage{
-  \S4method{fast_estimate}{matrix}(x, what = c("AUC", "A"), 
+  \S4method{fast_estimate}{matrix}(x, what = c("AUC", "A"),
     boot = 100L, ci = 0.95, as.pe = "median", ci.type = "norm",
     time.pos = 1L, transposed = FALSE, raw = FALSE, ...) 
 

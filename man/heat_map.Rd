@@ -2,16 +2,17 @@
 \alias{heat_map}
 \title{Heat map}
 \arguments{
-  \item{object}{Matrix or dataframe. The matrix method is
-  mainly designed for curve-parameter matrices as created
-  by \code{\link{extract}} but can be used with any numeric
-  matrix. If a dataframe, it must contain at least one
-  column with numeric data.}
+  \item{object}{Matrix, data frame or \sQuote{OPMS} object.
+  The matrix method is mainly designed for curve-parameter
+  matrices as created by \code{\link{extract}} but can be
+  used with any numeric matrix. If a data frame, it must
+  contain at least one column with numeric data.}
 
   \item{as.labels}{Character, numeric or logical vector
   indicating the positions of the columns to be joined and
   used as row labels. If \code{NULL} or empty, the row
-  names of \code{object} are used.}
+  names of \code{object} are used. See
+  \code{\link{extract}} for details.}
 
   \item{as.groups}{Character, numeric or logical vector
   indicating the positions of the columns to be joined and
@@ -19,7 +20,13 @@
   are ignored.}
 
   \item{sep}{Character scalar determining how to join row
-  and group names.}
+  and group names. See \code{\link{extract}} for details.}
+
+  \item{subset}{Character scalar passed to the
+  \sQuote{OPMS} method of \code{\link{extract}}.}
+
+  \item{extract.args}{Optional list of arguments passed to
+  that method.}
 
   \item{hclustfun}{Determines the clustering method used.
   If a function, used directly. If a character scalar, used
@@ -37,7 +44,7 @@
   the same scale. If the relative changes per substrate are
   of interest, \sQuote{column} should be used.}
 
-  \item{r.groups}{Determines the plotting of a color bar
+  \item{r.groups}{Determines the plotting of a colour bar
   indicating row groups. If \code{NULL}, ignored. If a
   function, applied to the row names of \code{object};
   should then yield one group name for each row name. If a
@@ -47,10 +54,10 @@
   \sQuote{character} mode. Finally the groups are converted
   to a factor and used for selecting from \code{r.col}.}
 
-  \item{r.col}{Character vector of color names used by
+  \item{r.col}{Character vector of colour names used by
   \code{r.groups}.  Ignored if that is \code{NULL}.}
 
-  \item{c.groups}{Determines the plotting of a color bar
+  \item{c.groups}{Determines the plotting of a colour bar
   indicating column groups. If \code{NULL}, ignored. If a
   function, applied to the column names of \code{object};
   should then yield one group name for each column name. If
@@ -60,7 +67,7 @@
   \sQuote{character} mode. Finally the groups are converted
   to a factor and used for selecting from \code{c.col}.}
 
-  \item{c.col}{Character vector of color names used by
+  \item{c.col}{Character vector of colour names used by
   \code{c.groups}.  Ignored if that is \code{NULL}.}
 
   \item{magnif}{Numeric vector. Factor(s) used per default
@@ -78,7 +85,7 @@
   the left.}
 
   \item{col}{Character vector containing the proper heatmap
-  colors.}
+  colours.}
 
   \item{...}{Optional arguments passed to \code{heatmap} or
   \code{heatmap.2}.  Note that some defaults of
@@ -86,7 +93,8 @@
   transparent from the argument list of \code{heat_map}. If
   set explicitly, the default \code{heatmap.2} behaviour is
   restored.  \code{...} also represents all arguments
-  passed from the data frame to the matrix method.}
+  passed from the \sQuote{OPMS} or data-frame methods to
+  the matrix method.}
 
   \item{use.fun}{Character scalar. If \sQuote{gplots}, it
   is attempted to load the \pkg{gplots} package and use its
@@ -98,16 +106,16 @@
   A list as output by \code{heatmap} or \code{heatmap.2}
   with the additional entries \sQuote{rowColMap} or
   \sQuote{colColMap} giving the mapping(s) of group names
-  to colors as named character vector(s), if this feature
+  to colours as named character vector(s), if this feature
   was used.
 }
 \description{
   A wrapper for \code{heatmap} from the \pkg{stats} package
   and \code{heatmap.2} from the \pkg{gplots} package with
   some adaptations likely to be useful for OmniLog(R) data.
-  The dataframe method extracts a numeric matrix from a
-  given dataframe and passes the result to the matrix
-  method.
+  The data-frame and \sQuote{OPMS} methods extract a
+  numeric matrix from a given data frame or \sQuote{OPMS}
+  object and pass the result to the matrix method.
 }
 \examples{
 data("vaas_4")
@@ -118,7 +126,11 @@ x <- extract(vaas_4, as.labels = list("Strain"),
 hm <- heat_map(x)
 stopifnot(identical(metadata(vaas_4, "Species"), names(hm$rowColMap)))
 
-# Dataframe method
+# 'OPMS' method
+hm.2 <- heat_map(vaas_4, as.labels = "Strain", as.groups = "Species")
+stopifnot(identical(hm[-3], hm.2[-3]))
+
+# Data-frame method
 x <- extract(vaas_4, as.labels = list("Species", "Strain"), dataframe = TRUE)
 hm <- heat_map(x, as.labels = "Strain", as.groups = "Species")
 stopifnot(identical(metadata(vaas_4, "Species"), names(hm$rowColMap)))
@@ -128,7 +140,8 @@ stopifnot(identical(metadata(vaas_4, "Species"), names(hm$rowColMap)))
 
   Other plotting-functions: \code{\link{ci_plot}},
   \code{\link{level_plot}}, \code{\link{max_rgb_contrast}},
-  \code{\link{select_colors}}, \code{\link{xy_plot}}
+  \code{\link{radial_plot}}, \code{\link{select_colors}},
+  \code{\link{xy_plot}}
 }
 \keyword{hplot}
 
@@ -136,16 +149,17 @@ stopifnot(identical(metadata(vaas_4, "Species"), names(hm$rowColMap)))
 \alias{heat_map-methods}
 \alias{heat_map,matrix-method}
 \alias{heat_map,data.frame-method}
+\alias{heat_map,OPMS-method}
 \usage{
-  \S4method{heat_map}{matrix}(object, 
+  \S4method{heat_map}{matrix}(object,
     hclustfun = "ward", distfun = "euclidean", scale = "none",
     r.groups = "row.groups", r.col = select_colors(),
-    c.groups = "col.groups", c.col = select_colors(), 
-    magnif = 4, cexRow = magnif[1L] / sqrt(nrow(object)), 
+    c.groups = "col.groups", c.col = select_colors(),
+    magnif = 4, cexRow = magnif[1L] / sqrt(nrow(object)),
     cexCol = magnif[length(magnif)] / sqrt(ncol(object)),
     borders = c(0.55, 0.75),
-    margins = if (use.fun[1L] == "gplots") 
-      c(borders[1L] * cexCol * max(nchar(colnames(object))), 
+    margins = if (use.fun[1L] == "gplots")
+      c(borders[1L] * cexCol * max(nchar(colnames(object))),
       borders[length(borders)] * cexRow * max(nchar(rownames(object))))
     else
       c(5, 5),
@@ -153,7 +167,10 @@ stopifnot(identical(metadata(vaas_4, "Species"), names(hm$rowColMap)))
     ...,
     use.fun = c("gplots", "stats")) 
 
-  \S4method{heat_map}{data.frame}(object, as.labels, 
+  \S4method{heat_map}{data.frame}(object, as.labels,
     as.groups = NULL, sep = " ", ...) 
+
+  \S4method{heat_map}{OPMS}(object, as.labels, subset = "A",
+    as.groups = NULL, sep = " ", extract.args = list(), ...) 
 
 }

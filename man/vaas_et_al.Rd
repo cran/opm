@@ -28,7 +28,8 @@ data(vaas_et_al)
   Vaas, L. A. I., Sikorski, J., Michael, V., Goeker, M.,
   Klenk H.-P. 2012 Visualization and curve parameter
   estimation strategies for efficient exploration of
-  Phenotype Microarray kinetics. \emph{PLoS ONE}, in press.
+  Phenotype Microarray kinetics. \emph{PLoS ONE}
+  \strong{7}, e34846.
 
   \url{http://www.dsmz.de/catalogues/details/culture/DSM-1707.html}
 

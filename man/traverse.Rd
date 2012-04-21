@@ -29,7 +29,7 @@
 \alias{traverse-methods}
 \alias{traverse,list,function-method}
 \usage{
-  \S4method{traverse}{list,function}(object, func, cores, 
+  \S4method{traverse}{list,function}(object, func, cores,
     ...) 
 
 }

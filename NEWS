@@ -1,6 +1,43 @@
 
 
-opm 0.3-2
+opm 0.4-0
+---------
+
+Bug fixes:
+
+- fixed bug in the OPMS method of merge() that caused it to crash with plates
+  with unequal numbers of time points
+
+New features:
+
+- added full citation information (first paper on opm) :-)
+
+- radial_plot() and sort() methods for OPMS objects
+
+- phylo_data(), heat_map() and radial_plot() methods directly for OPMS objects
+
+- extract(), select(), discrete() and phylo_data() methods for data frames
+
+- phylo_data() has been enhanced: added export in Hennig86 format for TNT; added
+  vector-based merging of rows via the 'join' argument; improved HTML output; 
+  added 'run.tidy' option for reformatting the generated HTML with HTML Tidy;
+  added 'delete' argument
+
+- for the 'A' parameter estimated using 'opm-fast', CIs that cannot be 
+  calculated because the values are constant are not set to NA anymore but to 
+  that value
+
+- annoying messages when calling require() for gplots have been silenced
+
+Other changes:
+
+- added the remaining so far missing OPMS-method documentation entries and 
+  improved the format of the references
+
+- added example file from a run in identification mode
+
+
+opm 0.3-3
 ---------
 
 Bug fixes:

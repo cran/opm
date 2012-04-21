@@ -11,6 +11,9 @@
 
   \item{drop}{Logical scalar. If only a single well was
   selected, simplify it to a vector?}
+
+  \item{...}{Optional arguments passed between the
+  methods.}
 }
 \value{
   Numeric matrix or vector (depending on \code{i} and
@@ -26,11 +29,17 @@
   Do not confuse this with \code{\link{wells}}.
 }
 \examples{
+# 'OPM' method
 data(vaas_1)
 (x <- well(vaas_1, "B04"))
 stopifnot(is.numeric(x), length(x) == 384L)
 (x <- well(vaas_1, c("B08", "C07")))
 stopifnot(is.matrix(x), identical(dim(x), c(384L, 2L)))
+
+# 'OPMS' method
+data(vaas_4)
+(x <- well(vaas_4, "B04"))
+stopifnot(is.matrix(x), dim(x) == c(4, 384))
 }
 \seealso{
   Other getter-functions: \code{\link{aggr_settings}},
@@ -51,7 +60,10 @@ stopifnot(is.matrix(x), identical(dim(x), c(384L, 2L)))
 \docType{methods}
 \alias{well-methods}
 \alias{well,OPM-method}
+\alias{well,OPMS-method}
 \usage{
   \S4method{well}{OPM}(object, i, drop = TRUE) 
+
+  \S4method{well}{OPMS}(object, ...) 
 
 }

@@ -68,7 +68,7 @@ stopifnot(length(x) > length(y))
 \usage{
   \S4method{metadata_chars}{OPMS}(object, ...) 
 
-  \S4method{metadata_chars}{WMD}(object, values = TRUE, 
+  \S4method{metadata_chars}{WMD}(object, values = TRUE,
     classes = "factor") 
 
 }

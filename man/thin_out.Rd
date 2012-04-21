@@ -8,6 +8,9 @@
   dataset shall be thinned out.}
 
   \item{drop}{Logical scalar. See \code{\link{[}}.}
+
+  \item{...}{Optional arguments passed between the
+  methods.}
 }
 \value{
   \code{\link{OPM}} object.
@@ -23,6 +26,7 @@
   sensibly be applied before aggregating the data.
 }
 \examples{
+# 'OPM' method
 data(vaas_1)
 (x <- dim(vaas_1))
 stopifnot(identical(x, c(384L, 96L)))
@@ -32,6 +36,14 @@ stopifnot(identical(x, c(38L, 96L)), has_aggr(copy))
 copy <- thin_out(vaas_1, 10, drop = TRUE) # also remove the parameters
 (x <- dim(copy))
 stopifnot(identical(x, c(38L, 96L)), !has_aggr(copy))
+
+# 'OPMS' method
+data(vaas_4)
+(x <- dim(vaas_4))
+stopifnot(identical(x, c(4L, 384L, 96L)))
+copy <- thin_out(vaas_4, 10)
+(x <- dim(copy))
+stopifnot(identical(x, c(4L, 38L, 96L)))
 }
 \seealso{
   Other getter-functions: \code{\link{aggr_settings}},
@@ -52,7 +64,10 @@ stopifnot(identical(x, c(38L, 96L)), !has_aggr(copy))
 \docType{methods}
 \alias{thin_out-methods}
 \alias{thin_out,OPM-method}
+\alias{thin_out,OPMS-method}
 \usage{
   \S4method{thin_out}{OPM}(object, factor, drop = FALSE) 
+
+  \S4method{thin_out}{OPMS}(object, ...) 
 
 }

@@ -2,11 +2,14 @@
 \alias{to_kmeans}
 \alias{to_kmeans.Ckmeans.1d.dp}
 \alias{to_kmeans.kmeans}
+\alias{to_kmeans.kmeanss}
 \title{Convert to kmeans}
 \usage{
   to_kmeans(x, ...)
 
   \method{to_kmeans}{kmeans} (x, ...)
+
+  \method{to_kmeans}{kmeanss} (x, y, ...)
 
   \method{to_kmeans}{Ckmeans.1d.dp} (x, y, ...)
 }
@@ -14,7 +17,8 @@
   \item{x}{Object to be converted.}
 
   \item{y}{Original numeric vector that was used to create
-  a \sQuote{Ckmeans.1d.dp} object.}
+  a \sQuote{Ckmeans.1d.dp} object, or index of an element
+  of a \sQuote{kmeanss} object.}
 
   \item{...}{Optional arguments passed to and from other
   methods, and/or between the methods.}

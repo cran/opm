@@ -16,11 +16,11 @@
   arbitrary content. Containers of objects that inherit
   from this class are not forced to contain the same
   metadata entries. Problems might arise if such data are
-  queried and attempted to be converted to, e.g.,
-  dataframes because some values might be missing. But
-  metadata can be queried beforehand for the keys as well
-  as the values they contain, and other methods support
-  setting, modifying and deleting metadata.  \item For
+  queried and attempted to be converted to, e.g., data
+  frames because some values might be missing. But metadata
+  can be queried beforehand for the keys as well as the
+  values they contain, and other methods support setting,
+  modifying and deleting metadata.  \item For
   \code{\link{OPM}} and the other \pkg{opm} classes that
   use it, \sQuote{metadata} refers to information that, in
   contrast to, e.g., \code{\link{csv_data}} must be added

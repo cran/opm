@@ -67,11 +67,19 @@ stopifnot(list() \%q\% vaas_1) # Empty query
 
 \docType{methods}
 \alias{infix.q-methods}
+\alias{infix.q,list,OPMS-method}
+\alias{\%q\%,list,OPMS-method}
+\alias{infix.q,character,OPMS-method}
+\alias{\%q\%,character,OPMS-method}
 \alias{infix.q,character,WMD-method}
 \alias{\%q\%,character,WMD-method}
 \alias{infix.q,list,WMD-method}
 \alias{\%q\%,list,WMD-method}
 \usage{
+  \S4method{\%q\%}{list,OPMS}(x, table) 
+
+  \S4method{\%q\%}{character,OPMS}(x, table) 
+
   \S4method{\%q\%}{character,WMD}(x, table) 
 
   \S4method{\%q\%}{list,WMD}(x, table) 

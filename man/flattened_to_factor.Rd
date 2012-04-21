@@ -12,11 +12,11 @@
   Factor with one entry per plate.
 }
 \description{
-  Extract all plate-specifying information from a dataframe
-  as created by \code{\link{flatten}}. If metadata have
-  been included, these will be joined together; otherwise
-  the plate identifiers (basically numbers) themselves are
-  used.
+  Extract all plate-specifying information from a data
+  frame as created by \code{\link{flatten}}. If metadata
+  have been included, these will be joined together;
+  otherwise the plate identifiers (basically numbers)
+  themselves are used.
 }
 \keyword{internal}
 

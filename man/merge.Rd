@@ -22,6 +22,14 @@
   the same experimental plate. Adjust the times
   accordingly.
 }
+\note{
+  This function is intended for dealing with slowly growing
+  or reacting organisms that need to be analyzed with
+  subsequent runs of the same plate in PM mode. Results
+  obtained with \emph{Geodermatophilus} strains and
+  Generation-III plates indicate that this works well in
+  practice.
+}
 \examples{
 data(vaas_4)
 summary(x <- merge(vaas_4))
@@ -31,7 +39,7 @@ stopifnot(is(x, "OPM"), dim(x) == c(sum(hours(vaas_4, "size")), 96))
   Other conversion-functions: \code{\link{extract}},
   \code{\link{extract_columns}}, \code{\link{flatten}},
   \code{\link{oapply}}, \code{\link{plates}},
-  \code{\link{to_yaml}}
+  \code{\link{sort}}, \code{\link{to_yaml}}
 }
 \keyword{manip}
 

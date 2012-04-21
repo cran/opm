@@ -6,7 +6,7 @@
   an \code{\link{OPMS}} object, it is in most cases
   necessary to restrict the plates to at most about one
   dozen wells. See \code{\link{[}} for how to achieve this.
-  The dataframe should be as exported by
+  The data frame should be as exported by
   \code{\link{extract}} with \code{ci} set to \code{TRUE}.
   There must be a column named \sQuote{Parameter} followed
   by columns with only numeric values. Columns before the
@@ -34,7 +34,7 @@
   one of \sQuote{center}, \sQuote{left} and
   \sQuote{right}.}
 
-  \item{col}{Character scalar. Color to be used.}
+  \item{col}{Character scalar. Colour to be used.}
 
   \item{na.action}{Character scalar. What to do if a
   confidence interval contains \code{NA} values; one of
@@ -58,7 +58,7 @@
 
   \item{...}{Optional other arguments passed to that
   function, or arguments passed from the \code{\link{OPMS}}
-  method to the dataframe method.}
+  method to the data frame method.}
 }
 \value{
   Character vector describing the plot's legend, returned
@@ -66,7 +66,7 @@
 }
 \description{
   Draw point estimates with their confidence intervals. The
-  dataframe method is not normally directly called by an
+  data frame method is not normally directly called by an
   \pkg{opm} user but via the \code{\link{OPMS}} method.
   This one is used for comparing aggregated values together
   with their confidence intervals between plates. This
@@ -95,16 +95,17 @@ stopifnot(is.character(x), identical(length(x), 4L))
 }
 \references{
   Vaas LAI, Sikorski J, Michael V, Goeker M, Klenk H-P.
-  Visualization and curve parameter estimation strategies
-  for efficient exploration of Phenotype Microarray
-  kinetics. PLoS ONE 2012; in press.
+  2012 Visualization and curve parameter estimation
+  strategies for efficient exploration of Phenotype
+  Microarray kinetics. \emph{PLoS ONE} \strong{7}, e34846.
 }
 \seealso{
   graphics::plot
 
   Other plotting-functions: \code{\link{heat_map}},
   \code{\link{level_plot}}, \code{\link{max_rgb_contrast}},
-  \code{\link{select_colors}}, \code{\link{xy_plot}}
+  \code{\link{radial_plot}}, \code{\link{select_colors}},
+  \code{\link{xy_plot}}
 }
 \keyword{hplot}
 
@@ -113,9 +114,9 @@ stopifnot(is.character(x), identical(length(x), 4L))
 \alias{ci_plot,data.frame-method}
 \alias{ci_plot,OPMS-method}
 \usage{
-  \S4method{ci_plot}{data.frame}(object, rowname.sep = " ", 
+  \S4method{ci_plot}{data.frame}(object, rowname.sep = " ",
     prop.offset = 0.04, align = "center", col = "blue", na.action = "warn",
-    draw.legend = TRUE, legend.field = c(1, 1), x = "topleft", xpd = TRUE, 
+    draw.legend = TRUE, legend.field = c(1, 1), x = "topleft", xpd = TRUE,
     ...) 
 
   \S4method{ci_plot}{OPMS}(object, as.labels, subset = "A", ...) 

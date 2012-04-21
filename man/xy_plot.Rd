@@ -5,16 +5,17 @@
   \item{x}{\code{\link{OPM}} or \code{\link{OPMS}} object.}
 
   \item{col}{For the \code{\link{OPM}} method, just a
-  character scalar (color name) determining the line color.
-  For the \code{\link{OPMS}} method, either a character
-  vector with color codes or one of the arguments of
-  \code{\link{select_colors}} (for picking one of the
-  predefined color sets). It is an error if fewer colors
-  are chosen than the number of plate grouping levels (see
-  the \code{...} argument below). For user-chosen color
-  sets, keep in mind that the sets are not checked for
-  duplicates. See \code{\link{max_rgb_contrast}} as a
-  method for optimally arranging user-defined colors.}
+  character scalar (colour name) determining the line
+  colour. For the \code{\link{OPMS}} method, either a
+  character vector with colour codes or one of the
+  arguments of \code{\link{select_colors}} (for picking one
+  of the predefined colour sets). It is an error if fewer
+  colours are chosen than the number of plate grouping
+  levels (see the \code{...} argument below).  For
+  user-chosen colour sets, keep in mind that the sets are
+  not checked for duplicates. See
+  \code{\link{max_rgb_contrast}} as a method for optimally
+  arranging user-defined colours.}
 
   \item{lwd}{Numeric scalar determining the line width.}
 
@@ -29,8 +30,8 @@
   these wells only. Set \code{neg.ctrl} to a numeric value
   for assigning the height directly (at your own risk).}
 
-  \item{base.col}{Character scalar. Baseline color (ignored
-  if no baseline is drawn).}
+  \item{base.col}{Character scalar. Baseline colour
+  (ignored if no baseline is drawn).}
 
   \item{base.lwd}{Numeric scalar determining the width of
   the baseline (ignored if no baseline is drawn).}
@@ -69,7 +70,7 @@
 
   \item{strip.fmt}{List controlling the format of the
   description strip above each panel. For instance, the
-  background color is set using the \sQuote{bg} key. For
+  background colour is set using the \sQuote{bg} key. For
   further details, see \code{strip.custom} from the
   \pkg{lattice} package. Note that the \strong{content} of
   these descriptions is determined by arguments passed from
@@ -79,7 +80,7 @@
   \item{striptext.fmt}{List controlling the textual
   description at the top of each panel. For instance, the
   relative text size is set using the \sQuote{cex} key, the
-  color by \sQuote{col}, the font by \sQuote{font} and the
+  colour by \sQuote{col}, the font by \sQuote{font} and the
   number of lines by \sQuote{lines}. The latter might be of
   interest in conjunction with the \code{paren.sep}
   argument of \code{\link{wells}}.  See the argument
@@ -88,7 +89,7 @@
 
   \item{legend.fmt}{List controlling where and how to draw
   the legend. The content of the legend (mainly a
-  description of the assignment of the colors to the
+  description of the assignment of the colours to the
   curves) is determined automatically. See argument
   \sQuote{key} of \code{xyplot} from the \pkg{lattice}
   package for details.}
@@ -107,13 +108,14 @@
   \code{include} is particularly important: the selected
   metadata are joined into a single factor, and the
   assignment of plates to this factor's levels determines
-  the curve color for each plate. That is, each combination
-  of metadata entries as chosen using \code{include} yields
-  one color. If no metadata are selected (the default),
-  each plate gets a color of its own.  Also note that
-  arguments passed via \code{\link{flatten}} to
-  \code{\link{wells}} can be given here which determine the
-  content of the panel description.}
+  the curve colour for each plate. That is, each
+  combination of metadata entries as chosen using
+  \code{include} yields one colour. If no metadata are
+  selected (the default), each plate gets a colour of its
+  own.  Also note that arguments passed via
+  \code{\link{flatten}} to \code{\link{wells}} can be given
+  here which determine the content of the panel
+  description.}
 }
 \value{
   An object of class \sQuote{trellis}. See \code{xyplot}
@@ -128,9 +130,9 @@
   be adapted by the user, much like most aspects of the
   resulting graphics output. In the case of the
   \code{\link{OPMS}} method, if metadata are selected,
-  curve colors are determined according to the combinations
-  of these metadata entries, otherwise each plate gets its
-  own color.
+  curve colours are determined according to the
+  combinations of these metadata entries, otherwise each
+  plate gets its own colour.
 }
 \examples{
 # OPM method
@@ -162,7 +164,8 @@ xy_plot(vaas_4, include = c("Species", "Strain"),
   Vaas, L. A. I., Sikorski, J., Michael, V., Goeker, M.,
   Klenk H.-P. 2012 Visualization and curve parameter
   estimation strategies for efficient exploration of
-  Phenotype Microarray kinetics. \emph{PLoS ONE}, in press.
+  Phenotype Microarray kinetics. \emph{PLoS ONE}
+  \strong{7}, e34846.
 }
 \seealso{
   lattice::xyplot
@@ -170,7 +173,7 @@ xy_plot(vaas_4, include = c("Species", "Strain"),
   Other plotting-functions: \code{\link{ci_plot}},
   \code{\link{heat_map}}, \code{\link{level_plot}},
   \code{\link{max_rgb_contrast}},
-  \code{\link{select_colors}}
+  \code{\link{radial_plot}}, \code{\link{select_colors}}
 }
 \keyword{hplot}
 

@@ -27,7 +27,7 @@
 \description{
   Use a character vector or a function for recursively
   mapping list names, or mapping the \sQuote{colnames} and
-  \sQuote{rownames} attributes of a dataframe. In the case
+  \sQuote{rownames} attributes of a data frame. In the case
   of lists, the function is not applied to list elements
   which are not themselves lists, even if they have a
   \sQuote{names} attribute. Such elements and their names,
@@ -72,20 +72,32 @@ x <- list(a = 1:8, c = 9, d = list(d1 = 'x', d2 = 'y'))
 (y <- map_names(x))
 stopifnot(length(y) > length(names(x)))
 
-# Dataframe+function method
+# Data frame+function method
 x <- data.frame(a = 1:3, b = letters[1:3])
 (y <- map_names(x, toupper))
 stopifnot(identical(y[[1]], x[[1]]), identical(y[[2]], x[[2]]))
 stopifnot(identical(names(y), c("A", "B")))
 
-# Dataframe+character method
+# Data frame+character method
 (y <- map_names(x, c(a = "b", b = "a")))
-stopifnot(identical(y[[1]], x[[1]]), identical(y[[2]], x[[2]]))
-stopifnot(identical(names(y), c("b", "a")))
+stopifnot(x == y, names(y) == c("b", "a"))
 
-# Dataframe+missing method
+# Data frame+missing method
 (y <- map_names(x))
 stopifnot(is.character(y), y == names(y), length(y) == 5)
+
+# Matrix+function method
+x <- as.matrix(x)
+(y <- map_names(x, toupper))
+stopifnot(x == y, toupper(colnames(x)) == colnames(y))
+
+# Matrix+character method
+(y <- map_names(x, c(a = "b", b = "a")))
+stopifnot(x == y, colnames(y) == c("b", "a"))
+
+# Matrix+missing method
+(y <- map_names(x))
+stopifnot(y == c("a", "b"), names(y) == y)
 }
 \seealso{
   base::rapply base::list base::as.list
@@ -117,21 +129,21 @@ stopifnot(is.character(y), y == names(y), length(y) == 5)
 
   \S4method{map_names}{list,missing}(object) 
 
-  \S4method{map_names}{data.frame,function}(object, mapping, 
+  \S4method{map_names}{data.frame,function}(object, mapping,
     ...) 
 
   \S4method{map_names}{data.frame,character}(object, mapping) 
 
   \S4method{map_names}{data.frame,missing}(object) 
 
-  \S4method{map_names}{MOA,function}(object, mapping, 
+  \S4method{map_names}{MOA,function}(object, mapping,
     ...) 
 
   \S4method{map_names}{MOA,character}(object, mapping) 
 
   \S4method{map_names}{MOA,missing}(object) 
 
-  \S4method{map_names}{ANY,function}(object, mapping, 
+  \S4method{map_names}{ANY,function}(object, mapping,
     ...) 
 
   \S4method{map_names}{ANY,character}(object, mapping) 

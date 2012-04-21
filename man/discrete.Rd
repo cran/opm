@@ -3,7 +3,9 @@
 \title{Convert to discrete characters}
 \arguments{
   \item{x}{Numeric vector or a \code{\link{MOA}} object
-  convertible to a numeric vector.}
+  convertible to a numeric vector. The data-frame method
+  first calls \code{\link{extract}}, restricting the
+  columns to the numeric ones.}
 
   \item{range}{In non-\code{gap} mode (see next argument)
   the assumed real range of the data; must contain all
@@ -53,8 +55,13 @@
   case, a single integer is interpreted as the upper bound
   of an integer vector starting at 1.}
 
-  \item{...}{Arguments passed between the methods or, if
-  requested, to \code{\link{run_kmeans}} (except
+  \item{as.labels}{Vector of data-frame indices. See
+  \code{\link{extract}}.}
+
+  \item{sep}{Character scalar. See \code{\link{extract}}.}
+
+  \item{...}{Optional arguments passed between the methods
+  or, if requested, to \code{\link{run_kmeans}} (except
   \code{object} and \code{k}, see there).}
 }
 \value{
@@ -73,7 +80,8 @@
   9 followed by A to V. For the full export one
   additionally needs \code{\link{phylo_data}}. The matrix
   method is just a wrapper that takes care of the matrix
-  dimensions.
+  dimensions, and the data-frame method is a wrapper for
+  that method.
 }
 \examples{
 # Treat everything between 3.4 and 4.5 as ambiguous
@@ -94,10 +102,12 @@ stopifnot(identical(x, as.character(0:4)))
 (x <- discrete(1:5, range = c(1, 10), states = 5))
 stopifnot(identical(x, as.character(c(0, 0, 1, 1, 2))))
 
-# Matrix method
-x <- matrix(1:10, ncol = 2)
+# Matrix and data-frame methods
+x <- matrix(as.numeric(1:10), ncol = 2)
 (y <- discrete(x, range = c(3.4, 4.5), gap = TRUE))
 stopifnot(identical(dim(x), dim(y)))
+(yy <- discrete(as.data.frame(x), range = c(3.4, 4.5), gap = TRUE))
+stopifnot(y == yy)
 
 # K-means based discretization of PM data
 data(vaas_4)
@@ -133,11 +143,15 @@ stopifnot(c("0", "?", "1") \%in\% y)
 \alias{discrete-methods}
 \alias{discrete,numeric-method}
 \alias{discrete,MOA-method}
+\alias{discrete,data.frame-method}
 \usage{
   \S4method{discrete}{numeric}(x, range, gap = FALSE,
     output = c("character", "integer", "logical", "factor", "numeric"),
     middle.na = TRUE, states = 32L, ...) 
 
   \S4method{discrete}{MOA}(x, ...) 
+
+  \S4method{discrete}{data.frame}(x, as.labels = NULL, sep = " ", 
+    ...) 
 
 }

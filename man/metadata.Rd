@@ -17,6 +17,9 @@
 
   \item{strict}{Logical scalar. Is it an error if a
   \code{NULL} value results from fetching a metadata key?}
+
+  \item{...}{Optional arguments passed between the
+  methods.}
 }
 \value{
   List (empty if metadata were not set or if subselection
@@ -26,9 +29,15 @@
   Get meta-information stored together with the data.
 }
 \examples{
+# 'OPM' method
 data(vaas_1)
 (x <- metadata(vaas_1, "Strain"))
 stopifnot(identical(x, "DSM30083T"))
+
+# 'OPMS' method
+data(vaas_4)
+(x <- metadata(vaas_4, "Strain"))
+stopifnot(x == c("DSM18039", "DSM30083T", "DSM1707", "429SC1"))
 }
 \seealso{
   Other getter-functions: \code{\link{aggr_settings}},
@@ -57,9 +66,12 @@ stopifnot(identical(x, "DSM30083T"))
 
 \docType{methods}
 \alias{metadata-methods}
+\alias{metadata,OPMS-method}
 \alias{metadata,WMD-method}
 \usage{
-  \S4method{metadata}{WMD}(object, key = NULL, exact = TRUE, 
+  \S4method{metadata}{OPMS}(object, ...) 
+
+  \S4method{metadata}{WMD}(object, key = NULL, exact = TRUE,
     strict = FALSE) 
 
 }

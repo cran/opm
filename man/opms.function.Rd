@@ -29,7 +29,7 @@
   seperately if they contain more than one plate; otherwise
   just keep the \code{\link{OPM}} object. \code{FALSE} is
   the default: all plates are tried to be forced into a
-  single \code{\link{OPMS}} object.  If a character scalar,
+  single \code{\link{OPMS}} object. If a character scalar,
   the name of the plate type to be extracted.}
 }
 \value{

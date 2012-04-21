@@ -11,7 +11,8 @@
   argument of \code{\link{[}}, and all following arguments,
   if any, are ignored.  If a list or a character vector, it
   is used for conducting a query based on one of the infix
-  operators as described below.}
+  operators as described below. The data-frame method
+  expects a character vector containing class names.}
 
   \item{values}{Logical scalar. If \code{TRUE}, the values
   of \code{query} are also considered (by using
@@ -50,15 +51,18 @@
 \value{
   \code{NULL} or \code{\link{OPM}} or \code{\link{OPMS}}
   object. This depends on how many plates are selected; see
-  \code{\link{[}} for details.
+  \code{\link{[}} for details.  The data-frame method
+  returns a data frame.
 }
 \description{
   Select a subset of the plates in an \code{\link{OPMS}}
   object based on the content of the metadata.
   Alternatively, select a common subset of time points from
-  all plates.
+  all plates. The data-frame method selects columns that
+  belong to certain classes.
 }
 \examples{
+## 'OPMS' method
 data(vaas_4)
 # simple object comparison function
 mustbe <- function(a, b) stopifnot(identical(a, b))
@@ -86,6 +90,15 @@ mustbe(hours(copy), c(2.25, 4.75, 3.50, 2.25))
 x <- select(copy, time = TRUE)
 mustbe(hours(x), rep(2.25, 4))
 # see also the example with split() given under "["
+
+## data-frame method
+x <- data.frame(a = 1:5, b = letters[1:5], c = LETTERS[1:5])
+(y <- select(x, "factor"))
+stopifnot(dim(y) == c(5, 2))
+(y <- select(x, "integer"))
+stopifnot(dim(y) == c(5, 1))
+(y <- select(x, c("factor", "integer")))
+mustbe(x, y)
 }
 \seealso{
   base::`[` base::`[[` base::subset
@@ -108,9 +121,12 @@ mustbe(hours(x), rep(2.25, 4))
 \docType{methods}
 \alias{select-methods}
 \alias{select,OPMS-method}
+\alias{select,data.frame-method}
 \usage{
   \S4method{select}{OPMS}(object, query, values = TRUE,
-    invert = FALSE, exact = FALSE, time = FALSE, 
+    invert = FALSE, exact = FALSE, time = FALSE,
     use = c("i", "I", "k", "K", "q", "Q", "t", "T")) 
+
+  \S4method{select}{data.frame}(object, query) 
 
 }

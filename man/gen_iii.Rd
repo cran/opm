@@ -3,6 +3,9 @@
 \title{Change to Generation III}
 \arguments{
   \item{object}{\code{\link{OPM}} object.}
+
+  \item{...}{Optional arguments passed between the
+  methods.}
 }
 \value{
   Novel \code{\link{OPM}} object.
@@ -21,16 +24,25 @@
   \code{\link{read_single_opm}}).
 }
 \examples{
+# 'OPM' method
 data(vaas_1)
-copy <- gen_iii(vaas_1)
+summary(copy <- gen_iii(vaas_1))
 stopifnot(identical(vaas_1, copy)) # the dataset already had that plate type
+
+# 'OPMS' method
+data(vaas_4)
+summary(copy <- gen_iii(vaas_4))
+stopifnot(identical(vaas_4, copy)) # as above
 }
 \keyword{manip}
 
 \docType{methods}
 \alias{gen_iii-methods}
 \alias{gen_iii,OPM-method}
+\alias{gen_iii,OPMS-method}
 \usage{
   \S4method{gen_iii}{OPM}(object) 
+
+  \S4method{gen_iii}{OPMS}(object, ...) 
 
 }

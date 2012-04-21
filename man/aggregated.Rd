@@ -25,6 +25,9 @@
   checked, and all \code{NA} values also remain unchanged.
   If \code{trim} is \sQuote{no}, lambda is not modified
   either.}
+
+  \item{...}{Optional arguments passed between the
+  methods.}
 }
 \value{
   Numeric matrix.
@@ -36,16 +39,22 @@
   parameters and their CIs.
 }
 \examples{
+# 'OPMA' method
 data(vaas_1)
 # Get full matrix
-x <- aggregated(vaas_1)
+summary(x <- aggregated(vaas_1))
 stopifnot(is.matrix(x), identical(dim(x), c(12L, 96L)))
 # Subsetting
-x <- aggregated(vaas_1, "lambda")
+summary(x <- aggregated(vaas_1, "lambda"))
 stopifnot(is.matrix(x), identical(dim(x), c(3L, 96L)), any(x < 0))
 # Now with lambda correction
-x <- aggregated(vaas_1, "lambda", trim = "full")
+summary(x <- aggregated(vaas_1, "lambda", trim = "full"))
 stopifnot(is.matrix(x), identical(dim(x), c(3L, 96L)), !any(x < 0))
+
+# 'OPMS' method
+data(vaas_4)
+summary(x <- aggregated(vaas_4))
+stopifnot(is.list(x), length(x) == length(vaas_4), sapply(x, is.matrix))
 }
 \seealso{
   Other aggregation-functions: \code{\link{aggr_settings}},
@@ -70,8 +79,11 @@ stopifnot(is.matrix(x), identical(dim(x), c(3L, 96L)), !any(x < 0))
 \docType{methods}
 \alias{aggregated-methods}
 \alias{aggregated,OPMA-method}
+\alias{aggregated,OPMS-method}
 \usage{
   \S4method{aggregated}{OPMA}(object, subset = NULL, ci = TRUE,
     trim = c("no", "full", "medium")) 
+
+  \S4method{aggregated}{OPMS}(object, ...) 
 
 }

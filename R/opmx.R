@@ -2,7 +2,7 @@
 
 #' OPMX class
 #'
-#' This is a virtual class containing helper methods for plotting 
+#' This is a virtual class containing helper methods for plotting
 #' \code{\link{OPM}} and \code{\link{OPMS}} objects. It is not directly applied
 #' by an \pkg{opm} user. Regarding the name: \sQuote{OPMX} stands for
 #' \sQuote{OPM or OPMS}.
@@ -115,7 +115,7 @@ setMethod("negative_control", OPMX, function(object, neg.ctrl) {
 #' @seealso base::c
 #' @keywords manip
 #'
-#' @examples 
+#' @examples
 #'
 #' data(vaas_1)
 #' data(vaas_4)
@@ -151,7 +151,7 @@ setGeneric("improved_max",
 #' Return the maximal value of an object plus a certain offset.
 #'
 #' @param object Numeric vector or \sQuote{OPMX} object.
-#' @param theor.max Logical scalar. Use the theoretical or the real improved 
+#' @param theor.max Logical scalar. Use the theoretical or the real improved
 #'   maximum? If \code{TRUE}, \code{by} is ignored.
 #' @param by Numeric scalar.
 #' @return Numeric scalar. Let \code{n} be the smallest integer value for which
@@ -167,7 +167,7 @@ setMethod("improved_max", "numeric", function(object, by = 10) {
 setMethod("improved_max", OPMX, function(object, theor.max = TRUE, by = 10) {
   assert_length(theor.max)
   if (theor.max)
-    return(THEOR_MAX)  
+    return(THEOR_MAX)
   improved_max(max(object), by)
 }, sealed = SEALED)
 

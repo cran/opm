@@ -9,7 +9,7 @@
   well (number of rows is number of wells).
 }
 \description{
-  Construct time points dataframe as required by
+  Construct time-points data frame as required by
   \code{grofit}.
 }
 \keyword{internal}

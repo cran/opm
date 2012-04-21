@@ -14,6 +14,9 @@
   \code{\link{OPM}} objects this is apparently identical to
   \sQuote{max}.} \item{size}{Integer scalar: the number of
   time points.} \item{summary}{Display a summary.} }}
+
+  \item{...}{Optional arguments passed between the
+  methods.}
 }
 \value{
   Dependent on the \code{what} argument; see there.
@@ -23,6 +26,7 @@
   an \code{\link{OPM}} object.
 }
 \examples{
+# 'OPM' method
 data(vaas_1)
 (x <- hours(vaas_1)) # the default is 'max'
 stopifnot(identical(x, 95.75))
@@ -34,6 +38,11 @@ stopifnot(is.table(x))
 stopifnot(identical(x, 0.25))
 (x <- hours(vaas_1, "size"))
 stopifnot(identical(x, 384L))
+
+# 'OPMS' method
+data(vaas_4)
+(x <- hours(vaas_4))
+stopifnot(length(x) == 4, x == 95.75)
 }
 \seealso{
   Other getter-functions: \code{\link{aggr_settings}},
@@ -54,8 +63,11 @@ stopifnot(identical(x, 384L))
 \docType{methods}
 \alias{hours-methods}
 \alias{hours,OPM-method}
+\alias{hours,OPMS-method}
 \usage{
-  \S4method{hours}{OPM}(object, 
+  \S4method{hours}{OPM}(object,
     what = c("max", "all", "size", "summary", "interval", "minmax")) 
+
+  \S4method{hours}{OPMS}(object, ...) 
 
 }

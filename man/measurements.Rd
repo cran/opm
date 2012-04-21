@@ -2,10 +2,14 @@
 \alias{measurements}
 \title{Stored measurements}
 \arguments{
-  \item{object}{\code{\link{OPM}} object.}
+  \item{object}{\code{\link{OPM}} or \code{\link{OPMS}}
+  object.}
 
   \item{i}{Optional character or numeric vector with
   name(s) or position(s) of well(s).}
+
+  \item{...}{Optional arguments passed between the
+  methods.}
 }
 \value{
   Numeric matrix with column names indicating the well
@@ -22,6 +26,7 @@
   refers only to the remaining matrix.
 }
 \examples{
+# 'OPM' method
 data(vaas_1)
 x <- measurements(vaas_1)
 stopifnot(is.matrix(x), is.numeric(x))
@@ -29,6 +34,12 @@ stopifnot(identical(dim(x), c(384L, 97L)))
 y <- measurements(vaas_1, "B03")
 stopifnot(is.matrix(y), is.numeric(y))
 stopifnot(identical(dim(y), c(384L, 2L)))
+
+# 'OPMS' method
+data(vaas_4)
+x <- measurements(vaas_4)
+stopifnot(is.list(x), length(x) == length(vaas_4))
+stopifnot(sapply(x, is.matrix), sapply(x, is.numeric))
 }
 \seealso{
   Other getter-functions: \code{\link{aggr_settings}},
@@ -49,7 +60,10 @@ stopifnot(identical(dim(y), c(384L, 2L)))
 \docType{methods}
 \alias{measurements-methods}
 \alias{measurements,OPM-method}
+\alias{measurements,OPMS-method}
 \usage{
   \S4method{measurements}{OPM}(object, i) 
+
+  \S4method{measurements}{OPMS}(object, ...) 
 
 }

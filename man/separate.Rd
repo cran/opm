@@ -68,6 +68,11 @@ x <- c("  abd  efgh", " ABCD EFGH ", " xyz")
 (y <- separate(x, TRUE))
 stopifnot(is.matrix(y), dim(y) == c(3, 2))
 
+# Applied to factors
+xx <- as.factor(x)
+(yy <- separate(xx, TRUE))
+stopifnot(identical(yy, as.data.frame(y)))
+
 # Data frame method
 x <- data.frame(a = 1:2, b = c("a-b-cc", "a-ff-g"))
 (y <- separate(x, coerce = FALSE))
@@ -93,7 +98,7 @@ stopifnot(sapply(y, class) == c("integer", "factor", "factor"))
 \alias{separate,factor-method}
 \alias{separate,data.frame-method}
 \usage{
-  \S4method{separate}{character}(object, split = "/.-_", 
+  \S4method{separate}{character}(object, split = "/.-_",
     simplify = FALSE, keep.const = TRUE) 
 
   \S4method{separate}{factor}(object, split = "/.-_",

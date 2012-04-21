@@ -1,12 +1,12 @@
 \name{include_metadata}
 \alias{include_metadata}
-\title{Add metadata (from file or dataframe)}
+\title{Add metadata (from file or data frame)}
 \arguments{
   \item{object}{\code{\link{OPM}} object.}
 
   \item{md}{Dataframe containing keys as column names, or
-  name of file from which to read the dataframe. Handled by
-  \code{\link{to_metadata}}.}
+  name of file from which to read the data frame. Handled
+  by \code{\link{to_metadata}}.}
 
   \item{keys}{Character vector.}
 
@@ -30,7 +30,7 @@
 }
 \description{
   Include metadata by mapping CSV data and column names in
-  a dataframe.
+  a data frame.
 }
 \examples{
 data(vaas_1)
@@ -54,8 +54,11 @@ stopifnot(identical(metadata(copy, "Location"), "Braunschweig"))
 \docType{methods}
 \alias{include_metadata-methods}
 \alias{include_metadata,OPM-method}
+\alias{include_metadata,OPMS-method}
 \usage{
   \S4method{include_metadata}{OPM}(object, md, keys = c(SETUP, POS),
     replace = FALSE, skip.failure = FALSE, remove.keys = TRUE, ...) 
+
+  \S4method{include_metadata}{OPMS}(object, ...) 
 
 }

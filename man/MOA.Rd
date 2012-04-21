@@ -24,12 +24,14 @@
 % \docType{class}
 \alias{MOA-class}
 % \alias{discrete,MOA-method}
+% \alias{is_constant,MOA-method}
 % \alias{map_names,MOA,character-method}
 % \alias{map_names,MOA,function-method}
 % \alias{map_names,MOA,missing-method}
 % \alias{map_values,MOA,character-method}
 % \alias{map_values,MOA,function-method}
 % \alias{map_values,MOA,missing-method}
+% \alias{ranging,MOA-method}
 
 % \title{Class \code{"MOA"}}
 % \description{
@@ -39,12 +41,14 @@
 \section{Methods}{
   \describe{
     \item{discrete}{\code{signature(x = "MOA")}: ... }
+    \item{is_constant}{\code{signature(x = "MOA")}: ... }
     \item{map_names}{\code{signature(object = "MOA", mapping = "character")}: ... }
     \item{map_names}{\code{signature(object = "MOA", mapping = "function")}: ... }
     \item{map_names}{\code{signature(object = "MOA", mapping = "missing")}: ... }
     \item{map_values}{\code{signature(object = "MOA", mapping = "character")}: ... }
     \item{map_values}{\code{signature(object = "MOA", mapping = "function")}: ... }
     \item{map_values}{\code{signature(object = "MOA", mapping = "missing")}: ... }
+    \item{ranging}{\code{signature(object = "MOA")}: ... }
 	 }
 }
 % \references{

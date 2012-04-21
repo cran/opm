@@ -15,7 +15,7 @@
 #' normally directly called by an \pkg{opm} user but by the other IO functions
 #' of the package.
 #'
-#' @param type Character scalar indicating the file types to be matched by 
+#' @param type Character scalar indicating the file types to be matched by
 #'   extension.
 #' @param compressed Logical scalar. Shall compressed files also be matched?
 #' @export
@@ -54,11 +54,11 @@ file_pattern <- function(type = c("both", "csv", "yaml", "any", "empty"),
 #' Create regexp matching certain file extensions.
 #'
 #' @param arg If a list, call \code{\link{file_pattern}} with it as arguments.
-#'   If \code{NULL}, return it unchanged. Otherwise convert it to character and 
+#'   If \code{NULL}, return it unchanged. Otherwise convert it to character and
 #'   optionally using \code{\link{glob_to_regex}}, depending on \code{wildcard}.
-#' @param wildcard Logical scalar. Convert \code{arg} using 
+#' @param wildcard Logical scalar. Convert \code{arg} using
 #'   \code{\link{glob_to_regex}}?
-#' @return Character scalar, holding a regular expression, or any object, 
+#' @return Character scalar, holding a regular expression, or any object,
 #'   unchanged.
 #' @keywords internal
 #' @seealso tools::file_ext
@@ -81,8 +81,8 @@ setGeneric("repair_oth", function(x, ...) standardGeneric("repair_oth"))
 #' Repair OTH plates
 #'
 #' Plates run in generation-III mode, if converted to CSV by the OmniLog(R)
-#' software, comprise duplicated rows with only two sets of distinct values, 
-#' the first set containing only \code{0}. This function checks for such a 
+#' software, comprise duplicated rows with only two sets of distinct values,
+#' the first set containing only \code{0}. This function checks for such a
 #' matrix and, if identified, reduces it to its single informative row.
 #'
 #' @param x Numeric matrix.
@@ -98,7 +98,7 @@ setMethod("repair_oth", "matrix", function(x) {
   else
     cbind(0, result) # in the unexpected case that ONLY 0s are encountered
   colnames(result)[1L] <- colnames(x)[1L]
-  result 
+  result
 }, sealed = SEALED)
 
 
@@ -122,7 +122,7 @@ setMethod("repair_oth", "matrix", function(x) {
 #' @keywords internal
 #'
 read_old_opm <- function(filename) {
-  
+
   fold_comments <- function(x) {
     dlen <- length(data <- x[c(FALSE, TRUE)])
     llen <- length(labels <- x[c(TRUE, FALSE)])
@@ -131,7 +131,7 @@ read_old_opm <- function(filename) {
     pos <- seq.int(1L, min(dlen, llen))
     structure(.Data = data[pos], names = labels[pos])
   }
-  
+
   # Read data and determine HOUR field in proper CSV header
   data <- scan(file = filename, sep = ",", what = "character", quiet = TRUE,
     comment.char = "#", strip.white = TRUE)
@@ -139,11 +139,11 @@ read_old_opm <- function(filename) {
   if (length(pos) != 1L)
     stop("uninterpretable header (maybe because there is not 1 plate per file)")
   pos <- seq_len(pos - 1L)
-  
+
   # Process comments
   comments <- fold_comments(c(FILE, filename, data[pos]))
   names(comments)[names(comments) == "Set up Time"] <- SETUP
-      
+
   # Process data
   data <- data[-pos]
   data <- data[nzchar(data)]
@@ -158,7 +158,7 @@ read_old_opm <- function(filename) {
     comments[PLATE_TYPE] <- GEN_III
     data <- repair_oth(data)
   }
-      
+
   new(OPM, measurements = data, metadata = list(), csv_data = comments)
 }
 
@@ -195,7 +195,7 @@ read_new_opm <- function(filename) {
   if (comments[PLATE_TYPE] == "OTH") {
     comments[PLATE_TYPE] <- GEN_III
     data <- repair_oth(data)
-  }  
+  }
   new(OPM, measurements = data, metadata = list(), csv_data = comments)
 }
 
@@ -203,7 +203,7 @@ read_new_opm <- function(filename) {
 ################################################################################
 
 
-## NOTE: not an S4 method because yaml.load_file() gives an adequate error 
+## NOTE: not an S4 method because yaml.load_file() gives an adequate error
 ##   message
 
 #' Read opm YAML file
@@ -240,10 +240,10 @@ read_opm_yaml <- function(filename) {
 #' Read single PM file
 #'
 #' Read single OmniLog(R) or \pkg{opm} data file in either new- or old-style
-#' CSV or YAML format. Files compressed using gzip, bzip2 or lzma/xz are also 
+#' CSV or YAML format. Files compressed using gzip, bzip2 or lzma/xz are also
 #' understood.
 #'
-#' @param filename Character scalar, or convertible to such, with the obvious 
+#' @param filename Character scalar, or convertible to such, with the obvious
 #'   meaning.
 #' @export
 #' @return \code{\link{OPM}} object. In the case of YAML input, this might also
@@ -251,19 +251,19 @@ read_opm_yaml <- function(filename) {
 #'   an \code{\link{OPMS}} object.
 #' @family IO-functions
 #' @note \itemize{
-#'   \item The expected CSV format is what is output by the OmniLog(R) device, 
-#'     one plate per file. Other formats, or OmniLog(R) files re-saved with 
-#'     distinct CSV settings, are not understood. For this reason, if any 
+#'   \item The expected CSV format is what is output by the OmniLog(R) device,
+#'     one plate per file. Other formats, or OmniLog(R) files re-saved with
+#'     distinct CSV settings, are not understood. For this reason, if any
 #'     editing of the files was necessary at all, it is advisable to do this in
-#'     an editor for plain text, not in a spreadsheet program. 
+#'     an editor for plain text, not in a spreadsheet program.
 #'   \item It is impossible to read CSV files that contain more than one plate.
 #'     For splitting old-style and new-style CSV files into one file per plate,
 #'     see the example under \code{\link{split_files}}.
-#'   \item In contrast, input YAML files can contain data from more than one 
+#'   \item In contrast, input YAML files can contain data from more than one
 #'     plate.
-#'   \item Plates run in ID mode are automatically detected as such (their 
+#'   \item Plates run in ID mode are automatically detected as such (their
 #'     plate type is changed from \sQuote{OTH} to the internally used spelling
-#'     of \sQuote{Generation III}). A generation-III plate type can also be 
+#'     of \sQuote{Generation III}). A generation-III plate type can also be
 #'     forced later on by using \code{\link{gen_iii}}.
 #' }
 #' @references \url{http://www.yaml.org/}
@@ -285,7 +285,7 @@ read_single_opm <- function(filename) {
   assert_length(filename)
   if (!file.exists(filename <- as.character(filename)))
     stop(sprintf("file '%s' does not exist", filename))
-  taste <- function(expr) tryCatch(expr, error = function(e) e$message)  
+  taste <- function(expr) tryCatch(expr, error = function(e) e$message)
   errs <- list()
   routines <- list(`New CSV` = read_new_opm, `Old CSV` = read_old_opm,
     YAML = read_opm_yaml)
@@ -313,18 +313,18 @@ read_single_opm <- function(filename) {
 #' Conversion of directory names to file names
 #'
 #' Turn a mixed file/directory list into a list of files. This is not normally
-#' directly called by an \pkg{opm} user but by the other IO functions of the 
-#' package. One can use their \code{demo} argument directly for testing the 
+#' directly called by an \pkg{opm} user but by the other IO functions of the
+#' package. One can use their \code{demo} argument directly for testing the
 #' results of the applied filename patterns.
 #'
-#' @param names Character vector containing filenames or directories, or 
+#' @param names Character vector containing filenames or directories, or
 #'   convertible to such.
 #'
 #' @param include If a character scalar, used as regular expression or wildcard
 #'   (see the \code{wildcard} argument) for selecting from the input files. If
 #'   \code{NULL}, ignored. If a list, used as arguments of
 #'   \code{\link{file_pattern}} and its result used as regular expression. Note
-#'   that selection is done \strong{after} expanding the directory names to 
+#'   that selection is done \strong{after} expanding the directory names to
 #'   filenames.
 #' @param exclude Like \code{include}, but for excluding matching input files.
 #'   Note that exclusion is done \strong{after} applying \code{include}.
@@ -334,7 +334,7 @@ read_single_opm <- function(filename) {
 #'   \code{NULL} values for \code{include} or \code{exclude}, respectively.
 #' @param wildcard Logical scalar. Are \code{include} and \code{exclude}
 #'   wildcards (as used by UNIX shells) that first need to be concerted to
-#'   regular expressions? Has no effect if lists are used for \code{include} or 
+#'   regular expressions? Has no effect if lists are used for \code{include} or
 #'   \code{exclude}, respectively. See \code{\link{glob_to_regex}} for details
 #'   on such wildcards (a.k.a. globbing patterns).
 #'
@@ -388,7 +388,7 @@ explode_dir <- function(names,
   explode_names <- function(names, recursive) {
     is.dir <- file.info(names)$isdir
     if (any(no.info <- is.na(is.dir))) {
-      msg <- sprintf("File or directory not found: '%s'", 
+      msg <- sprintf("File or directory not found: '%s'",
         paste(names[no.info], collapse = " "))
       if (missing.error)
         stop(msg)
@@ -397,7 +397,7 @@ explode_dir <- function(names,
     }
     is.dir <- is.dir[!no.info]
     names <- as.list(names[!no.info]) # use of a list ensures input order
-    names[is.dir] <- lapply(names[is.dir], FUN = list.files, full.names = TRUE, 
+    names[is.dir] <- lapply(names[is.dir], FUN = list.files, full.names = TRUE,
       recursive = recursive)
     unlist(names)
   }
@@ -427,12 +427,12 @@ explode_dir <- function(names,
 #' @param what Character scalar indicating the subdirectory to search in.
 #'   Currently the following ones are included:
 #'   \describe{
-#'     \item{scripts}{R script files for non-interactive uses of the 
-#'        \pkg{opm} package, particularly for the batch processing of many
-#'        files. When called without input arguments or with the
-#'        \sQuote{-h} switch, the scripts output usage information.}
+#'     \item{scripts}{R script files for non-interactive uses of the
+#'       \pkg{opm} package, particularly for the batch processing of many
+#'       files. When called without input arguments or with the
+#'       \sQuote{-h} switch, the scripts output usage information.}
 #'     \item{testdata}{Files as output by the OmniLog(R) device for testing
-#'        data input and metadata management.}
+#'       data input and metadata management.}
 #'   }
 #' @export
 #' @return Character vector of filenames.
@@ -469,31 +469,30 @@ opm_files <- function(what = c("scripts", "testdata")) {
 #' Read multiple PM files at once
 #'
 #' Read OmniLog(R) or \pkg{opm} data file(s) in one of three possible formats:
-#' either new- or old-style OmniLog(R) CSV or \pkg{opm} YAML format. Files 
+#' either new- or old-style OmniLog(R) CSV or \pkg{opm} YAML format. Files
 #' compressed using gzip, bzip2 or lzma/xz are also understood (but may be
 #' excluded using \code{include} and/or \code{exclude}).
 #'
 #' @param names Character vector with names of files in one of three formats
-#'   accepted by \code{\link{read_opm}}, or names of directories 
+#'   accepted by \code{\link{read_opm}}, or names of directories
 #'   containing such files, or both; or convertible to such a vector. See the
-#'   \code{include} argument of \code{\link{read_opm}} and 
-#'   \code{\link{explode_dir}} for how to 
+#'   \code{include} argument of \code{\link{read_opm}} and
+#'   \code{\link{explode_dir}} for how to
 #'   select subsets from the input files or directories.
 #'
 #' @param convert Character scalar. If \sQuote{no}, always return a list. If
-#'   \sQuote{yes}, convert to \code{NULL}, \code{\link{OPM}} object, or 
-#'   \code{\link{OPMS}}
-#'   object, depending on the number of files read (0, 1, or more). \sQuote{try}
-#'   behaves like \sQuote{yes} but does not result in an error message if
-#'   conversion to OPMS is impossible; a list is returned in that case.
-#'   \sQuote{sep} returns a nested list, each sublist containing 
-#'   \code{\link{OPM}} objects of the same plate type. \sQuote{grp} also 
-#'   splits into such sublists but converts them to \code{\link{OPMS}} 
+#'   \sQuote{yes}, convert to \code{NULL}, \code{\link{OPM}} object, or
+#'   \code{\link{OPMS}} object, depending on the number of files read (0, 1, or
+#'   more). \sQuote{try} behaves like \sQuote{yes} but does not result in an 
+#'   error message if conversion to OPMS is impossible; a list is returned in 
+#'   that case. \sQuote{sep} returns a nested list, each sublist containing
+#'   \code{\link{OPM}} objects of the same plate type. \sQuote{grp} also
+#'   splits into such sublists but converts them to \code{\link{OPMS}}
 #'   objects if more than one plate is encountered. An error is raised if
 #'   this is impossible (in contrast to \sQuote{try}).
-#' @param gen.iii Logical scalar. If \code{TRUE}, invoke \code{\link{gen_iii}} 
-#'   on each plate. This is automatically done with CSV input if the plate 
-#'   type is given as \sQuote{OTH} (which is usually the case for plates run 
+#' @param gen.iii Logical scalar. If \code{TRUE}, invoke \code{\link{gen_iii}}
+#'   on each plate. This is automatically done with CSV input if the plate
+#'   type is given as \sQuote{OTH} (which is usually the case for plates run
 #'   in ID mode).
 #'
 #' @param include Pattern for selecting from the input files. The default value
@@ -507,10 +506,10 @@ opm_files <- function(what = c("scripts", "testdata")) {
 #'   invisibly?
 #'
 #' @return \code{\link{OPM}} object (maybe \code{\link{OPMA}} in case of YAML
-#'   input), or list of such objects, or \code{\link{OPMS}} object. If 
+#'   input), or list of such objects, or \code{\link{OPMS}} object. If
 #'   \code{demo} is \code{TRUE}, a character vector instead.
 #'
-#' @note Regarding the CSV format, see the remark to 
+#' @note Regarding the CSV format, see the remark to
 #'   \code{\link{read_single_opm}}. For splitting lists of \code{\link{OPM}}
 #'   objects according to the plate type, see \code{\link{plate_type}}, and
 #'   consider the plate-type selection options of \code{\link{opms}}.
@@ -522,7 +521,7 @@ opm_files <- function(what = c("scripts", "testdata")) {
 #' @seealso utils::read.csv yaml::yaml.load_file
 #' @keywords IO
 #' @examples
-#' test.files <- grep("Multiple", opm_files("testdata"), invert = TRUE, 
+#' test.files <- grep("Multiple", opm_files("testdata"), invert = TRUE,
 #'   value = TRUE, fixed = TRUE)
 #' if (length(test.files) > 0L) { # if the folder is found
 #'   x <- read_opm(test.files, demo = TRUE) # check first what you would get
@@ -534,7 +533,7 @@ opm_files <- function(what = c("scripts", "testdata")) {
 #'   stopifnot(is(x, "OPMS"), identical(dim(x), c(2L, 384L, 96L)))
 #' }
 #' # This can be repeated for the other input test files. Instead of a several
-#' # file names one can also provide a single one, one to several directory 
+#' # file names one can also provide a single one, one to several directory
 #' # names, or mixture of file and directory names.
 #'
 #' \dontrun{
@@ -542,10 +541,10 @@ opm_files <- function(what = c("scripts", "testdata")) {
 #' # Reading all files from the current working directory is also easy:
 #' x <- read_opm(getwd())
 #' # or
-#' x <- read_opm(".")  
+#' x <- read_opm(".")
 #' }
 #'
-read_opm <- function(names, convert = c("try", "no", "yes", "sep", "grp"), 
+read_opm <- function(names, convert = c("try", "no", "yes", "sep", "grp"),
     gen.iii = FALSE, include = list(), ..., demo = FALSE) {
   do_split <- function(x) split(x, sapply(x, plate_type))
   do_opms <- function(x) {
@@ -599,12 +598,12 @@ setGeneric("to_metadata",
 #' wrapper for \code{read.delim} but contains some useful adaptations (such as
 #' \strong{not} converting strings to factors, and not modifying column names).
 #' The default method
-#' reads metadata from an object convertible to a dataframe and is only a thin
+#' reads metadata from an object convertible to a data frame and is only a thin
 #' wrapper of \code{as.data.frame} but contains the same useful adaptations as
 #' the filename method.
 #'
-#' @param object Name of input file (character scalar), or any object 
-#'   convertible to a dataframe.
+#' @param object Name of input file (character scalar), or any object
+#'   convertible to a data frame.
 #' @param stringsAsFactors Logical scalar passed to \code{as.data.frame}.
 #' @param optional Logical scalar passed to \code{as.data.frame} or
 #'   \code{read.delim}.
@@ -612,7 +611,7 @@ setGeneric("to_metadata",
 #'   following parameters are passed to \code{read.delim}.
 #' @param check.names Logical scalar.
 #' @param strip.white Logical scalar.
-#' @param ... Optional other arguments for \code{read.delim} or 
+#' @param ... Optional other arguments for \code{read.delim} or
 #'   \code{as.data.frame}.
 #' @export
 #' @return Dataframe.
@@ -640,15 +639,15 @@ setMethod("to_metadata", "character", function(object,
     sep = "\t", check.names = FALSE, strip.white = TRUE,
     stringsAsFactors = FALSE, ...) {
   assert_length(object)
-  read.delim(object, sep = sep, check.names = check.names, 
+  read.delim(object, sep = sep, check.names = check.names,
     strip.white = strip.white, stringsAsFactors = stringsAsFactors, ...)
 }, sealed = SEALED)
 
 #' @export
 #'
-setMethod("to_metadata", "ANY", function(object, stringsAsFactors = FALSE, 
+setMethod("to_metadata", "ANY", function(object, stringsAsFactors = FALSE,
     optional = TRUE, ...) {
-  as.data.frame(object, stringsAsFactors = stringsAsFactors, 
+  as.data.frame(object, stringsAsFactors = stringsAsFactors,
     optional = optional, ...)
 }, sealed = SEALED)
 
@@ -669,7 +668,7 @@ setMethod("to_metadata", "ANY", function(object, stringsAsFactors = FALSE,
 #' is available.
 #'
 #' @inheritParams read_opm
-#' @param names Character vector with file or directory names, or convertible 
+#' @param names Character vector with file or directory names, or convertible
 #'   to such. See \code{\link{explode_dir}} for details.
 #' @param fun Collecting function. Should use the filename as first argument.
 #' @param fun.args Optional list of arguments to \code{fun}.
@@ -719,29 +718,29 @@ setGeneric("collect_template",
 #' It writes the collected template to a file for use with an external editor,
 #' and/or creates a data frame for editing the data directly in R with the
 #' \code{edit} function.
-#' The \code{\link{OPM}} and \code{\link{OPMS}} methods collect a dataframe.
+#' The \code{\link{OPM}} and \code{\link{OPMS}} methods collect a data frame.
 #'
-#' @param object Character vector or \code{\link{OPM}} or \code{\link{OPMS}} 
-#'   object. If a character vector is provided, it acts like the \code{names} 
-#'   argument of 
-#'   \code{\link{read_opm}}. That is, if it is a directory name, this is 
+#' @param object Character vector or \code{\link{OPM}} or \code{\link{OPMS}}
+#'   object. If a character vector is provided, it acts like the \code{names}
+#'   argument of
+#'   \code{\link{read_opm}}. That is, if it is a directory name, this is
 #'   automatically scanned for all CSV and YAML files it contains (unless
 #'   restrictions with patterns are made). One can also provide file names, or
 #'   a mixture of file and directory names.
 #' @param outfile Character scalar. Ignored if \code{NULL} or empty string.
-#'   Otherwise, interpreted as the name of a CSV output file. If metadata have 
+#'   Otherwise, interpreted as the name of a CSV output file. If metadata have
 #'   already been collected in an older file with the same name, old metadata
 #'   will be kept, identifiers for novel files will be included, their so far
 #'   empty entries set to \code{NA}. Users who wish to keep the old version
 #'   can use two distinct names for novel and old files; see \code{previous}.
 #' @param sep Character scalar. CSV field separator for \code{outfile}.
-#' @param previous Ignored if \code{NULL}. Otherwise passed to 
+#' @param previous Ignored if \code{NULL}. Otherwise passed to
 #'   \code{\link{to_metadata}}. If it is a filename different from
 #'   \code{outfile}, it is an error if the file does not exist.
 #' @param md.args List of other arguments passed to the \sQuote{to_metadata}
 #'   methods.
-#' @param add.cols Optional character vector with the names of columns to be 
-#'   added to the result, or \code{NULL}. If not empty, names of 
+#' @param add.cols Optional character vector with the names of columns to be
+#'   added to the result, or \code{NULL}. If not empty, names of
 #'   columns to be added, initially containing \code{NA}.
 #' @param selection Elements to be extracted from the CSV comments contained
 #'   in each file. Character vector passed to \code{\link{csv_data}}.
@@ -754,38 +753,38 @@ setGeneric("collect_template",
 #'   \code{\link{batch_collect}}.
 #' @export
 #' @return In the case of the character method, a
-#'   dataframe, returned invisibly if \code{outfile} is given; if 
+#'   data frame, returned invisibly if \code{outfile} is given; if
 #'   \code{demo} is \code{TRUE}, a character vector of filenames instead, also
-#'   returned invisibly. The \code{\link{OPM}} method returns a dataframe with
-#'   one row and the number of columns equal to the sum of the lengths of 
-#'   \code{selection} and \code{add.cols}. The \code{\link{OPM}} method returns 
-#'   such a dataframe with one row per contained plate.
+#'   returned invisibly. The \code{\link{OPM}} method returns a data frame with
+#'   one row and the number of columns equal to the sum of the lengths of
+#'   \code{selection} and \code{add.cols}. The \code{\link{OPM}} method returns
+#'   such a data frame with one row per contained plate.
 #'
-#' @note Regarding the CSV format, see the remark to 
+#' @note Regarding the CSV format, see the remark to
 #'   \code{\link{read_single_opm}}.
 #' @seealso utils::edit utils::read.delim
 #' @family IO-functions
 #' @family metadata-functions
 #' @references \url{http://www.biolog.com/}
 #' @keywords IO attribute
-#' @examples 
+#' @examples
 #'
 #' # Character method
-#' test.files <- grep("Multiple", opm_files("testdata"), invert = TRUE, 
+#' test.files <- grep("Multiple", opm_files("testdata"), invert = TRUE,
 #'   value = TRUE, fixed = TRUE)
 #' if (length(test.files) > 0) {
 #'
 #'   # Without writing to a file
 #'   (x <- collect_template(test.files))
 #'   stopifnot(is.data.frame(x), identical(x[, "File"], test.files))
-#'   # now proceed with e.g. 
+#'   # now proceed with e.g.
 #'   # x <- edit(x)
 #'
 #'   # Write to file
 #'   outfile <- tempfile()
 #'   stopifnot(!file.exists(outfile))
-#'   # This results in a CSV outfile which could be used as a starting point 
-#'   # for including the metadata of interest together with the plate 
+#'   # This results in a CSV outfile which could be used as a starting point
+#'   # for including the metadata of interest together with the plate
 #'   # identifiers in a single file. include_metadata() can then be used to
 #'   # integrate the metadata in OPM, OPMA or OPMS objects.
 #'   x <- collect_template(test.files, outfile = outfile)
@@ -807,19 +806,19 @@ setGeneric("collect_template",
 #' stopifnot(identical(dim(x), c(4L, 3L)))
 #' (x <- collect_template(vaas_4, add.cols = c("A", "B")))
 #' stopifnot(identical(dim(x), c(4L, 5L)))
-#' # again see include_metadata() for how to use this to add metadata 
+#' # again see include_metadata() for how to use this to add metadata
 #' # information
 #'
 setMethod("collect_template", "character", function(object, outfile = NULL,
     sep = "\t", previous = outfile, md.args = list(),
-    selection = c(SETUP, POS, FILE), add.cols = NULL, 
+    selection = c(SETUP, POS, FILE), add.cols = NULL,
     include = list(), ..., demo = FALSE) {
   result <- batch_collect(object, fun = function(infile) {
     opm.data <- read_single_opm(infile)
     if (is.list(opm.data)) # possible in case of YAML input
-      do.call(rbind, lapply(opm.data, FUN = collect_template, 
+      do.call(rbind, lapply(opm.data, FUN = collect_template,
         selection = selection, add.cols = add.cols))
-    else  
+    else
       collect_template(opm.data, selection = selection, add.cols = add.cols)
   }, include = include, ..., simplify = FALSE, demo = demo)
   if (demo)
@@ -828,7 +827,7 @@ setMethod("collect_template", "character", function(object, outfile = NULL,
   rownames(result) <- NULL # if 'previous' was given, row names lacked anyway
   if (!is.null(previous))
     tryCatch({
-      suppressWarnings(previous <- do.call(to_metadata, 
+      suppressWarnings(previous <- do.call(to_metadata,
         c(list(object = previous), md.args)))
     }, error = function(e) {
       if (identical(outfile, previous))
@@ -849,12 +848,12 @@ setMethod("collect_template", "character", function(object, outfile = NULL,
 
 #' @export
 #'
-setMethod("collect_template", OPM, function(object, 
+setMethod("collect_template", OPM, function(object,
     selection = c(SETUP, POS, FILE), add.cols = NULL) {
   result <- as.list(csv_data(object, selection))
   result <- as.data.frame(result, stringsAsFactors = FALSE, optional = TRUE)
   if (length(add.cols) > 0L) {
-    to.add <- matrix(nrow = nrow(result), ncol = length(add.cols), 
+    to.add <- matrix(nrow = nrow(result), ncol = length(add.cols),
       dimnames = list(NULL, add.cols), data = NA_character_)
     result <- cbind(result, to.add, stringsAsFactors = FALSE)
   }
@@ -883,7 +882,7 @@ setMethod("collect_template", OPMS, function(object, ...) {
 #'
 #' Convert data from an input file to data in an output file.
 #'
-#' @param files Two-element character vector containing the input and output 
+#' @param files Two-element character vector containing the input and output
 #'   files.
 #' @param io.fun Conversion function. Should accept \code{infile} and
 #'   \code{outfile} as the first two arguments.
@@ -951,7 +950,7 @@ process_io <- function(files, io.fun, fun.args = list(),
   }
   assert_length(files, .wanted = 2L)
   overwrite <- match.arg(overwrite)
-  result <- list(infile = files[1L], outfile = files[2L], before = "", 
+  result <- list(infile = files[1L], outfile = files[2L], before = "",
     after = "")
   result$before <- prepare_conversion(files[1L], files[2L], overwrite)
   if (!nzchar(result$before)) {
@@ -986,7 +985,7 @@ process_io <- function(files, io.fun, fun.args = list(),
 #'   If \code{NULL}, each infile's directory is used.
 #' @param in.ext Character scalar. Passed through \code{\link{file_pattern}},
 #'   then used for the replacement of old file extensions with new ones.
-#' @param compressed Logical scalar. Passed as 2nd argument to 
+#' @param compressed Logical scalar. Passed as 2nd argument to
 #'   \code{\link{file_pattern}}.
 #' @param demo Logical scalar. Do not convert files, but print the attempted
 #'   infile-outfile conversions and invisibly return a matrix with infiles in
@@ -1008,7 +1007,7 @@ process_io <- function(files, io.fun, fun.args = list(),
 #' pf <- function(infile, outfile) write(readLines(infile, n = 1), outfile)
 #' infiles <- opm_files("testdata")
 #' if (length(infiles) > 0) {
-#'   x <- batch_process(infiles, out.ext = "tmp", io.fun = pf, 
+#'   x <- batch_process(infiles, out.ext = "tmp", io.fun = pf,
 #'     outdir = tempdir())
 #'   stopifnot(is.matrix(x), identical(x[, 1], infiles))
 #'   stopifnot(file.exists(x[, 2]))
@@ -1016,7 +1015,7 @@ process_io <- function(files, io.fun, fun.args = list(),
 #' }
 #'
 batch_process <- function(names, out.ext, io.fun, fun.args = list(), proc = 1L,
-    outdir = NULL, overwrite = c("yes", "older", "no"), 
+    outdir = NULL, overwrite = c("yes", "older", "no"),
     in.ext = "any", compressed = TRUE,
     ..., verbose = TRUE, demo = FALSE) {
   create_outfile_names <- function(infiles, outdir, out.ext) {
@@ -1037,7 +1036,7 @@ batch_process <- function(names, out.ext, io.fun, fun.args = list(), proc = 1L,
   }
   fun.args <- as.list(fun.args)
   data <- mapply(c, infiles, outfiles, SIMPLIFY = FALSE, USE.NAMES = FALSE)
-  result <- traverse(object = data, func = process_io, cores = proc, 
+  result <- traverse(object = data, func = process_io, cores = proc,
     io.fun = io.fun, fun.args = fun.args,
     overwrite = overwrite, verbose = verbose)
   invisible(do.call(rbind, result))
@@ -1077,18 +1076,18 @@ batch_process <- function(names, out.ext, io.fun, fun.args = list(), proc = 1L,
 #'   \code{fun} and \code{fun.args} are set automatically.
 #' @export
 #' @note \itemize{
-#'   \item Regarding the CSV format, see the remark to 
-#'     \code{\link{read_single_opm}}. 
+#'   \item Regarding the CSV format, see the remark to
+#'     \code{\link{read_single_opm}}.
 #'   \item This function is for batch-converting many
 #'     files; for writing a single object to a YAML file (or string), see
 #'     \code{\link{to_yaml}}.
 #'   \item When inputting YAML files generated with the help of the \pkg{yaml}
-#'     package (on which the \pkg{opm} implementation is based) using other 
-#'     programming languages, a potential problem is that they, and YAML in 
+#'     package (on which the \pkg{opm} implementation is based) using other
+#'     programming languages, a potential problem is that they, and YAML in
 #'     general, lack a native representation of \code{NA} values. Such entries
 #'     are likely to be misunderstood as \sQuote{NA} character scalars.
 #' }
-#' @return The function invisibly returns a matrix which describes each 
+#' @return The function invisibly returns a matrix which describes each
 #'   attempted file conversion. See \code{\link{batch_process}} for details.
 #' @family IO-functions
 #' @references \url{http://www.yaml.org/}
@@ -1097,44 +1096,44 @@ batch_process <- function(names, out.ext, io.fun, fun.args = list(), proc = 1L,
 #' @keywords IO
 #'
 #' @details
-#'   A YAML document can comprise \emph{scalars} (single values of some 
-#'   type), \emph{sequences} (ordered collections of some values, without 
+#'   A YAML document can comprise \emph{scalars} (single values of some
+#'   type), \emph{sequences} (ordered collections of some values, without
 #'   names) and \emph{mappings} (collections assigning a name to each value),
 #'   in a variety of combinations (e.g., mappings of sequences). The output
 #'   of \code{batch_opm_to_yaml} is one YAML document \emph{per plate} which
 #'   represents a mapping with the following components (key-value pairs):
 #'   \describe{
-#'     \item{metadata}{Arbitrarily nested mapping of arbitrary metadata 
+#'     \item{metadata}{Arbitrarily nested mapping of arbitrary metadata
 #'       entries. Empty if no metadata have been added.}
-#'     \item{csv_data}{Non-nested mapping containing the OmniLog(R) run 
+#'     \item{csv_data}{Non-nested mapping containing the OmniLog(R) run
 #'       information read from the input CSV file (character scalars) together
-#'       with the measurements. The most important entry is most likely the 
+#'       with the measurements. The most important entry is most likely the
 #'       plate type.}
-#'     \item{measurements}{A mapping whose values are sequences of 
-#'       floating-point numbers of the same length and in the appropriate 
-#'       order. The keys are \sQuote{hours}, which refers to the time points, 
-#'       and the well coordinates, ranging between \sQuote{A01} and 
+#'     \item{measurements}{A mapping whose values are sequences of
+#'       floating-point numbers of the same length and in the appropriate
+#'       order. The keys are \sQuote{hours}, which refers to the time points,
+#'       and the well coordinates, ranging between \sQuote{A01} and
 #'       \sQuote{H12}.}
 #'     \item{aggregated}{A mapping, only present if curve parameters have been
 #'       estimated. Its keys correspond to those of \sQuote{measurements} with
-#'       the exception of \sQuote{hours}. The values are themselves mappings, 
+#'       the exception of \sQuote{hours}. The values are themselves mappings,
 #'       whose keys indicate the respective curve parameter and whether this
-#'       is the point estimate or the upper or lower confidence interval. The 
+#'       is the point estimate or the upper or lower confidence interval. The
 #'       values of these secondary mappings are floating-point numbers.}
-#'     \item{aggr_settings}{A mapping, only present if curve parameters have 
-#'       been estimated. Its keys are \sQuote{program} and \sQuote{options}. 
+#'     \item{aggr_settings}{A mapping, only present if curve parameters have
+#'       been estimated. Its keys are \sQuote{program} and \sQuote{options}.
 #'       The value of the former is a character scalar. The value of the latter
 #'       is an arbitrarily nested mapping with arbitrary content.}
 #'   }
 #'   Details of the contents should be obvious from the documentation of the
-#'   classes of the objects from which the YAML output is generated. In the 
+#'   classes of the objects from which the YAML output is generated. In the
 #'   case of YAML input with several plates per file, \code{batch_opm_to_yaml}
 #'   generates YAML output files containing a sequence of mappings as described
-#'   above, one per plate, to keep a 1:1 relationship between input and output 
+#'   above, one per plate, to keep a 1:1 relationship between input and output
 #'   files.
-#' 
-#' @examples 
-#' test.files <- grep("Multiple", opm_files("testdata"), invert = TRUE, 
+#'
+#' @examples
+#' test.files <- grep("Multiple", opm_files("testdata"), invert = TRUE,
 #'   value = TRUE, fixed = TRUE)
 #' if (length(test.files) > 0) {
 #'   num.files <- length(list.files(outdir <- tempdir()))
@@ -1145,7 +1144,7 @@ batch_process <- function(names, out.ext, io.fun, fun.args = list(), proc = 1L,
 #'   unlink(x[, "outfile"])
 #' }
 #'
-batch_opm_to_yaml <- function(names, md.args = NULL, aggr.args = NULL, 
+batch_opm_to_yaml <- function(names, md.args = NULL, aggr.args = NULL,
     force.aggr = FALSE, gen.iii = FALSE, ..., verbose = TRUE, demo = FALSE) {
 
   convert_dataset <- function(data) {
@@ -1180,7 +1179,7 @@ batch_opm_to_yaml <- function(names, md.args = NULL, aggr.args = NULL,
     write(to_yaml(data), outfile)
   }
 
-  # If a metadata filename is given, read it into dataframe right now to
+  # If a metadata filename is given, read it into data frame right now to
   # avoid opening the file each time in the batch_process() loop
   if (length(md.args) > 0L && is.character(md.args$md)) {
     tmp <- md.args
@@ -1206,7 +1205,7 @@ batch_opm_to_yaml <- function(names, md.args = NULL, aggr.args = NULL,
 
 #' Split files
 #'
-#' Split files, i.e. subdivide each file into sections which are written 
+#' Split files, i.e. subdivide each file into sections which are written
 #' individually to newly generated files. Sections are determined with patterns
 #' that match the start of a section.
 #'
@@ -1214,10 +1213,10 @@ batch_opm_to_yaml <- function(names, md.args = NULL, aggr.args = NULL,
 #'   be split.
 #' @param pattern Regular expression or shell globbing pattern for matching the
 #'   separator lines if \code{invert} is \code{FALSE} (the default) or matching
-#'   the non-separator lines if otherwise. Conceptually each of the sections 
-#'   into which a file is split comprises a separator line followed by 
-#'   non-separator lines. That is, separator lines followed by another 
-#'   separator line are ignored. Non-separator lines not preceded by a 
+#'   the non-separator lines if otherwise. Conceptually each of the sections
+#'   into which a file is split comprises a separator line followed by
+#'   non-separator lines. That is, separator lines followed by another
+#'   separator line are ignored. Non-separator lines not preceded by a
 #'   separator line are treated as a section of their own, however.
 #'
 #' @param outdir Character scalar determining the output directory. If empty,
@@ -1235,7 +1234,7 @@ batch_opm_to_yaml <- function(names, md.args = NULL, aggr.args = NULL,
 #'   that first needs to be converted to a regular expression?
 #' @param invert Logical scalar. Invert pattern matching, i.e. treat all lines
 #'   that \strong{not} match \code{pattern} as separators?
-#' @param include Logical scalar. Also include the separator lines in the 
+#' @param include Logical scalar. Also include the separator lines in the
 #'   output files?
 #'
 #' @param format Character scalar determining the outfile name format. It is
@@ -1252,7 +1251,7 @@ batch_opm_to_yaml <- function(names, md.args = NULL, aggr.args = NULL,
 #'   matching the seperator lines. See also \code{invert} listed above.
 #'
 #' @export
-#' @return List of character vectors, each vector containing the names of the 
+#' @return List of character vectors, each vector containing the names of the
 #'   newly generated files. The names of the list are the input filenames. The
 #'   list is returned invisibly.
 #'
@@ -1280,10 +1279,10 @@ batch_opm_to_yaml <- function(names, md.args = NULL, aggr.args = NULL,
 #' # split_files(x, pattern = '^("Data File",|Data File)')
 #' ## This is used by the run_opm.R script
 #'
-split_files <- function(files, pattern, outdir = "", demo = FALSE, 
+split_files <- function(files, pattern, outdir = "", demo = FALSE,
     single = TRUE, wildcard = FALSE, invert = FALSE, include = TRUE,
     format = "%s-%05i.%s", compressed = TRUE, ...) {
-  
+
   create_outnames <- function(files, compressed, outdir) {
     file.pat <- file_pattern("any", compressed = compressed)
     out.base <- sub(file.pat, "", files, perl = TRUE, ignore.case = TRUE)
@@ -1304,7 +1303,7 @@ split_files <- function(files, pattern, outdir = "", demo = FALSE,
 
   invisible(mapply(function(infile, out.base, out.ext) {
     data <- readLines(con = infile)
-    data <- split(data, group_by_sep(object = data, pattern = pattern, 
+    data <- split(data, group_by_sep(object = data, pattern = pattern,
       invert = invert, include = include, ...))
     if ((len <- length(data)) == 0L || (!single && len == 1L))
       return(character())
@@ -1324,7 +1323,7 @@ split_files <- function(files, pattern, outdir = "", demo = FALSE,
 #
 # File renaming
 #
-                   
+
 
 ## NOTE: not an S4 method because conversion is done
 
@@ -1333,7 +1332,7 @@ split_files <- function(files, pattern, outdir = "", demo = FALSE,
 #' Clean file names by removing anything else then word characters, dashes, and
 #' dots. Also remove trailing and leading dashes and underscores (per part of a
 #' file name, with dots separating these parts) and reduce adjacent dashes and
-#' underscores to a single one. Note that directory parts within the file 
+#' underscores to a single one. Note that directory parts within the file
 #' names, if any, are not affected.
 #'
 #' @param x Character vector or convertible to such. Names of the files to
@@ -1345,7 +1344,7 @@ split_files <- function(files, pattern, outdir = "", demo = FALSE,
 #'   this does not indicate whether the renaming would also by successful.)
 #' @param empty.tmpl Character scalar. The template to use for filenames that
 #'   become empty after cleaning. Should include an integer placeholder to
-#'   enable incrementing an index for creating unique filenames. (Empty 
+#'   enable incrementing an index for creating unique filenames. (Empty
 #'   filenames should occur rarely anyway.)
 #' @export
 #' @return Character vector, its names corresponding to the renamed old files,
@@ -1354,20 +1353,20 @@ split_files <- function(files, pattern, outdir = "", demo = FALSE,
 #' @keywords utilities
 #' @seealso base::file.rename
 #' @examples
-#'  
+#'
 #' # Check the example files: they should be ok
 #' (x <- clean_filenames(opm_files("testdata"), demo = TRUE))
-#' stopifnot(length(x) == 0)  
-#'   
+#' stopifnot(length(x) == 0)
+#'
 #' # Example with temporary files
-#' (x <- tempfile(pattern = "cb& ahi+ si--"))  
+#' (x <- tempfile(pattern = "cb& ahi+ si--"))
 #' write("test", x)
 #' stopifnot(file.exists(x))
 #' (y <- clean_filenames(x))
 #' stopifnot(!file.exists(x), file.exists(y))
 #' unlink(y) # tidy up
 #'
-clean_filenames <- function(x, overwrite = FALSE, demo = FALSE, 
+clean_filenames <- function(x, overwrite = FALSE, demo = FALSE,
     empty.tmpl = "__EMPTY__%05i__") {
   empty.idx <- 0L
   clean_parts <- function(x) {
@@ -1400,8 +1399,8 @@ clean_filenames <- function(x, overwrite = FALSE, demo = FALSE,
   invisible(result)
 }
 
-                   
+
 ################################################################################
 
 
-                   
+

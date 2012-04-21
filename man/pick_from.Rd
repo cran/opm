@@ -7,13 +7,13 @@
   \item{selection}{Named list, keys should correspond to
   column names of \code{object}, values to one to several
   alternative values that should occur in the respective
-  dataframe column.}
+  data-frame column.}
 }
 \value{
   Dataframe.
 }
 \description{
-  Pick rows from a dataframe if selected columns are
+  Pick rows from a data frame if selected columns are
   identical to keys.
 }
 \keyword{internal}

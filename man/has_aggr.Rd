@@ -2,10 +2,14 @@
 \alias{has_aggr}
 \title{Are aggregated data present?}
 \arguments{
-  \item{object}{\code{\link{OPM}} object.}
+  \item{object}{\code{\link{OPM}} or \code{\link{OPMS}}
+  object.}
+
+  \item{...}{Optional arguments passed between the
+  methods.}
 }
 \value{
-  Logical scalar.
+  Logical vector, one element per plate.
 }
 \description{
   Check whether aggregated data are present. This always
@@ -13,8 +17,13 @@
   not necessarily for its child classes.
 }
 \examples{
+# 'OPM' method
 data(vaas_1)
 stopifnot(has_aggr(vaas_1))
+
+# 'OPMS' method
+data(vaas_4)
+stopifnot(has_aggr(vaas_4))
 }
 \seealso{
   Other getter-functions: \code{\link{aggr_settings}},
@@ -35,7 +44,10 @@ stopifnot(has_aggr(vaas_1))
 \docType{methods}
 \alias{has_aggr-methods}
 \alias{has_aggr,OPM-method}
+\alias{has_aggr,OPMS-method}
 \usage{
   \S4method{has_aggr}{OPM}(object) 
+
+  \S4method{has_aggr}{OPMS}(object, ...) 
 
 }

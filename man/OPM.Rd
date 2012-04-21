@@ -19,8 +19,8 @@
   between slot names and keys in the list, i.e. the list
   must be appropriately named. For instance, this is the
   mechanism when reading from and writing to YAML, see
-  \code{\link{to_yaml}}.  \item Coercions to other
-  dataframes and matrices first coerce the
+  \code{\link{to_yaml}}.  \item Coercions to other data
+  frames and matrices first coerce the
   \code{\link{measurements}} and then add the other slots
   as attributes.  \item Methods such as
   \code{\link{flatten}} might be more appropriate for

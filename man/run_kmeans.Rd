@@ -45,7 +45,8 @@ stopifnot(sapply(x.km, class) == "kmeans", names(x.km) == 1:10)
   \code{\link{hist.kmeans}}, \code{\link{hist.kmeanss}},
   \code{\link{plot.kmeanss}}, \code{\link{to_kmeans}},
   \code{\link{to_kmeans.Ckmeans.1d.dp}},
-  \code{\link{to_kmeans.kmeans}}
+  \code{\link{to_kmeans.kmeans}},
+  \code{\link{to_kmeans.kmeanss}}
 }
 \keyword{cluster}
 
@@ -53,7 +54,7 @@ stopifnot(sapply(x.km, class) == "kmeans", names(x.km) == 1:10)
 \alias{run_kmeans-methods}
 \alias{run_kmeans,numeric-method}
 \usage{
-  \S4method{run_kmeans}{numeric}(object, k, 
+  \S4method{run_kmeans}{numeric}(object, k,
     program = c("Ckmeans.1d.dp", "kmeans"), kmeans.args = list()) 
 
 }

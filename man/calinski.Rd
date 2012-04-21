@@ -31,7 +31,8 @@
   methods, and/or between the methods.}
 
   \item{y}{Original numeric vector that was used to create
-  a \sQuote{Ckmeans.1d.dp} object.}
+  a \sQuote{Ckmeans.1d.dp} object, or index of an element
+  of a \sQuote{kmeanss} object.}
 }
 \value{
   \code{calinksi} returns a numeric vector with one element
@@ -50,8 +51,7 @@ data(vaas_4)
 x <- as.vector(extract(vaas_4, as.labels = NULL, subset = "A"))
 x.km <- run_kmeans(x, k = 1:10)
 # the usual arguments of plot() are available
-y <- plot(x.km, col = "blue", pch = 19)
-show(y)
+show(y <- plot(x.km, col = "blue", pch = 19))
 stopifnot(is.numeric(y), names(y) == 1:10)
 }
 \seealso{
@@ -63,7 +63,8 @@ stopifnot(is.numeric(y), names(y) == 1:10)
   \code{\link{hist.kmeans}}, \code{\link{hist.kmeanss}},
   \code{\link{run_kmeans}}, \code{\link{to_kmeans}},
   \code{\link{to_kmeans.Ckmeans.1d.dp}},
-  \code{\link{to_kmeans.kmeans}}
+  \code{\link{to_kmeans.kmeans}},
+  \code{\link{to_kmeans.kmeanss}}
 }
 \keyword{cluster}
 \keyword{hplot}

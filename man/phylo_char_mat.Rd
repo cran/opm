@@ -10,7 +10,7 @@
   \item{enclose}{Logical scalar. See
   \code{\link{phylo_data}}.}
 
-  \item{remove.constant}{Logical scalar. See
+  \item{remove.const}{Logical scalar. See
   \code{\link{phylo_data}}.}
 
   \item{remove.ambig}{Logical scalar. See
@@ -30,7 +30,7 @@
 \alias{phylo_char_mat-methods}
 \alias{phylo_char_mat,matrix-method}
 \usage{
-  \S4method{phylo_char_mat}{matrix}(object, format, enclose = TRUE, 
-    remove.constant = TRUE, remove.ambig = TRUE) 
+  \S4method{phylo_char_mat}{matrix}(object, format, enclose = TRUE,
+    delete = c("uninf", "constant", "ambig", "none")) 
 
 }

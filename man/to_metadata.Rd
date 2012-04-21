@@ -3,7 +3,7 @@
 \title{Input metadata}
 \arguments{
   \item{object}{Name of input file (character scalar), or
-  any object convertible to a dataframe.}
+  any object convertible to a data frame.}
 
   \item{stringsAsFactors}{Logical scalar passed to
   \code{as.data.frame}.}
@@ -31,7 +31,7 @@
   contains some useful adaptations (such as \strong{not}
   converting strings to factors, and not modifying column
   names). The default method reads metadata from an object
-  convertible to a dataframe and is only a thin wrapper of
+  convertible to a data frame and is only a thin wrapper of
   \code{as.data.frame} but contains the same useful
   adaptations as the filename method.
 }
@@ -85,7 +85,7 @@ stopifnot(!identical(names(x), names(x1)), identical(names(x), names(x2)))
     sep = "\t", check.names = FALSE, strip.white = TRUE,
     stringsAsFactors = FALSE, ...) 
 
-  \S4method{to_metadata}{ANY}(object, stringsAsFactors = FALSE, 
+  \S4method{to_metadata}{ANY}(object, stringsAsFactors = FALSE,
     optional = TRUE, ...) 
 
 }

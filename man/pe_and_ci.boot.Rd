@@ -4,7 +4,8 @@
 \usage{
   \method{pe_and_ci}{boot} (x, ci = 0.95,
     as.pe = c("median", "mean", "pe"),
-    type = c("basic", "perc", "norm"), ...)
+    type = c("basic", "perc", "norm"), fill.nas = FALSE,
+    ...)
 }
 \arguments{
   \item{x}{Object of class \sQuote{boot}.}
@@ -17,6 +18,12 @@
 
   \item{type}{Character scalar. See \code{\link{boot.ci}}
   from the \pkg{boot} package.}
+
+  \item{fill.nas}{Logical scalar. Assume that if the CI
+  borders are both \code{NA} bootstrapping yielded constant
+  values if the point estimate is not \code{NA}, and
+  replace the CI borders by the point estimate in such
+  cases.}
 
   \item{...}{Optional arguments passed to
   \code{\link{boot.ci}} from the \pkg{boot} package.}

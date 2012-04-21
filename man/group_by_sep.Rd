@@ -48,7 +48,7 @@
 \usage{
   \S4method{group_by_sep}{logical}(object, include = TRUE) 
 
-  \S4method{group_by_sep}{character}(object, pattern, 
+  \S4method{group_by_sep}{character}(object, pattern,
     invert = FALSE, include = TRUE, ...) 
 
 }

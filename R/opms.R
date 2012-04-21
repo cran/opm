@@ -25,8 +25,7 @@ setMethod("opms_problems", "list", function(object) {
     errs <- c(errs, "less than two plates submitted")
     return(errs) # further checks are useless in that case
   }
-  no.opm <- which(!sapply(object, inherits, OPM))
-  if (length(no.opm) > 0L) {
+  if (length(no.opm <- which(!sapply(object, is, OPM))) > 0L) {
     bad.classes <- sapply(object[no.opm], class)
     errs <- c(errs, paste("wrong class:", bad.classes))
     return(errs) # further checks are impossible in that case
@@ -36,7 +35,7 @@ setMethod("opms_problems", "list", function(object) {
       paste(isuni, collapse = " <=> ")))
   if (!isTRUE(is_uniform(lapply(object, wells))))
     errs <- c(errs, "wells are not uniform")
-  if (length(errs) == 0L && 
+  if (length(errs) == 0L &&
       !isTRUE(is_uniform(lapply(object, FUN = hours, what = "all"))))
     warning("running times are not uniform")
   errs
@@ -51,7 +50,7 @@ setMethod("opms_problems", "list", function(object) {
 #' Class for holding multi-plate OmniLog(R) phenotype microarray data with or
 #' without aggregated values. The data may have been obtained from distinct
 #' organisms and/or replicates, but \strong{must} correspond to the same plate
-#' type and \strong{must} contain the same wells. Regarding the name: 
+#' type and \strong{must} contain the same wells. Regarding the name:
 #' \sQuote{OPMS} is just the plural of \sQuote{OPM}.
 #'
 #' @docType class
@@ -82,17 +81,6 @@ setClass(OPMS,
 ################################################################################
 
 
-#' Initialize
-#'
-#' Initialize method for the \code{\link{OPMS}} class.
-#'
-#' @name initialize,OPMS
-#'
-#' @param .Object \code{\link{OPMS}} object.
-#' @param ... Additional arguments.
-#' @return \code{\link{OPMS}} object.
-#' @keywords internal
-#'
 setMethod("initialize", OPMS, function(.Object, ...) {
   .Object <- callNextMethod()
   names(.Object@plates) <- NULL
@@ -123,7 +111,7 @@ setMethod("initialize", OPMS, function(.Object, ...) {
 #' @family combination-functions
 #' @keywords manip
 #'
-#' @examples 
+#' @examples
 #'
 #' data(vaas_1)
 #' data(vaas_4)
@@ -206,8 +194,8 @@ setMethod("+", c(OPMS, "list"), function(e1, e2) {
 #' @family getter-functions
 #' @seealso base::length
 #' @keywords attribute
-#' @examples 
-#' data(vaas_4) 
+#' @examples
+#' data(vaas_4)
 #' (x <- length(vaas_4))
 #' stopifnot(identical(x, 4L))
 #'
@@ -232,18 +220,20 @@ setMethod("dim", OPMS, function(x) {
 setGeneric("seq")
 #' Sequence of plate indexes
 #'
-#' Get the indexes of all plates contained in an \code{\link{OPMS}} object. 
+#' Get the indexes of all plates contained in an \code{\link{OPMS}} object.
 #' This is mainly useful for looping over such objects. See \code{\link{[}} for
 #' a loop-construct usage example, and note that \code{\link{oapply}} is also
 #' available.
 #'
-#' @param ... \code{\link{OPMS}} objects. Only the first one is used.
+#' @param ... \code{\link{OPMS}} objects. Several ones can be provided, but
+#'   only the first one is used. Passing \code{\link{OPMS}} objects together
+#'   with other objects to this function makes the results uninterpretable.
 #' @return Integer vector (starting with 1 and at least of length 2).
 #' @export
 #' @family getter-functions
 #' @keywords attribute
 #' @seealso base::seq
-#' @examples 
+#' @examples
 #' data(vaas_4)
 #' (x <- seq(vaas_4))
 #' stopifnot(identical(x, 1:4))
@@ -267,7 +257,7 @@ setGeneric("plates", function(object, ...) standardGeneric("plates"))
 #' @family conversion-functions
 #' @keywords attribute
 #' @seealso base::list base::as.list
-#' @examples 
+#' @examples
 #' data(vaas_4)
 #' x <- plates(vaas_4)
 #' stopifnot(is.list(x), length(x) == 4L)
@@ -318,16 +308,16 @@ setGeneric("oapply", function(object, ...) standardGeneric("oapply"))
 #'
 #' Apply a function to all \code{\link{OPM}} or \code{\link{OPMA}} objects
 #' within an \code{\link{OPMS}} object. Optionally simplify the result to an
-#' \code{\link{OPMS}} object if possible, or other structures simpler than a 
+#' \code{\link{OPMS}} object if possible, or other structures simpler than a
 #' list.
 #'
 #' @param object \code{\link{OPMS}} object.
-#' @param fun A function. Should expect an  \code{\link{OPM}} (or 
+#' @param fun A function. Should expect an  \code{\link{OPM}} (or
 #'   \code{\link{OPMA}}) object as first argument.
 #' @param ... Optional other arguments passed to \code{fun}.
 #' @param simplify Logical scalar. If \code{FALSE}, the result is a list. If
 #'   \code{TRUE}, it is attempted to simplify the result to a vector or matrix
-#'   or to an \code{\link{OPMS}} object (if the result is a list of 
+#'   or to an \code{\link{OPMS}} object (if the result is a list of
 #'   \code{\link{OPM}} or \code{\link{OPMA}} objects). If this is impossible,
 #'   a list is returned.
 #' @export
@@ -335,7 +325,7 @@ setGeneric("oapply", function(object, ...) standardGeneric("oapply"))
 #' @family conversion-functions
 #' @keywords manip
 #' @seealso base::sapply
-#' @examples 
+#' @examples
 #' data(vaas_4)
 #' x <- oapply(vaas_4, identity)
 #' stopifnot(identical(x, vaas_4))
@@ -343,7 +333,7 @@ setGeneric("oapply", function(object, ...) standardGeneric("oapply"))
 #' stopifnot(is.list(x), length(x) == 4, sapply(x, class) == "OPMA")
 #'
 setMethod("oapply", OPMS, function(object, fun, ..., simplify = TRUE) {
-  result <- sapply(X = object@plates, FUN = fun, ..., simplify = simplify, 
+  result <- sapply(X = object@plates, FUN = fun, ..., simplify = simplify,
     USE.NAMES = FALSE)
   if (simplify && is.list(result))
     result <- try_opms(result)
@@ -361,14 +351,14 @@ setGeneric("duplicated")
 #' are contained within an \code{\link{OPMS}} object.
 #'
 #' @param x \code{\link{OPMS}} object.
-#' @param incomparables Vector of values that cannot be compared. See 
+#' @param incomparables Vector of values that cannot be compared. See
 #'   \code{duplicated} from the \pkg{base} package for details.
 #' @param ... Optional other arguments passed to that function.
 #' @export
 #' @return Logical vector.
 #' @family getter-functions
 #' @keywords attribute
-#' @examples 
+#' @examples
 #' data(vaas_4)
 #' stopifnot(!duplicated(vaas_4))
 #' x <- vaas_4[c(1, 1)]
@@ -381,7 +371,7 @@ setMethod("duplicated", OPMS, function(x, incomparables = FALSE, ...) {
 
 ################################################################################
 
-  
+
 setGeneric("anyDuplicated")
 #' Determine whether plates are duplicated
 #'
@@ -389,29 +379,29 @@ setGeneric("anyDuplicated")
 #' are contained within an \code{\link{OPMS}} object.
 #'
 #' @param x \code{\link{OPMS}} object.
-#' @param incomparables Vector of values that cannot be compared. See 
+#' @param incomparables Vector of values that cannot be compared. See
 #'   \code{anyDuplicated} from the \pkg{base} package for details.
 #' @param fromLast Logical scalar. See  below and
 #'   \code{anyDuplicated} from the \pkg{base} package for details.
 #' @param ... Optional other arguments passed to that function.
 #' @export
 #' @return Integer scalar. \code{0} if no values are duplicated, the index of
-#'   the first or last (depending on \code{fromLast}) duplicated object 
+#'   the first or last (depending on \code{fromLast}) duplicated object
 #'   otherwise.
 #' @family getter-functions
 #' @keywords attribute
-#' @examples 
+#' @examples
 #' data(vaas_4)
 #' stopifnot(!anyDuplicated(vaas_4))
 #' x <- vaas_4[c(1, 1)]
 #' stopifnot(anyDuplicated(x) == 2)
 #'
-setMethod("anyDuplicated", OPMS, function(x, incomparables = FALSE, 
+setMethod("anyDuplicated", OPMS, function(x, incomparables = FALSE,
     fromLast = FALSE, ...) {
-  anyDuplicated(x = x@plates, incomparables = incomparables, 
+  anyDuplicated(x = x@plates, incomparables = incomparables,
     fromLast = fromLast, ...)
 }, sealed = SEALED)
-  
+
 
 ################################################################################
 
@@ -424,17 +414,21 @@ setGeneric("merge")
 #' times accordingly.
 #'
 #' @param x \code{\link{OPMS}} object.
-#' @param y Numeric vector indicating the time(s) (in hours) between two 
+#' @param y Numeric vector indicating the time(s) (in hours) between two
 #'   subsequent plates. Must be positive throughout, and its length should
 #'   fit to the number of plates (e.g., either \code{1} or \code{length(x) - 1}
 #'   would work). If missing, \code{0.25} is used.
 #' @export
-#' @return \code{\link{OPM}} object. The \code{\link{metadata}} and 
+#' @return \code{\link{OPM}} object. The \code{\link{metadata}} and
 #'   \code{\link{csv_data}} will be taken from the first contained plate, but
 #'   aggregated values, if any, will be dropped.
+#' @note This function is intended for dealing with slowly growing or reacting 
+#'   organisms that need to be analyzed with subsequent runs of the same plate
+#'   in PM mode. Results obtained with \emph{Geodermatophilus} strains and
+#'   Generation-III plates indicate that this works well in practice.
 #' @family conversion-functions
 #' @keywords manip
-#' @examples 
+#' @examples
 #' data(vaas_4)
 #' summary(x <- merge(vaas_4))
 #' stopifnot(is(x, "OPM"), dim(x) == c(sum(hours(vaas_4, "size")), 96))
@@ -443,10 +437,16 @@ setMethod("merge", c(OPMS, "numeric"), function(x, y) {
   if (any(y <= 0))
     stop("'y' must be positive throughout")
   m <- do.call(rbind, measurements(x))
-  tp <- hours(x, what = "all")
-  to.add <- must(cumsum(tp[-nrow(tp), ncol(tp), drop = FALSE]) + y)
-  m[, 1L] <- as.vector(t(tp + c(0, to.add)))
-  new(OPM, measurements = m, csv_data = csv_data(x[1L]), 
+  if (is.matrix(tp <- hours(x, what = "all"))) {
+    to.add <- c(0, must(cumsum(tp[-nrow(tp), ncol(tp), drop = FALSE]) + y))
+    m[, 1L] <- as.vector(t(tp + to.add))
+  } else if (is.list(tp)) {
+    to.add <- c(0, must(cumsum(sapply(tp[-length(tp)], last)) + y))
+    m[, 1L] <- unlist(mapply(`+`, tp, to.add, SIMPLIFY = FALSE,
+      USE.NAMES = FALSE))
+  } else
+    stop(BUG_MSG)
+  new(OPM, measurements = m, csv_data = csv_data(x[1L]),
     metadata = metadata(x[1L]))
 }, sealed = SEALED)
 
@@ -469,11 +469,13 @@ setMethod("merge", c(OPMS, "missing"), function(x) {
 # only.
 #
 lapply(c(
+    #+
     wells,
     plate_type
-  ), FUN = function(func) {
-  setMethod(func, OPMS, function(object, ...) {
-    func(object@plates[[1L]], ...)
+    #-
+  ), FUN = function(func_) {
+  setMethod(func_, OPMS, function(object, ...) {
+    func_(object@plates[[1L]], ...)
   }, sealed = SEALED)
 })
 
@@ -482,6 +484,7 @@ lapply(c(
 # simplified.
 #
 lapply(c(
+    #+
     aggregated,
     aggr_settings,
     csv_data,
@@ -493,8 +496,9 @@ lapply(c(
     position,
     setup_time,
     well
-  ), FUN = function(func) {
-  setMethod(func, OPMS, function(object, ...) {
+    #-
+  ), FUN = function(func_) {
+  setMethod(func_, OPMS, function(object, ...) {
     simplify_conditionally <- function(x) { # instead of sapply()
       if (any(sapply(x, is.list)) || any(sapply(x, is.matrix)))
         return(x)
@@ -505,7 +509,7 @@ lapply(c(
       else
         unlist(x)
     }
-    simplify_conditionally(lapply(object@plates, FUN = func, ...))
+    simplify_conditionally(lapply(object@plates, FUN = func_, ...))
   }, sealed = SEALED)
 })
 
@@ -517,17 +521,19 @@ lapply(c(
 #
 
 
-# Based on OPM methods with function(object, ...) signature that return OPM(A) 
+# Based on OPM methods with function(object, ...) signature that return OPM(A)
 # objects.
 #
 lapply(c(
+    #+
     gen_iii,
     do_aggr,
     include_metadata,
     thin_out
-  ), FUN = function(func) {
-  setMethod(func, OPMS, function(object, ...) {
-    new(OPMS, plates = lapply(object@plates, FUN = func, ...))
+    #-
+  ), FUN = function(func_) {
+  setMethod(func_, OPMS, function(object, ...) {
+    new(OPMS, plates = lapply(object@plates, FUN = func_, ...))
   }, sealed = SEALED)
 })
 
@@ -536,17 +542,35 @@ lapply(c(
 ################################################################################
 #
 # Metadata functions (including the infix operators)
-# 
+#
 
 
 # OPM methods with function(x, table, ...) signature (infix operators).
 #
-lapply(c("%k%", "%K%", "%q%", "%Q%"), FUN = function(func) {
-  lapply(c("list", "character"), FUN = function(klass) {
-    setMethod(func, c(klass, OPMS), function(x, table) {
-      sapply(table@plates, func, x = x, USE.NAMES = FALSE)
-    }, sealed = SEALED)
-  })
+lapply(c(
+    #+
+    "%k%",
+    "%K%",
+    "%q%",
+    "%Q%"
+    #-
+  ), FUN = function(func_) {
+  setMethod(func_, c("list", OPMS), function(x, table) {
+    sapply(table@plates, func_, x = x, USE.NAMES = FALSE)
+  }, sealed = SEALED)
+})
+
+lapply(c(
+    #+
+    "%k%",
+    "%K%",
+    "%q%",
+    "%Q%"
+    #-
+  ), FUN = function(func_) {
+  setMethod(func_, c("character", OPMS), function(x, table) {
+    sapply(table@plates, func_, x = x, USE.NAMES = FALSE)
+  }, sealed = SEALED)
 })
 
 
@@ -571,7 +595,7 @@ setMethod("map_metadata", c(OPMS, "ANY"), function(object, mapping, ...) {
 setMethod("metadata<-", c(OPMS, "missing", "list"), function(object, value) {
   for (i in seq_along(object@plates))
     metadata(object@plates[[i]]) <- value
-  object    
+  object
 }, sealed = SEALED)
 
 #' @name metadata.set
@@ -641,31 +665,91 @@ setMethod("[", OPMS, function(x, i, j, ..., drop = FALSE) {
 
 ################################################################################
 
+setGeneric("sort")
+#' Sort OPMS objects
+#'
+#' Sort an \code{\link{OPMS}} based on metadata entries.
+#'
+#' @param x \code{\link{OPMS}} object.
+#' @param by A list of one to several keys passed as \code{key} argument to 
+#'   \code{\link{metadata}}. Other vectors are converted to a list, but only if
+#'   a list is used directly, nested queries are possible.
+#' @param decreasing Logical scalar. Passed to \code{order} from the \pkg{base}
+#'   package.
+#' @param na.last Logical scalar. Also passed to \code{order}.
+#' @param exact Logical scalar. Passed to \code{\link{metadata}}. Affects only
+#'   metadata querying, not directly the sorting.
+#' @param strict Logical scalar. Is it an error if metadata keys are not found?
+#'   If \code{FALSE}, \code{x} gets ordered according to only the found keys,
+#'   and remains in the original order if none of the keys in \code{by} are 
+#'   found at all. Note that it is always an error if keys are found in the
+#'   \code{\link{metadata}} of some of the\code{\link{plates}} but not in those
+#'   of others.
+#' @export
+#' @return \code{\link{OPMS}} object with not necessarily the same order of
+#'   plates than before.
+#' @family conversion-functions
+#' @keywords manip
+#' @seealso base::order base::sort
+#' @examples
+#' data(vaas_4)
+#'
+#' # Existing keys
+#' stopifnot(is.unsorted(metadata(vaas_4, "Strain")))
+#' x <- sort(vaas_4, by = list("Strain"))
+#' stopifnot(is(x, "OPMS"), !is.unsorted(metadata(x, "Strain")))
+#' x <- sort(vaas_4, by = "Strain", decreasing = TRUE)
+#' stopifnot(is(x, "OPMS"), is.unsorted(metadata(x, "Strain")))
+#'
+#' # Non-existing keys
+#' x <- try(sort(vaas_4, list("Not there", "Missing"), strict = TRUE))
+#' stopifnot(inherits(x, "try-error"))
+#' x <- try(sort(vaas_4, list("Not there", "Missing"), strict = FALSE))
+#' stopifnot(identical(x, vaas_4))
+#'
+setMethod("sort", "OPMS", function(x, by, decreasing = FALSE, na.last = TRUE, 
+    exact = TRUE, strict = TRUE) {
+  keys <- lapply(X = as.list(by), FUN = metadata, object = x, exact = exact, 
+    strict = strict)
+  if (!strict)
+    if (!length(keys <- keys[!sapply(keys, is.null)]))
+      return(x)
+  keys <- insert(keys, decreasing = decreasing, na.last = na.last, 
+    .force = TRUE)
+  x@plates <- x@plates[do.call(order, keys)]
+  x
+}, sealed = SEALED)
 
-setGeneric("select", function(object, ...) standardGeneric("select"))
+
+################################################################################
+
+
+setGeneric("select", function(object, query, ...) standardGeneric("select"))
 #' Select a subset of the plates (or time points)
 #'
-#' Select a subset of the plates in an \code{\link{OPMS}} object based on the 
-#' content of the metadata. Alternatively, select a common subset of time 
-#' points from all plates.
+#' Select a subset of the plates in an \code{\link{OPMS}} object based on the
+#' content of the metadata. Alternatively, select a common subset of time
+#' points from all plates. The data-frame method selects columns that belong to
+#' certain classes.
 #'
 #' @param object \code{\link{OPMS}} object.
-#' @param query Logical, numeric or character vector, or list (other objects 
+#' @param query Logical, numeric or character vector, or list (other objects
 #'   can be provided but are coerced to class \sQuote{character}). If a logical
 #'   or numeric vector, \code{query} is directly used as the first argument of
 #'   \code{\link{[}}, and all following arguments, if any, are ignored.
 #'   If a list or a character vector, it is used for conducting a query based
-#'   on one of the infix operators as described below.
+#'   on one of the infix operators as described below. The data-frame method
+#'   expects a character vector containing class names.
 #' @param values Logical scalar. If \code{TRUE}, the values of \code{query}
-#'   are also considered (by using \code{\link{infix.q}} or 
-#'   \code{\link{infix.largeq}}). If \code{FALSE} only the keys are considered 
-#'   (by using 
-#'   \code{\link{infix.k}}). That is, choose either the plates for which 
+#'   are also considered (by using \code{\link{infix.q}} or
+#'   \code{\link{infix.largeq}}). If \code{FALSE} only the keys are considered
+#'   (by using
+#'   \code{\link{infix.k}}). That is, choose either the plates for which
 #'   certain metadata entries contain certain values, or choose the plates
 #'   for which these metadata have been set at all (to some arbitrary value).
 #'   See the mentioned functions for details, and note the special behavior if
 #'   \code{query} is a character vector and \code{values} is \code{FALSE}.
-#' @param invert Logical scalar. If \code{TRUE}, return the plates for which 
+#' @param invert Logical scalar. If \code{TRUE}, return the plates for which
 #'   the condition is not \code{TRUE}.
 #' @param exact Logical scalar. If the values of \code{query} are considered,
 #'   should this be done using \code{\link{infix.q}} (when \code{FALSE}) or
@@ -675,26 +759,29 @@ setGeneric("select", function(object, ...) standardGeneric("select"))
 #'   and the object is reduced to a common subset of time point (measurement
 #'   hours and minutes).
 #' @param use Character scalar. An alternative way to specify the settings. If
-#'   \sQuote{i} or \sQuote{I}, ignored. If \sQuote{t} or \sQuote{T}, 
+#'   \sQuote{i} or \sQuote{I}, ignored. If \sQuote{t} or \sQuote{T},
 #'   \code{time} is set to \code{TRUE}. Otherwise, \code{use} is taken directly
 #'   as the one-latter name of the infix operators to use for plate
 #'   selection, overriding \code{values} and \code{exact}.
 #' @export
 #' @return \code{NULL} or \code{\link{OPM}} or \code{\link{OPMS}} object. This
 #'   depends on how many plates are selected; see \code{\link{[}} for details.
-#'   
+#'   The data-frame method returns a data frame.
+#'
 #' @family getter-functions
 #' @keywords manip
 #' @seealso base::`[` base::`[[` base::subset
-#' @examples 
+#' @examples
 #'
+#'
+#' ## 'OPMS' method
 #' data(vaas_4)
 #' # simple object comparison function
 #' mustbe <- function(a, b) stopifnot(identical(a, b))
 #'
 #' # all plates have that entry: selection identical to original object
-#' mustbe(vaas_4, vaas_4["Species" %k% vaas_4, ]) 
-#' mustbe(vaas_4, select(vaas_4, list(Species = "Escherichia coli"), 
+#' mustbe(vaas_4, vaas_4["Species" %k% vaas_4, ])
+#' mustbe(vaas_4, select(vaas_4, list(Species = "Escherichia coli"),
 #'   values  = FALSE)) # equivalent
 #'
 #' # two plates also have that value: yielding OPMS object with only two plates
@@ -715,9 +802,18 @@ setGeneric("select", function(object, ...) standardGeneric("select"))
 #' x <- select(copy, time = TRUE)
 #' mustbe(hours(x), rep(2.25, 4))
 #' # see also the example with split() given under "["
-#' 
+#'
+#' ## data-frame method
+#' x <- data.frame(a = 1:5, b = letters[1:5], c = LETTERS[1:5])
+#' (y <- select(x, "factor"))
+#' stopifnot(dim(y) == c(5, 2))
+#' (y <- select(x, "integer"))
+#' stopifnot(dim(y) == c(5, 1))
+#' (y <- select(x, c("factor", "integer")))
+#' mustbe(x, y)
+#'
 setMethod("select", OPMS, function(object, query, values = TRUE,
-    invert = FALSE, exact = FALSE, time = FALSE, 
+    invert = FALSE, exact = FALSE, time = FALSE,
     use = c("i", "I", "k", "K", "q", "Q", "t", "T")) {
   switch(match.arg(use),
     i =, I = NULL,
@@ -733,6 +829,7 @@ setMethod("select", OPMS, function(object, query, values = TRUE,
     t =, T = time <- TRUE,
     stop(BUG_MSG)
   )
+  assert_length(values, invert, exact, time)
   if (time) {
     tp <- hours(object, what = "all")
     if (is.matrix(tp))
@@ -759,6 +856,12 @@ setMethod("select", OPMS, function(object, query, values = TRUE,
   object[pos, , ]
 }, sealed = SEALED)
 
+#' @export
+#'
+setMethod("select", "data.frame", function(object, query) {
+  object[, sapply(object, inherits, what = query), drop = FALSE]
+}, sealed = SEALED)
+
 
 ################################################################################
 ################################################################################
@@ -771,33 +874,38 @@ setGeneric("extract_columns",
   function(object, ...) standardGeneric("extract_columns"))
 #' Create data frame or vector from metadata
 #'
-#' Extract selected metadata entries for use as additional columns in a  
-#' dataframe or (after joining) as character vector with labels. This is not
+#' Extract selected metadata entries for use as additional columns in a
+#' data frame or (after joining) as character vector with labels. This is not
 #' normally directly called by an \pkg{opm} user because
-#' \code{\link{extract}} is available, which uses this function, but can be 
-#' used for testing the applied metadata selections beforehand.
+#' \code{\link{extract}} is available, which uses this function, but can be
+#' used for testing the applied metadata selections beforehand. The data-frame
+#' method is trivial: it extracts the selected columns and joins them to form a
+#' character vector.
 #'
-#' @param object \code{\link{OPMS}} object.
+#' @param object \code{\link{OPMS}} object or data frame.
 #' @param what List of metadata keys to consider, or single such key; passed
-#'   to \code{\link{metadata}}.
+#'   to \code{\link{metadata}}. For the data-frame method, just the names of
+#'   the columns to extract, or their indices, as vector.
 #' @param join Logical scalar. Join each row together to yield a character
 #'   vector? Otherwise it is just attempted to construct a data frame.
 #' @param sep Character scalar. Used as separator between the distinct metadata
-#'   entries if these are to be pasted together. Ignored unless \code{join} 
-#'   is \code{TRUE}.
+#'   entries if these are to be pasted together. Ignored unless \code{join}
+#'   is \code{TRUE}. The data-frame method always joins the data.
 #' @param dups Character scalar specifying what to do in the case of duplicate
 #'   labels: either \sQuote{warn}, \sQuote{error} or \sQuote{ignore}. Ignored
 #'   unless \code{join} is \code{TRUE}.
 #' @param exact Logical scalar. Also passed to \code{\link{metadata}}.
 #' @param strict Logical scalar. Also passed to \code{\link{metadata}}.
 #' @export
-#' @return Data frame or character vector, depending on the \code{join} 
-#'   argument.
+#' @return Data frame or character vector, depending on the \code{join}
+#'   argument. The data-frame method always returns a character vector.
 #' @family conversion-functions
 #' @family metadata-functions
 #' @keywords dplot manip
 #' @seealso base::data.frame base::as.data.frame base::cbind
-#' @examples 
+#' @examples
+#'
+#' # 'OPMS' method
 #' data(vaas_4)
 #'
 #' # Create data frame
@@ -814,11 +922,17 @@ setGeneric("extract_columns",
 #'   dups = "warn"), silent = TRUE))
 #' stopifnot(is.character(x), length(x) == 4L)
 #'
+#' # data-frame method
+#' x <- data.frame(a = 1:26, b = letters, c = LETTERS)
+#' (y <- extract_columns(x, c("a", "b"), sep = "-"))
+#' stopifnot(grepl("^\\s*\\d+-[a-z]$", y))
+#'
 setMethod("extract_columns", OPMS, function(object, what, join = FALSE,
-    sep = " ", dups = c("warn", "error", "ignore"), exact = TRUE, 
+    sep = " ", dups = c("warn", "error", "ignore"), exact = TRUE,
     strict = TRUE) {
   result <- metadata(object, as.list(what), exact = exact, strict = strict)
   result <- lapply(result, FUN = rapply, f = as.character)
+  assert_length(join)
   if (join) {
     labels <- unlist(lapply(result, FUN = paste, collapse = sep))
     msg <- if (is.dup <- anyDuplicated(labels))
@@ -837,6 +951,12 @@ setMethod("extract_columns", OPMS, function(object, what, join = FALSE,
     must(as.data.frame(do.call(rbind, result)))
 }, sealed = SEALED)
 
+#' @export
+#'
+setMethod("extract_columns", "data.frame", function(object, what, sep = " ") {
+  apply(object[, what, drop = FALSE], 1L, FUN = paste, collapse = sep)
+}, sealed = SEALED)
+
 
 ################################################################################
 
@@ -844,9 +964,11 @@ setMethod("extract_columns", OPMS, function(object, what, join = FALSE,
 setGeneric("extract", function(object, ...) standardGeneric("extract"))
 #' Extract aggregated values
 #'
-#' Extract selected aggregated values into common matrix or dataframe.
+#' Extract selected aggregated values into common matrix or data frame. The
+#' data-frame method creates a matrix by extracting the numeric columns and
+#' optionally adds row names.
 #'
-#' @param object \code{\link{OPMS}} object.
+#' @param object \code{\link{OPMS}} object or data frame.
 #' @param as.labels List. Metadata to be joined and used as row names (if
 #'   \code{dataframe} is \code{FALSE}) or additional columns (if otherwise).
 #'   Ignored if \code{NULL}.
@@ -854,11 +976,12 @@ setGeneric("extract", function(object, ...) standardGeneric("extract"))
 #' @param subset Character vector. The parameter(s) to put in the matrix.
 #' @param ci Logical scalar. Also return the CIs?
 #' @param trim Character scalar. See \code{\link{aggregated}} for details.
-#' @param dataframe Logical scalar. Return dataframe or matrix?
+#' @param dataframe Logical scalar. Return data frame or matrix?
 #'
 #' @param as.groups List. Metadata to be joined and used as \sQuote{row.groups}
 #'   attribute of the output matrix. See \code{\link{heat_map}} for its usage.
-#'   Ignored if \code{NULL} and if \code{dataframe} is \code{FALSE}. 
+#'   Ignored if \code{NULL} and if \code{dataframe} is \code{FALSE}. For the
+#'   data-frame method, a vector.
 #' @param sep Character scalar. See \code{\link{extract_columns}}.
 #' @param dups Character scalar. See \code{\link{extract_columns}}.
 #'
@@ -867,40 +990,52 @@ setGeneric("extract", function(object, ...) standardGeneric("extract"))
 #'
 #' @param full Logical scalar indicating whether full substrate names shall
 #'   be used. This is passed to \code{\link{wells}}, but in contrast to what
-#'   \code{\link{flatten}} is doing the argument here refers to the generation 
+#'   \code{\link{flatten}} is doing the argument here refers to the generation
 #'   of the column names.
 #' @param max Numeric scalar. Passed to \code{\link{wells}}.
 #' @param ... Optional other arguments passed to \code{\link{wells}}.
 #'
+#' @param what Character scalar. The name of the class to extract from the
+#'   data frame to form the matrix values.
+#'
 #' @export
-#' @return Numeric matrix or dataframe.
+#' @return Numeric matrix or data frame; always a numeric matrix for the
+#'   data-frame method.
 #' @family conversion-functions
 #' @seealso base::data.frame base::as.data.frame base::matrix base::as.matrix
 #' @keywords manip dplot
-#' @examples 
+#' @examples
+#'
+#' # 'OPMS' method
 #' data(vaas_4)
 #' # Matrix
 #' (x <- extract(vaas_4, as.labels = list("Species", "Strain")))
 #' stopifnot(is.matrix(x), identical(dim(x), c(4L, 96L)))
 #' # Data frame
-#' (x <- extract(vaas_4, as.labels = list("Species", "Strain"), 
+#' (x <- extract(vaas_4, as.labels = list("Species", "Strain"),
 #'   dataframe = TRUE))
 #' stopifnot(is.data.frame(x), identical(dim(x), c(4L, 99L)))
-#' # All parameters in a single dataframe
+#' # All parameters in a single data frame
 #' x <- lapply(param_names(), function(name) extract(vaas_4, subset = name,
 #'   as.labels = list("Species", "Strain"), dataframe = TRUE))
 #' x <- do.call(rbind, x)
 #'
-setMethod("extract", OPMS, function(object, as.labels, subset = "A", 
+#' # data-frame method
+#' x <- data.frame(a = 1:26, b = letters, c = LETTERS)
+#' (y <- extract(x, as.labels = "b", what = "integer", as.groups = "c"))
+#' stopifnot(is.matrix(y), dim(y) == c(26, 1), rownames(y) == x$b)
+#' stopifnot(identical(attr(y, "row.groups"), x$c))
+#'
+setMethod("extract", OPMS, function(object, as.labels, subset = "A",
     ci = FALSE, trim = "full", dataframe = FALSE, as.groups = NULL, sep = " ",
-    dups = "warn", exact = TRUE, strict = TRUE, full = TRUE, max = 10000L, 
+    dups = "warn", exact = TRUE, strict = TRUE, full = TRUE, max = 10000L,
     ...) {
 
   do_extract <- function(what, join, dups = "ignore") {
     extract_columns(object, what = what, join = join, sep = sep, dups = dups,
       exact = exact, strict = strict)
   }
-  
+
   # Collect parameters in a matrix
   subset <- match.arg(subset, unlist(map_grofit_names(plain = TRUE)))
   if (!all(has_aggr(object)))
@@ -954,9 +1089,30 @@ setMethod("extract", OPMS, function(object, as.labels, subset = "A",
         attr(result, rg) <- rep(attr(result, rg), each = 3L)
     }
   }
-                              
+
   result
 
+}, sealed = SEALED)
+
+
+#' @export
+#'
+setMethod("extract", "data.frame", function(object, as.labels, 
+    as.groups = NULL, sep = " ", what = "numeric") {
+  find_stuff <- function(x, what) {
+    x <- select(x, query = what)
+    if (ncol(x) == 0L)
+      stop(sprintf("no data of class '%s' found", what))
+    as.matrix(x)
+  }
+  assert_length(what)
+  result <- find_stuff(object, what)
+  if (length(as.labels))
+    rownames(result) <- extract_columns(object, what = as.labels, sep = sep)
+  if (length(as.groups))
+    attr(result, "row.groups") <- as.factor(extract_columns(object,
+      what = as.groups, sep = sep))
+  result
 }, sealed = SEALED)
 
 
@@ -970,17 +1126,17 @@ setMethod("extract", OPMS, function(object, as.labels, subset = "A",
 setGeneric("ci_plot", function(object, ...) standardGeneric("ci_plot"))
 #' Plot point estimates with CIs
 #'
-#' Draw point estimates with their confidence intervals. The dataframe method
-#' is not normally directly called by an \pkg{opm} user but via the 
+#' Draw point estimates with their confidence intervals. The data frame method
+#' is not normally directly called by an \pkg{opm} user but via the
 #' \code{\link{OPMS}} method. This one is used for comparing aggregated values
 #' together with their confidence intervals between plates. This method can in
-#' most cases \strong{not} be applied to entire plates but to selected wells 
+#' most cases \strong{not} be applied to entire plates but to selected wells
 #' only.
 #'
-#' @param object Dataframe or \code{\link{OPMS}} object. If an 
+#' @param object Dataframe or \code{\link{OPMS}} object. If an
 #'   \code{\link{OPMS}} object, it is in most cases necessary to restrict
 #'   the plates to at most about one dozen wells. See \code{\link{[}}
-#'   for how to achieve this. The dataframe should be as exported by 
+#'   for how to achieve this. The data frame should be as exported by
 #'   \code{\link{extract}} with \code{ci}
 #'   set to \code{TRUE}. There must be a column named \sQuote{Parameter}
 #'   followed by columns with only numeric values. Columns before the
@@ -996,22 +1152,22 @@ setGeneric("ci_plot", function(object, ...) standardGeneric("ci_plot"))
 #' @param rowname.sep Character scalar. Used when joining explanatory columns
 #'   into row labels of the plots.
 #'
-#' @param prop.offset Numeric scalar. A proportional offset that is added to 
+#' @param prop.offset Numeric scalar. A proportional offset that is added to
 #'   the vertical range of the panels (after determining the maximum range
 #'   among all panels to ensure consistency within the plot).
-#' @param align Character scalar. How to apply the offset; one of 
+#' @param align Character scalar. How to apply the offset; one of
 #'   \sQuote{center}, \sQuote{left} and \sQuote{right}.
 #'
-#' @param col Character scalar. Color to be used.
+#' @param col Character scalar. Colour to be used.
 #'
-#' @param na.action Character scalar. What to do if a confidence interval 
-#'   contains \code{NA} values; one of \sQuote{ignore}, \sQuote{warn} and 
+#' @param na.action Character scalar. What to do if a confidence interval
+#'   contains \code{NA} values; one of \sQuote{ignore}, \sQuote{warn} and
 #'   \sQuote{error}.
 #'
 #' @param draw.legend Logical scalar. Ignored if there are no explanatory
 #'   columns.
 #' @param legend.field Two-element numeric vector. Indicates the panel in which
-#'   the legend is drawn. Subsequent arguments work then relative to this 
+#'   the legend is drawn. Subsequent arguments work then relative to this
 #'   panel. If \code{legend.field} has less then two fields, the number of
 #'   panels is set to 1 (the entire plot), and the legend is drawn relative to
 #'   that.
@@ -1019,19 +1175,20 @@ setGeneric("ci_plot", function(object, ...) standardGeneric("ci_plot"))
 #'   package. Ignored unless \code{draw.legend} is \code{TRUE}.
 #' @param xpd Logical scalar. Also passed to that function.
 #' @param ... Optional other arguments passed to that function, or arguments
-#'   passed from the \code{\link{OPMS}} method to the dataframe method.
+#'   passed from the \code{\link{OPMS}} method to the data frame method.
 #'
 #' @note \itemize{
 #'  \item The default placement of the legend is currently not necessarily very
-#'    useful. 
+#'    useful.
 #'  \item When plotting entire PM plates, the \sQuote{mar} parameter of
 #'     \code{par} most likely would need to be set to a lower value, but it
 #'     is recommended to plot only subsets of plates, i.e. selected wells.
 #'  }
 #'
-#' @references Vaas LAI, Sikorski J, Michael V, Goeker M, Klenk H-P. 
-#'   Visualization and curve parameter estimation strategies for efficient 
-#'   exploration of Phenotype Microarray kinetics. PLoS ONE 2012; in press.
+#' @references Vaas LAI, Sikorski J, Michael V, Goeker M, Klenk H-P. 2012
+#'   Visualization and curve parameter estimation strategies for efficient
+#'   exploration of Phenotype Microarray kinetics. \emph{PLoS ONE} \strong{7},
+#'   e34846.
 #'
 #' @return Character vector describing the plot's legend, returned invisibly.
 #' @family plotting-functions
@@ -1050,9 +1207,9 @@ setGeneric("ci_plot", function(object, ...) standardGeneric("ci_plot"))
 #' stopifnot(is.character(x), identical(length(x), 4L))
 #' # ... and that the return value contains the legend (even if it is not drawn)
 #'
-setMethod("ci_plot", "data.frame", function(object, rowname.sep = " ", 
+setMethod("ci_plot", "data.frame", function(object, rowname.sep = " ",
     prop.offset = 0.04, align = "center", col = "blue", na.action = "warn",
-    draw.legend = TRUE, legend.field = c(1, 1), x = "topleft", xpd = TRUE, 
+    draw.legend = TRUE, legend.field = c(1, 1), x = "topleft", xpd = TRUE,
     ...) {
 
   single_plot <- function(col.pos) {
@@ -1069,22 +1226,22 @@ setMethod("ci_plot", "data.frame", function(object, rowname.sep = " ",
 
   # Check the triplet structure and determine all triplet start positions
   if (nrow(object) %% 3L != 0L)
-    stop("need dataframe with 3 * n rows")
+    stop("need data frame with 3 * n rows")
   chunk.pos <- seq.int(nrow(object))
   chunk.pos <- chunk.pos[chunk.pos %% 3L == 1L]
   row.names <- as.character(seq_along(chunk.pos))
 
-  # Determine the 'Parameter' position, used for splitting the dataframe
+  # Determine the 'Parameter' position, used for splitting the data frame
   param.pos <- which(colnames(object) == "Parameter")
   if (length(param.pos) != 1L)
-    stop("need dataframe with one column called 'Parameter'")
+    stop("need data frame with one column called 'Parameter'")
   if (param.pos == ncol(object))
     stop("the data columns are missing")
 
   # Reorder the matrix and construct the legend if necessary
   if (param.pos > 1L) {
     factor.pos <- seq.int(1L, param.pos - 1L)
-    ordering <- do.call(order, as.list(object[, factor.pos, drop = FALSE])) 
+    ordering <- do.call(order, as.list(object[, factor.pos, drop = FALSE]))
     object <- object[ordering, , drop = FALSE]
     legend <- as.matrix(object[chunk.pos, factor.pos, drop = FALSE])
     legend <- apply(legend, 1L, paste, collapse = rowname.sep)
@@ -1093,7 +1250,7 @@ setMethod("ci_plot", "data.frame", function(object, rowname.sep = " ",
     legend <- NULL
 
   # Reduce to the numeric part of matrix
-  object <- as.matrix(object[, seq.int(param.pos + 1L, ncol(object)), 
+  object <- as.matrix(object[, seq.int(param.pos + 1L, ncol(object)),
     drop = FALSE])
 
   # Determine field range (which is set to be uniform)
@@ -1105,13 +1262,13 @@ setMethod("ci_plot", "data.frame", function(object, rowname.sep = " ",
 
   # Panel layout and plotting of individual panels
   old.par <- par(mfcol = best_layout(ncol(object)))
-  on.exit(par(old.par))              
+  on.exit(par(old.par))
   sapply(seq.int(ncol(object)), FUN = single_plot)
-    
+
   # Legend
   if (draw.legend && !is.null(legend)) {
     if (length(legend.field) > 1L)
-      par(mfg = legend.field[1L:2L])  
+      par(mfg = legend.field[1L:2L])
     else
       par(mfcol = c(1L, 1L))
     legend(x = x, legend = legend, xpd = xpd, ...)
@@ -1141,7 +1298,7 @@ setMethod("flatten", OPMS, function(object, include = NULL, fixed = list(),
     ...) {
   plate.nums <- paste("Plate", seq_along(object@plates))
   do.call(rbind, mapply(FUN = function(plate, plate.num) {
-    flatten(plate, include = include, 
+    flatten(plate, include = include,
       fixed = c(list(Plate = plate.num), fixed), ...)
   }, object@plates, plate.nums, SIMPLIFY = FALSE))
 }, sealed = SEALED)
@@ -1150,11 +1307,11 @@ setMethod("flatten", OPMS, function(object, include = NULL, fixed = list(),
 ################################################################################
 
 
-setGeneric("flattened_to_factor", 
+setGeneric("flattened_to_factor",
   function(object, ...) standardGeneric("flattened_to_factor"))
 #' Factor from flattened data
 #'
-#' Extract all plate-specifying information from a dataframe as created by
+#' Extract all plate-specifying information from a data frame as created by
 #' \code{\link{flatten}}. If metadata have been included, these will be joined
 #' together; otherwise the plate identifiers (basically numbers) themselves are
 #' used.
@@ -1174,7 +1331,7 @@ setMethod("flattened_to_factor", "data.frame", function(object, sep = " ") {
   result <- as.list(result[, seq.int(2L, ncol(result) - 1L), drop = FALSE])
   as.factor(do.call(paste, c(result, sep = sep)))
 }, sealed = SEALED)
-  
+
 
 ################################################################################
 
@@ -1190,49 +1347,49 @@ setMethod("xy_plot", OPMS, function(x, col = "nora", lwd = 1,
     ...) {
 
   ## BEGIN must be synchronized with xy_plot,OPM
-  
+
   # Setup
   layout <- best_layout(dim(x)[3L])
   y.max <- improved_max(x, theor.max)
   main <- main_title(x, main)
   neg.ctrl <- negative_control(x, neg.ctrl)
 
-  # Adding default to settings lists. insert() is used here: for some reason 
+  # Adding default to settings lists. insert() is used here: for some reason
   # the later entries have precedence in striptext.fmt
   strip.fmt <- insert(as.list(strip.fmt), bg = "grey90")
-  striptext.fmt <- insert(as.list(striptext.fmt), cex = 1.5 / sqrt(layout[2L]), 
-    lines = 1.25)  
+  striptext.fmt <- insert(as.list(striptext.fmt), cex = 1.5 / sqrt(layout[2L]),
+    lines = 1.25)
 
   ## END must be synchronized with xy_plot,OPM
 
   # OPMS-specific addition of defaults
   legend.fmt <- insert(as.list(legend.fmt), space = space)
 
-  # Selection of a color set
+  # Selection of a colour set
   col <- tryCatch(select_colors(col), error = function(e) col)
-  
+
   # Conversion
   data <- flatten(x, ...)
 
-  # Assignment of colors to plates
+  # Assignment of colours to plates
   param <- flattened_to_factor(object = data, sep = legend.sep)
   key.text <- levels(param)
   if (length(col) < length(key.text))
-    stop("color should be by plate or metadata, but there are too few colors")
+    stop("colour should be by plate or metadata, but there are too few colours")
   key.col <- col[seq_along(key.text)]
   col <- col[param]
-  
+
   # Plot
   lattice::xyplot(
     # Principally unchangeable arguments
     Value ~ Time | Well, data = data, type = "l", layout = layout,
     as.table = TRUE, groups = Plate,
-    # Curve colors and panel height
+    # Curve colours and panel height
     col = col, ylim = c(0, y.max),
     # Axis annotation
     scales = list(x = list(rot = 90)),
     # Description above each panel
-    strip = do.call(lattice::strip.custom, strip.fmt), 
+    strip = do.call(lattice::strip.custom, strip.fmt),
       par.strip.text = striptext.fmt,
     # Main annotation
     main = main, ylab = ylab, xlab = xlab,
@@ -1258,8 +1415,8 @@ setMethod("xy_plot", OPMS, function(x, col = "nora", lwd = 1,
 
 #' @export
 #'
-setMethod("level_plot", OPMS, function(x, main = list(),
-    colors = NULL, panel.headers = TRUE, cex = NULL, strip.fmt = list(),
+setMethod("level_plot", OPMS, function(x, main = list(), colors = NULL, 
+    panel.headers = TRUE, cex = NULL, strip.fmt = list(),
     striptext.fmt = list(), legend.sep = " ", ...) {
   dims <- dim(x)
   if (is.null(cex))
@@ -1272,13 +1429,12 @@ setMethod("level_plot", OPMS, function(x, main = list(),
       panel.headers <- flattened_to_factor(object = data, sep = legend.sep)
     if (!is.expression(panel.headers))
       panel.headers <- as.character(panel.headers)
-    strip.fmt <- insert(as.list(strip.fmt), bg = "grey90", 
+    strip.fmt <- insert(as.list(strip.fmt), bg = "grey90",
       factor.levels = panel.headers)
     strip.fmt <- do.call(lattice::strip.custom, strip.fmt)
   }
-  main <- main_title(x, main)
   lattice::levelplot(Value ~ Time * Well | Plate, data = data,
-    main = main, col.regions = default_color_regions(colors),
+    main = main_title(x, main), col.regions = default_color_regions(colors),
     strip = strip.fmt, as.table = TRUE, layout = c(dims[1L], 1L),
     par.strip.text = as.list(striptext.fmt),
     scales = list(cex = cex, lineheight = 10))

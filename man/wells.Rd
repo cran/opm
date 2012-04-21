@@ -34,6 +34,9 @@
 
   \item{paren.sep}{Character scalar. What to insert before
   the opening parenthesis (or bracket).}
+
+  \item{...}{Optional arguments passed between the
+  methods.}
 }
 \value{
   Character vector.
@@ -48,11 +51,17 @@
   Do not confuse this with \code{\link{well}}.
 }
 \examples{
+# 'OPM' method
 data(vaas_1)
 (x <- wells(vaas_1, full = FALSE))
 (y <- wells(vaas_1, full = TRUE))
 (z <- wells(vaas_1, full = TRUE, in.parens = FALSE))
 stopifnot(nchar(x) < nchar(y), nchar(z) < nchar(y))
+
+# 'OPM' method
+data(vaas_4)
+(xx <- wells(vaas_4, full = FALSE))
+stopifnot(identical(x, xx))
 }
 \seealso{
   base::strtrim base::abbreviate
@@ -75,9 +84,12 @@ stopifnot(nchar(x) < nchar(y), nchar(z) < nchar(y))
 \docType{methods}
 \alias{wells-methods}
 \alias{wells,OPM-method}
+\alias{wells,OPMS-method}
 \usage{
   \S4method{wells}{OPM}(object, full = FALSE, in.parens = TRUE,
     max = 100L, brackets = FALSE, clean = TRUE, word.wise = FALSE,
     paren.sep = " ") 
+
+  \S4method{wells}{OPMS}(object, ...) 
 
 }

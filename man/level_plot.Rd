@@ -8,7 +8,7 @@
   the main title.  Works like the \code{main} argument of
   \code{\link{xy_plot}}.}
 
-  \item{colors}{Character vector indicating the colors (at
+  \item{colors}{Character vector indicating the colours (at
   least two).}
 
   \item{panel.headers}{\code{NULL}, logical scalar,
@@ -26,7 +26,7 @@
 
   \item{strip.fmt}{List controlling the format of the
   description strip above each panel. For instance, the
-  background color is set using the \sQuote{bg} key. For
+  background colour is set using the \sQuote{bg} key. For
   further details, see \code{strip.custom} from the
   \pkg{lattice} package. \code{strip.fmt} is ignored if
   panel.headers is \code{FALSE}.}
@@ -77,14 +77,16 @@ level_plot(vaas_4, include = c("Species", "Strain"))
   Vaas, L. A. I., Sikorski, J., Michael, V., Goeker, M.,
   Klenk H.-P. 2012 Visualization and curve parameter
   estimation strategies for efficient exploration of
-  Phenotype Microarray kinetics. \emph{PLoS ONE}, in press.
+  Phenotype Microarray kinetics. \emph{PLoS ONE}
+  \strong{7}, e34846.
 }
 \seealso{
   lattice::levelplot
 
   Other plotting-functions: \code{\link{ci_plot}},
   \code{\link{heat_map}}, \code{\link{max_rgb_contrast}},
-  \code{\link{select_colors}}, \code{\link{xy_plot}}
+  \code{\link{radial_plot}}, \code{\link{select_colors}},
+  \code{\link{xy_plot}}
 }
 \keyword{hplot}
 
@@ -96,8 +98,8 @@ level_plot(vaas_4, include = c("Species", "Strain"))
   \S4method{level_plot}{OPM}(x, main = list(), colors = NULL,
     cex = NULL, ...) 
 
-  \S4method{level_plot}{OPMS}(x, main = list(),
-    colors = NULL, panel.headers = TRUE, cex = NULL, strip.fmt = list(),
+  \S4method{level_plot}{OPMS}(x, main = list(), colors = NULL, 
+    panel.headers = TRUE, cex = NULL, strip.fmt = list(),
     striptext.fmt = list(), legend.sep = " ", ...) 
 
 }

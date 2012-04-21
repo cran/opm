@@ -3,6 +3,9 @@
 \title{Original input filename}
 \arguments{
   \item{object}{\code{\link{OPM}} object.}
+
+  \item{...}{Optional arguments passed between the
+  methods.}
 }
 \value{
   Character scalar.
@@ -13,9 +16,15 @@
   entries of \code{\link{csv_data}}.
 }
 \examples{
+# 'OPM' method
 data(vaas_1)
 (x <- filename(vaas_1))
 stopifnot(is.character(x), length(x) == 1L)
+
+# 'OPMS' method
+data(vaas_4)
+(x <- filename(vaas_4))
+stopifnot(is.character(x), length(x) == 4L)
 }
 \seealso{
   Other getter-functions: \code{\link{aggr_settings}},
@@ -36,7 +45,10 @@ stopifnot(is.character(x), length(x) == 1L)
 \docType{methods}
 \alias{filename-methods}
 \alias{filename,OPM-method}
+\alias{filename,OPMS-method}
 \usage{
   \S4method{filename}{OPM}(object) 
+
+  \S4method{filename}{OPMS}(object, ...) 
 
 }

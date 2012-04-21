@@ -2,7 +2,7 @@
 \alias{map_values}
 \title{Map values}
 \arguments{
-  \item{object}{List (may be nested), dataframe or
+  \item{object}{List (may be nested), data frame or
   character vector. If it has names, they are preserved.
   \code{NULL} can also be given and yields \code{NULL} or
   an empty named character vector (if \code{mapping} is
@@ -52,7 +52,7 @@
   Map \sQuote{character} data using another
   \sQuote{character} vector, or recursively apply a mapping
   function to all \sQuote{character} values within a list,
-  or non-recursively to a dataframe. Optionally coerce
+  or non-recursively to a data frame. Optionally coerce
   other data types to \sQuote{character}; return remaining
   ones unchanged. It is also possible to map between
   classes using coercion functions. For convenience in
@@ -75,6 +75,12 @@ stopifnot(rev(x) == letters)
 (x <- map_values(letters))
 stopifnot(x == letters, names(x) == letters)
 
+# Character+function method
+x <- letters[1:4]
+names(x) <- LETTERS[1:4]
+(y <- map_values(x, function(z) sprintf("\%s\%s", z, z)))
+stopifnot(names(y) == names(x), y != x)
+
 # List+character method
 x <- list(a = 1:8, c = 9, d = 'x')
 map <- c(a = "b", e = "f", x = "y")
@@ -89,6 +95,12 @@ stopifnot(identical(x, y))
 stopifnot(identical(x[1], y[1]), !identical(x[2], y[2]),
   identical(x[3], y[3]))
 
+# List+function method
+(y <- map_values(x, identity, coerce = "ANY"))
+stopifnot(identical(x, y))
+(y <- map_values(x, class, coerce = "ANY"))
+stopifnot(sapply(y, class) == "character", names(y) == names(x))
+
 # List+missing method
 (y <- map_values(x))
 stopifnot(y == "x", names(y) == y)
@@ -101,7 +113,7 @@ stopifnot(length(y) == 10, names(y) == y)
 (y <- map_values(x, coerce = TRUE))
 stopifnot(y == c("character", "integer", "numeric"), names(y) == y)
 
-# Dataframe+character method
+# Data frame+character method
 x <- data.frame(a = 1:3, b = letters[1:3])
 stopifnot(sapply(x, class) == c("integer", "factor"))
 map <- c(a = "A", b = "B", c = "C", `1` = "5")
@@ -117,7 +129,13 @@ map <- c(factor = "character", integer = "complex")
 (y <- map_values(x, map, coerce = TRUE))
 stopifnot(sapply(y, class) == c("complex", "character"))
 
-# Dataframe+missing method
+# Data frame+function method
+(y <- map_values(x, `+`, coerce = "integer", y = 1L))
+stopifnot(y$a == x$a + 1L)
+(y <- map_values(x, as.character, coerce = "factor"))
+stopifnot(sapply(y, class) == c("integer", "character"))
+
+# Data frame+missing method
 (y <- map_values(x))
 stopifnot(is.character(y), length(y) == 0)
 (y <- map_values(x, coerce = "factor"))
@@ -126,6 +144,38 @@ stopifnot(is.character(y), y == letters[1:3], names(y) == y)
 stopifnot(is.character(y), length(y) == 6, names(y) == y)
 (y <- map_values(x, coerce = TRUE))
 stopifnot(is.character(y), y == c("factor", "integer"), names(y) == y)
+
+# Matrix+character method
+(x <- matrix(1:6, nrow = 2))
+(y <- map_values(x, c(integer = "numeric"), coerce = TRUE))
+stopifnot(storage.mode(x) != storage.mode(y))
+(y <- map_values(x, c(`1` = "7"), coerce = "integer"))
+stopifnot(is.character(y), y[-1] == x[-1])
+
+# Matrix+function method
+(y <- map_values(x, identity))
+stopifnot(identical(x, y))
+(y <- map_values(x, `+`, y = 1)) # useless because '+' is directly available
+stopifnot(dim(y) == dim(x), y == x + 1)
+
+# Matrix+missing method
+(y <- map_values(x))
+stopifnot(y == "integer", names(y) == y)
+(y <- map_values(x, coerce = "ANY"))
+stopifnot(is.character(y), y == 1:6, names(y) == y)
+
+# Factor+function method
+x <- as.factor(c("a", "b", "a"))
+(y <- map_values(x, toupper))
+stopifnot(is.factor(y), y == toupper(x))
+
+# Factor+character method
+(y <- map_values(x, c(b = "c", k = "h")))
+stopifnot(is.factor(y), levels(y) == c("a", "c"))
+
+# Factor+missing method
+(y <- map_values(x))
+stopifnot(levels(x) == y, names(y) == y)
 }
 \seealso{
   base::rapply base::list base::as.list methods::as
@@ -151,6 +201,9 @@ stopifnot(is.character(y), y == c("factor", "integer"), names(y) == y)
 \alias{map_values,character,function-method}
 \alias{map_values,character,character-method}
 \alias{map_values,character,missing-method}
+\alias{map_values,factor,function-method}
+\alias{map_values,factor,character-method}
+\alias{map_values,factor,missing-method}
 \alias{map_values,NULL,character-method}
 \alias{map_values,NULL,missing-method}
 \usage{
@@ -160,7 +213,7 @@ stopifnot(is.character(y), y == c("factor", "integer"), names(y) == y)
   \S4method{map_values}{list,function}(object, mapping,
     coerce = character(), ...) 
 
-  \S4method{map_values}{list,missing}(object, 
+  \S4method{map_values}{list,missing}(object,
     coerce = character()) 
 
   \S4method{map_values}{data.frame,function}(object, mapping,
@@ -169,7 +222,7 @@ stopifnot(is.character(y), y == c("factor", "integer"), names(y) == y)
   \S4method{map_values}{data.frame,character}(object, mapping,
     coerce = character()) 
 
-  \S4method{map_values}{data.frame,missing}(object, 
+  \S4method{map_values}{data.frame,missing}(object,
     coerce = character()) 
 
   \S4method{map_values}{MOA,character}(object, mapping,
@@ -179,12 +232,19 @@ stopifnot(is.character(y), y == c("factor", "integer"), names(y) == y)
 
   \S4method{map_values}{MOA,function}(object, mapping, ...) 
 
-  \S4method{map_values}{character,function}(object, mapping, 
+  \S4method{map_values}{character,function}(object, mapping,
     ...) 
 
   \S4method{map_values}{character,character}(object, mapping) 
 
   \S4method{map_values}{character,missing}(object) 
+
+  \S4method{map_values}{factor,function}(object, mapping,
+    ...) 
+
+  \S4method{map_values}{factor,character}(object, mapping) 
+
+  \S4method{map_values}{factor,missing}(object) 
 
   \S4method{map_values}{NULL,character}(object, mapping) 
 

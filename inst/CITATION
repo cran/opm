@@ -5,7 +5,8 @@ citEntry(
     "Visualization and curve-parameter estimation strategies for efficient",
     "exploration of phenotype microarray kinetics"
   ),
-  author = personList(as.person("Lea A. I. Vaas"), 
+  author = personList(
+    as.person("Lea A. I. Vaas"), 
     as.person("Johannes Sikorski"),
     as.person("Victoria Michael"),
     as.person("Markus G\\\"{o}ker"),
@@ -13,15 +14,17 @@ citEntry(
   ),
   journal = "PLoS ONE",
   year = "2012",
-  volume = "in press",
-  pages = "xxx--xxx",
-  url = "http://www.plosone.org/",
+  volume = "7",
+  number = "4",
+  pages = "e34846",
+  doi = "10.1371/journal.pone.0034846",
+  url = "http://dx.plos.org/10.1371/journal.pone.0034846",
   header = "To cite package opm in publications use:",
   textVersion = paste(
     "Lea A.I. Vaas, J. Sikorski, V. Michael, M. G\"oker and H.-P. Klenk.",
     "Visualization and curve-parameter estimation strategies for efficient",
     "exploration of phenotype microarray kinetics.",
-    "PLoS ONE, in press, 2012."
+    "PLoS ONE 7(4): e34846, 2012."
   )
 )
 

@@ -40,9 +40,9 @@
   empty, the smallest non-trivial number of clusters is
   chosen.}
 
-  \item{col}{Graphical parameter assed to \code{abline}. If
-  several values of \code{k} are given, recycled as
-  necessary.}
+  \item{col}{Graphical parameter passed to \code{abline}.
+  If several values of \code{k} are given, \code{col} is
+  recycled as necessary.}
 
   \item{lwd}{Like \code{col}.}
 
@@ -102,7 +102,8 @@ stopifnot(inherits(y, "histogram"))
   \code{\link{plot.kmeanss}}, \code{\link{run_kmeans}},
   \code{\link{to_kmeans}},
   \code{\link{to_kmeans.Ckmeans.1d.dp}},
-  \code{\link{to_kmeans.kmeans}}
+  \code{\link{to_kmeans.kmeans}},
+  \code{\link{to_kmeans.kmeanss}}
 }
 \keyword{cluster}
 \keyword{hplot}

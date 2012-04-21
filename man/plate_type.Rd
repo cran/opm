@@ -22,6 +22,9 @@
   \item{word.wise}{Logical scalar.}
 
   \item{paren.sep}{Character scalar.}
+
+  \item{...}{Optional arguments passed between the
+  methods.}
 }
 \value{
   Character scalar.
@@ -33,6 +36,7 @@
   additional options useful for creating plot titles.
 }
 \examples{
+# 'OPM' method
 data(vaas_1)
 (x <- plate_type(vaas_1, full = FALSE))
 (y <- plate_type(vaas_1, full = TRUE))
@@ -43,7 +47,13 @@ stopifnot(nchar(x) < nchar(y), nchar(z) < nchar(y))
 
 # Splitting a list of 'OPM' objects according to the plate type is easy:
 x <- split(x), sapply(x, plate_type))
+# but see also opms() and read_opm() which can do this internally
 }
+
+# 'OPMS' method
+data(vaas_4)
+(xx <- plate_type(vaas_4, full = FALSE))
+stopifnot(identical(x, xx))
 }
 \seealso{
   base::strtrim base::abbreviate
@@ -66,9 +76,12 @@ x <- split(x), sapply(x, plate_type))
 \docType{methods}
 \alias{plate_type-methods}
 \alias{plate_type,OPM-method}
+\alias{plate_type,OPMS-method}
 \usage{
   \S4method{plate_type}{OPM}(object, full = FALSE, in.parens = TRUE,
-    max = 100L, clean = TRUE, brackets = FALSE, word.wise = FALSE, 
+    max = 100L, clean = TRUE, brackets = FALSE, word.wise = FALSE,
     paren.sep = " ") 
+
+  \S4method{plate_type}{OPMS}(object, ...) 
 
 }

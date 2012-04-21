@@ -8,6 +8,9 @@
   vector index). An optional sub-selection. If empty (the
   default), all CSV data are returned.  It is an error to
   select non-existing items.}
+
+  \item{...}{Optional arguments passed between the
+  methods.}
 }
 \value{
   Named character vector.
@@ -18,10 +21,16 @@
   \code{\link{read_single_opm}} for reading such files.
 }
 \examples{
+# 'OPM' method
 data(vaas_1)
 # compare this to setup_time()
 (x <- csv_data(vaas_1, "Setup Time"))
 stopifnot(identical(x, c(`Setup Time` = "8/30/2010 1:53:08 PM")))
+
+# 'OPMS' method
+data(vaas_4)
+(x <- csv_data(vaas_4, "Setup Time"))
+stopifnot(is.character(x), length(x) == 4)
 }
 \seealso{
   Other getter-functions: \code{\link{aggr_settings}},
@@ -42,7 +51,10 @@ stopifnot(identical(x, c(`Setup Time` = "8/30/2010 1:53:08 PM")))
 \docType{methods}
 \alias{csv_data-methods}
 \alias{csv_data,OPM-method}
+\alias{csv_data,OPMS-method}
 \usage{
   \S4method{csv_data}{OPM}(object, keys = character()) 
+
+  \S4method{csv_data}{OPMS}(object, ...) 
 
 }

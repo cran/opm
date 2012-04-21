@@ -15,7 +15,7 @@
 
   \item{pad}{Logical scalar. Bring labels to the same
   number of characters by appending spaces? Has no effect
-  for \sQuote{phylip} output format.}
+  for \sQuote{phylip} and \sQuote{html} output format.}
 }
 \value{
   Character vector.
@@ -37,6 +37,8 @@ stopifnot(nchar(y) == 10L)
 
 (y <- safe_labels(x, "epf"))
 stopifnot(nchar(y) == nchar(x))
+(y <- safe_labels(x, "epf", pad = TRUE))
+stopifnot(nchar(y) == 22)
 
 (y <- safe_labels(x, "nexus", enclose = TRUE))
 stopifnot(grepl("^'.*'$", y))

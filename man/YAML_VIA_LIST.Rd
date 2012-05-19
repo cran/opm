@@ -20,7 +20,7 @@
 % \docType{class}
 \alias{YAML_VIA_LIST-class}
 % \alias{to_yaml,YAML_VIA_LIST-method}
-
+% 
 % \title{Class \code{"YAML_VIA_LIST"}}
 % \description{
 % %%  ~~ A concise (1-5 lines) description of what the class is. ~~
@@ -40,9 +40,9 @@
 % \note{
 % %%  ~~further notes~~
 % }
-
-%% ~Make other sections like Warning with \section{Warning }{....} ~
-
+% 
+% %% ~Make other sections like Warning with \section{Warning }{....} ~
+% 
 % \seealso{
 % %%  ~~objects to See Also as \code{\link{~~fun~~}}, ~~~
 % %%  ~~or \code{\linkS4class{CLASSNAME}} for links to other classes ~~~

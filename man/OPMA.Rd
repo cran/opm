@@ -28,7 +28,7 @@
 % \alias{coerce,OPMA,list-method}
 % \alias{coerce,OPMA,matrix-method}
 % \alias{coerce,list,OPMA-method}
-
+% 
 % \title{Class \code{"OPMA"}}
 % \description{
 % %%  ~~ A concise (1-5 lines) description of what the class is. ~~
@@ -72,9 +72,9 @@ Class \code{"\linkS4class{YAML_VIA_LIST}"}, by class "OPM", distance 2.
 % \note{
 % %%  ~~further notes~~
 % }
-
-%% ~Make other sections like Warning with \section{Warning }{....} ~
-
+% 
+% %% ~Make other sections like Warning with \section{Warning }{....} ~
+% 
 % \seealso{
 % %%  ~~objects to See Also as \code{\link{~~fun~~}}, ~~~
 % %%  ~~or \code{\linkS4class{CLASSNAME}} for links to other classes ~~~

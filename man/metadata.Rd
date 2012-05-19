@@ -10,7 +10,8 @@
   character vectors of length > 1 can be used to query
   nested metadata lists. If neither empty nor a list (i.e.
   usually a character or numeric scalar), treat \code{key}
-  as a single list key.}
+  as a single list key.  Factors are converted to
+  \sQuote{character} mode.}
 
   \item{exact}{Logical scalar. Use exact or partial
   matching of keys? Has no effect if \code{key} is empty.}
@@ -47,9 +48,9 @@ stopifnot(x == c("DSM18039", "DSM30083T", "DSM1707", "429SC1"))
   \code{\link{has_aggr}}, \code{\link{hours}},
   \code{\link{length}}, \code{\link{max}},
   \code{\link{measurements}}, \code{\link{minmax}},
-  \code{\link{plate_type}}, \code{\link{position}},
-  \code{\link{select}}, \code{\link{seq}},
-  \code{\link{setup_time}}, \code{\link{summary}},
+  \code{\link{position}}, \code{\link{select}},
+  \code{\link{seq}}, \code{\link{setup_time}},
+  \code{\link{show}}, \code{\link{summary}},
   \code{\link{thin_out}}, \code{\link{well}},
   \code{\link{wells}}
 
@@ -59,8 +60,11 @@ stopifnot(x == c("DSM18039", "DSM30083T", "DSM1707", "429SC1"))
   \code{\link{map_metadata}}, \code{\link{metadata.set}},
   \code{\link{metadata.set}}, \code{\link{metadata.set}},
   \code{\link{metadata.set}}, \code{\link{metadata.set}},
-  \code{\link{metadata.set}}, \code{\link{metadata_chars}},
-  \code{\link{to_metadata}}
+  \code{\link{metadata.set}}, \code{\link{metadata.set}},
+  \code{\link{metadata.set}}, \code{\link{metadata.set}},
+  \code{\link{metadata.set}}, \code{\link{metadata.set}},
+  \code{\link{metadata.set}}, \code{\link{metadata.set}},
+  \code{\link{metadata_chars}}, \code{\link{to_metadata}}
 }
 \keyword{attribute}
 

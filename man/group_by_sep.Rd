@@ -14,7 +14,8 @@
   pattern matching with \code{grepl}? If so, unmatched
   lines are treated as separators.}
 
-  \item{...}{Optional arguments passed to \code{grepl}.}
+  \item{...}{Optional arguments passed to \code{grepl} or
+  between the methods.}
 }
 \value{
   Factor, its length being the one of \code{object}. The
@@ -45,10 +46,13 @@
 \alias{group_by_sep-methods}
 \alias{group_by_sep,logical-method}
 \alias{group_by_sep,character-method}
+\alias{group_by_sep,factor-method}
 \usage{
   \S4method{group_by_sep}{logical}(object, include = TRUE) 
 
   \S4method{group_by_sep}{character}(object, pattern,
     invert = FALSE, include = TRUE, ...) 
+
+  \S4method{group_by_sep}{factor}(object, ...) 
 
 }

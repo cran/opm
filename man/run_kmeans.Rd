@@ -2,7 +2,7 @@
 \alias{run_kmeans}
 \title{Conduct k-means partitioning}
 \arguments{
-  \item{object}{Numeric vector.}
+  \item{object}{Numeric vector or matrix.}
 
   \item{k}{Numeric vector. Number of clusters requested.}
 
@@ -10,7 +10,8 @@
   clustering program to use.  \sQuote{Ckmeans.1d.dp} is
   recommended because it exactly solves the k-means
   optimization problem for one-dimensional data, but it
-  requires the installation of the eponymous package.}
+  requires the installation of the eponymous package and
+  cannot be applied to matrix input.}
 
   \item{kmeans.args}{List of optional arguments passed to
   \sQuote{kmeans} from the \pkg{stats} package.}
@@ -52,9 +53,13 @@ stopifnot(sapply(x.km, class) == "kmeans", names(x.km) == 1:10)
 
 \docType{methods}
 \alias{run_kmeans-methods}
-\alias{run_kmeans,numeric-method}
+\alias{run_kmeans,numeric,numeric-method}
+\alias{run_kmeans,matrix,numeric-method}
 \usage{
-  \S4method{run_kmeans}{numeric}(object, k,
+  \S4method{run_kmeans}{numeric,numeric}(object, k,
     program = c("Ckmeans.1d.dp", "kmeans"), kmeans.args = list()) 
+
+  \S4method{run_kmeans}{matrix,numeric}(object, k, 
+    kmeans.args = list(nstart = 10L)) 
 
 }

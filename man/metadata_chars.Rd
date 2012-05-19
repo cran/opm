@@ -57,7 +57,10 @@ stopifnot(length(x) > length(y))
   \code{\link{metadata.set}}, \code{\link{metadata.set}},
   \code{\link{metadata.set}}, \code{\link{metadata.set}},
   \code{\link{metadata.set}}, \code{\link{metadata.set}},
-  \code{\link{to_metadata}}
+  \code{\link{metadata.set}}, \code{\link{metadata.set}},
+  \code{\link{metadata.set}}, \code{\link{metadata.set}},
+  \code{\link{metadata.set}}, \code{\link{metadata.set}},
+  \code{\link{metadata.set}}, \code{\link{to_metadata}}
 }
 \keyword{attribute}
 

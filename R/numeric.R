@@ -50,7 +50,6 @@ setGeneric("ranging", function(object, ...) standardGeneric("ranging"))
 #' @param fac Numeric scalar. After conducting the proper ranging process,
 #'   \code{object} is multiplied by \code{fac}.
 #' @param ... Optional arguments passed between the methods.
-#' @export
 #' @return Numeric vector or matrix.
 #' @keywords internal
 #'
@@ -73,9 +72,6 @@ setMethod("ranging", "numeric", function(object, extended = !zscores,
   must(result * fac)
 }, sealed = SEALED)
 
-
-#' @export
-#'
 setMethod("ranging", MOA, function(object, ...) {
   map_values(object, mapping = ranging, ...)
 }, sealed = SEALED)
@@ -150,10 +146,7 @@ setMethod("best_range", "numeric", function(object, target,
     offset = 0, prop.offset = 0) {
   orig.range <- range(object)
   orig.diff <- orig.range[2L] - orig.range[1L]
-  if (length(target) == 0L)
-    target <- orig.diff
-  else
-    assert_length(target)
+  case(length(target), target <- orig.diff, assert_length(target))
   assert_length(offset, prop.offset)
   if (offset == 0)
     offset <- target * prop.offset
@@ -162,14 +155,13 @@ setMethod("best_range", "numeric", function(object, target,
     fmt <- "target (%s) + 2 * offset (%s) smaller than original range (%s)"
     stop(sprintf(fmt, target, offset, orig.diff))
   }
-  switch(match.arg(align),
+  case(match.arg(align),
     center = {
       add <- total / 2
       mean(orig.range) + c(-add, add)
     },
     left = orig.range[1L] + c(-offset, target + offset),
-    right = orig.range[2L] + c(-target - offset, offset),
-    stop(BUG_MSG)
+    right = orig.range[2L] + c(-target - offset, offset)
   )
 }, sealed = SEALED)
 
@@ -428,10 +420,7 @@ hist.kmeanss <- function(x, k = NULL, col = "black", lwd = 1L, lty = 1L,
     main = NULL, xlab = "Clustered values", ...) {
   smallest_k <- function(x) {
     y <- (y <- as.integer(names(x)))[y > 1L]
-    if (length(y) > 0L)
-      min(y)
-    else
-      integer()
+    case(length(y), integer(), min(y))
   }
   result <- hist(y <- attr(x, "input"), main = main, xlab = xlab, ...)
   if (length(k) == 0L && length(k <- smallest_k(x)) == 0L)
@@ -453,20 +442,66 @@ hist.kmeanss <- function(x, k = NULL, col = "black", lwd = 1L, lty = 1L,
 #
 
 
+#' Prepare the k for k-means
+#'
+#' Auxiliary function for checking and slightly adapting k for k-means
+#' partitioning.
+#'
+#' @param object Numeric vector.
+#' @return Named integer vector.
+#' @keywords internal
+#'
+prepare_k <- function(k) {
+  k <- sort(unique(must(as.integer(k))))
+  if (length(k) < 1L || any(is.na(k)) || any(k < 1L))
+    stop("'k' must contain positive numbers throughout")
+  names(k) <- k  
+  k
+}
+
+  
+################################################################################
+  
+
+#' Run native k-means
+#'
+#' Auxiliary function for checking and slightly adapting k for k-means
+#' partitioning.
+#'
+#' @param x Numeric vector or matrix.
+#' @param k Numeric vector.
+#' @param args Argument list passed to \code{kmeans} form the \pkg{stats}
+#'   package.
+#' @return Named integer vector.
+#' @keywords internal
+#'
+run_native_kmeans <- function(x, k, args) {
+  args <- insert(as.list(args), x = x, .force = TRUE)  
+  sapply(k, function(kk) {
+    args$centers <<- kk
+    do.call(stats::kmeans, args)
+  }, simplify = FALSE)
+}
+
+
+################################################################################
+
+
 setGeneric("run_kmeans",
-  function(object, ...) standardGeneric("run_kmeans"))
+  function(object, k, ...) standardGeneric("run_kmeans"))
 #' Conduct k-means partitioning
 #'
 #' Run a k-means partitioning analysis. This function is currently only useable
 #' for \strong{one-dimensional} data. It is used by \code{\link{discrete}} in
 #' \sQuote{gap} mode to automatically determine the range of ambiguous data.
 #'
-#' @param object Numeric vector.
+#' @param object Numeric vector or matrix.
 #' @param k Numeric vector. Number of clusters requested.
 #' @param program Character scalar. The underlying clustering program to use.
 #'   \sQuote{Ckmeans.1d.dp} is recommended because it exactly solves the
 #'   k-means optimization problem for one-dimensional data, but it requires the
-#'   installation of the eponymous package.
+#'   installation of the eponymous package and cannot be applied to matrix
+#'   input.
 #' @param kmeans.args List of optional arguments passed to \sQuote{kmeans} from
 #'   the \pkg{stats} package.
 #' @return S3 object of class \sQuote{kmeanss}.
@@ -481,7 +516,7 @@ setGeneric("run_kmeans",
 #' stopifnot(inherits(x.km, "kmeanss"), length(x.km) == 10)
 #' stopifnot(sapply(x.km, class) == "kmeans", names(x.km) == 1:10)
 #'
-setMethod("run_kmeans", "numeric", function(object, k,
+setMethod("run_kmeans", c("numeric", "numeric"), function(object, k,
     program = c("Ckmeans.1d.dp", "kmeans"), kmeans.args = list()) {
   improve_k <- function(x) {
     vector_centers <- function(n) {
@@ -494,30 +529,28 @@ setMethod("run_kmeans", "numeric", function(object, k,
     names(y) <- names(x)
     y
   }
-  k <- unique(must(as.integer(k)))
-  if (length(k) < 1L || any(k) < 1L)
-    stop("'k' must contain positive numbers throughout")
-  names(k) <- k
+  k <- prepare_k(k)
   if ((program <- match.arg(program)) == "Ckmeans.1d.dp")
     if (!require(Ckmeans.1d.dp, quietly = TRUE, warn.conflicts = FALSE)) {
       warning(program, " requested but not available")
       program <- "kmeans"
     }
-  switch(program,
-    kmeans = {
-      kmeans.args <- insert(as.list(kmeans.args), x = object, .force = TRUE)
-      result <- sapply(improve_k(k), function(k.val) {
-        kmeans.args$centers <<- k.val
-        do.call(stats::kmeans, kmeans.args)
-      }, simplify = FALSE)
-    },
+  case(program,
+    kmeans = result <- run_native_kmeans(object, improve_k(k), kmeans.args),
     Ckmeans.1d.dp = {
       result <- sapply(k, Ckmeans.1d.dp::Ckmeans.1d.dp, x = object,
         simplify = FALSE)
       result <- lapply(result, to_kmeans, y = object)
-    },
-    stop(BUG_MSG)
+    }
   )
+  class(result) <- "kmeanss"
+  attr(result, "input") <- object
+  result
+}, sealed = SEALED)
+
+setMethod("run_kmeans", c("matrix", "numeric"), function(object, k, 
+    kmeans.args = list(nstart = 10L)) {
+  result <- run_native_kmeans(object, prepare_k(k), kmeans.args)
   class(result) <- "kmeanss"
   attr(result, "input") <- object
   result

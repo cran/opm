@@ -10,7 +10,12 @@
   recursively. Alternatively, a character vector. See
   \code{\link{map_values}} for usage details.
   \code{\link{metadata_chars}} can be used to create a
-  template for such a vector.}
+  template for such a vector. \code{mapping} can also be a
+  formula; in that case, \code{\link{metadata}} is replaced
+  by the result of the list+formula method of
+  \code{\link{map_values}}. If the left side of the formula
+  is missing, the entire metadata are replaced by the
+  result, which is an error if the result is not a list.}
 
   \item{values}{Logical scalar. If \code{FALSE}, metadata
   names, not values, are mapped, and \code{classes} is
@@ -72,6 +77,11 @@ map["Plate number"] <- "Plate no."
 copy <- map_metadata(vaas_1, map, values = FALSE)
 stopifnot(!identical(names(metadata(copy)), names(metadata(vaas_1))))
 
+# WMD+formula method
+copy <- map_metadata(vaas_1, Organism ~ paste(Species, Strain))
+(x <- setdiff(metadata_chars(copy), metadata_chars(vaas_1)))
+stopifnot(length(x) == 1, x == "Escherichia coli DSM30083T")
+
 # OPMS method
 data(vaas_4)
 
@@ -93,6 +103,11 @@ x <- metadata(vaas_4, "Experiment")
 stopifnot(x == "First replicate")
 y <- metadata(copy, "Experiment")
 stopifnot(y == "Rep. 1")
+
+# using a formula
+copy <- map_metadata(vaas_4, Organism ~ paste(Species, Strain))
+(x <- setdiff(metadata_chars(copy), metadata_chars(vaas_4)))
+stopifnot(length(x) == 4) # one entry per plate
 }
 \seealso{
   Other metadata-functions: \code{\link{collect_template}},
@@ -101,7 +116,11 @@ stopifnot(y == "Rep. 1")
   \code{\link{metadata.set}}, \code{\link{metadata.set}},
   \code{\link{metadata.set}}, \code{\link{metadata.set}},
   \code{\link{metadata.set}}, \code{\link{metadata.set}},
-  \code{\link{metadata_chars}}, \code{\link{to_metadata}}
+  \code{\link{metadata.set}}, \code{\link{metadata.set}},
+  \code{\link{metadata.set}}, \code{\link{metadata.set}},
+  \code{\link{metadata.set}}, \code{\link{metadata.set}},
+  \code{\link{metadata.set}}, \code{\link{metadata_chars}},
+  \code{\link{to_metadata}}
 }
 \keyword{manip}
 
@@ -110,6 +129,7 @@ stopifnot(y == "Rep. 1")
 \alias{map_metadata,OPMS,ANY-method}
 \alias{map_metadata,WMD,function-method}
 \alias{map_metadata,WMD,character-method}
+\alias{map_metadata,WMD,formula-method}
 \usage{
   \S4method{map_metadata}{OPMS,ANY}(object, mapping, ...) 
 
@@ -118,5 +138,7 @@ stopifnot(y == "Rep. 1")
 
   \S4method{map_metadata}{WMD,character}(object, mapping,
     values = TRUE, classes = "factor") 
+
+  \S4method{map_metadata}{WMD,formula}(object, mapping) 
 
 }

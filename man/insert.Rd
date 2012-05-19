@@ -21,6 +21,9 @@
   based on the names. It does not matter whether the values
   are \code{NULL}.
 }
+\seealso{
+  utils::modifyList
+}
 \keyword{internal}
 
 \docType{methods}

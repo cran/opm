@@ -3,7 +3,7 @@
 \alias{infix.k}
 \title{Search in metadata keys}
 \arguments{
-  \item{x}{Character vector or list.}
+  \item{x}{Character vector, factor or list.}
 
   \item{table}{\code{\link{WMD}} object.}
 }
@@ -23,7 +23,9 @@
   because a query list is given, the comparison of keys can
   be applied recursively (by using, of course, a nested
   query list). This is based on \code{\link{contains}} with
-  the \code{values} argument set to \code{FALSE}.
+  the \code{values} argument set to \code{FALSE}. The
+  factor method first converts \code{x} to
+  \sQuote{character} mode.
 }
 \examples{
 # The dataset contains the metadata keys 'Species' and 'Experiment' but
@@ -66,17 +68,25 @@ stopifnot(list() \%k\% vaas_1)
 \alias{\%k\%,list,OPMS-method}
 \alias{infix.k,character,OPMS-method}
 \alias{\%k\%,character,OPMS-method}
+\alias{infix.k,factor,OPMS-method}
+\alias{\%k\%,factor,OPMS-method}
 \alias{infix.k,character,WMD-method}
 \alias{\%k\%,character,WMD-method}
 \alias{infix.k,list,WMD-method}
 \alias{\%k\%,list,WMD-method}
+\alias{infix.k,factor,WMD-method}
+\alias{\%k\%,factor,WMD-method}
 \usage{
   \S4method{\%k\%}{list,OPMS}(x, table) 
 
   \S4method{\%k\%}{character,OPMS}(x, table) 
 
+  \S4method{\%k\%}{factor,OPMS}(x, table) 
+
   \S4method{\%k\%}{character,WMD}(x, table) 
 
   \S4method{\%k\%}{list,WMD}(x, table) 
+
+  \S4method{\%k\%}{factor,WMD}(x, table) 
 
 }

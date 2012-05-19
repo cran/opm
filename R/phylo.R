@@ -198,20 +198,18 @@ setMethod("discrete", "numeric", function(x, range, gap = FALSE,
       x.range[2L] + tol)
     ints <- cut(x, breaks, labels = FALSE, right = FALSE)
     map <- if (middle.na)
-      switch(output,
+      case(output,
         character = c("0", MISSING_CHAR, "1"),
         integer = c(0L, NA_integer_, 1L),
         logical = c(FALSE, NA, TRUE),
-        factor = ordered(c(0L, NA_integer_, 1L)),
-        stop(BUG_MSG)
+        factor = ordered(c(0L, NA_integer_, 1L))
       )
     else
-      switch(output,
+      case(output,
         character = c("0", "1", "2"),
         integer = c(0L, 1L, 2L),
         logical = stop("one cannot combine 'logical' and 'middle.na'"),
-        factor = ordered(c(0L, 1L, 2L)),
-        stop(BUG_MSG)
+        factor = ordered(c(0L, 1L, 2L))
       )
     map[ints]
 
@@ -228,25 +226,20 @@ setMethod("discrete", "numeric", function(x, range, gap = FALSE,
         labels = FALSE)[-1L:-2L]
     else
       rep.int(1L, length(x))
-    switch(output,
+    case(output,
       character = states[ints],
       integer = ints,
       logical = as.logical(ints - 1L),
-      factor = ordered(ints),
-      stop(BUG_MSG)
+      factor = ordered(ints)
     )
 
   }
 }, sealed = SEALED)
 
-#' @export
-#'
 setMethod("discrete", MOA, function(x, ...) {
   map_values(object = x, mapping = discrete, ...)
 }, sealed = SEALED)
 
-#' @export
-#'
 setMethod("discrete", "data.frame", function(x, as.labels = NULL, sep = " ", 
     ...) {
   discrete(extract(x, as.labels = as.labels, sep = sep, what = "numeric"), ...)
@@ -337,13 +330,12 @@ setMethod("join_discrete", "character", function(object, format, digits = 3L) {
     object <- grep(MISSING_CHAR, object, fixed = TRUE, value = TRUE,
       invert = TRUE)
   if (length(object) > 1L)
-    switch(match.arg(format, PHYLO_FORMATS),
+    case(match.arg(format, PHYLO_FORMATS),
       html = paste(object, collapse = "/"),
       epf =,
       phylip = MISSING_CHAR,
       hennig = sprintf("[%s]", paste(object, collapse = "")),
-      nexus = sprintf("(%s)", paste(object, collapse = "")),
-      stop(BUG_MSG)
+      nexus = sprintf("(%s)", paste(object, collapse = ""))
     )
   else
     object
@@ -466,7 +458,7 @@ safe_labels <- function(chars, format, enclose = TRUE, pad = FALSE) {
   not.nexus <- "[\\s()\\[\\]{}\\/\\,;:=*'\"`+<>-]+" # see PAUP* manual
   # see http://tnt.insectmuseum.org/index.php/Basic_format (16/04/2012)
   not.hennig <- "[\\s;/+-]+"
-  switch(match.arg(format, PHYLO_FORMATS),
+  case(match.arg(format, PHYLO_FORMATS),
     html = clean_html(chars),
     phylip = sprintf("%-10s", substr(clean(not.newick, chars), 1L, 10L)),
     hennig = do_pad(clean(not.hennig, chars), pad),
@@ -474,8 +466,7 @@ safe_labels <- function(chars, format, enclose = TRUE, pad = FALSE) {
     nexus = do_pad(if (enclose)
       nexus_quote(chars)
     else
-      clean(not.nexus, chars), pad),
-    stop(BUG_MSG)
+      clean(not.nexus, chars), pad)
   )
 }
 
@@ -509,7 +500,7 @@ setMethod("phylo_header", "matrix", function(object, format, enclose = TRUE,
   if (is.null(comments <- comment(object)) || all(!nzchar(comments)))
     comments <- DEFAULT_PHYLO_COMMENT
 
-  switch(match.arg(format, PHYLO_FORMATS),
+  case(match.arg(format, PHYLO_FORMATS),
 
     html = {
       result <- sprintf("Strains: %s.", listing(rownames(object),
@@ -547,10 +538,9 @@ setMethod("phylo_header", "matrix", function(object, format, enclose = TRUE,
           "numeric",
         stop("uninterpretable datatype")
       )
-      nstates <- sprintf("nstates %s;", switch(datatype,
+      nstates <- sprintf("nstates %s;", case(datatype,
         numeric = "32",
-        continuous = "cont",
-        stop(BUG_MSG)
+        continuous = "cont"
       ))
       c(
         nstates,
@@ -600,9 +590,8 @@ setMethod("phylo_header", "matrix", function(object, format, enclose = TRUE,
         charlabels,
         sprintf("%smatrix", indent)
       )
-    },
+    }
 
-    stop(BUG_MSG)
   )
 }, sealed = SEALED)
 
@@ -625,7 +614,7 @@ setMethod("phylo_header", "matrix", function(object, format, enclose = TRUE,
 #' @keywords internal
 #'
 phylo_footer <- function(format, indent = 3L, paup.block = FALSE) {
-  switch(match.arg(format, PHYLO_FORMATS),
+  case(match.arg(format, PHYLO_FORMATS),
     html = c("</body>", "</html>", ""),
     epf =,
     phylip = NULL,
@@ -645,8 +634,7 @@ phylo_footer <- function(format, indent = 3L, paup.block = FALSE) {
         "end;",
         block
       )
-    },
-    stop(BUG_MSG)
+    }
   )
 }
 
@@ -709,7 +697,7 @@ setMethod("phylo_char_mat", "matrix", function(object, format, enclose = TRUE,
     rownames(object) <- seq.int(nrow(object))
     if (is.null(colnames(object)))
       stop("missing substrate labels (column names)")
-    switch(match.arg(delete),
+    case(match.arg(delete),
       ambig = {
         has_ambig <- function(x) any(grepl("/", x, fixed = TRUE))
         object <- object[, !apply(object, 2L, has_ambig), drop = FALSE]
@@ -721,8 +709,7 @@ setMethod("phylo_char_mat", "matrix", function(object, format, enclose = TRUE,
           is_constant(strsplit(x, "/", fixed = TRUE), set.like = TRUE)
         }
         object <- object[, !apply(object, 2L, const_fun), drop = FALSE]
-      },
-      stop(BUG_MSG)
+      }
     )
     return(c(hwriter::hwrite(t(object), table.summary = "PM data"), ""))
   }
@@ -968,16 +955,12 @@ setMethod("phylo_data", "matrix", function(object, format = "epf",
     lines
 }, sealed = SEALED)
 
-#' @export
-#'
 setMethod("phylo_data", "data.frame", function(object, as.labels = NULL, 
     what = "numeric", sep = " ", ...) {
   object <- extract(object, as.labels = as.labels, what = what, sep = sep)
   phylo_data(object, ...)
-}, sealed = SEALED) 
+}, sealed = SEALED)
 
-#' @export
-#'
 setMethod("phylo_data", OPMS, function(object, as.labels, subset = "A",
     sep = " ", extract.args = list(), 
     discrete.args = list(range = TRUE, gap = TRUE), ...) {

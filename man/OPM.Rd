@@ -50,6 +50,7 @@
 % \alias{coerce,OPM,matrix-method}
 % \alias{coerce,list,OPM-method}
 % \alias{collect_template,OPM-method}
+% \alias{contains,OPMS,OPM-method}
 % \alias{csv_data,OPM-method}
 % \alias{dim,OPM-method}
 % \alias{do_aggr,OPM-method}
@@ -66,8 +67,10 @@
 % \alias{minmax,OPM-method}
 % \alias{other_slots,OPM-method}
 % \alias{plate_type,OPM-method}
+% \alias{plates,OPM-method}
 % \alias{position,OPM-method}
 % \alias{setup_time,OPM-method}
+% \alias{show,OPM-method}
 % \alias{summary,OPM-method}
 % \alias{thin_out,OPM-method}
 % \alias{to_grofit_data,OPM-method}
@@ -75,7 +78,7 @@
 % \alias{well,OPM-method}
 % \alias{wells,OPM-method}
 % \alias{xy_plot,OPM-method}
-
+% 
 % \title{Class \code{"OPM"}}
 % \description{
 % %%  ~~ A concise (1-5 lines) description of what the class is. ~~
@@ -109,6 +112,7 @@ Class \code{"\linkS4class{YAML_VIA_LIST}"}, directly.
     \item{coerce}{\code{signature(from = "OPM", to = "matrix")}: ... }
     \item{coerce}{\code{signature(from = "list", to = "OPM")}: ... }
     \item{collect_template}{\code{signature(object = "OPM")}: ... }
+    \item{contains}{\code{signature(object = "OPMS", other = "OPM")}: ... }
     \item{csv_data}{\code{signature(object = "OPM")}: ... }
     \item{dim}{\code{signature(x = "OPM")}: ... }
     \item{do_aggr}{\code{signature(object = "OPM")}: ... }
@@ -125,8 +129,10 @@ Class \code{"\linkS4class{YAML_VIA_LIST}"}, directly.
     \item{minmax}{\code{signature(x = "OPM")}: ... }
     \item{other_slots}{\code{signature(object = "OPM")}: ... }
     \item{plate_type}{\code{signature(object = "OPM")}: ... }
+    \item{plates}{\code{signature(object = "OPM")}: ... }
     \item{position}{\code{signature(object = "OPM")}: ... }
     \item{setup_time}{\code{signature(object = "OPM")}: ... }
+    \item{show}{\code{signature(object = "OPM")}: ... }
     \item{summary}{\code{signature(object = "OPM")}: ... }
     \item{thin_out}{\code{signature(object = "OPM")}: ... }
     \item{to_grofit_data}{\code{signature(object = "OPM")}: ... }
@@ -145,9 +151,9 @@ Class \code{"\linkS4class{YAML_VIA_LIST}"}, directly.
 % \note{
 % %%  ~~further notes~~
 % }
-
-%% ~Make other sections like Warning with \section{Warning }{....} ~
-
+% 
+% %% ~Make other sections like Warning with \section{Warning }{....} ~
+% 
 % \seealso{
 % %%  ~~objects to See Also as \code{\link{~~fun~~}}, ~~~
 % %%  ~~or \code{\linkS4class{CLASSNAME}} for links to other classes ~~~

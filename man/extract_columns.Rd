@@ -81,7 +81,11 @@ stopifnot(grepl("^\\\\s*\\\\d+-[a-z]$", y))
   \code{\link{metadata.set}}, \code{\link{metadata.set}},
   \code{\link{metadata.set}}, \code{\link{metadata.set}},
   \code{\link{metadata.set}}, \code{\link{metadata.set}},
-  \code{\link{metadata_chars}}, \code{\link{to_metadata}}
+  \code{\link{metadata.set}}, \code{\link{metadata.set}},
+  \code{\link{metadata.set}}, \code{\link{metadata.set}},
+  \code{\link{metadata.set}}, \code{\link{metadata.set}},
+  \code{\link{metadata.set}}, \code{\link{metadata_chars}},
+  \code{\link{to_metadata}}
 }
 \keyword{dplot}
 \keyword{manip}

@@ -1,6 +1,4 @@
 
-
-
 ################################################################################
 ################################################################################
 #
@@ -50,11 +48,10 @@ pe_and_ci.boot <- function(x, ci = 0.95, as.pe = c("median", "mean", "pe"),
     cis <- do.call(cbind, cis)
   }
   rownames(cis) <- c("ci.low", "ci.high")
-  point.est <- switch(as.pe,
+  point.est <- case(as.pe,
     median = apply(x$t, 2L, median),
     mean = colMeans(x$t),
-    pe = x$t0,
-    stop(BUG_MSG)
+    pe = x$t0
   )
   if (fill.nas) {
     boot.nas <- !is.na(x$t0) & is.na(cis[1L, ]) & is.na(cis[2L, ])
@@ -124,15 +121,14 @@ setMethod("fast_estimate", "matrix", function(x, what = c("AUC", "A"),
   y <- x[, time.pos]
   x <- x[, -time.pos, drop = FALSE]
   x.colnames <- colnames(x)
-  switch(what <- match.arg(what),
+  case(what <- match.arg(what),
     A = boot_fun <- function(x, w) apply(x[w, ], 2L, max),
     AUC = {
       n.obs <- nrow(x)
       y <- y[-1L] - y[-n.obs]
       x <- 0.5 * (x[-1L, , drop = FALSE] + x[-n.obs, , drop = FALSE])
       boot_fun <- function(x, w) colSums(x[w, , drop = FALSE] * y[w])
-    },
-    stop(BUG_MSG)
+    }
   )
   result <- boot::boot(data = x, statistic = boot_fun, R = boot, ...)
   if (raw)
@@ -324,7 +320,7 @@ setMethod("heat_map", "matrix", function(object,
   if (!is.null(col.side.colors))
     arg.list$ColSideColors <- col.side.colors
 
-  switch(match.arg(use.fun),
+  case(match.arg(use.fun),
     gplots = {
       if (suppressMessages(suppressWarnings(require(gplots, quietly = TRUE, 
           warn.conflicts = FALSE)))) {
@@ -335,8 +331,7 @@ setMethod("heat_map", "matrix", function(object,
         heatmap_fun <- stats::heatmap
       }
     },
-    stats = heatmap_fun <- stats::heatmap,
-    stop(BUG_MSG)
+    stats = heatmap_fun <- stats::heatmap
   )
 
   result <- do.call(heatmap_fun, arg.list)
@@ -346,16 +341,12 @@ setMethod("heat_map", "matrix", function(object,
 
 }, sealed = SEALED)
 
-#' @export
-#'
 setMethod("heat_map", "data.frame", function(object, as.labels,
     as.groups = NULL, sep = " ", ...) {
   invisible(heat_map(extract(object, as.labels = as.labels, 
     as.groups = as.groups, sep = sep), ...))
 }, sealed = SEALED)
 
-#' @export
-#'
 setMethod("heat_map", OPMS, function(object, as.labels, subset = "A",
     as.groups = NULL, sep = " ", extract.args = list(), ...) {
   extract.args <- insert(as.list(extract.args), list(object = object,
@@ -410,6 +401,7 @@ setGeneric("radial_plot", function(object, ...) standardGeneric("radial_plot"))
 #'   \code{\link{extract}}.
 #' @param extract.args Optional list of arguments passed to that method.
 #'
+#' @export
 #' @family plotting-functions
 #' @seealso plotrix::radial.plot graphics::legend
 #' @keywords hplot
@@ -465,15 +457,11 @@ setMethod("radial_plot", "matrix", function(object, rp.type = "p",
   invisible(result)
 }, sealed = SEALED)
 
-#' @export
-#'
 setMethod("radial_plot", "data.frame", function(object, as.labels, sep = " ",
     ...) {
   invisible(radial_plot(extract(object, as.labels = as.labels, sep = sep), ...))
 }, sealed = SEALED)
 
-#' @export
-#'
 setMethod("radial_plot", OPMS, function(object, as.labels, subset = "A",
     sep = " ", extract.args = list(), ...) {
   extract.args <- insert(as.list(extract.args), list(object = object,

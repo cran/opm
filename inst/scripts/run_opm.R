@@ -13,14 +13,15 @@
 ################################################################################
 
 
-library(optparse, quietly = TRUE)
-library(opm, quietly = TRUE)
+library(optparse, quietly = TRUE, warn.conflicts = FALSE)
+library(opm, quietly = TRUE, warn.conflicts = FALSE)
 
 
 MD.OUTFILE <- "metadata.csv"
-RESULT.VALUES <- c("clean", "split", "template", "yaml")
+RESULT.VALUES <- c("clean", "plot", "split", "template", "yaml")
 RESULT.DESCS <- c(
   "Clean filenames by removing non-word characters except dots and dashes.",
+  "Draw plots as postscript files, one per input file",
   "Split OmniLog(R) CSV files into one file per plate.",
   "Collect a template for adding metadata.",
   "Convert input OmniLog(R) CSV (or opm YAML) files to opm YAML."
@@ -40,10 +41,38 @@ run_clean_mode <- function(input, opt) {
 }
 
 
+#-------------------------------------------------------------------------------
+
+
+run_plot_mode <- function(input, opt) {
+  if (!nzchar(opt$dir))
+    opt$dir <- NULL
+  plot_fun <- if (opt$level)
+    level_plot
+  else
+    xy_plot
+  io_fun <- function(infile, outfile) {
+    x <- read_opm(infile, gen.iii = opt$Gen3)
+    postscript(outfile)
+    print(plot_fun(x))
+    dev.off()
+  }
+  batch_process(names = input, proc = opt$processes, out.ext = "ps", 
+    io.fun = io_fun, outdir = opt$dir, verbose = !opt$quiet, 
+    overwrite = opt$overwrite, include = opt$include, exclude = opt$exclude)
+}
+
+
+#-------------------------------------------------------------------------------
+
+
 run_split_mode <- function(input, opt) {
   files <- explode_dir(input, include = opt$include, exclude = opt$exclude)
   split_files(files, pattern = '^("Data File",|Data File)', outdir = opt$dir)
 }
+
+
+#-------------------------------------------------------------------------------
 
 
 run_template_mode <- function(input, opt) {
@@ -58,9 +87,12 @@ run_template_mode <- function(input, opt) {
       NULL
   } else
     previous <- mdfile
-  collect_template(names = input, outfile = mdfile, previous = previous,
-    include = opt$include, exclude = opt$exclude)
+  collect_template(object = input, outfile = mdfile, previous = previous,
+    include = opt$include, exclude = opt$exclude, sep = opt$sep)
 }
+
+
+#-------------------------------------------------------------------------------
 
 
 run_yaml_mode <- function(input, opt) {
@@ -69,10 +101,8 @@ run_yaml_mode <- function(input, opt) {
     opt$processes <- 1L
   } else
     proc <- 1L
-  outdir <- if (nzchar(opt$dir))
-    opt$dir
-  else
-    NULL
+  if (!nzchar(opt$dir))
+    opt$dir <- NULL
   if (opt$aggregate) {
     aggr.args <- list(boot = opt$bootstrap, verbose = !opt$quiet, 
       cores = opt$processes)
@@ -86,7 +116,7 @@ run_yaml_mode <- function(input, opt) {
     list(md = opt$mdfile, sep = opt$sep, missing.error = TRUE,
       replace = opt$exchange)
   batch_opm_to_yaml(names = input, proc = proc,
-    aggr.args = aggr.args, md.args = md.args, outdir = outdir,
+    aggr.args = aggr.args, md.args = md.args, outdir = opt$dir,
     verbose = !opt$quiet, overwrite = opt$overwrite, include = opt$include,
     exclude = opt$exclude, gen.iii = opt$Gen3) 
 }
@@ -129,6 +159,9 @@ option.parser <- OptionParser(option_list = list(
     help = "File inclusion globbing pattern [default: <see package>]", 
     metavar = "PATTERN"),
 
+  make_option(c("-l", "--level"), action = "store_true", default = FALSE, 
+    help = "When plotting, draw levelplot [default: %default]"),            
+  
   make_option(c("-m", "--mdfile"), type = "character",
     default = NULL, metavar = "NAME",
     help = "Metadata infile (also used as outfile if given) [default: <none>]"),
@@ -184,6 +217,7 @@ if (length(input) == 0L) {
 
 switch(match.arg(opt$result, RESULT.VALUES),
   clean = run_clean_mode(input, opt),
+  plot = run_plot_mode(input, opt),
   split = run_split_mode(input, opt),
   template = run_template_mode(input, opt),
   yaml = run_yaml_mode(input, opt),

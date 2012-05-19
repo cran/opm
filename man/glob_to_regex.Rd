@@ -2,7 +2,10 @@
 \alias{glob_to_regex}
 \title{Convert wildcard to regular expression}
 \arguments{
-  \item{x}{Character vector.}
+  \item{object}{Character vector or factor.}
+
+  \item{...}{Optional arguments passed between the
+  methods.}
 }
 \value{
   Character vector.
@@ -43,6 +46,9 @@ x <- "*what glob2rx() can't handle because a '+' is included*"
 (y <- glob_to_regex(x))
 (z <- glob2rx(x))
 stopifnot(!identical(y, z))
+# Factor method
+(z <- glob_to_regex(as.factor(x)))
+stopifnot(identical(y, z))
 }
 \seealso{
   utils::glob2rx base::regex
@@ -54,7 +60,10 @@ stopifnot(!identical(y, z))
 \docType{methods}
 \alias{glob_to_regex-methods}
 \alias{glob_to_regex,character-method}
+\alias{glob_to_regex,factor-method}
 \usage{
-  \S4method{glob_to_regex}{character}(x) 
+  \S4method{glob_to_regex}{character}(object) 
+
+  \S4method{glob_to_regex}{factor}(object, ...) 
 
 }

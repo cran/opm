@@ -64,6 +64,7 @@ setGeneric("metadata", function(object, ...) standardGeneric("metadata"))
 #'   metadata values. Here, character vectors of length > 1 can be used to
 #'   query nested metadata lists. If neither empty nor a list (i.e. usually a
 #'   character or numeric scalar), treat \code{key} as a single list key.
+#'   Factors are converted to \sQuote{character} mode.
 #' @param exact Logical scalar. Use exact or partial matching of keys? Has no
 #'   effect if \code{key} is empty.
 #' @param strict Logical scalar. Is it an error if a \code{NULL} value results
@@ -94,6 +95,8 @@ setMethod("metadata", WMD, function(object, key = NULL, exact = TRUE,
     return(object@metadata)
   fetch_fun <- if (strict)
     function(key) {
+      if (is.factor(key))
+        key <- as.character(key)
       if (is.null(result <- object@metadata[[key, exact = exact]]))
         stop(sprintf("got NULL value when using key '%s'", 
           paste(key, collapse = " -> ")))
@@ -124,14 +127,16 @@ setGeneric("metadata<-",
 #'
 #' Set the meta-information stored together with the data. The
 #' \code{\link{OPMS}} methods set the meta-information stored together with the
-#' measurements for all plates at once.
+#' measurements for all plates at once (but can address the plates 
+#' individually if \code{value} is a formula or a data frame, see below).
 #'
 #' @name metadata.set
 #' @aliases metadata<-
 #'
 #' @param object \code{\link{WMD}} or \code{\link{OPMS}} object..
-#' @param key Missing, numeric scalar, character vector, or list.
-#'   If missing, replace all metadata by \code{value}.
+#' @param key Missing, numeric scalar, character vector, factor, or list.
+#'   If missing, replace all metadata by \code{value} (unless \code{value} is
+#'   a formula that specifies the key to replace).
 #'   If a numeric scalar, then if positive, prepend \code{value} to
 #'   old metadata. If negative, append \code{value} to old metadata. If zero,
 #'   replace old metadata entirely by \code{value}.
@@ -141,13 +146,22 @@ setGeneric("metadata<-",
 #'   If a character vector, use it as key and set/replace this metadata
 #'   entry to/by \code{value}. It is an error if \code{key} has zero length.
 #'   If it contains more than one entry, a nested query is done. See \code{[[}
-#'   from the \pkg{base} package for details.
+#'   from the \pkg{base} package for details. The factor method calls the
+#'   character method after converting \code{key} to mode \sQuote{character}.
 #' @param value If \code{key} is a character vector, this can be arbitrary
 #'   value(s) to be included in the metadata (if \code{NULL}, this
 #'   metadata entry is deleted). If \code{key} is otherwise, \code{value} must
 #'   be list of values to be prepended, appended or set as metadata,
-#'   either entirely or specifically, depending on \code{key}.
+#'   either entirely or specifically, depending on \code{key}. Formulas can
+#'   also be used as \code{value}. In that case, the formula can specify the 
+#'   key to be replaced. See the examples below and \code{\link{map_values}} 
+#'   for details. If \code{object} is of class \sQuote{OPMS}, \code{value} can
+#'   be a data frame whose number of rows must be equal to the number of 
+#'   plates. Metadata to be set will then be selected from each individual row
+#'   in turn and in input order.
+#'
 #' @return \code{value}.
+#' @export
 #' @exportMethod "metadata<-"
 #' @family metadata-functions
 #' @family setter-functions
@@ -159,18 +173,24 @@ setGeneric("metadata<-",
 #' # WMD methods
 #' data(vaas_1)
 #'
-#' # WMD+missing method
+#' # WMD/missing/list method
 #' copy <- vaas_1
 #' new.md <- list(Species = "Thermomicrobium roseum")
 #' metadata(copy) <- new.md
 #' stopifnot(identical(metadata(copy), new.md))
 #'
-#' # WMD+numeric method
+#' # WMD/missing/formula method (operates on previous entries!)
+#' copy <- vaas_1
+#' metadata(copy) <- Organism ~ paste(Species, Strain)
+#' (x <- metadata(copy, "Organism"))
+#' stopifnot(is.null(metadata(vaas_1, "Organism")), !is.null(x))
+#'
+#' # WMD/numeric/list method
 #' copy <- vaas_1
 #' metadata(copy, 1) <- list(Authors = "Vaas et al.")
 #' stopifnot(length(metadata(copy)) > length(metadata(vaas_1)))
 #'
-#' # WMD+list method
+#' # WMD/list/list method
 #' copy <- vaas_1
 #' stopifnot(identical(metadata(copy, "Species"), "Escherichia coli"))
 #'
@@ -200,26 +220,50 @@ setGeneric("metadata<-",
 #' # ...this yields a general mechanism for metadata deletion by providing an
 #' # empty list as 'value'.
 #'
-#' # WMD+character method
+#' # WMD/character/any method
 #' copy <- vaas_1
 #' metadata(copy, "Strain") <- "08/15"
 #' stopifnot(length(metadata(copy)) == length(metadata(vaas_1)))
 #' stopifnot(metadata(copy, "Strain") != metadata(vaas_1, "Strain"))
+#'
+#' # WMD/factor/any method
+#' metadata(copy, as.factor("Strain")) <- metadata(vaas_1, "Strain")
+#' stopifnot(metadata(copy, "Strain") == metadata(vaas_1, "Strain"))
 #'
 #' ############################################################
 #' #
 #' # OPMS methods
 #' data(vaas_4)
 #'
-#' # OPMS+missing method
+#' # OPMS/missing/list method
 #' copy <- vaas_4
 #' (metadata(copy) <- list(x = -99))
 #' stopifnot(identical(unique(metadata(copy)), list(list(x = -99))))
 #'
-#' # OPMS+ANY method
+#' # OPMS/missing/formula method
+#' copy <- vaas_4
+#' metadata(copy) <- Organism ~ paste(Species, Strain)
+#' (x <- metadata(copy, "Organism"))
+#' stopifnot(length(x) == length(metadata(vaas_4, "Organism")) + 4)
+#'
+#' # OPMS/ANY/ANY method
 #' copy <- vaas_4
 #' (metadata(copy, "Species") <- "Bacillus subtilis")
 #' stopifnot(identical(unique(metadata(copy, "Species")), "Bacillus subtilis"))
+#'
+#' # OPMS/character/data frame method
+#' copy <- vaas_4
+#' (x <- data.frame(Type = grepl("T$", metadata(vaas_4, "Strain"))))
+#' metadata(copy, "Type") <- x
+#' # one-column data frames are simplified
+#' stopifnot(identical(metadata(copy, "Type"), x$Type))
+#' # if keys match, a subselection of the data frame is used
+#' (x <- cbind(x, Notype = !x$Type))
+#' metadata(copy, "Type") <- x
+#' stopifnot(identical(metadata(copy, "Type"), x$Type))
+#' # if keys do not match, the entire data-frame rows are included
+#' metadata(copy, "Type2") <- x
+#' stopifnot(!identical(metadata(copy, "Type2"), x$Type))
 #'
 setMethod("metadata<-", c(WMD, "missing", "list"), function(object, value) {
   object@metadata <- value
@@ -227,7 +271,13 @@ setMethod("metadata<-", c(WMD, "missing", "list"), function(object, value) {
 }, sealed = SEALED)
 
 #' @name metadata.set
-#' @export
+#'
+setMethod("metadata<-", c(WMD, "missing", "formula"), function(object, value) {
+  object@metadata <- map_values(object@metadata, value)
+  object
+}, sealed = SEALED)
+
+#' @name metadata.set
 #'
 setMethod("metadata<-", c(WMD, "numeric", "list"), function(object, key,
     value) {
@@ -242,23 +292,30 @@ setMethod("metadata<-", c(WMD, "numeric", "list"), function(object, key,
 }, sealed = SEALED)
 
 #' @name metadata.set
-#' @export
 #'
 setMethod("metadata<-", c(WMD, "list", "list"), function(object, key, value) {
   if (is.null(names(key)))
     names(key) <- unlist(key)
   if (is.null(names(value)))
     names(value) <- names(key)
-  sapply(names(key), function(k) object@metadata[[key[[k]]]] <<- value[[k]])
+  for (k in names(key))
+    object@metadata[[key[[k]]]] <- value[[k]]
   object
 }, sealed = SEALED)
 
 #' @name metadata.set
-#' @export
 #'
 setMethod("metadata<-", c(WMD, "character", "ANY"), function(object, key,
     value) {
   object@metadata[[key]] <- value
+  object
+}, sealed = SEALED)
+
+#' @name metadata.set
+#'
+setMethod("metadata<-", c(WMD, "factor", "ANY"), function(object, key,
+    value) {
+  metadata(object, as.character(key)) <- value                                              
   object
 }, sealed = SEALED)
 
@@ -284,12 +341,13 @@ setGeneric("%k%", function(x, table) standardGeneric("%k%"))
 #' comparison of keys can be applied recursively (by using, of course, a nested
 #' query list). This is based on \code{\link{contains}} with the \code{values}
 #' argument set to \code{FALSE}.
+#' The factor method first converts \code{x} to \sQuote{character} mode.
 #'
 #' @name %k%
 #' @aliases infix.k
 #' @rdname infix.k
 #'
-#' @param x Character vector or list.
+#' @param x Character vector, factor or list.
 #' @param table \code{\link{WMD}} object.
 #' @return Logical scalar.
 #' @exportMethod "%k%"
@@ -335,8 +393,6 @@ setMethod("%k%", c("character", WMD), function(x, table) {
   all(x %in% names(table@metadata))
 }, sealed = SEALED)
 
-#' @export
-#'
 setMethod("%k%", c("list", WMD), function(x, table) {
   contains(table@metadata, x, values = FALSE)
 }, sealed = SEALED)
@@ -354,12 +410,13 @@ setGeneric("%K%", function(x, table) standardGeneric("%K%"))
 #' \code{TRUE}. Note that the values of the character vector, not its names, if
 #' any, are used for querying the metadata.
 #' Using a list as query, this function behaves like \code{\link{infix.k}}.
+#' The factor method first converts \code{x} to \sQuote{character} mode.
 #'
 #' @name %K%
 #' @aliases infix.largek
 #' @rdname infix.largek
 #'
-#' @param x Character vector or list.
+#' @param x Character vector, factor or list.
 #' @param table \code{\link{WMD}} object.
 #' @return Logical scalar.
 #' @export
@@ -398,8 +455,6 @@ setMethod("%K%", c("character", WMD), function(x, table) {
   tryCatch(!is.null(table@metadata[[x]]), error = function(e) FALSE)
 }, sealed = SEALED)
 
-#' @export
-#'
 setMethod("%K%", c("list", WMD), function(x, table) {
   contains(table@metadata, x, values = FALSE)
 }, sealed = SEALED)
@@ -414,12 +469,13 @@ setGeneric("%q%", function(x, table) standardGeneric("%q%"))
 #' Using a character vector, test whether all given query keys are present in
 #' the top-level names of the metadata and refer to the same query elements.
 #' Using a list, conduct a non-exact query with a query list.
+#' The factor method first converts \code{x} to \sQuote{character} mode.
 #'
 #' @name %q%
 #' @aliases infix.q
 #' @rdname infix.q
 #'
-#' @param x Character vector or list used as query.
+#' @param x Character vector, factor or list used as query.
 #'   If a character vector, its \code{names} are used to select elements from
 #'   the top level of the metadata. These elements are then converted to
 #'   \sQuote{character} mode before comparison with the values of \code{x}. A
@@ -478,8 +534,6 @@ setMethod("%q%", c("character", WMD), function(x, table) {
   all(x == sapply(table@metadata[keys], as.character))
 }, sealed = SEALED)
 
-#' @export
-#'
 setMethod("%q%", c("list", WMD), function(x, table) {
   contains(table@metadata, x, values = TRUE, exact = FALSE)
 }, sealed = SEALED)
@@ -495,12 +549,13 @@ setGeneric("%Q%", function(x, table) standardGeneric("%Q%"))
 #' present in the top-level names of the metadata and refer to the same query
 #' elements (without coercion to character).
 #' Using a list, conduct an exact query with this query list.
+#' The factor method first converts \code{x} to \sQuote{character} mode.
 #'
 #' @name %Q%
 #' @aliases infix.largeq
 #' @rdname infix.largeq
 #'
-#' @param x Character vector or list used as query.
+#' @param x Character vector, factor or list used as query.
 #'   If a character vector, the result is identical to the
 #'   one of \code{\link{infix.q}} except for the fact that metadata elements
 #'   are not coerced to \sQuote{character} mode, making the query more strict.
@@ -552,11 +607,28 @@ setMethod("%Q%", c("character", WMD), function(x, table) {
   all(sapply(keys, function(key) identical(x[[key]], table@metadata[[key]])))
 }, sealed = SEALED)
 
-#' @export
-#'
 setMethod("%Q%", c("list", WMD), function(x, table) {
   contains(table@metadata, x, values = TRUE, exact = TRUE)
 }, sealed = SEALED)
+
+
+################################################################################
+
+
+# Automatically generated factor methods
+
+lapply(c(
+    #+
+    `%k%`,
+    `%K%`,
+    `%q%`,
+    `%Q%`
+    #-
+  ), FUN = function(func_) {
+  setMethod(func_, c("factor", WMD), function(x, table) {
+    func_(structure(.Data = as.character(x), .Names = names(x)), table)
+  }, sealed = SEALED)
+})
 
 
 ################################################################################
@@ -583,7 +655,11 @@ setGeneric("map_metadata",
 #'   \code{\link{metadata}}, which is traversed recursively. Alternatively, a
 #'   character vector. See \code{\link{map_values}} for usage
 #'   details. \code{\link{metadata_chars}} can be used to create a template
-#'   for such a vector.
+#'   for such a vector. \code{mapping} can also be a formula; in that case,
+#'   \code{\link{metadata}} is replaced by the result of the list+formula
+#'   method of \code{\link{map_values}}. If the left side of the formula is
+#'   missing, the entire metadata are replaced by the result, which is an
+#'   error if the result is not a list.
 #' @param values Logical scalar. If \code{FALSE}, metadata names, not values,
 #'   are mapped, and \code{classes} is ignored (names are always of class
 #'   \sQuote{character}).
@@ -630,6 +706,11 @@ setGeneric("map_metadata",
 #' copy <- map_metadata(vaas_1, map, values = FALSE)
 #' stopifnot(!identical(names(metadata(copy)), names(metadata(vaas_1))))
 #'
+#' # WMD+formula method
+#' copy <- map_metadata(vaas_1, Organism ~ paste(Species, Strain))
+#' (x <- setdiff(metadata_chars(copy), metadata_chars(vaas_1)))
+#' stopifnot(length(x) == 1, x == "Escherichia coli DSM30083T")
+#'
 #' # OPMS method
 #' data(vaas_4)
 #'
@@ -652,6 +733,11 @@ setGeneric("map_metadata",
 #' y <- metadata(copy, "Experiment")
 #' stopifnot(y == "Rep. 1")
 #'
+#' # using a formula
+#' copy <- map_metadata(vaas_4, Organism ~ paste(Species, Strain))
+#' (x <- setdiff(metadata_chars(copy), metadata_chars(vaas_4)))
+#' stopifnot(length(x) == 4) # one entry per plate
+#'
 setMethod("map_metadata", c(WMD, "function"), function(object, mapping,
     values = TRUE, classes = "ANY", ...) {
   assert_length(values)
@@ -663,8 +749,6 @@ setMethod("map_metadata", c(WMD, "function"), function(object, mapping,
   object
 }, sealed = SEALED)
 
-#' @export
-#'
 setMethod("map_metadata", c(WMD, "character"), function(object, mapping,
     values = TRUE, classes = "factor") {
   assert_length(values)
@@ -672,6 +756,11 @@ setMethod("map_metadata", c(WMD, "character"), function(object, mapping,
     map_values(object@metadata, mapping, coerce = classes)
   else
     map_names(object@metadata, mapping)
+  object
+}, sealed = SEALED)
+
+setMethod("map_metadata", c(WMD, "formula"), function(object, mapping) {
+  object@metadata <- map_values(object@metadata, mapping)
   object
 }, sealed = SEALED)
 

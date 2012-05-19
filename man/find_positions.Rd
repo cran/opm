@@ -2,7 +2,10 @@
 \alias{find_positions}
 \title{Identify positions of substrates}
 \arguments{
-  \item{x}{Query character vector or query list.}
+  \item{object}{Query character vector or query list.}
+
+  \item{...}{Optional arguments passed between the
+  methods.}
 }
 \value{
   The character method returns a list of character matrices
@@ -24,13 +27,16 @@
 (x <- find_positions(c("a-D-Glucose", "a-D-Gloucose")))
 stopifnot(length(x[[1]]) > length(x[[2]]))
 
+# Factor method
+(y <- find_positions(as.factor(c("a-D-Glucose", "a-D-Gloucose"))))
+stopifnot(identical(y, x))
+
 # List method
 (x <- find_positions(find_substrate(c("a-D-Glucose", "a-D-Gloucose"))))
 stopifnot(length(x[[1]]) > length(x[[2]]))
 }
 \seealso{
   Other naming-functions: \code{\link{find_substrate}},
-  \code{\link{normalize_plate_name}},
   \code{\link{well_to_substrate}}
 }
 \keyword{utilities}
@@ -39,9 +45,12 @@ stopifnot(length(x[[1]]) > length(x[[2]]))
 \alias{find_positions-methods}
 \alias{find_positions,character-method}
 \alias{find_positions,list-method}
+\alias{find_positions,factor-method}
 \usage{
-  \S4method{find_positions}{character}(x) 
+  \S4method{find_positions}{character}(object) 
 
-  \S4method{find_positions}{list}(x) 
+  \S4method{find_positions}{list}(object) 
+
+  \S4method{find_positions}{factor}(object, ...) 
 
 }

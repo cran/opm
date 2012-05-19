@@ -5,11 +5,10 @@
   well_to_substrate(plate, well = 1L:96L)
 }
 \arguments{
-  \item{plate}{Character vector. The type(s) of the
-  plate(s). See \code{\link{plate_type}}.
-  \code{\link{normalize_plate_name}} is applied before
-  searching for the substrate names, and partial matching
-  is allowed.}
+  \item{plate}{Character vector or factor. The type(s) of
+  the plate(s). See \code{\link{plate_type}}.
+  \code{\link{plate_type}} is applied before searching for
+  the substrate names, and partial matching is allowed.}
 
   \item{well}{Character vector of original well names
   (coordinates on the plate), or integer vector, or
@@ -32,8 +31,7 @@ stopifnot(nchar(y) > nchar(x))
 }
 \seealso{
   Other naming-functions: \code{\link{find_positions}},
-  \code{\link{find_substrate}},
-  \code{\link{normalize_plate_name}}
+  \code{\link{find_substrate}}
 }
 \keyword{utilities}
 

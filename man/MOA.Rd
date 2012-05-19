@@ -32,7 +32,7 @@
 % \alias{map_values,MOA,function-method}
 % \alias{map_values,MOA,missing-method}
 % \alias{ranging,MOA-method}
-
+% 
 % \title{Class \code{"MOA"}}
 % \description{
 % %%  ~~ A concise (1-5 lines) description of what the class is. ~~
@@ -60,9 +60,9 @@
 % \note{
 % %%  ~~further notes~~
 % }
-
-%% ~Make other sections like Warning with \section{Warning }{....} ~
-
+% 
+% %% ~Make other sections like Warning with \section{Warning }{....} ~
+% 
 % \seealso{
 % %%  ~~objects to See Also as \code{\link{~~fun~~}}, ~~~
 % %%  ~~or \code{\linkS4class{CLASSNAME}} for links to other classes ~~~

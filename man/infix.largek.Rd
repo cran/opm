@@ -3,7 +3,7 @@
 \alias{infix.largek}
 \title{Search in metadata keys}
 \arguments{
-  \item{x}{Character vector or list.}
+  \item{x}{Character vector, factor or list.}
 
   \item{table}{\code{\link{WMD}} object.}
 }
@@ -18,7 +18,9 @@
   results in \code{TRUE}. Note that the values of the
   character vector, not its names, if any, are used for
   querying the metadata. Using a list as query, this
-  function behaves like \code{\link{infix.k}}.
+  function behaves like \code{\link{infix.k}}. The factor
+  method first converts \code{x} to \sQuote{character}
+  mode.
 }
 \examples{
 # The dataset contains the metadata keys 'Species' and 'Experiment' but
@@ -52,17 +54,25 @@ stopifnot(!c("Species", "Experiment") \%K\% vaas_1)
 \alias{\%K\%,list,OPMS-method}
 \alias{infix.largek,character,OPMS-method}
 \alias{\%K\%,character,OPMS-method}
+\alias{infix.largek,factor,OPMS-method}
+\alias{\%K\%,factor,OPMS-method}
 \alias{infix.largek,character,WMD-method}
 \alias{\%K\%,character,WMD-method}
 \alias{infix.largek,list,WMD-method}
 \alias{\%K\%,list,WMD-method}
+\alias{infix.largek,factor,WMD-method}
+\alias{\%K\%,factor,WMD-method}
 \usage{
   \S4method{\%K\%}{list,OPMS}(x, table) 
 
   \S4method{\%K\%}{character,OPMS}(x, table) 
 
+  \S4method{\%K\%}{factor,OPMS}(x, table) 
+
   \S4method{\%K\%}{character,WMD}(x, table) 
 
   \S4method{\%K\%}{list,WMD}(x, table) 
+
+  \S4method{\%K\%}{factor,WMD}(x, table) 
 
 }

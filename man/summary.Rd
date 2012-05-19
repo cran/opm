@@ -1,6 +1,6 @@
 \name{summary}
 \alias{summary}
-\title{Summary}
+\title{Summarite OPM or OPMS pbjects}
 \arguments{
   \item{object}{\code{\link{OPM}} or \code{\link{OPMS}}
   object.}
@@ -29,7 +29,7 @@ x <- summary(vaas_4)
 stopifnot(is.list(x), length(x) == 4L, all(sapply(x, is.list)))
 }
 \seealso{
-  base::summary
+  base::summary base::formatDL
 
   Other getter-functions: \code{\link{aggr_settings}},
   \code{\link{aggregated}}, \code{\link{anyDuplicated}},
@@ -38,9 +38,9 @@ stopifnot(is.list(x), length(x) == 4L, all(sapply(x, is.list)))
   \code{\link{has_aggr}}, \code{\link{hours}},
   \code{\link{length}}, \code{\link{max}},
   \code{\link{measurements}}, \code{\link{metadata}},
-  \code{\link{minmax}}, \code{\link{plate_type}},
-  \code{\link{position}}, \code{\link{select}},
-  \code{\link{seq}}, \code{\link{setup_time}},
+  \code{\link{minmax}}, \code{\link{position}},
+  \code{\link{select}}, \code{\link{seq}},
+  \code{\link{setup_time}}, \code{\link{show}},
   \code{\link{thin_out}}, \code{\link{well}},
   \code{\link{wells}}
 }

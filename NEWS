@@ -1,4 +1,56 @@
 
+opm 0.5-0
+---------
+
+Bug fixes:
+
+- fixed 'run_opm.R' bug causing an error in conjunction with '-r template', and 
+  bug causing '-s' to be ignored in conjunction with '-r template'
+
+Other user-visible changes:
+
+- normalize_plate_name() has been removed; it is replaced by the novel
+  character (and factor) methods for plate_type()
+  replaces normalize_plate_name(), which has been removed
+
+- specific show() method for OPM and OPMS objects
+
+- changed to lazy loading of the datasets (suggestion by Benjamin Hofner)
+
+- `[` was modfied to remove incompatibilties with the 'Matrix' package (which
+  IMHO uses setMethod("[", ...) in other ways than specified in the
+  documentation of `[` in the base package) (problem noticed by Benjamin 
+  Hofner)
+
+New features:
+
+- metadata manipulation is now easier due to the novel formula-based methods
+  for metadata()<- and map_metadata() and the novel OPMS/data frame methods
+  for metadata()<-
+
+- plotting functionality for 'run_opm.R'
+
+- summary() for OPMS objects is more detailed
+
+- novel plates() methods for lists and OPM objects
+
+- duplicate() and anyDuplicated() get a 'what' argument allowing not only the 
+  detection of duplicate OPM objects but also of duplicates of selected 
+  components only
+
+- novel contains() method for OPMS objects, and arguments to all contains()
+  allowing fine control of strictness
+
+- added factor methods for find_substrate(), find_positions(), glob_to_regex()
+  `metadata<-`() and the infix operators; metadata() now betters supports
+  factors as keys
+
+- separate() now automatically selects multi- vs. single-character splitting 
+  modes if split is a non-empty character vector, and it has a novel 'list.wise'
+  argument
+
+- run_kmeans() and do_aggr() methods for matrices
+
 
 opm 0.4-0
 ---------

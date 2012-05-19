@@ -35,12 +35,16 @@
 % \docType{class}
 \alias{OPMS-class}
 % \alias{\%K\%,character,OPMS-method}
+% \alias{\%K\%,factor,OPMS-method}
 % \alias{\%K\%,list,OPMS-method}
 % \alias{\%Q\%,character,OPMS-method}
+% \alias{\%Q\%,factor,OPMS-method}
 % \alias{\%Q\%,list,OPMS-method}
 % \alias{\%k\%,character,OPMS-method}
+% \alias{\%k\%,factor,OPMS-method}
 % \alias{\%k\%,list,OPMS-method}
 % \alias{\%q\%,character,OPMS-method}
+% \alias{\%q\%,factor,OPMS-method}
 % \alias{\%q\%,list,OPMS-method}
 % \alias{+,OPM,OPMS-method}
 % \alias{+,OPMS,OPM-method}
@@ -54,6 +58,7 @@
 % \alias{coerce,OPMS,list-method}
 % \alias{coerce,list,OPMS-method}
 % \alias{collect_template,OPMS-method}
+% \alias{contains,OPMS,OPM-method}
 % \alias{csv_data,OPMS-method}
 % \alias{dim,OPMS-method}
 % \alias{do_aggr,OPMS-method}
@@ -77,6 +82,11 @@
 % \alias{merge,OPMS,numeric-method}
 % \alias{metadata,OPMS-method}
 % \alias{metadata<-,OPMS,ANY,ANY-method}
+% \alias{metadata<-,OPMS,ANY,data.frame-method}
+% \alias{metadata<-,OPMS,character,data.frame-method}
+% \alias{metadata<-,OPMS,factor,data.frame-method}
+% \alias{metadata<-,OPMS,missing,data.frame-method}
+% \alias{metadata<-,OPMS,missing,formula-method}
 % \alias{metadata<-,OPMS,missing,list-method}
 % \alias{metadata_chars,OPMS-method}
 % \alias{minmax,OPMS-method}
@@ -89,13 +99,14 @@
 % \alias{select,OPMS-method}
 % \alias{seq,OPMS-method}
 % \alias{setup_time,OPMS-method}
+% \alias{show,OPMS-method}
 % \alias{sort,OPMS-method}
 % \alias{summary,OPMS-method}
 % \alias{thin_out,OPMS-method}
 % \alias{well,OPMS-method}
 % \alias{wells,OPMS-method}
 % \alias{xy_plot,OPMS-method}
-
+% 
 % \title{Class \code{"OPMS"}}
 % \description{
 % %%  ~~ A concise (1-5 lines) description of what the class is. ~~
@@ -116,12 +127,16 @@ Class \code{"\linkS4class{YAML_VIA_LIST}"}, directly.
 \section{Methods}{
   \describe{
     \item{\%K\%}{\code{signature(x = "character", table = "OPMS")}: ... }
+    \item{\%K\%}{\code{signature(x = "factor", table = "OPMS")}: ... }
     \item{\%K\%}{\code{signature(x = "list", table = "OPMS")}: ... }
     \item{\%Q\%}{\code{signature(x = "character", table = "OPMS")}: ... }
+    \item{\%Q\%}{\code{signature(x = "factor", table = "OPMS")}: ... }
     \item{\%Q\%}{\code{signature(x = "list", table = "OPMS")}: ... }
     \item{\%k\%}{\code{signature(x = "character", table = "OPMS")}: ... }
+    \item{\%k\%}{\code{signature(x = "factor", table = "OPMS")}: ... }
     \item{\%k\%}{\code{signature(x = "list", table = "OPMS")}: ... }
     \item{\%q\%}{\code{signature(x = "character", table = "OPMS")}: ... }
+    \item{\%q\%}{\code{signature(x = "factor", table = "OPMS")}: ... }
     \item{\%q\%}{\code{signature(x = "list", table = "OPMS")}: ... }
     \item{+}{\code{signature(e1 = "OPM", e2 = "OPMS")}: ... }
     \item{+}{\code{signature(e1 = "OPMS", e2 = "OPM")}: ... }
@@ -135,6 +150,7 @@ Class \code{"\linkS4class{YAML_VIA_LIST}"}, directly.
     \item{coerce}{\code{signature(from = "OPMS", to = "list")}: ... }
     \item{coerce}{\code{signature(from = "list", to = "OPMS")}: ... }
     \item{collect_template}{\code{signature(object = "OPMS")}: ... }
+    \item{contains}{\code{signature(object = "OPMS", other = "OPM")}: ... }
     \item{csv_data}{\code{signature(object = "OPMS")}: ... }
     \item{dim}{\code{signature(x = "OPMS")}: ... }
     \item{do_aggr}{\code{signature(object = "OPMS")}: ... }
@@ -158,6 +174,11 @@ Class \code{"\linkS4class{YAML_VIA_LIST}"}, directly.
     \item{merge}{\code{signature(x = "OPMS", y = "numeric")}: ... }
     \item{metadata}{\code{signature(object = "OPMS")}: ... }
     \item{metadata<-}{\code{signature(object = "OPMS", key = "ANY", value = "ANY")}: ... }
+    \item{metadata<-}{\code{signature(object = "OPMS", key = "ANY", value = "data.frame")}: ... }
+    \item{metadata<-}{\code{signature(object = "OPMS", key = "character", value = "data.frame")}: ... }
+    \item{metadata<-}{\code{signature(object = "OPMS", key = "factor", value = "data.frame")}: ... }
+    \item{metadata<-}{\code{signature(object = "OPMS", key = "missing", value = "data.frame")}: ... }
+    \item{metadata<-}{\code{signature(object = "OPMS", key = "missing", value = "formula")}: ... }
     \item{metadata<-}{\code{signature(object = "OPMS", key = "missing", value = "list")}: ... }
     \item{metadata_chars}{\code{signature(object = "OPMS")}: ... }
     \item{minmax}{\code{signature(x = "OPMS")}: ... }
@@ -170,6 +191,7 @@ Class \code{"\linkS4class{YAML_VIA_LIST}"}, directly.
     \item{select}{\code{signature(object = "OPMS")}: ... }
     \item{seq}{\code{signature(... = "OPMS")}: ... }
     \item{setup_time}{\code{signature(object = "OPMS")}: ... }
+    \item{show}{\code{signature(object = "OPMS")}: ... }
     \item{sort}{\code{signature(x = "OPMS")}: ... }
     \item{summary}{\code{signature(object = "OPMS")}: ... }
     \item{thin_out}{\code{signature(object = "OPMS")}: ... }
@@ -187,9 +209,9 @@ Class \code{"\linkS4class{YAML_VIA_LIST}"}, directly.
 % \note{
 % %%  ~~further notes~~
 % }
-
-%% ~Make other sections like Warning with \section{Warning }{....} ~
-
+% 
+% %% ~Make other sections like Warning with \section{Warning }{....} ~
+% 
 % \seealso{
 % %%  ~~objects to See Also as \code{\link{~~fun~~}}, ~~~
 % %%  ~~or \code{\linkS4class{CLASSNAME}} for links to other classes ~~~

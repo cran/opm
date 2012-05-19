@@ -1,6 +1,6 @@
 \name{is_constant}
 \alias{is_constant}
-\title{Check for constantness.}
+\title{Check for constantness}
 \arguments{
   \item{x}{An R object to which \code{duplicated} can be
   applied.}

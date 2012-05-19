@@ -7,23 +7,26 @@
 
   \item{i}{Vector or missing. For the \code{\link{OPM}} and
   \code{\link{OPMA}} method, the indexes of one to several
-  rows. For the \code{\link{OPMS}} method, the indexes of
-  one to several plates.}
+  time points. For the \code{\link{OPMS}} method, the
+  indexes of one to several plates.}
 
   \item{j}{Vector or missing. For the \code{\link{OPM}} and
-  \code{\link{OPMA}} method, the indexes of one to several
-  columns. For the \code{\link{OPMS}} method, the indexes
-  of one to several rows. In that case, if \code{j} is a
-  list, its values are passed to the respective
-  \code{\link{OPM}} object separately, allowing for
-  individual choices of time points.}
+  \code{\link{OPMA}} method, the indexes or names of one to
+  several wells. For the \code{\link{OPMS}} method, the
+  indexes of one to several time points. In that case, if
+  \code{j} is a list, its values are passed to the
+  respective \code{\link{OPM}} object separately, allowing
+  for individual choices of time points. Otherwise \code{j}
+  is used as the \code{i} argument of the \code{\link{OPM}}
+  and \code{\link{OPMA}} method.}
 
-  \item{...}{For the \code{\link{OPM}} and
-  \code{\link{OPMA}} methods, this should \strong{not} be
-  set. For the \code{\link{OPMS}} method, the indexes index
-  of one to several columns, or missing. That is, here
-  \code{...} can comprise zero arguments or a single one,
-  not more.}
+  \item{k}{Vector or missing. The \code{\link{OPMS}} method
+  uses \code{k} as \code{j} argument of the
+  \code{\link{OPM}} and \code{\link{OPMA}} method.  That
+  is, this parameter selects the wells.}
+
+  \item{...}{This should \strong{not} be set. It is an
+  error to specify additional dimensions.}
 
   \item{drop}{Logical scalar. Remove the aggregated data
   and turn \code{\link{OPMA}} to \code{\link{OPM}} objects?
@@ -136,6 +139,6 @@ for (i in seq(vaas_4)) { # OR: for (i in 1:length(vaas_4))
 
   \S4method{[}{OPMA}(x, i, j, ..., drop = FALSE) 
 
-  \S4method{[}{OPMS}(x, i, j, ..., drop = FALSE) 
+  \S4method{[}{OPMS}(x, i, j, k, ..., drop = FALSE) 
 
 }

@@ -2,7 +2,9 @@
 \alias{do_aggr}
 \title{Aggregate kinetics using curve-parameter estimation}
 \arguments{
-  \item{object}{\code{\link{OPM}} object.}
+  \item{object}{\code{\link{OPM}} or \code{\link{OPMS}}
+  object. There is also a helper method for matrix
+  objects.}
 
   \item{boot}{Integer scalar. Number of bootstrap
   replicates used to estimate 95-percent confidence
@@ -44,8 +46,21 @@
   see below). Otherwise they are integrated in an
   \code{\link{OPMA}} object together with \code{object}.}
 
-  \item{...}{Optional arguments passed between the
-  methods.}
+  \item{by}{List, passed by the matrix method to
+  \code{aggregate} from the \pkg{stats} package. Can also
+  be another vector, which is then used as single list
+  element.}
+
+  \item{fun}{Function, passed by the matrix method as
+  \code{FUN} argument to \code{aggregate} from the
+  \pkg{stats} package.}
+
+  \item{sep}{Character scalar. Used for joining the vectors
+  within \code{by} together to form row names.}
+
+  \item{...}{Arguments passed from the \code{\link{OPMS}}
+  to the \code{\link{OPM}}, and from the matrix method to
+  \code{fun}.}
 }
 \value{
   If \code{plain} is \code{FALSE}, an \code{\link{OPMA}}
@@ -55,6 +70,7 @@
   the (potentially modified) list proved via the
   \code{settings} argument, and a \sQuote{program}
   attribute corresponding to the \code{program} argument.
+  The matrix method returns a matrix.
 }
 \description{
   Aggregate the kinetic data using curve-parameter
@@ -79,6 +95,7 @@
   \code{aggr_settings(x)}. }
 }
 \examples{
+# OPM method
 data(vaas_1)
 
 # Run a fast estimate of A and AUC without bootstrapping
@@ -110,6 +127,12 @@ stopifnot(cor.test(auc.fast, auc.grofit)$estimate > 0.999)
   aggr_settings(x)
   aggregated(x)
 }
+
+# matrix method
+x <- matrix(1:10, ncol = 2, dimnames = list(letters[1:5], LETTERS[1:2]))
+grps <- c("a", "b", "a", "b", "a")
+(y <- do_aggr(x, by = grps, fun = mean))
+stopifnot(is.matrix(y), dim(y) == c(2, 2), colnames(y) == colnames(x))
 }
 \references{
   Brisbin, I. L., Collins, C. T., White, G. C., McCallum,
@@ -144,10 +167,13 @@ stopifnot(cor.test(auc.fast, auc.grofit)$estimate > 0.999)
 \docType{methods}
 \alias{do_aggr-methods}
 \alias{do_aggr,OPM-method}
+\alias{do_aggr,matrix-method}
 \alias{do_aggr,OPMS-method}
 \usage{
   \S4method{do_aggr}{OPM}(object, boot = 100L, verbose = FALSE,
     cores = 1L, options = list(), program = "grofit", plain = FALSE) 
+
+  \S4method{do_aggr}{matrix}(object, by, fun, sep = ".", ...) 
 
   \S4method{do_aggr}{OPMS}(object, ...) 
 

@@ -71,7 +71,10 @@ stopifnot(!identical(names(x), names(x1)), identical(names(x), names(x2)))
   \code{\link{metadata.set}}, \code{\link{metadata.set}},
   \code{\link{metadata.set}}, \code{\link{metadata.set}},
   \code{\link{metadata.set}}, \code{\link{metadata.set}},
-  \code{\link{metadata_chars}}
+  \code{\link{metadata.set}}, \code{\link{metadata.set}},
+  \code{\link{metadata.set}}, \code{\link{metadata.set}},
+  \code{\link{metadata.set}}, \code{\link{metadata.set}},
+  \code{\link{metadata.set}}, \code{\link{metadata_chars}}
 }
 \keyword{IO}
 \keyword{manip}

@@ -9,6 +9,45 @@
 #
 
 
+setGeneric("case", function(EXPR, ...) standardGeneric("case"))
+#' Modified switch function
+#'
+#' An altered switch statement for flow control.
+#'
+#' @param EXPR A scalar based on which a decision is made. If of mode 
+#'   \sQuote{logical}, exactly two other elements must be passed, the first
+#'   of which is chosen if \code{EXPR} is \code{TRUE}, the second if it is
+#'   \code{FALSE}. If \code{EXPR} is a character scalar, the behaviour is like
+#'   the one of \code{switch} with the exception that unmatched values within 
+#'   \code{...} cause an error. If \code{EXPR} is of mode \sQuote{numeric},
+#'   the behaviour is like \code{switch} but counting starts at 0 and values
+#'   larger than the number of elements within \code{...} select the last 
+#'   element. It is an error if \code{EXPR} is negative.
+#' @param x Chosen if \code{EXPR} is \code{TRUE}.
+#' @param y Chosen if \code{EXPR} is \code{FALSE}.
+#' @param ... Additional arguments from which to select an alternative.
+#' @return Selected value of \code{...}, \code{x} or \code{y}.
+#' @seealso base::switch
+#' @keywords internal
+#'
+setMethod("case", "logical", function(EXPR, x, y) {
+  stopifnot(!is.na(EXPR))
+  switch(2L - EXPR, x, y)  
+}, sealed = SEALED)
+
+setMethod("case", "numeric", function(EXPR, ...) {
+  stopifnot(EXPR >= 0L) # this also catches NA values
+  switch(EXPR = pmin(EXPR, nargs() - 2L) + 1L, ...)
+}, sealed = SEALED)
+
+setMethod("case", "character", function(EXPR, ...) {
+  switch(EXPR = EXPR, ..., stop("unmatched 'EXPR' value"))
+}, sealed = SEALED)
+
+
+################################################################################
+
+
 #' Assert length
 #'
 #' Raise an error if a given R object does not have the specified length. This
@@ -44,7 +83,26 @@ assert_length <- function(..., .wanted = 1L) {
 #' @keywords internal
 #'
 must <- function(expr, ...) {
-  tryCatch(expr = expr, warning = function(w) stop(w$message), ...)
+  tryCatch(expr = expr, warning = stop, ...)
+}
+
+
+################################################################################
+
+
+#' Convert errors to their messages
+#'
+#' If an error occurs, return its message. The expression used has to ensure
+#' that its normal result can be distinguished from the error message.
+#'
+#' @param expr R expression to evaluate.
+#' @param ... Optional further arguments to \code{tryCatch}.
+#' @return The result of \code{expr} if no error occurs, otherwise the error
+#'   message as character scalar.
+#' @keywords internal
+#'
+taste <- function(expr, ...) {
+  tryCatch(expr = expr, error = conditionMessage, ...)
 }
 
 
@@ -75,7 +133,7 @@ last <- function(x, i = 1L) {
 
 ## NOTE: not an S4 method because applicable to any objects
 
-#' Check for uniformity.
+#' Check for uniformity
 #'
 #' Assess whether all elements in a collection are identical.
 #'
@@ -99,7 +157,7 @@ is_uniform <- function(x, na.rm = FALSE) {
 
 
 setGeneric("is_constant", function(x, ...) standardGeneric("is_constant"))
-#' Check for constantness.
+#' Check for constantness
 #'
 #' Assess whether all elements in a collection are identical. This uses
 #' \code{duplicated} by default, but there is also an \sQuote{extended} mode
@@ -199,23 +257,52 @@ listing <- function(x, header = NULL, footer = NULL, begin = NULL,
     x <- signif(x, digits)
   if (is.null(names(x <- unlist(x))) || force.numbers)
     names(x) <- seq_along(x)
-  if (style %in% c("table", "list"))
-    x <- formatDL(x, style = style, ...)
+  x <- if (style %in% c("table", "list"))
+    formatDL(x, style = style, ...)
   else
-    x <- sprintf(style, names(x), x)
+    sprintf(style, names(x), x)
   if (length(begin))
-    if (is.numeric(begin))
-      x <- paste(paste(rep.int(" ", begin), collapse = ""), x, sep = "")
+    x <- if (is.numeric(begin))
+      paste(paste(rep.int(" ", begin), collapse = ""), x, sep = "")
     else
-      x <- paste(begin, x, sep = "")
-  if (length(header))
-    x <- c(header, x)
-  if (length(footer))
-    x <- c(x, footer)
-  paste(x, collapse = collapse)
+      paste(begin, x, sep = "")
+  paste(c(header, x, footer), collapse = collapse)
 }
 
 
+################################################################################
+
+
+setGeneric("parse_formula_head", 
+  function(object) standardGeneric("parse_formula_head"))
+#' Turn the head of a formula into a vector
+#'
+#' If a formula has length 3, the second element represents the left part (the
+#' first element is the tilde). Once extracted using \code{[[}, the left part
+#' can be a call, a name or a vector. These methods convert it to a vector,
+#' aiming at generating a valid key for indexing a list.
+#'
+#' @param object An object of class \sQuote{call}, \sQuote{name} or 
+#'   \sQuote{vector} (S4-based).
+#' @return Vector.
+#' @keywords internal
+#'
+setMethod("parse_formula_head", "vector", function(object) {
+  object
+}, sealed = SEALED)
+
+setMethod("parse_formula_head", "name", function(object) {
+  as.character(object)
+}, sealed = SEALED)
+
+setMethod("parse_formula_head", "call", function(object) {
+  if (identical(object[[1L]], as.name("$")))
+    all.names(object, functions = FALSE)
+  else
+    eval(object)
+}, sealed = SEALED)
+
+  
 ################################################################################
 
 
@@ -253,6 +340,16 @@ setGeneric("separate", function(object, ...) standardGeneric("separate"))
 #'   contain (i) the original column name, (ii) \code{name.sep} and (iii)
 #'   their index, thus creating unique column names (if the original ones
 #'   were unique).
+#' @param list.wise Logical scalar. Ignored if \code{split} is \code{TRUE}.
+#'   Otherwise, \code{object} is assumed to contains word lists separated by
+#'   \code{split}. The result is a logical matrix in which the columns represent
+#'   these words and the fields indicate whether or not a word was present in
+#'   a certain item contained in \code{object}.
+#' @param strip.white Logical scalar. Remove whitespace from the ends of each
+#'   resulting character scalar after splitting? Has an effect on the removal
+#'   of constant columns. Whitespace is always removed if \code{split} is
+#'   \code{TRUE}.
+#' @param ... Optional arguments passed between the methods.
 #' @export
 #' @return Character matrix, its number of rows being equal to the length of
 #'   \code{object}, or data frame with the same number of rows as \code{object}
@@ -280,7 +377,12 @@ setGeneric("separate", function(object, ...) standardGeneric("separate"))
 #' (yy <- separate(xx, TRUE))
 #' stopifnot(identical(yy, as.data.frame(y)))
 #'
-#' # Data frame method
+#' # List-wise splitting
+#' x <- c("a,b", "c,b", "a,c")
+#' (y <- separate(x, ",", list.wise = TRUE))
+#' stopifnot(is.matrix(y), dim(y) == c(3, 3), is.logical(y))
+#'
+#' # Data-frame method
 #' x <- data.frame(a = 1:2, b = c("a-b-cc", "a-ff-g"))
 #' (y <- separate(x, coerce = FALSE))
 #' stopifnot(identical(x, y))
@@ -292,7 +394,15 @@ setGeneric("separate", function(object, ...) standardGeneric("separate"))
 #' stopifnot(sapply(y, class) == c("integer", "factor", "factor"))
 #'
 setMethod("separate", "character", function(object, split = "/.-_",
-    simplify = FALSE, keep.const = TRUE) {
+    simplify = FALSE, keep.const = TRUE, 
+    list.wise = FALSE, strip.white = list.wise) {
+  
+  strip_white <- function(x) {
+    for (pat in c("^\\s+", "\\s+$"))
+      x <- sub(pattern = pat, replacement = "", x = x, perl = TRUE)
+    x
+  }
+      
   simple_if <- function(x) {
     assert_length(simplify, keep.const)
     if (is.matrix(x)) {
@@ -313,7 +423,19 @@ setMethod("separate", "character", function(object, split = "/.-_",
     else
       matrix(ncol = 0L, nrow = 0L, data = NA_character_)
   }
-  char_group <- function(x) sprintf("[%s]", paste(x, collapse = ""))
+
+  p0 <- function(x) paste(x, collapse = "")
+    
+  char_group <- function(single, multiple) {
+    if (length(single)) {
+      if (length(multiple))
+        sprintf("([%s]|[%s]+)", p0(single), p0(multiple))
+      else
+        sprintf("[%s]", p0(single))
+    } else 
+      sprintf("[%s]+", p0(multiple))
+  }
+  
   split_fixed <- function(x) {
     ws <- c(" ", "\t", "\v", "\r", "\n", "\b", "\a", "\f")
     max.len <- max(sapply(x <- strsplit(x, split = "", fixed = TRUE), length))
@@ -321,50 +443,86 @@ setMethod("separate", "character", function(object, split = "/.-_",
     x <- do.call(rbind, x)
     groups <- group_by_sep(apply(x, 2L, function(y) all(y %in% ws)))
     x <- apply(x, 1L, split, f = groups)
-    do.call(rbind, lapply(x, function(y, p1, p2) {
-      y <- sapply(y, paste, collapse = "")
-      sub(p2, "", sub(p1, "", y, perl = TRUE), perl = TRUE)
-    }, p1 = sprintf("^%s+", ws <- char_group(ws)), p2 = sprintf("%s+$", ws)))
+    do.call(rbind, lapply(x, function(y) strip_white(sapply(y, p0))))
   }
-  if (isTRUE(split) || all(!nzchar(split)))
+  
+  yields_constant <- function(chars) {
+    splits_constant <- function(char, ...) {
+      is_constant(lapply(strsplit(object, char, ...), length))  
+    }
+    sapply(chars, function(char) {
+      if (splits_constant(sprintf("[%s]+", char), perl = TRUE))
+        "multiple"
+      else if (splits_constant(char, fixed = TRUE))
+        "single"
+      else
+        "no"
+    })
+  }
+  
+  lists_to_matrix <- function(x, split, strip.white) {
+    split <- sprintf("[%s]", p0(split))
+    x <- strsplit(x, split = split, perl = TRUE)
+    if (strip.white)
+      x <- lapply(x, strip_white)
+    chars <- unique(unlist(x))
+    result <- matrix(nrow = length(x), ncol = length(chars), data = FALSE)
+    colnames(result) <- sort(chars)
+    rownames(result) <- names(x)
+    for (i in seq_along(x))
+      result[i, x[[i]]] <- TRUE
+    result
+  }
+
+  assert_length(list.wise, strip.white)    
+    
+  # Fixed-width splitting mode      
+  if (isTRUE(split) || all(!nzchar(split <- na.exclude(as.character(split)))))
     return(simple_if(split_fixed(object)))
+  
+  # Prepare split characters
   split <- unique(unlist(strsplit(x = split, split = "", fixed = TRUE)))
   if (length(split) == 0L)
     return(simple_if(object))
-  yields.constant <- sapply(split, function(char) {
-    is_constant(lapply(strsplit(object, char, fixed = TRUE), length))
-  })
-  if (length(split <- split[yields.constant]) == 0L)
+  split <- c(setdiff(split, "-"), intersect(split, "-"))
+  
+  # List-wise splitting
+  if (list.wise)
+    return(simple_if(lists_to_matrix(object, split, strip.white)))
+    
+  # Check and apply split characters
+  yields.constant <- sapply(split, yields_constant)
+  if (all(yields.constant == "no"))
     return(simple_if(object))
-  split <- char_group(c(split[!(dash <- split == "-")], split[dash]))
-  simple_if(do.call(rbind, strsplit(object, split, perl = TRUE)))
+  split <- char_group(split[yields.constant == "single"], 
+    split[yields.constant == "multiple"])
+  object <- do.call(rbind, strsplit(object, split, perl = TRUE))
+  if (strip.white)
+    object <- strip_white(object)
+  simple_if(object)
+  
 }, sealed = SEALED)
 
-#' @export
-#'
 setMethod("separate", "factor", function(object, split = "/.-_",
-    simplify = FALSE, keep.const = TRUE) {
-  assert_length(simplify)
+    simplify = FALSE, keep.const = TRUE, ...) {
   result <- separate(as.character(object), split = split,
-    keep.const = keep.const, simplify = FALSE)
+    keep.const = keep.const, simplify = FALSE, ...)
   if (simplify && ncol(result) == 1L)
     as.factor(result[, 1L])
   else
     as.data.frame(result, stringsAsFactors = TRUE)
 }, sealed = SEALED)
 
-#' @export
-#'
 setMethod("separate", "data.frame", function(object, split = "/.-_",
-    keep.const = TRUE, coerce = TRUE, name.sep = ".") {
+    keep.const = TRUE, coerce = TRUE, name.sep = ".", ...) {
   assert_length(coerce, name.sep)
   do.call(cbind, mapply(function(x, name) {
     result <- if (is.character(x))
       as.data.frame(separate(x, split = split, keep.const = keep.const,
-        simplify = FALSE), stringsAsFactors = FALSE)
+        simplify = FALSE, ...), stringsAsFactors = FALSE)
     else if (coerce && is.factor(x))
       separate(x, split = split, keep.const = keep.const,
-        simplify = FALSE)
+        simplify = FALSE, ...)
     else
       as.data.frame(x)
     names(result) <- if ((nc <- ncol(result)) == 1L)
@@ -379,14 +537,16 @@ setMethod("separate", "data.frame", function(object, split = "/.-_",
 ################################################################################
 
 
-setGeneric("glob_to_regex", function(x, ...) standardGeneric("glob_to_regex"))
+setGeneric("glob_to_regex", 
+  function(object, ...) standardGeneric("glob_to_regex"))
 #' Convert wildcard to regular expression
 #'
 #' Change a shell globbing wildcard into a regular expression. This is just a
 #' slightly extended version of \code{glob2rx} from the \pkg{utils} package,
 #' but more conversion steps might need to be added here in the future.
 #'
-#' @param x Character vector.
+#' @param object Character vector or factor.
+#' @param ... Optional arguments passed between the methods.
 #' @export
 #' @return Character vector.
 #' @family auxiliary-functions
@@ -417,10 +577,12 @@ setGeneric("glob_to_regex", function(x, ...) standardGeneric("glob_to_regex"))
 #' (y <- glob_to_regex(x))
 #' (z <- glob2rx(x))
 #' stopifnot(!identical(y, z))
+#' # Factor method
+#' (z <- glob_to_regex(as.factor(x)))
+#' stopifnot(identical(y, z))
 #'
-setMethod("glob_to_regex", "character", function(x) {
-  result <- glob2rx(x)
-  gsub("+", "\\+", result, fixed = TRUE)
+setMethod("glob_to_regex", "character", function(object) {
+  gsub("+", "\\+", glob2rx(object), fixed = TRUE)
 }, sealed = SEALED)
 
 
@@ -598,51 +760,6 @@ param_names <- function() {
 
 ## NOTE: not an S4 method because conversion is done
 
-#' Normalize plate name
-#'
-#' Normalize the names of OmniLog(R) PM plates to the internally used naming
-#' scheme. Unrecognized names are returned unchanged. This needs not normally
-#' be called by the \pkg{opm} user but might be of interest.
-#'
-#' @param plate Character vector of original plate name(s).
-#' @param subtype Logical scalar. Keep the plate subtype indicator, if any?
-#' @export
-#' @return Character vector of the same length than \code{plate}.
-#' @family naming-functions
-#' @keywords utilities character
-#' @seealso base::gsub
-#' @examples
-#' # Entirely unrecognized strings are returned as-is
-#' x <- normalize_plate_name(letters)
-#' stopifnot(identical(x, letters))
-#'
-#' # Something more realistic
-#' (x <- normalize_plate_name(y <- c("PM1", "PM-11C", "PMM04-a"), TRUE))
-#' stopifnot(x != y)
-#'
-normalize_plate_name <- function(plate, subtype = FALSE) {
-  normalize_pm <- function(x, subtype)  {
-    x <- sub("^PMM", "PM-M", x, perl = TRUE)
-    repl <- if (subtype)
-      "-\\1"
-    else
-      ""
-    x <- sub("([A-Z]+)$", repl, x, perl = TRUE)
-    sub("([^\\d])(\\d)([^\\d]|$)", "\\10\\2\\3", x, perl = TRUE)
-  }
-  result <- toupper(gsub("\\W", "", plate, perl = TRUE))
-  ok <- grepl("^PMM?\\d+[A-Z]*$", result, perl = TRUE)
-  result[ok] <- normalize_pm(result[ok], subtype = subtype)
-  result[!ok] <- plate[!ok]
-  result
-}
-
-
-################################################################################
-
-
-## NOTE: not an S4 method because conversion is done
-
 #' Map well names to substrates
 #'
 #' Translate well names (which are basically their coordinates on the plate) to
@@ -686,8 +803,8 @@ map_well_names <- function(wells, plate, in.parens = FALSE, brackets = FALSE,
 #' Translate well names (which are basically their coordinates on the plate) to
 #' substrate names, given the name of the plate.
 #'
-#' @param plate Character vector. The type(s) of the plate(s). See
-#'   \code{\link{plate_type}}. \code{\link{normalize_plate_name}} is applied
+#' @param plate Character vector or factor. The type(s) of the plate(s). See
+#'   \code{\link{plate_type}}. \code{\link{plate_type}} is applied
 #'   before searching for the substrate names, and partial matching is allowed.
 #' @param well Character vector of original well names (coordinates on the
 #'   plate), or integer vector, or convertible to such.
@@ -703,7 +820,7 @@ map_well_names <- function(wells, plate, in.parens = FALSE, brackets = FALSE,
 #' stopifnot(nchar(y) > nchar(x))
 #'
 well_to_substrate <- function(plate, well = 1L:96L) {
-  pos <- pmatch(normalize_plate_name(plate), colnames(WELL_MAP))
+  pos <- pmatch(plate_type(plate), colnames(WELL_MAP))
   found <- !is.na(pos)
   result <- WELL_MAP[well, pos[found], drop = FALSE]
   others <- matrix(data = NA_character_, nrow = length(well),
@@ -715,14 +832,15 @@ well_to_substrate <- function(plate, well = 1L:96L) {
 ################################################################################
 
 
-setGeneric("find_substrate", function(x, ...) standardGeneric("find_substrate"))
+setGeneric("find_substrate", 
+  function(object, ...) standardGeneric("find_substrate"))
 #' Identify substrates
 #'
 #' Identify the names of substrates as used in the stored plate annotations.
 #' Exact or error-tolerant matching can be used, as well as globbing and
 #' regular-expression matching.
 #'
-#' @param x Query character vector.
+#' @param object Query character vector or factor.
 #' @param search Character scalar indicating the search mode. If \sQuote{exact},
 #'   query names must exactly match (parts of) the well annotations. If
 #'   \sQuote{glob}, shell globbing is used. If \sQuote{approx}, approximate
@@ -736,6 +854,7 @@ setGeneric("find_substrate", function(x, ...) standardGeneric("find_substrate"))
 #'   argument of \code{agrep} in the \pkg{base} package for details. Has an
 #'   effect only if \sQuote{approx} is chosen as search mode (see the
 #'   \code{search} argument).
+#' @param ... Optional arguments passed between the methods.
 #' @export
 #' @return List of character vectors (empty if nothing was found), with
 #'   duplicates removed and the rest sorted. The names of the list correspond
@@ -756,7 +875,11 @@ setGeneric("find_substrate", function(x, ...) standardGeneric("find_substrate"))
 #' (z <- find_substrate("a-D-Glucose", search = "approx"))
 #' stopifnot(length(z[[1]]) > length(x[[1]]))
 #'
-setMethod("find_substrate", "character", function(x,
+#' # Factor method
+#' (zz <- find_substrate(as.factor("a-D-Glucose"), search = "approx"))
+#' stopifnot(identical(z, zz))
+#'
+setMethod("find_substrate", "character", function(object,
     search = c("exact", "glob", "approx", "regex"), max.dev = 0.2) {
   find_name <- function(pattern, ...) {
     grep(pattern = pattern, x = WELL_MAP, value = TRUE, useBytes = TRUE, ...)
@@ -766,13 +889,12 @@ setMethod("find_substrate", "character", function(x,
       useBytes = TRUE, ...)
   }
   search <- match.arg(search)
-  sapply(x, FUN = function(name) {
-    sort(unique(switch(search,
+  sapply(object, FUN = function(name) {
+    sort(unique(case(search,
       exact = find_name(name, fixed = TRUE),
       glob = find_name(glob_to_regex(name), ignore.case = TRUE, perl = TRUE),
       regex = find_name(name, ignore.case = TRUE, perl = TRUE),
-      approx = find_approx(name, max.distance = max.dev),
-      stop(BUG_MSG)
+      approx = find_approx(name, max.distance = max.dev)
     )))
   }, simplify = FALSE)
 }, sealed = SEALED)
@@ -781,7 +903,8 @@ setMethod("find_substrate", "character", function(x,
 ################################################################################
 
 
-setGeneric("find_positions", function(x, ...) standardGeneric("find_positions"))
+setGeneric("find_positions", 
+  function(object, ...) standardGeneric("find_positions"))
 #' Identify positions of substrates
 #'
 #' Identify the positions of substrates, i.e. the plate(s) and well(s) in which
@@ -789,7 +912,8 @@ setGeneric("find_positions", function(x, ...) standardGeneric("find_positions"))
 #' plate annotations. To determine their spelling, use
 #' \code{\link{find_substrate}}.
 #'
-#' @param x Query character vector or query list.
+#' @param object Query character vector or query list.
+#' @param ... Optional arguments passed between the methods.
 #' @export
 #' @return The character method returns a
 #'   list of character matrices (empty if nothing was found), with one row
@@ -804,23 +928,26 @@ setGeneric("find_positions", function(x, ...) standardGeneric("find_positions"))
 #' (x <- find_positions(c("a-D-Glucose", "a-D-Gloucose")))
 #' stopifnot(length(x[[1]]) > length(x[[2]]))
 #'
+#' # Factor method
+#' (y <- find_positions(as.factor(c("a-D-Glucose", "a-D-Gloucose"))))
+#' stopifnot(identical(y, x))
+#'
 #' # List method
 #' (x <- find_positions(find_substrate(c("a-D-Glucose", "a-D-Gloucose"))))
 #' stopifnot(length(x[[1]]) > length(x[[2]]))
 #'
-setMethod("find_positions", "character", function(x) {
+setMethod("find_positions", "character", function(object) {
   plates <- colnames(WELL_MAP)
-  sapply(x, FUN = function(name) {
+  sapply(object, FUN = function(name) {
     result <- which(WELL_MAP == name, arr.ind = TRUE)
     matrix(c(plates[result[, 2L]], rownames(result)), ncol = 2L,
       dimnames = list(NULL, c("Plate", "Well")))
   }, simplify = FALSE)
 }, sealed = SEALED)
 
-#' @export
-#'
-setMethod("find_positions", "list", function(x) {
-  rapply(x, f = find_positions, classes = "character", how = "list")
+setMethod("find_positions", "list", function(object) {
+  rapply(object, f = find_positions, classes = c("character", "factor"),
+    how = "list")
 }, sealed = SEALED)
 
 
@@ -928,7 +1055,7 @@ max_rgb_contrast <- function(col) {
 #'
 select_colors <- function(
     set = c("w3c", "w3c.i", "nora", "nora.i", "roseobacter", "roseobacter.i")) {
-  switch(match.arg(set),
+  case(match.arg(set),
     w3c = W3C_COLORS[W3C_NAMES_MAX_CONTRAST],
     w3c.i = rev(W3C_COLORS[W3C_NAMES_MAX_CONTRAST]),
     nora = NORAS_COLORS,
@@ -936,8 +1063,7 @@ select_colors <- function(
     brewer = BREWER_COLORS,
     brewer.i = rev(BREWER_COLORS),
     roseobacter = ROSEOBACTER_COLORS,
-    roseobacter.i = rev(ROSEOBACTER_COLORS),
-    stop(BUG_MSG)
+    roseobacter.i = rev(ROSEOBACTER_COLORS)
   )
 }
 
@@ -993,11 +1119,10 @@ setMethod("draw_ci", "numeric", function(object, col = "blue", cex = 1,
   assert_length(object, .wanted = 4L)
   if (any(is.na(c(left <- object[1L], right <- object[3L])))) {
     msg <- "cannot draw CI because left or right margin is 'NA'"
-    switch(match.arg(na.action),
+    case(match.arg(na.action),
       warn = warning(msg),
       error = stop(msg),
-      ignore = NULL,
-      stop(BUG_MSG)
+      ignore = NULL
     )
   }
   if (is.na(y <- object[4L]))
@@ -1088,7 +1213,7 @@ setGeneric("group_by_sep",
 #' @param pattern Character scalar passed to \code{grepl}.
 #' @param invert Logical scalar. Invert the result of pattern matching with
 #'   \code{grepl}? If so, unmatched lines are treated as separators.
-#' @param ... Optional arguments passed to \code{grepl}.
+#' @param ... Optional arguments passed to \code{grepl} or between the methods.
 #'
 #' @return Factor, its length being the one of \code{object}. The levels
 #'   correspond to a groups whose indices correspond to the index of a
@@ -1139,24 +1264,22 @@ setMethod("group_by_sep", "character", function(object, pattern,
 ################################################################################
 
 
-setGeneric("tidy",  function(x, ...) standardGeneric("tidy"))
+setGeneric("tidy",  function(object, ...) standardGeneric("tidy"))
 #' Check HTML using the Tidy program
 #'
 #' Run the HTML Tidy program for check or converting HTML character vectors.
 #'
-#' @param x Query character vector, or list of such vectors, or missing. If
-#'   missing, the location of the tidy executable is returned
+#' @param object Query character vector, or list of such vectors, or missing. 
+#'   If missing, the location of the tidy executable is returned
 #' @param check Logical scalar. If \code{TRUE}, the Tidy checking results,
 #'   potentially including warnings and error messages, are captured in a
 #'   character vector. Otherwise the converted HTML is returned.
 #' @param args Character vector with arguments passed to HTML Tidy. Is is
 #'   currently an error to set any of its \sQuote{File manipulation} options.
 #' @param ... Optional arguments passed between the methods.
-#' @export
-#' @return Character vector, or list of such vectors. If \code{x} is missing,
-#'   the method returns the location of the HTML Tidy executable and \code{NULL}
-#'   if it cannot be found.
-#'
+#' @return Character vector, or list of such vectors. If \code{object} is
+#'   missing, the method returns the location of the HTML Tidy executable but
+#'  \code{NULL} if it cannot be found.
 #' @keywords internal
 #'
 setMethod("tidy", "missing", function() {
@@ -1166,12 +1289,9 @@ setMethod("tidy", "missing", function() {
     NULL
 }, sealed = SEALED)
 
-#' @export
-#'
-setMethod("tidy", "character", function(x, check = TRUE, args = c("-u", "-i")) {
+setMethod("tidy", "character", function(object, check = TRUE, 
+    args = c("-u", "-i")) {
   assert_length(check, program <- tidy())
-  #if (!length(program <- tidy()))
-  #  stop("executable 'tidy' not found")
   bad <- c("-o", "-output", "-config", "-file", "-f", "-modify", "-m")
   if (any(bad %in% (args <- as.character(args))))
     stop("you cannot set any of the 'File manipulation' options")
@@ -1181,17 +1301,34 @@ setMethod("tidy", "character", function(x, check = TRUE, args = c("-u", "-i")) {
     args <- setdiff(args, "-e")
   # The combination of stderr = TRUE and stdout = FALSE/"" is impossible.
   # '-e' turns the output of converted HTML off within Tidy.
-  suppressWarnings(system2(command = program, args = unique(args), input = x,
-    stderr = stderr, stdout = TRUE))
+  suppressWarnings(system2(command = program, args = unique(args),
+     input = object, stderr = stderr, stdout = TRUE))
 }, sealed = SEALED)
 
-#' @export
-#'
-setMethod("tidy", "list", function(x, ...) {
-  lapply(X = x, FUN = tidy, ...)
+setMethod("tidy", "list", function(object, ...) {
+  lapply(X = object, FUN = tidy, ...)
 }, sealed = SEALED)
 
 
 ################################################################################
 
+  
+# Automatically generated factor methods
 
+lapply(c(
+    #+
+    glob_to_regex,
+    group_by_sep,
+    find_substrate,
+    find_positions
+    #-
+  ), FUN = function(func_) {
+  setMethod(func_, "factor", function(object, ...) {
+    func_(as.character(object), ...)
+  }, sealed = SEALED)
+})
+  
+  
+################################################################################  
+  
+  

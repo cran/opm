@@ -26,7 +26,7 @@
 % \alias{improved_max,OPMX-method}
 % \alias{main_title,OPMX-method}
 % \alias{negative_control,OPMX-method}
-
+% 
 % \title{Class \code{"OPMX"}}
 % \description{
 % %%  ~~ A concise (1-5 lines) description of what the class is. ~~
@@ -49,9 +49,9 @@
 % \note{
 % %%  ~~further notes~~
 % }
-
-%% ~Make other sections like Warning with \section{Warning }{....} ~
-
+% 
+% %% ~Make other sections like Warning with \section{Warning }{....} ~
+% 
 % \seealso{
 % %%  ~~objects to See Also as \code{\link{~~fun~~}}, ~~~
 % %%  ~~or \code{\linkS4class{CLASSNAME}} for links to other classes ~~~

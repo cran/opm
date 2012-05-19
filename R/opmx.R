@@ -83,7 +83,7 @@ setMethod("negative_control", OPMX, function(object, neg.ctrl) {
   else if (is.character(neg.ctrl))
     tryCatch(minmax(object, neg.ctrl), error = function(e) {
       warning("cannot get negative control from selected position ",
-        "(deleted?); error was: ", e$message)
+        "(deleted?); error was: ", conditionMessage(e))
       NULL
     })
   else if (is.logical(neg.ctrl)) {

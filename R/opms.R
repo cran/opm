@@ -146,32 +146,22 @@ setMethod("+", c(OPM, OPM), function(e1, e2) {
   new(OPMS, plates = list(e1, e2))
 }, sealed = SEALED)
 
-#' @export
-#'
 setMethod("+", c(OPM, OPMS), function(e1, e2) {
   new(OPMS, plates = c(list(e1), plates(e2)))
 }, sealed = SEALED)
 
-#' @export
-#'
 setMethod("+", c(OPM, "list"), function(e1, e2) {
   new(OPMS, plates = c(list(e1), e2))
 }, sealed = SEALED)
 
-#' @export
-#'
 setMethod("+", c(OPMS, OPMS), function(e1, e2) {
   new(OPMS, plates = c(plates(e1), plates(e2)))
 }, sealed = SEALED)
 
-#' @export
-#'
 setMethod("+", c(OPMS, OPM), function(e1, e2) {
   new(OPMS, plates = c(plates(e1), e2))
 }, sealed = SEALED)
 
-#' @export
-#'
 setMethod("+", c(OPMS, "list"), function(e1, e2) {
   new(OPMS, plates = c(plates(e1), e2))
 }, sealed = SEALED)
@@ -207,8 +197,6 @@ setMethod("length", OPMS, function(x) {
 ################################################################################
 
 
-#' @export
-#'
 setMethod("dim", OPMS, function(x) {
   c(length(x@plates), dim(x@plates[[1L]]))
 }, sealed = SEALED)
@@ -249,29 +237,52 @@ setMethod("seq", OPMS, function(...) {
 setGeneric("plates", function(object, ...) standardGeneric("plates"))
 #' Get available plates
 #'
-#' Get all plates contained in an \code{\link{OPMS}} object.
+#' Get all plates contained in an \code{\link{OPMS}} object or a list, or
+#' create a list containing a single \code{\link{OPM}} object as element. The
+#' list method traverses the input recursively and skips all objects of other
+#' classes than \code{\link{OPM}} (see also \code{\link{opms}}, which is
+#' somewhat similar but more flexible).
 #'
-#' @param object \code{\link{OPMS}} object.
-#' @return List of \code{\link{OPM}} objects.
+#' @param object List, \code{\link{OPM}} or \code{\link{OPMS}} object.
+#' @return List of \code{\link{OPM}} objects (may be empty instead if 
+#'   \code{object} is a list).
 #' @export
 #' @family conversion-functions
 #' @keywords attribute
 #' @seealso base::list base::as.list
 #' @examples
+#'
+#' # 'OPM' method
+#' data(vaas_1)
+#' summary(x <- plates(vaas_1))
+#' stopifnot(is.list(x), length(x) == 1L, sapply(x, inherits, what = "OPM"))
+#'
+#' # 'OPMS' method
 #' data(vaas_4)
-#' x <- plates(vaas_4)
-#' stopifnot(is.list(x), length(x) == 4L)
+#' summary(x <- plates(vaas_4))
+#' stopifnot(is.list(x), length(x) == 4L, sapply(x, inherits, what = "OPM"))
+#'
+#' # list method
+#' x <- list(vaas_1, letters, vaas_4, 1:10)
+#' summary(x <- plates(x))
+#' stopifnot(is.list(x), length(x) == 5, sapply(x, inherits, what = "OPM"))
 #'
 setMethod("plates", OPMS, function(object) {
   object@plates
+}, sealed = SEALED)
+
+setMethod("plates", OPM, function(object) {
+  list(object)
+}, sealed = SEALED)
+
+setMethod("plates", "list", function(object) {
+  to_opm_list(object, precomputed = TRUE, skip = TRUE, group = FALSE)
 }, sealed = SEALED)
 
 
 ################################################################################
 
 
-#' @export
-#'
 setMethod("max", OPMS, function(x, ..., na.rm = FALSE) {
   max(sapply(x@plates, FUN = max, ..., na.rm = na.rm), na.rm = na.rm)
 }, sealed = SEALED)
@@ -280,8 +291,6 @@ setMethod("max", OPMS, function(x, ..., na.rm = FALSE) {
 ################################################################################
 
 
-#' @export
-#'
 setMethod("minmax", OPMS, function(x, ..., na.rm = FALSE) {
   min(sapply(x@plates, FUN = minmax, ..., na.rm = na.rm))
 }, sealed = SEALED)
@@ -290,13 +299,25 @@ setMethod("minmax", OPMS, function(x, ..., na.rm = FALSE) {
 ################################################################################
 
 
-#' @export
-#'
 setMethod("summary", OPMS, function(object, ...) {
-  invisible(lapply(seq_along(object@plates), FUN = function(idx) {
+  result <- lapply(seq_along(object@plates), FUN = function(idx) {
     message(idx)
     summary(object@plates[[idx]], ...)
-  }))
+  })
+  dims <- dim(object)
+  tmpl <- paste("\n=> %s object with %i plates (%i aggregated) of type '%s',",
+    " %i wells and about %i time points.")
+  message(sprintf(tmpl, class(object), dims[1L], 
+    length(which(has_aggr(object))), plate_type(object), dims[3L], dims[2L]))
+  invisible(result)
+}, sealed = SEALED)
+
+
+################################################################################
+
+
+setMethod("show", OPMS, function(object) {
+  summary(object)  
 }, sealed = SEALED)
 
 
@@ -351,21 +372,39 @@ setGeneric("duplicated")
 #' are contained within an \code{\link{OPMS}} object.
 #'
 #' @param x \code{\link{OPMS}} object.
-#' @param incomparables Vector of values that cannot be compared. See
-#'   \code{duplicated} from the \pkg{base} package for details.
-#' @param ... Optional other arguments passed to that function.
+#' @param  incomparables Vector passed to \code{duplicated} from the 
+#'   \pkg{base} package.
+#' @param what Character scalar indicating which parts of \code{x} should be 
+#'   compared. \sQuote{all} compares entire \code{OPM} objects; \sQuote{csv}
+#'   compares the CSV data entries \code{\link{setup_time}} and 
+#'   \code{\link{position}}; \sQuote{metadata} compares the entire metadata 
+#'   content. If \code{what} does not match any of these, it is passed as 
+#'   \code{key} argument to \code{\link{metadata}}, and the resulting metadata
+#'   subsets are compared.
+#' @param ... Optional arguments passed to \code{duplicated} from the 
+#'   \pkg{base} package.
 #' @export
 #' @return Logical vector.
 #' @family getter-functions
 #' @keywords attribute
+#' @seealso base::duplicate
 #' @examples
+#'
 #' data(vaas_4)
 #' stopifnot(!duplicated(vaas_4))
+#' stopifnot(duplicated(vaas_4, what = "Species") == rep(c(FALSE, TRUE), 2))
 #' x <- vaas_4[c(1, 1)]
 #' stopifnot(c(FALSE, TRUE) == duplicated(x))
 #'
-setMethod("duplicated", OPMS, function(x, incomparables = FALSE, ...) {
-  duplicated(x = x@plates, incomparables = incomparables, ...)
+setMethod("duplicated", OPMS, function(x, incomparables = FALSE,
+    what = c("all", "csv", "metadata"), ...) {
+  selection <- tryCatch(match.arg(what), error = function(e) "other")
+  duplicated(x = case(selection,
+    all = x@plates,
+    csv = cbind(setup_time(x), position(x)),
+    metadata = metadata(x),
+    other = metadata(object = x, key = what)
+  ), incomparables = incomparables, ...)
 }, sealed = SEALED)
 
 
@@ -379,11 +418,8 @@ setGeneric("anyDuplicated")
 #' are contained within an \code{\link{OPMS}} object.
 #'
 #' @param x \code{\link{OPMS}} object.
-#' @param incomparables Vector of values that cannot be compared. See
-#'   \code{anyDuplicated} from the \pkg{base} package for details.
-#' @param fromLast Logical scalar. See  below and
-#'   \code{anyDuplicated} from the \pkg{base} package for details.
-#' @param ... Optional other arguments passed to that function.
+#' @param incomparables Vector passed to \code{\link{duplicated}}.
+#' @param ... Optional arguments passed to \code{\link{duplicated}}.
 #' @export
 #' @return Integer scalar. \code{0} if no values are duplicated, the index of
 #'   the first or last (depending on \code{fromLast}) duplicated object
@@ -392,14 +428,14 @@ setGeneric("anyDuplicated")
 #' @keywords attribute
 #' @examples
 #' data(vaas_4)
-#' stopifnot(!anyDuplicated(vaas_4))
+#' stopifnot(anyDuplicated(vaas_4) == 0)
+#' stopifnot(anyDuplicated(vaas_4, what = "Species") == 2)
 #' x <- vaas_4[c(1, 1)]
 #' stopifnot(anyDuplicated(x) == 2)
 #'
-setMethod("anyDuplicated", OPMS, function(x, incomparables = FALSE,
-    fromLast = FALSE, ...) {
-  anyDuplicated(x = x@plates, incomparables = incomparables,
-    fromLast = fromLast, ...)
+setMethod("anyDuplicated", OPMS, function(x, incomparables = FALSE, ...) {
+  dups <- which(duplicated(x = x, incomparables = incomparables, ...))
+  case(length(dups), 0L, dups[1L])
 }, sealed = SEALED)
 
 
@@ -450,8 +486,6 @@ setMethod("merge", c(OPMS, "numeric"), function(x, y) {
     metadata = metadata(x[1L]))
 }, sealed = SEALED)
 
-#' @export
-#'
 setMethod("merge", c(OPMS, "missing"), function(x) {
   merge(x, 0.25)
 }, sealed = SEALED)
@@ -549,10 +583,10 @@ lapply(c(
 #
 lapply(c(
     #+
-    "%k%",
-    "%K%",
-    "%q%",
-    "%Q%"
+    `%k%`,
+    `%K%`,
+    `%q%`,
+    `%Q%`
     #-
   ), FUN = function(func_) {
   setMethod(func_, c("list", OPMS), function(x, table) {
@@ -562,13 +596,26 @@ lapply(c(
 
 lapply(c(
     #+
-    "%k%",
-    "%K%",
-    "%q%",
-    "%Q%"
+    `%k%`,
+    `%K%`,
+    `%q%`,
+    `%Q%`
     #-
   ), FUN = function(func_) {
   setMethod(func_, c("character", OPMS), function(x, table) {
+    sapply(table@plates, func_, x = x, USE.NAMES = FALSE)
+  }, sealed = SEALED)
+})
+
+lapply(c(
+    #+
+    `%k%`,
+    `%K%`,
+    `%q%`,
+    `%Q%`
+    #-
+  ), FUN = function(func_) {
+  setMethod(func_, c("factor", OPMS), function(x, table) {
     sapply(table@plates, func_, x = x, USE.NAMES = FALSE)
   }, sealed = SEALED)
 })
@@ -577,8 +624,6 @@ lapply(c(
 ################################################################################
 
 
-#' @export
-#'
 setMethod("map_metadata", c(OPMS, "ANY"), function(object, mapping, ...) {
   object@plates <- lapply(object@plates, FUN = map_metadata, mapping = mapping,
     ...)
@@ -590,7 +635,6 @@ setMethod("map_metadata", c(OPMS, "ANY"), function(object, mapping, ...) {
 
 
 #' @name metadata.set
-#' @export
 #'
 setMethod("metadata<-", c(OPMS, "missing", "list"), function(object, value) {
   for (i in seq_along(object@plates))
@@ -599,7 +643,24 @@ setMethod("metadata<-", c(OPMS, "missing", "list"), function(object, value) {
 }, sealed = SEALED)
 
 #' @name metadata.set
-#' @export
+#'
+setMethod("metadata<-", c(OPMS, "missing", "formula"), function(object, value) {
+  for (i in seq_along(object@plates))
+    metadata(object@plates[[i]]) <- value
+  object
+}, sealed = SEALED)
+    
+#' @name metadata.set
+#'
+setMethod("metadata<-", c(OPMS, "missing", "data.frame"), function(object, 
+    value) {
+  assert_length(object, .wanted = nrow(value))
+  for (i in seq_along(object@plates))
+    metadata(object@plates[[i]]) <- value[i, , drop = TRUE]
+  object
+}, sealed = SEALED)
+    
+#' @name metadata.set
 #'
 setMethod("metadata<-", c(OPMS, "ANY", "ANY"), function(object, key, value) {
   for (i in seq_along(object@plates))
@@ -607,12 +668,40 @@ setMethod("metadata<-", c(OPMS, "ANY", "ANY"), function(object, key, value) {
   object
 }, sealed = SEALED)
 
-
+#' @name metadata.set
+#'
+setMethod("metadata<-", c(OPMS, "ANY", "data.frame"), function(object, key, 
+    value) {
+  assert_length(object, .wanted = nrow(value))
+  for (i in seq_along(object@plates))
+    metadata(object@plates[[i]], key) <- value[i, , drop = TRUE]
+  object
+}, sealed = SEALED)
+    
+#' @name metadata.set
+#'
+setMethod("metadata<-", c(OPMS, "character", "data.frame"), function(
+    object, key, value) {
+  assert_length(object, .wanted = nrow(value))
+  j <- last(key)
+  if (!j %in% colnames(value))
+    j <- TRUE
+  for (i in seq_along(object@plates))
+    metadata(object@plates[[i]], key) <- value[i, j, drop = TRUE]
+  object
+}, sealed = SEALED)
+  
+#' @name metadata.set
+#'
+setMethod("metadata<-", c(OPMS, "factor", "data.frame"), function(
+    object, key, value) {
+  `metadata<-`(object, as.character(key), value)
+}, sealed = SEALED)
+  
+  
 ################################################################################
 
 
-#' @export
-#'
 setMethod("metadata_chars", OPMS, function(object, ...) {
   map_values(unlist(lapply(object@plates, FUN = metadata_chars, ...)))
 }, sealed = SEALED)
@@ -640,26 +729,24 @@ setAs(from = OPMS, to = "list", function(from) {
 ## for thin_out() see above
 
 
-#' @export
-#'
-setMethod("[", OPMS, function(x, i, j, ..., drop = FALSE) {
+setMethod("[", OPMS, function(x, i, j, k, ..., drop = FALSE) {
+  if (!missing(...))
+    stop("incorrect number of dimensions")
+  fetch <- function(obj, idx) obj[i = idx, j = k, drop = drop]
   result <- x@plates[i]
+  if (no.k <- missing(k))
+    k <- TRUE
   if (missing(j)) {
-    if (!missing(...) || drop)
-      result <- lapply(result, FUN = function(obj) obj[, ..., drop = drop])
+    if (!no.k || drop)
+      result <- lapply(result, fetch, idx = TRUE)
   } else if (is.list(j))
-    result <- mapply(FUN = function(obj, jj) obj[jj, ..., drop = drop],
-      result, j, SIMPLIFY = FALSE, USE.NAMES = FALSE)
+    result <- mapply(fetch, result, j, SIMPLIFY = FALSE, USE.NAMES = FALSE)
   else
-    result <- lapply(result, FUN = function(obj) obj[j, ..., drop = drop])
-  if ((len <- length(result)) == 0L)
-    NULL
-  else if (len == 1L)
-    result[[1L]]
-  else {
-    x@plates <- result
-    x
-  }
+    result <- lapply(result, fetch, idx = j)
+  case(length(result), NULL, result[[1L]], {
+      x@plates <- result
+      x
+    })
 }, sealed = SEALED)
 
 
@@ -815,7 +902,7 @@ setGeneric("select", function(object, query, ...) standardGeneric("select"))
 setMethod("select", OPMS, function(object, query, values = TRUE,
     invert = FALSE, exact = FALSE, time = FALSE,
     use = c("i", "I", "k", "K", "q", "Q", "t", "T")) {
-  switch(match.arg(use),
+  case(match.arg(use),
     i =, I = NULL,
     k =, K = values <- FALSE,
     q = {
@@ -826,8 +913,7 @@ setMethod("select", OPMS, function(object, query, values = TRUE,
       values <- TRUE
       exact <- TRUE
     },
-    t =, T = time <- TRUE,
-    stop(BUG_MSG)
+    t =, T = time <- TRUE
   )
   assert_length(values, invert, exact, time)
   if (time) {
@@ -856,8 +942,6 @@ setMethod("select", OPMS, function(object, query, values = TRUE,
   object[pos, , ]
 }, sealed = SEALED)
 
-#' @export
-#'
 setMethod("select", "data.frame", function(object, query) {
   object[, sapply(object, inherits, what = query), drop = FALSE]
 }, sealed = SEALED)
@@ -940,19 +1024,16 @@ setMethod("extract_columns", OPMS, function(object, what, join = FALSE,
     else
       NULL
     if (!is.null(msg))
-      switch(match.arg(dups),
+      case(match.arg(dups),
         ignore = NULL,
         warn = warning(msg),
-        error = stop(msg),
-        stop(BUG_MSG)
+        error = stop(msg)
       )
     labels
   } else
     must(as.data.frame(do.call(rbind, result)))
 }, sealed = SEALED)
 
-#' @export
-#'
 setMethod("extract_columns", "data.frame", function(object, what, sep = " ") {
   apply(object[, what, drop = FALSE], 1L, FUN = paste, collapse = sep)
 }, sealed = SEALED)
@@ -1094,9 +1175,6 @@ setMethod("extract", OPMS, function(object, as.labels, subset = "A",
 
 }, sealed = SEALED)
 
-
-#' @export
-#'
 setMethod("extract", "data.frame", function(object, as.labels, 
     as.groups = NULL, sep = " ", what = "numeric") {
   find_stuff <- function(x, what) {
@@ -1191,6 +1269,7 @@ setGeneric("ci_plot", function(object, ...) standardGeneric("ci_plot"))
 #'   e34846.
 #'
 #' @return Character vector describing the plot's legend, returned invisibly.
+#' @export
 #' @family plotting-functions
 #' @seealso graphics::plot
 #' @keywords hplot
@@ -1277,8 +1356,6 @@ setMethod("ci_plot", "data.frame", function(object, rowname.sep = " ",
 
 }, sealed = SEALED)
 
-#' @export
-#'
 setMethod("ci_plot", OPMS, function(object, as.labels, subset = "A", ...) {
   ci_plot(extract(object, as.labels = as.labels, subset = subset,
     dataframe = TRUE, ci = TRUE), ...)
@@ -1292,8 +1369,6 @@ setMethod("ci_plot", OPMS, function(object, as.labels, subset = "A", ...) {
 #
 
 
-#' @export
-#'
 setMethod("flatten", OPMS, function(object, include = NULL, fixed = list(),
     ...) {
   plate.nums <- paste("Plate", seq_along(object@plates))
@@ -1336,8 +1411,6 @@ setMethod("flattened_to_factor", "data.frame", function(object, sep = " ") {
 ################################################################################
 
 
-#' @export
-#'
 setMethod("xy_plot", OPMS, function(x, col = "nora", lwd = 1,
     neg.ctrl = "A01", base.col = "black", base.lwd = lwd,
     main = list(), xlab = "Time [h]", ylab = "Value [OmniLog units]",
@@ -1413,8 +1486,6 @@ setMethod("xy_plot", OPMS, function(x, col = "nora", lwd = 1,
 ################################################################################
 
 
-#' @export
-#'
 setMethod("level_plot", OPMS, function(x, main = list(), colors = NULL, 
     panel.headers = TRUE, cex = NULL, strip.fmt = list(),
     striptext.fmt = list(), legend.sep = " ", ...) {

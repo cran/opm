@@ -42,22 +42,29 @@
 % \docType{class}
 \alias{WMD-class}
 % \alias{\%K\%,character,WMD-method}
+% \alias{\%K\%,factor,WMD-method}
 % \alias{\%K\%,list,WMD-method}
 % \alias{\%Q\%,character,WMD-method}
+% \alias{\%Q\%,factor,WMD-method}
 % \alias{\%Q\%,list,WMD-method}
 % \alias{\%k\%,character,WMD-method}
+% \alias{\%k\%,factor,WMD-method}
 % \alias{\%k\%,list,WMD-method}
 % \alias{\%q\%,character,WMD-method}
+% \alias{\%q\%,factor,WMD-method}
 % \alias{\%q\%,list,WMD-method}
 % \alias{map_metadata,WMD,character-method}
+% \alias{map_metadata,WMD,formula-method}
 % \alias{map_metadata,WMD,function-method}
 % \alias{metadata,WMD-method}
 % \alias{metadata<-,WMD,character,ANY-method}
+% \alias{metadata<-,WMD,factor,ANY-method}
 % \alias{metadata<-,WMD,list,list-method}
+% \alias{metadata<-,WMD,missing,formula-method}
 % \alias{metadata<-,WMD,missing,list-method}
 % \alias{metadata<-,WMD,numeric,list-method}
 % \alias{metadata_chars,WMD-method}
-
+% 
 % \title{Class \code{"WMD"}}
 % \description{
 % %%  ~~ A concise (1-5 lines) description of what the class is. ~~
@@ -71,18 +78,25 @@
 \section{Methods}{
   \describe{
     \item{\%K\%}{\code{signature(x = "character", table = "WMD")}: ... }
+    \item{\%K\%}{\code{signature(x = "factor", table = "WMD")}: ... }
     \item{\%K\%}{\code{signature(x = "list", table = "WMD")}: ... }
     \item{\%Q\%}{\code{signature(x = "character", table = "WMD")}: ... }
+    \item{\%Q\%}{\code{signature(x = "factor", table = "WMD")}: ... }
     \item{\%Q\%}{\code{signature(x = "list", table = "WMD")}: ... }
     \item{\%k\%}{\code{signature(x = "character", table = "WMD")}: ... }
+    \item{\%k\%}{\code{signature(x = "factor", table = "WMD")}: ... }
     \item{\%k\%}{\code{signature(x = "list", table = "WMD")}: ... }
     \item{\%q\%}{\code{signature(x = "character", table = "WMD")}: ... }
+    \item{\%q\%}{\code{signature(x = "factor", table = "WMD")}: ... }
     \item{\%q\%}{\code{signature(x = "list", table = "WMD")}: ... }
     \item{map_metadata}{\code{signature(object = "WMD", mapping = "character")}: ... }
+    \item{map_metadata}{\code{signature(object = "WMD", mapping = "formula")}: ... }
     \item{map_metadata}{\code{signature(object = "WMD", mapping = "function")}: ... }
     \item{metadata}{\code{signature(object = "WMD")}: ... }
     \item{metadata<-}{\code{signature(object = "WMD", key = "character", value = "ANY")}: ... }
+    \item{metadata<-}{\code{signature(object = "WMD", key = "factor", value = "ANY")}: ... }
     \item{metadata<-}{\code{signature(object = "WMD", key = "list", value = "list")}: ... }
+    \item{metadata<-}{\code{signature(object = "WMD", key = "missing", value = "formula")}: ... }
     \item{metadata<-}{\code{signature(object = "WMD", key = "missing", value = "list")}: ... }
     \item{metadata<-}{\code{signature(object = "WMD", key = "numeric", value = "list")}: ... }
     \item{metadata_chars}{\code{signature(object = "WMD")}: ... }
@@ -97,9 +111,9 @@
 % \note{
 % %%  ~~further notes~~
 % }
-
-%% ~Make other sections like Warning with \section{Warning }{....} ~
-
+% 
+% %% ~Make other sections like Warning with \section{Warning }{....} ~
+% 
 % \seealso{
 % %%  ~~objects to See Also as \code{\link{~~fun~~}}, ~~~
 % %%  ~~or \code{\linkS4class{CLASSNAME}} for links to other classes ~~~

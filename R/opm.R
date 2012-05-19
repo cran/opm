@@ -100,10 +100,10 @@ setClass(OPM,
   contains = WMD,
   validity = function(object) {
     errs <- c(opm_problems(object@measurements), opm_problems(object@csv_data))
-    if (length(errs) == 0L)
-      TRUE
-    else
+    if (length(errs))
       errs
+    else
+      TRUE
   },
   sealed = SEALED
 )
@@ -124,8 +124,7 @@ setClass(OPM,
 #'
 setMethod("initialize", OPM, function(.Object, ...) {
   .Object <- callNextMethod()
-  .Object@csv_data[PLATE_TYPE] <- normalize_plate_name(
-    .Object@csv_data[PLATE_TYPE])
+  .Object@csv_data[PLATE_TYPE] <- plate_type(.Object@csv_data[PLATE_TYPE])
   .Object
 }, sealed = SEALED)
 
@@ -209,17 +208,20 @@ setMethod("measurements", OPM, function(object, i) {
 #'
 #' @param x \code{\link{OPM}}, \code{\link{OPMA}} or \code{\link{OPMS}} object.
 #' @param i Vector or missing. For the \code{\link{OPM}} and \code{\link{OPMA}}
-#'   method, the indexes of one to several rows. For the \code{\link{OPMS}}
-#'   method, the indexes of one to several plates.
+#'   method, the indexes of one to several time points. For the 
+#'   \code{\link{OPMS}} method, the indexes of one to several plates.
 #' @param j Vector or missing. For the \code{\link{OPM}} and \code{\link{OPMA}}
-#'   method, the indexes of one to several columns. For the \code{\link{OPMS}}
-#'   method, the indexes of one to several rows. In that case, if \code{j} is
-#'   a list, its values are passed to the respective \code{\link{OPM}} object
-#'   separately, allowing for individual choices of time points.
-#' @param ... For the \code{\link{OPM}} and \code{\link{OPMA}} methods, this
-#'   should \strong{not} be set. For the \code{\link{OPMS}} method, the indexes
-#'   index of one to several columns, or missing. That is, here \code{...} can
-#'   comprise zero arguments or a single one, not more.
+#'   method, the indexes or names of one to several wells. For the 
+#'   \code{\link{OPMS}} method, the indexes of one to several time points. In
+#'   that case, if \code{j} is a list, its values are passed to the respective 
+#'   \code{\link{OPM}} object separately, allowing for individual choices of 
+#'   time points. Otherwise \code{j} is used as the \code{i} argument of the
+#'   \code{\link{OPM}} and \code{\link{OPMA}} method.
+#' @param k Vector or missing. The \code{\link{OPMS}} method uses \code{k} as
+#'   \code{j} argument of the \code{\link{OPM}} and \code{\link{OPMA}} method.
+#'   That is, this parameter selects the wells.
+#' @param ... This should \strong{not} be set. It is an error to specify 
+#'   additional dimensions.
 #' @param drop Logical scalar. Remove the aggregated data and turn
 #'   \code{\link{OPMA}} to \code{\link{OPM}} objects? Has no effect if \code{x}
 #'   already is an \code{\link{OPM}} object or contains only such objects.
@@ -295,10 +297,10 @@ setMethod("measurements", OPM, function(object, i) {
 #' # see also opms_apply() for a more elegant approach
 #'
 setMethod("[", OPM, function(x, i, j, ..., drop = FALSE) {
-  mat <- x@measurements[, -1L, ..., drop = FALSE][i, j, ..., drop = FALSE]
+  mat <- x@measurements[, -1L, drop = FALSE][i, j, ..., drop = FALSE]
   if (any(dim(mat) == 0L))
     stop("selection resulted in empty matrix")
-  mat <- cbind(x@measurements[i, 1L, ..., drop = FALSE], mat)
+  mat <- cbind(x@measurements[i, 1L, drop = FALSE], mat)
   names(dimnames(mat)) <- names(dimnames(x@measurements))
   result <- x
   result@measurements <- mat
@@ -449,7 +451,7 @@ setGeneric("hours", function(object, ...) standardGeneric("hours"))
 setMethod("hours", OPM, function(object,
     what = c("max", "all", "size", "summary", "interval", "minmax")) {
   tp <- object@measurements[, HOUR]
-  switch(match.arg(what),
+  case(match.arg(what),
     all = tp,
     interval = {
       if (length(tp) < 2L)
@@ -465,8 +467,7 @@ setMethod("hours", OPM, function(object,
     minmax =,
     max = max(tp),
     size = length(tp),
-    summary = summary(tp),
-    stop(BUG_MSG)
+    summary = summary(tp)
   )
 }, sealed = SEALED)
 
@@ -743,17 +744,21 @@ setMethod("filename", OPM, function(object) {
 
 
 setGeneric("plate_type", function(object, ...) standardGeneric("plate_type"))
-#' Plate type used
+#' Plate type used or normalized
 #'
 #' Get the type of the OmniLog(R) plate used in the measuring. This is a
 #' convenience function for one of the more important entries of
 #' \code{\link{csv_data}} with additional options useful for creating plot
-#' titles.
+#' titles. The character method
+#' normalizes the names of OmniLog(R) PM plates to the internally used naming
+#' scheme. Unrecognized names are returned unchanged. This needs not normally
+#' be called by the \pkg{opm} user but might be of interest.
 #'
-#' @param object \code{\link{OPM}} object.
+#' @param object \code{\link{OPM}} or \code{\link{OPMS}} object, or
+#'   character vector of original plate name(s), or factor.
 #' @param full Logical scalar. If \code{TRUE}, add (or replace by) the full
 #'   name of the plate type (if available); otherwise, return it as-is.
-#' @param in.parens Logical scalar. This and the following arguments work like
+#' @param in.parens Logical scalar. This and the five next arguments work like
 #'   the eponymous ones of \code{\link{wells}}, but here are applied to the
 #'   plate name. See there for details.
 #' @param max Numeric scalar.
@@ -761,17 +766,21 @@ setGeneric("plate_type", function(object, ...) standardGeneric("plate_type"))
 #' @param brackets Logical scalar.
 #' @param word.wise Logical scalar.
 #' @param paren.sep Character scalar.
+#' @param subtype Logical scalar. Keep the plate subtype indicator, if any? 
+#'   Only relevant for the character or factor method.
 #' @param ... Optional arguments passed between the methods.
 #'
-#' @return Character scalar.
+#' @return Character scalar in the case of the \code{\link{OPM}} and
+#'   \code{\link{OPMS}} methods, otherwise a character vector with the same
+#'   length than \code{object}, or a corresponding factor.
 #'
 #' @export
-#' @family getter-functions
-#' @seealso base::strtrim base::abbreviate
-#' @keywords attribute
+#' @family getter-functions naming-functions
+#' @seealso base::strtrim base::abbreviate base::gsub
+#' @keywords attribute utilities character
 #' @examples
 #'
-#' # 'OPM' method
+#' ## 'OPM' method
 #' data(vaas_1)
 #' (x <- plate_type(vaas_1, full = FALSE))
 #' (y <- plate_type(vaas_1, full = TRUE))
@@ -785,10 +794,24 @@ setGeneric("plate_type", function(object, ...) standardGeneric("plate_type"))
 #' # but see also opms() and read_opm() which can do this internally
 #' }
 #'
-#' # 'OPMS' method
+#' ## 'OPMS' method
 #' data(vaas_4)
 #' (xx <- plate_type(vaas_4, full = FALSE))
 #' stopifnot(identical(x, xx))
+#'
+#' ## Character method
+#'
+#' # Entirely unrecognized strings are returned as-is
+#' x <- plate_type(letters)
+#' stopifnot(identical(x, letters))
+#'
+#' # Something more realistic
+#' (x <- plate_type(y <- c("PM1", "PM-11C", "PMM04-a"), TRUE))
+#' stopifnot(x != y)
+#'
+#' # Factor method
+#' (z <- plate_type(as.factor(y), TRUE))
+#' stopifnot(is.factor(z), z == x)
 #'
 setMethod("plate_type", OPM, function(object, full = FALSE, in.parens = TRUE,
     max = 100L, clean = TRUE, brackets = FALSE, word.wise = FALSE,
@@ -808,7 +831,28 @@ setMethod("plate_type", OPM, function(object, full = FALSE, in.parens = TRUE,
   result
 }, sealed = SEALED)
 
+setMethod("plate_type", "character", function(object, subtype = FALSE) {
+  normalize_pm <- function(x, subtype)  {
+    x <- sub("^PMM", "PM-M", x, perl = TRUE)
+    repl <- if (subtype)
+      "-\\1"
+    else
+      ""
+    x <- sub("([A-Z]+)$", repl, x, perl = TRUE)
+    sub("([^\\d])(\\d)([^\\d]|$)", "\\10\\2\\3", x, perl = TRUE)
+  }
+  result <- toupper(gsub("\\W", "", object, perl = TRUE))
+  ok <- grepl("^PMM?\\d+[A-Z]*$", result, perl = TRUE)
+  result[ok] <- normalize_pm(result[ok], subtype = subtype)
+  result[!ok] <- object[!ok]
+  result
+}, sealed = SEALED)
 
+setMethod("plate_type", "factor", function(object, subtype = FALSE) {
+  map_values(object, plate_type, subtype = subtype)
+}, sealed = SEALED)      
+
+      
 ################################################################################
 
 
@@ -911,9 +955,8 @@ setGeneric("gen_iii", function(object, ...) standardGeneric("gen_iii"))
 #' stopifnot(identical(vaas_4, copy)) # as above
 #'
 setMethod("gen_iii", OPM, function(object) {
-  result <- object
-  result@csv_data[[PLATE_TYPE]] <- GEN_III
-  result
+  object@csv_data[[PLATE_TYPE]] <- GEN_III
+  object
 }, sealed = SEALED)
 
 
@@ -954,9 +997,8 @@ setMethod("has_aggr", OPM, function(object) {
 ################################################################################
 
 
-#setGeneric("summary", function(object, ...) standardGeneric("summary"))
 setGeneric("summary")
-#' Summary
+#' Summarite OPM or OPMS pbjects
 #'
 #' Print summary information to screen.
 #'
@@ -969,7 +1011,7 @@ setGeneric("summary")
 #'   lists (one per plate), also returned invisibly.
 #' @family getter-functions
 #' @keywords attribute
-#' @seealso base::summary
+#' @seealso base::summary base::formatDL
 #' @examples
 #'
 #' # OPM method
@@ -995,6 +1037,36 @@ setMethod("summary", OPM, function(object, ...) {
   )
   lapply(formatDL(names(result), unlist(result), ...), FUN = message)
   invisible(result)
+}, sealed = SEALED)
+
+
+################################################################################
+
+
+#' Show OPM or OPMS objects
+#'
+#' Display an \code{\link{OPM}} or \code{\link{OPMS}} object on screen. 
+#' Currently this is just a wrapper for the \code{\link{summary}} method for
+#' these objects.
+#'
+#' @param object \code{\link{OPM}} or \code{\link{OPMS}} object.
+#' @export
+#' @return See \code{\link{summary}}.
+#' @family getter-functions
+#' @keywords attribute
+#' @seealso methods::show base::print
+#' @examples
+#'
+#' # OPMA method
+#' data(vaas_1)
+#' vaas_1
+#'
+#' # OPMS method
+#' data(vaas_4)
+#' vaas_4
+#'
+setMethod("show", OPM, function(object) {
+  summary(object)  
 }, sealed = SEALED)
 
 
@@ -1195,7 +1267,7 @@ setMethod("to_grofit_data", OPM, function(object) {
   names[, 2L] <- paste(setup_time(object), position(object), collapse = "-")
   names <- as.data.frame(names, stringsAsFactors = FALSE)
   names[, 3L] <- 1L # dummy concentration
-  cbind(names, as.data.frame(t(measurements(object)[, -1L])))
+  cbind(names, as.data.frame(t(measurements(object)[, -1L, drop = FALSE])))
 }, sealed = SEALED)
 
 

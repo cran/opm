@@ -39,6 +39,22 @@
   column name, (ii) \code{name.sep} and (iii) their index,
   thus creating unique column names (if the original ones
   were unique).}
+
+  \item{list.wise}{Logical scalar. Ignored if \code{split}
+  is \code{TRUE}.  Otherwise, \code{object} is assumed to
+  contains word lists separated by \code{split}. The result
+  is a logical matrix in which the columns represent these
+  words and the fields indicate whether or not a word was
+  present in a certain item contained in \code{object}.}
+
+  \item{strip.white}{Logical scalar. Remove whitespace from
+  the ends of each resulting character scalar after
+  splitting? Has an effect on the removal of constant
+  columns. Whitespace is always removed if \code{split} is
+  \code{TRUE}.}
+
+  \item{...}{Optional arguments passed between the
+  methods.}
 }
 \value{
   Character matrix, its number of rows being equal to the
@@ -73,7 +89,12 @@ xx <- as.factor(x)
 (yy <- separate(xx, TRUE))
 stopifnot(identical(yy, as.data.frame(y)))
 
-# Data frame method
+# List-wise splitting
+x <- c("a,b", "c,b", "a,c")
+(y <- separate(x, ",", list.wise = TRUE))
+stopifnot(is.matrix(y), dim(y) == c(3, 3), is.logical(y))
+
+# Data-frame method
 x <- data.frame(a = 1:2, b = c("a-b-cc", "a-ff-g"))
 (y <- separate(x, coerce = FALSE))
 stopifnot(identical(x, y))
@@ -99,12 +120,13 @@ stopifnot(sapply(y, class) == c("integer", "factor", "factor"))
 \alias{separate,data.frame-method}
 \usage{
   \S4method{separate}{character}(object, split = "/.-_",
-    simplify = FALSE, keep.const = TRUE) 
+    simplify = FALSE, keep.const = TRUE, 
+    list.wise = FALSE, strip.white = list.wise) 
 
   \S4method{separate}{factor}(object, split = "/.-_",
-    simplify = FALSE, keep.const = TRUE) 
+    simplify = FALSE, keep.const = TRUE, ...) 
 
   \S4method{separate}{data.frame}(object, split = "/.-_",
-    keep.const = TRUE, coerce = TRUE, name.sep = ".") 
+    keep.const = TRUE, coerce = TRUE, name.sep = ".", ...) 
 
 }

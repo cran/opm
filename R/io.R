@@ -30,14 +30,14 @@
 #'
 file_pattern <- function(type = c("both", "csv", "yaml", "any", "empty"),
     compressed = TRUE) {
-  result <- sprintf("\\.%s", switch(match.arg(type),
+  result <- sprintf("\\.%s", case(match.arg(type),
     both = "(csv|ya?ml)",
     csv = "csv",
     yaml = "ya?ml",
     any = "[^.]+",
-    empty = "",
-    stop(BUG_MSG)
+    empty = ""
   ))
+  assert_length(compressed)
   if (compressed)
     result <- sprintf("%s(\\.(bz2|gz|lzma|xz))?", result)
   sprintf("%s$", result)
@@ -134,7 +134,7 @@ read_old_opm <- function(filename) {
 
   # Read data and determine HOUR field in proper CSV header
   data <- scan(file = filename, sep = ",", what = "character", quiet = TRUE,
-    comment.char = "#", strip.white = TRUE)
+    comment.char = "#", strip.white = TRUE, encoding = "UTF-8")
   pos <- which(data == HOUR)
   if (length(pos) != 1L)
     stop("uninterpretable header (maybe because there is not 1 plate per file)")
@@ -179,7 +179,7 @@ read_old_opm <- function(filename) {
 #'
 read_new_opm <- function(filename) {
   data <- scan(file = filename, sep = ",", what = "character", quiet = TRUE,
-    comment.char = "#", strip.white = TRUE)
+    comment.char = "#", strip.white = TRUE, encoding = "UTF-8")
   pos <- which(data == HOUR)
   if (length(pos) != 1L)
     stop("uninterpretable header (maybe there is not 1 plate per file)")
@@ -285,7 +285,6 @@ read_single_opm <- function(filename) {
   assert_length(filename)
   if (!file.exists(filename <- as.character(filename)))
     stop(sprintf("file '%s' does not exist", filename))
-  taste <- function(expr) tryCatch(expr, error = function(e) e$message)
   errs <- list()
   routines <- list(`New CSV` = read_new_opm, `Old CSV` = read_old_opm,
     YAML = read_opm_yaml)
@@ -547,12 +546,7 @@ opm_files <- function(what = c("scripts", "testdata")) {
 read_opm <- function(names, convert = c("try", "no", "yes", "sep", "grp"),
     gen.iii = FALSE, include = list(), ..., demo = FALSE) {
   do_split <- function(x) split(x, sapply(x, plate_type))
-  do_opms <- function(x) {
-    if (length(x) > 1L)
-      new(OPMS, plates = x)
-    else
-      x[[1L]]
-  }
+  do_opms <- function(x) case(length(x), , x[[1L]], new(OPMS, plates = x))
   convert <- match.arg(convert)
   names <- explode_dir(names = names, include = include, ...)
   if (demo) {
@@ -563,12 +557,10 @@ read_opm <- function(names, convert = c("try", "no", "yes", "sep", "grp"),
   result <- c(lapply(names, read_single_opm), recursive = TRUE)
   if (gen.iii)
     result <- lapply(result, gen_iii)
-  if (length(result) == 0L)
-    switch(convert, no = result, NULL)
-  else if (length(result) == 1L)
-    switch(convert, no = result, result[[1L]])
-  else
-    switch(convert,
+  case(length(result),
+    switch(convert, no = result, NULL),
+    switch(convert, no = result, result[[1L]]),
+    case(convert,
       no = result,
       yes = new(OPMS, plates = result),
       grp = lapply(do_split(result), do_opms),
@@ -577,9 +569,9 @@ read_opm <- function(names, convert = c("try", "no", "yes", "sep", "grp"),
         warning("the data from distinct files could not be converted to a ",
           "single OPMS object and will be returned as a list")
         result
-      }),
-      stop(BUG_MSG)
+      })
     )
+  )
 }
 
 
@@ -643,8 +635,6 @@ setMethod("to_metadata", "character", function(object,
     strip.white = strip.white, stringsAsFactors = stringsAsFactors, ...)
 }, sealed = SEALED)
 
-#' @export
-#'
 setMethod("to_metadata", "ANY", function(object, stringsAsFactors = FALSE,
     optional = TRUE, ...) {
   as.data.frame(object, stringsAsFactors = stringsAsFactors,
@@ -833,7 +823,7 @@ setMethod("collect_template", "character", function(object, outfile = NULL,
       if (identical(outfile, previous))
         previous <<- NULL
       else
-        stop(e$message)
+        stop(conditionMessage(e))
     })
   if (!is.null(previous))
     result <- merge(previous, result, all = TRUE)
@@ -846,8 +836,6 @@ setMethod("collect_template", "character", function(object, outfile = NULL,
   }
 }, sealed = SEALED)
 
-#' @export
-#'
 setMethod("collect_template", OPM, function(object,
     selection = c(SETUP, POS, FILE), add.cols = NULL) {
   result <- as.list(csv_data(object, selection))
@@ -860,8 +848,6 @@ setMethod("collect_template", OPM, function(object,
   result
 }, sealed = SEALED)
 
-#' @export
-#'
 setMethod("collect_template", OPMS, function(object, ...) {
   result <- lapply(object@plates, collect_template, ...)
   do.call(rbind, result)
@@ -916,7 +902,7 @@ process_io <- function(files, io.fun, fun.args = list(),
     if (empty(istat))
       "infile unknown or empty"
     else
-      switch(overwrite,
+      case(overwrite,
         yes = if (unlink(outfile) == 0L)
           ""
         else
@@ -930,17 +916,16 @@ process_io <- function(files, io.fun, fun.args = list(),
         else if (unlink(outfile) == 0L)
           ""
         else
-          "could not delete outfile",
-        stop(BUG_MSG)
+          "could not delete outfile"
       )
   }
   conduct_conversion <- function(infile, outfile, fun, fun.args) {
     if (!create_parent(outfile))
       return("could not create parent directory")
-    problem <- tryCatch({
+    problem <- taste({
       do.call(fun, c(infile = infile, outfile = outfile, fun.args))
       ""
-    }, error = function(e) e$message)
+    })
     if (nzchar(problem))
       problem
     else if (empty(file.info(outfile)))
@@ -1302,7 +1287,7 @@ split_files <- function(files, pattern, outdir = "", demo = FALSE,
     pattern <- glob_to_regex(pattern)
 
   invisible(mapply(function(infile, out.base, out.ext) {
-    data <- readLines(con = infile)
+    data <- readLines(con = infile, encoding = "UTF-8")
     data <- split(data, group_by_sep(object = data, pattern = pattern,
       invert = invert, include = include, ...))
     if ((len <- length(data)) == 0L || (!single && len == 1L))

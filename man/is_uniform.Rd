@@ -1,6 +1,6 @@
 \name{is_uniform}
 \alias{is_uniform}
-\title{Check for uniformity.}
+\title{Check for uniformity}
 \usage{
   is_uniform(x, na.rm = FALSE)
 }

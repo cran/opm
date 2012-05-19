@@ -4,12 +4,21 @@
 \arguments{
   \item{x}{\code{\link{OPMS}} object.}
 
-  \item{incomparables}{Vector of values that cannot be
-  compared. See \code{duplicated} from the \pkg{base}
-  package for details.}
+  \item{incomparables}{Vector passed to \code{duplicated}
+  from the \pkg{base} package.}
 
-  \item{...}{Optional other arguments passed to that
-  function.}
+  \item{what}{Character scalar indicating which parts of
+  \code{x} should be compared. \sQuote{all} compares entire
+  \code{OPM} objects; \sQuote{csv} compares the CSV data
+  entries \code{\link{setup_time}} and
+  \code{\link{position}}; \sQuote{metadata} compares the
+  entire metadata content. If \code{what} does not match
+  any of these, it is passed as \code{key} argument to
+  \code{\link{metadata}}, and the resulting metadata
+  subsets are compared.}
+
+  \item{...}{Optional arguments passed to \code{duplicated}
+  from the \pkg{base} package.}
 }
 \value{
   Logical vector.
@@ -22,10 +31,13 @@
 \examples{
 data(vaas_4)
 stopifnot(!duplicated(vaas_4))
+stopifnot(duplicated(vaas_4, what = "Species") == rep(c(FALSE, TRUE), 2))
 x <- vaas_4[c(1, 1)]
 stopifnot(c(FALSE, TRUE) == duplicated(x))
 }
 \seealso{
+  base::duplicate
+
   Other getter-functions: \code{\link{aggr_settings}},
   \code{\link{aggregated}}, \code{\link{anyDuplicated}},
   \code{\link{csv_data}}, \code{\link{dim}},
@@ -33,9 +45,9 @@ stopifnot(c(FALSE, TRUE) == duplicated(x))
   \code{\link{hours}}, \code{\link{length}},
   \code{\link{max}}, \code{\link{measurements}},
   \code{\link{metadata}}, \code{\link{minmax}},
-  \code{\link{plate_type}}, \code{\link{position}},
-  \code{\link{select}}, \code{\link{seq}},
-  \code{\link{setup_time}}, \code{\link{summary}},
+  \code{\link{position}}, \code{\link{select}},
+  \code{\link{seq}}, \code{\link{setup_time}},
+  \code{\link{show}}, \code{\link{summary}},
   \code{\link{thin_out}}, \code{\link{well}},
   \code{\link{wells}}
 }
@@ -45,6 +57,7 @@ stopifnot(c(FALSE, TRUE) == duplicated(x))
 \alias{duplicated-methods}
 \alias{duplicated,OPMS-method}
 \usage{
-  \S4method{duplicated}{OPMS}(x, incomparables = FALSE, ...) 
+  \S4method{duplicated}{OPMS}(x, incomparables = FALSE,
+    what = c("all", "csv", "metadata"), ...) 
 
 }

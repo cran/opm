@@ -2,7 +2,7 @@
 \alias{find_substrate}
 \title{Identify substrates}
 \arguments{
-  \item{x}{Query character vector.}
+  \item{object}{Query character vector or factor.}
 
   \item{search}{Character scalar indicating the search
   mode. If \sQuote{exact}, query names must exactly match
@@ -22,6 +22,9 @@
   argument of \code{agrep} in the \pkg{base} package for
   details. Has an effect only if \sQuote{approx} is chosen
   as search mode (see the \code{search} argument).}
+
+  \item{...}{Optional arguments passed between the
+  methods.}
 }
 \value{
   List of character vectors (empty if nothing was found),
@@ -48,12 +51,15 @@ stopifnot(length(x[[1]]) > length(y[[1]]))
 # Now allowing mismatches
 (z <- find_substrate("a-D-Glucose", search = "approx"))
 stopifnot(length(z[[1]]) > length(x[[1]]))
+
+# Factor method
+(zz <- find_substrate(as.factor("a-D-Glucose"), search = "approx"))
+stopifnot(identical(z, zz))
 }
 \seealso{
   base::grep base::agrep
 
   Other naming-functions: \code{\link{find_positions}},
-  \code{\link{normalize_plate_name}},
   \code{\link{well_to_substrate}}
 }
 \keyword{character}
@@ -62,8 +68,11 @@ stopifnot(length(z[[1]]) > length(x[[1]]))
 \docType{methods}
 \alias{find_substrate-methods}
 \alias{find_substrate,character-method}
+\alias{find_substrate,factor-method}
 \usage{
-  \S4method{find_substrate}{character}(x,
+  \S4method{find_substrate}{character}(object,
     search = c("exact", "glob", "approx", "regex"), max.dev = 0.2) 
+
+  \S4method{find_substrate}{factor}(object, ...) 
 
 }

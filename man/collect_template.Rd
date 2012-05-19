@@ -139,7 +139,11 @@ stopifnot(identical(dim(x), c(4L, 5L)))
   \code{\link{metadata.set}}, \code{\link{metadata.set}},
   \code{\link{metadata.set}}, \code{\link{metadata.set}},
   \code{\link{metadata.set}}, \code{\link{metadata.set}},
-  \code{\link{metadata_chars}}, \code{\link{to_metadata}}
+  \code{\link{metadata.set}}, \code{\link{metadata.set}},
+  \code{\link{metadata.set}}, \code{\link{metadata.set}},
+  \code{\link{metadata.set}}, \code{\link{metadata.set}},
+  \code{\link{metadata.set}}, \code{\link{metadata_chars}},
+  \code{\link{to_metadata}}
 }
 \keyword{IO}
 \keyword{attribute}

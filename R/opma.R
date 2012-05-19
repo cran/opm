@@ -164,10 +164,9 @@ setMethod("aggregated", OPMA, function(object, subset = NULL, ci = TRUE,
       return(x)
     ok <- !is.na(x)
     x[ok & x > hour] <- hour
-    switch(trim,
+    case(trim,
       full = x[ok & x < 0] <- 0,
-      medium = x[ok & x < -hour] <- -hour,
-      stop(BUG_MSG)
+      medium = x[ok & x < -hour] <- -hour
     )
     x
   }
@@ -240,8 +239,6 @@ setMethod("aggr_settings", OPMA, function(object) object@aggr_settings,
 #
 
 
-#' @export
-#'
 setMethod("[", OPMA, function(x, i, j, ..., drop = FALSE) {
   result <- callNextMethod()
   if (drop)
@@ -294,7 +291,8 @@ setGeneric("do_aggr", function(object, ...) standardGeneric("do_aggr"))
 #' Optionally include the aggregated values in a novel \code{\link{OPMA}}
 #' object together with previously collected information.
 #'
-#' @param object \code{\link{OPM}} object.
+#' @param object \code{\link{OPM}} or \code{\link{OPMS}} object. There is also 
+#'   a helper method for matrix objects.
 #' @param boot Integer scalar. Number of bootstrap replicates used to estimate
 #'   95-percent confidence intervals (CIs) for the parameter. Set this to zero
 #'   to omit bootstrapping, resulting in \code{NA} entries for the CIs.
@@ -323,7 +321,15 @@ setGeneric("do_aggr", function(object, ...) standardGeneric("do_aggr"))
 #' @param plain Logical scalar. If \code{TRUE}, only the aggregated values are
 #'   returned (as a matrix, for details see below). Otherwise they are
 #'   integrated in an \code{\link{OPMA}} object together with \code{object}.
-#' @param ... Optional arguments passed between the methods.
+#' @param by List, passed by the matrix method to \code{aggregate} from the
+#'   \pkg{stats} package. Can also be another vector, which is then used as
+#'   single list element.
+#' @param fun Function, passed by the matrix method as \code{FUN} argument to 
+#'   \code{aggregate} from the \pkg{stats} package.
+#' @param sep Character scalar. Used for joining the vectors within \code{by}
+#'   together to form row names.
+#' @param ... Arguments passed from the \code{\link{OPMS}} to the 
+#'   \code{\link{OPM}}, and from the matrix method to \code{fun}.
 #'
 #' @export
 #' @return If \code{plain} is \code{FALSE}, an \code{\link{OPMA}} object.
@@ -331,7 +337,7 @@ setGeneric("do_aggr", function(object, ...) standardGeneric("do_aggr"))
 #'   \code{\link{aggregated}} but with an additional \sQuote{settings}
 #'   attribute containing the (potentially modified) list proved via the
 #'   \code{settings} argument, and a \sQuote{program} attribute corresponding
-#'   to the \code{program} argument.
+#'   to the \code{program} argument. The matrix method returns a matrix.
 #'
 #' @family aggregation-functions
 #' @seealso grofit::grofit
@@ -363,6 +369,7 @@ setGeneric("do_aggr", function(object, ...) standardGeneric("do_aggr"))
 #'
 #' @examples
 #'
+#' # OPM method
 #' data(vaas_1)
 #'
 #' # Run a fast estimate of A and AUC without bootstrapping
@@ -394,6 +401,12 @@ setGeneric("do_aggr", function(object, ...) standardGeneric("do_aggr"))
 #'   aggr_settings(x)
 #'   aggregated(x)
 #' }
+#'
+#' # matrix method
+#' x <- matrix(1:10, ncol = 2, dimnames = list(letters[1:5], LETTERS[1:2]))
+#' grps <- c("a", "b", "a", "b", "a")
+#' (y <- do_aggr(x, by = grps, fun = mean))
+#' stopifnot(is.matrix(y), dim(y) == c(2, 2), colnames(y) == colnames(x))
 #'
 setMethod("do_aggr", OPM, function(object, boot = 100L, verbose = FALSE,
     cores = 1L, options = list(), program = "grofit", plain = FALSE) {
@@ -429,7 +442,7 @@ setMethod("do_aggr", OPM, function(object, boot = 100L, verbose = FALSE,
 
   assert_length(plain)
 
-  switch(program <- match.arg(program, KNOWN_PROGRAMS),
+  case(program <- match.arg(program, KNOWN_PROGRAMS),
 
     grofit = {
       control <- make_grofit_control(verbose, boot, add = options)
@@ -460,9 +473,7 @@ setMethod("do_aggr", OPM, function(object, boot = 100L, verbose = FALSE,
       result <- result[names(map), , drop = FALSE]
       rownames(result) <- as.character(map)
       attr(result, OPTIONS) <- options
-    },
-
-    stop(BUG_MSG)
+    }
 
   )
 
@@ -474,6 +485,17 @@ setMethod("do_aggr", OPM, function(object, boot = 100L, verbose = FALSE,
 
 }, sealed = SEALED)
 
+setMethod("do_aggr", "matrix", function(object, by, fun, sep = ".", ...) {
+  if (is.atomic(by))
+    by <- list(by = by)
+  result <- stats::aggregate(x = object, by = by, FUN = fun, ..., 
+    simplify = FALSE)
+  rn <- result[, by.cols <- seq_len(length(by)), drop = FALSE]
+  rn <- apply(rn, 1L, paste, collapse = sep)
+  result <- as.matrix(result[, -by.cols, drop = FALSE])
+  rownames(result) <- rn
+  result
+}, sealed = SEALED)
 
 ################################################################################
 

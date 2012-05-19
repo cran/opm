@@ -3,9 +3,9 @@
 \alias{infix.q}
 \title{Query metadata (non-exact version)}
 \arguments{
-  \item{x}{Character vector or list used as query.  If a
-  character vector, its \code{names} are used to select
-  elements from the top level of the metadata. These
+  \item{x}{Character vector, factor or list used as query.
+  If a character vector, its \code{names} are used to
+  select elements from the top level of the metadata. These
   elements are then converted to \sQuote{character} mode
   before comparison with the values of \code{x}. A
   non-empty vector without a \code{names} attribute is
@@ -27,7 +27,9 @@
   Using a character vector, test whether all given query
   keys are present in the top-level names of the metadata
   and refer to the same query elements. Using a list,
-  conduct a non-exact query with a query list.
+  conduct a non-exact query with a query list. The factor
+  method first converts \code{x} to \sQuote{character}
+  mode.
 }
 \examples{
 # The dataset contains the metadata keys 'Species' and 'Experiment' with the
@@ -71,17 +73,25 @@ stopifnot(list() \%q\% vaas_1) # Empty query
 \alias{\%q\%,list,OPMS-method}
 \alias{infix.q,character,OPMS-method}
 \alias{\%q\%,character,OPMS-method}
+\alias{infix.q,factor,OPMS-method}
+\alias{\%q\%,factor,OPMS-method}
 \alias{infix.q,character,WMD-method}
 \alias{\%q\%,character,WMD-method}
 \alias{infix.q,list,WMD-method}
 \alias{\%q\%,list,WMD-method}
+\alias{infix.q,factor,WMD-method}
+\alias{\%q\%,factor,WMD-method}
 \usage{
   \S4method{\%q\%}{list,OPMS}(x, table) 
 
   \S4method{\%q\%}{character,OPMS}(x, table) 
 
+  \S4method{\%q\%}{factor,OPMS}(x, table) 
+
   \S4method{\%q\%}{character,WMD}(x, table) 
 
   \S4method{\%q\%}{list,WMD}(x, table) 
+
+  \S4method{\%q\%}{factor,WMD}(x, table) 
 
 }

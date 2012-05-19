@@ -20,6 +20,9 @@
 \references{
   \url{http://www.yaml.org/}
 }
+\seealso{
+  utils::type.convert
+}
 \keyword{internal}
 
 \docType{methods}

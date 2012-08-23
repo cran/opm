@@ -12,8 +12,5 @@
   Name of this source file. Does not work if \code{library}
   instead of \code{source} is used. Auxiliary function.
 }
-\seealso{
-  Other testing-functions: \code{\link{test_file_dir}}
-}
 \keyword{internal}
 

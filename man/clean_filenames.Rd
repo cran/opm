@@ -59,9 +59,9 @@ unlink(y) # tidy up
   \code{\link{batch_process}},
   \code{\link{collect_template}},
   \code{\link{explode_dir}}, \code{\link{file_pattern}},
-  \code{\link{opm_files}}, \code{\link{phylo_data}},
-  \code{\link{read_opm}}, \code{\link{read_single_opm}},
-  \code{\link{split_files}}, \code{\link{to_metadata}}
+  \code{\link{opm_files}}, \code{\link{read_opm}},
+  \code{\link{read_single_opm}}, \code{\link{split_files}},
+  \code{\link{to_metadata}}
 }
 \keyword{utilities}
 

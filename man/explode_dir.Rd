@@ -96,9 +96,8 @@ stopifnot(length(x) == 0L || length(x) > length(y))
   \code{\link{clean_filenames}},
   \code{\link{collect_template}},
   \code{\link{file_pattern}}, \code{\link{opm_files}},
-  \code{\link{phylo_data}}, \code{\link{read_opm}},
-  \code{\link{read_single_opm}}, \code{\link{split_files}},
-  \code{\link{to_metadata}}
+  \code{\link{read_opm}}, \code{\link{read_single_opm}},
+  \code{\link{split_files}}, \code{\link{to_metadata}}
 }
 \keyword{IO}
 \keyword{character}

@@ -11,9 +11,10 @@
   matching is used; the number or proportion of errors
   allowed is set using \code{max.dev}, and neither globbing
   or regular-expression matching is done in that case. If
-  \sQuote{regex}, regular-expression matching is used.  All
-  matching is case-insensitive except for \sQuote{exact}
-  search mode.}
+  \sQuote{regex}, regular-expression matching is used. If
+  \sQuote{pmatch}, uses \code{pmatch} from the \pkg{base}
+  package. All matching is case-insensitive except for
+  \sQuote{exact} and \sQuote{pmatch} search modes.}
 
   \item{max.dev}{Numeric scalar indicating the maximum
   allowed deviation. If < 1, the proportion of characters
@@ -42,10 +43,15 @@
   globbing patterns.
 }
 \examples{
-# Note that 'exact' search uses partial matching, whereas globbing is exact
-# if there are no wildcards
+# Note that 'exact' search matches parts of the names, whereas globbing
+# matches entire strings if there are no wildcards
 (x <- find_substrate("a-D-Glucose", search = "exact"))
 (y <- find_substrate("a-D-Glucose", search = "glob"))
+stopifnot(length(x[[1]]) > length(y[[1]]))
+
+# 'pmatch' matching matches partially at the beginning and returns at most
+# one match (the first one)
+(y <- find_substrate("a-D-Glucose", search = "pmatch"))
 stopifnot(length(x[[1]]) > length(y[[1]]))
 
 # Now allowing mismatches
@@ -60,6 +66,7 @@ stopifnot(identical(z, zz))
   base::grep base::agrep
 
   Other naming-functions: \code{\link{find_positions}},
+  \code{\link{substrate_info}},
   \code{\link{well_to_substrate}}
 }
 \keyword{character}
@@ -71,7 +78,7 @@ stopifnot(identical(z, zz))
 \alias{find_substrate,factor-method}
 \usage{
   \S4method{find_substrate}{character}(object,
-    search = c("exact", "glob", "approx", "regex"), max.dev = 0.2) 
+    search = c("exact", "glob", "approx", "regex", "pmatch"), max.dev = 0.2) 
 
   \S4method{find_substrate}{factor}(object, ...) 
 

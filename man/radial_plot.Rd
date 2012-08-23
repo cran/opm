@@ -99,8 +99,9 @@ stopifnot(is.character(y), names(y) == paste(x$Species, x$Strain))
 
   Other plotting-functions: \code{\link{ci_plot}},
   \code{\link{heat_map}}, \code{\link{level_plot}},
-  \code{\link{max_rgb_contrast}},
-  \code{\link{select_colors}}, \code{\link{xy_plot}}
+  \code{\link{max_rgb_contrast}}, \code{\link{mypdf}},
+  \code{\link{paper_size}}, \code{\link{select_colors}},
+  \code{\link{xy_plot}}
 }
 \keyword{hplot}
 

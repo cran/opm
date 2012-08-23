@@ -35,82 +35,84 @@
 % \docType{class}
 \alias{OPMS-class}
 % \alias{\%K\%,character,OPMS-method}
-% \alias{\%K\%,factor,OPMS-method}
-% \alias{\%K\%,list,OPMS-method}
-% \alias{\%Q\%,character,OPMS-method}
-% \alias{\%Q\%,factor,OPMS-method}
-% \alias{\%Q\%,list,OPMS-method}
-% \alias{\%k\%,character,OPMS-method}
-% \alias{\%k\%,factor,OPMS-method}
-% \alias{\%k\%,list,OPMS-method}
-% \alias{\%q\%,character,OPMS-method}
-% \alias{\%q\%,factor,OPMS-method}
-% \alias{\%q\%,list,OPMS-method}
-% \alias{+,OPM,OPMS-method}
-% \alias{+,OPMS,OPM-method}
-% \alias{+,OPMS,OPMS-method}
-% \alias{+,OPMS,list-method}
-% \alias{[,OPMS-method}
-% \alias{aggr_settings,OPMS-method}
-% \alias{aggregated,OPMS-method}
-% \alias{anyDuplicated,OPMS-method}
-% \alias{ci_plot,OPMS-method}
-% \alias{coerce,OPMS,list-method}
-% \alias{coerce,list,OPMS-method}
-% \alias{collect_template,OPMS-method}
-% \alias{contains,OPMS,OPM-method}
-% \alias{csv_data,OPMS-method}
-% \alias{dim,OPMS-method}
-% \alias{do_aggr,OPMS-method}
-% \alias{duplicated,OPMS-method}
-% \alias{extract,OPMS-method}
-% \alias{extract_columns,OPMS-method}
-% \alias{filename,OPMS-method}
-% \alias{flatten,OPMS-method}
-% \alias{gen_iii,OPMS-method}
-% \alias{has_aggr,OPMS-method}
-% \alias{heat_map,OPMS-method}
-% \alias{hours,OPMS-method}
-% \alias{include_metadata,OPMS-method}
-% \alias{initialize,OPMS-method}
-% \alias{length,OPMS-method}
-% \alias{level_plot,OPMS-method}
-% \alias{map_metadata,OPMS,ANY-method}
-% \alias{max,OPMS-method}
-% \alias{measurements,OPMS-method}
-% \alias{merge,OPMS,missing-method}
-% \alias{merge,OPMS,numeric-method}
-% \alias{metadata,OPMS-method}
-% \alias{metadata<-,OPMS,ANY,ANY-method}
-% \alias{metadata<-,OPMS,ANY,data.frame-method}
-% \alias{metadata<-,OPMS,character,data.frame-method}
-% \alias{metadata<-,OPMS,factor,data.frame-method}
-% \alias{metadata<-,OPMS,missing,data.frame-method}
-% \alias{metadata<-,OPMS,missing,formula-method}
-% \alias{metadata<-,OPMS,missing,list-method}
-% \alias{metadata_chars,OPMS-method}
-% \alias{minmax,OPMS-method}
-% \alias{oapply,OPMS-method}
-% \alias{phylo_data,OPMS-method}
-% \alias{plate_type,OPMS-method}
-% \alias{plates,OPMS-method}
-% \alias{position,OPMS-method}
-% \alias{radial_plot,OPMS-method}
-% \alias{select,OPMS-method}
-% \alias{seq,OPMS-method}
-% \alias{setup_time,OPMS-method}
-% \alias{show,OPMS-method}
-% \alias{sort,OPMS-method}
-% \alias{summary,OPMS-method}
-% \alias{thin_out,OPMS-method}
-% \alias{well,OPMS-method}
-% \alias{wells,OPMS-method}
-% \alias{xy_plot,OPMS-method}
-% 
+%% \alias{\%K\%,factor,OPMS-method}
+%% \alias{\%K\%,list,OPMS-method}
+%% \alias{\%Q\%,character,OPMS-method}
+%% \alias{\%Q\%,factor,OPMS-method}
+%% \alias{\%Q\%,list,OPMS-method}
+%% \alias{\%k\%,character,OPMS-method}
+%% \alias{\%k\%,factor,OPMS-method}
+%% \alias{\%k\%,list,OPMS-method}
+%% \alias{\%q\%,character,OPMS-method}
+%% \alias{\%q\%,factor,OPMS-method}
+%% \alias{\%q\%,list,OPMS-method}
+%% \alias{+,OPM,OPMS-method}
+%% \alias{+,OPMS,OPM-method}
+%% \alias{+,OPMS,OPMS-method}
+%% \alias{+,OPMS,list-method}
+%% \alias{[,OPMS-method}
+%% \alias{aggr_settings,OPMS-method}
+%% \alias{aggregated,OPMS-method}
+%% \alias{anyDuplicated,OPMS-method}
+%% \alias{ci_plot,OPMS-method}
+%% \alias{coerce,OPMS,list-method}
+%% \alias{coerce,list,OPMS-method}
+%% \alias{collect_template,OPMS-method}
+%% \alias{contains,OPMS,OPM-method}
+%% \alias{csv_data,OPMS-method}
+%% \alias{dim,OPMS-method}
+%% \alias{do_aggr,OPMS-method}
+%% \alias{duplicated,OPMS-method}
+%% \alias{extract,OPMS-method}
+%% \alias{extract_columns,OPMS-method}
+%% \alias{filename,OPMS-method}
+%% \alias{flatten,OPMS-method}
+%% \alias{gen_iii,OPMS-method}
+%% \alias{has_aggr,OPMS-method}
+%% \alias{heat_map,OPMS-method}
+%% \alias{hours,OPMS-method}
+%% \alias{include_metadata,OPMS-method}
+%% \alias{initialize,OPMS-method}
+%% \alias{length,OPMS-method}
+%% \alias{level_plot,OPMS-method}
+%% \alias{map_metadata,OPMS,ANY-method}
+%% \alias{max,OPMS-method}
+%% \alias{measurements,OPMS-method}
+%% \alias{merge,OPMS,missing-method}
+%% \alias{merge,OPMS,numeric-method}
+%% \alias{metadata,OPMS-method}
+%% \alias{metadata<-,OPMS,ANY,ANY-method}
+%% \alias{metadata<-,OPMS,ANY,data.frame-method}
+%% \alias{metadata<-,OPMS,character,data.frame-method}
+%% \alias{metadata<-,OPMS,factor,data.frame-method}
+%% \alias{metadata<-,OPMS,missing,data.frame-method}
+%% \alias{metadata<-,OPMS,missing,formula-method}
+%% \alias{metadata<-,OPMS,missing,list-method}
+%% \alias{metadata_chars,OPMS-method}
+%% \alias{minmax,OPMS-method}
+%% \alias{oapply,OPMS-method}
+%% \alias{phylo_data,OPMS-method}
+%% \alias{plate_type,OPMS-method}
+%% \alias{plates,OPMS-method}
+%% \alias{position,OPMS-method}
+%% \alias{radial_plot,OPMS-method}
+%% \alias{rep,OPMS-method}
+%% \alias{rev,OPMS-method}
+%% \alias{select,OPMS-method}
+%% \alias{seq,OPMS-method}
+%% \alias{setup_time,OPMS-method}
+%% \alias{show,OPMS-method}
+%% \alias{sort,OPMS-method}
+%% \alias{summary,OPMS-method}
+%% \alias{thin_out,OPMS-method}
+%% \alias{well,OPMS-method}
+%% \alias{wells,OPMS-method}
+%% \alias{xy_plot,OPMS-method}
+%% 
 % \title{Class \code{"OPMS"}}
 % \description{
-% %%  ~~ A concise (1-5 lines) description of what the class is. ~~
-% }
+%% %%  ~~ A concise (1-5 lines) description of what the class is. ~~
+%% }
 \section{Objects from the Class}{
 Objects can be created by calls of the form \code{new("OPMS", ...)}.
 %%  ~~ describe objects here ~~ 
@@ -188,6 +190,8 @@ Class \code{"\linkS4class{YAML_VIA_LIST}"}, directly.
     \item{plates}{\code{signature(object = "OPMS")}: ... }
     \item{position}{\code{signature(object = "OPMS")}: ... }
     \item{radial_plot}{\code{signature(object = "OPMS")}: ... }
+    \item{rep}{\code{signature(x = "OPMS")}: ... }
+    \item{rev}{\code{signature(x = "OPMS")}: ... }
     \item{select}{\code{signature(object = "OPMS")}: ... }
     \item{seq}{\code{signature(... = "OPMS")}: ... }
     \item{setup_time}{\code{signature(object = "OPMS")}: ... }
@@ -201,14 +205,14 @@ Class \code{"\linkS4class{YAML_VIA_LIST}"}, directly.
 	 }
 }
 % \references{
-% %%  ~~put references to the literature/web site here~~
-% }
+%% %%  ~~put references to the literature/web site here~~
+%% }
 % \author{
-% %%  ~~who you are~~
-% }
+%% %%  ~~who you are~~
+%% }
 % \note{
-% %%  ~~further notes~~
-% }
+%% %%  ~~further notes~~
+%% }
 % 
 % %% ~Make other sections like Warning with \section{Warning }{....} ~
 % 

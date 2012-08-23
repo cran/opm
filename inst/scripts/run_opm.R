@@ -21,7 +21,7 @@ MD.OUTFILE <- "metadata.csv"
 RESULT.VALUES <- c("clean", "plot", "split", "template", "yaml")
 RESULT.DESCS <- c(
   "Clean filenames by removing non-word characters except dots and dashes.",
-  "Draw plots as postscript files, one per input file",
+  "Draw plots as postscript files, one per input file.",
   "Split OmniLog(R) CSV files into one file per plate.",
   "Collect a template for adding metadata.",
   "Convert input OmniLog(R) CSV (or opm YAML) files to opm YAML."

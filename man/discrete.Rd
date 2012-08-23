@@ -133,8 +133,8 @@ stopifnot(c("0", "?", "1") \%in\% y)
 \seealso{
   base::cut
 
-  Other phylogeny-functions: \code{\link{phylo_data}},
-  \code{\link{safe_labels}}
+  Other phylogeny-functions: \code{\link{best_cutoff}},
+  \code{\link{phylo_data}}, \code{\link{safe_labels}}
 }
 \keyword{category}
 \keyword{character}

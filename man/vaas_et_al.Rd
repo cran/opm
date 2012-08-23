@@ -37,5 +37,6 @@ data(vaas_et_al)
 
   \url{http://www.dsmz.de/catalogues/details/culture/DSM-30083.html}
 }
-\keyword{dataset}
+\keyword{datasets}
+\keyword{datasets}
 

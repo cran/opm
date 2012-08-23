@@ -1,170 +1,5 @@
 
 
-#' MOA class
-#'
-#' This is a virtual class facilitating the implementation of functionality for
-#' both matrices and arrays. Methods defined for objects from the class can be
-#' applied to either kind of object, but this class is not directly dealt with
-#' by an \pkg{opm} user.
-#'
-#' @details
-#'   \sQuote{MOA} is an acronym for \sQuote{matrix or array}.
-#'
-#' @name MOA
-#'
-#' @docType class
-#' @export
-#' @family classes
-#' @keywords methods
-#'
-NULL
-
-
-setClassUnion(MOA, c("matrix", "array"))
-
-
-################################################################################
-################################################################################
-#
-# Helper functions acting on numeric data
-#
-
-
-setGeneric("ranging", function(object, ...) standardGeneric("ranging"))
-#' Conduct ranging
-#'
-#' Range numbers, i.e. divide them by their maximum. In \sQuote{extended} mode,
-#' the minimum is subtracted beforehand. It is possible to replace ranging by
-#' standardization (z-scores).
-#'
-#' @param object Numeric vector or array.
-#' @param extended Logical scalar. Subtract the minimum in both numerator and
-#'   denominator of the ranging formula? If \code{zscores} is \code{TRUE}, the
-#'   meaning is different.
-#' @param zscores Logical scalar. Calculate z-scores instead of ranging? If
-#'   \code{extended} is \code{FALSE}, this is done using the mean and the
-#'   standard deviation; otherwise, the median and the MAD are used.
-#' @param na.rm Logical scalar. Remove \code{NA} values when calculating the
-#'   relevant aggregated values (minimum, maximum, mean, standard deviation,
-#'   median and/or MAD)?
-#' @param fac Numeric scalar. After conducting the proper ranging process,
-#'   \code{object} is multiplied by \code{fac}.
-#' @param ... Optional arguments passed between the methods.
-#' @return Numeric vector or matrix.
-#' @keywords internal
-#'
-setMethod("ranging", "numeric", function(object, extended = !zscores,
-    zscores = FALSE, na.rm = TRUE, fac = 1) {
-  assert_length(extended, zscores, na.rm)
-  result <- if (zscores) {
-    if (extended) {
-      center <- median(x, na.rm = na.rm)
-      (x - center) / mad(x, center = center, na.rm = na.rm)
-    } else
-      (x - mean(x, na.rm = na.rm)) / sd(x, na.rm = na.rm)
-  } else {
-    if (extended) {
-      min.x <- min(x, na.rm = na.rm)
-      (x - min.x) / (max(x, na.rm = na.rm) - min.x)
-    } else
-      x / max(abs(x), na.rm = na.rm)
-  }
-  must(result * fac)
-}, sealed = SEALED)
-
-setMethod("ranging", MOA, function(object, ...) {
-  map_values(object, mapping = ranging, ...)
-}, sealed = SEALED)
-
-
-################################################################################
-
-
-setGeneric("guess_cex", function(object, ...) standardGeneric("guess_cex"))
-#' Estimate cex
-#'
-#' Guess a suitable \code{cex} parameter for \code{\link{level_plot}}. 0.5 is
-#' fine for the original number of wells (96).
-#'
-#' @param object Numeric vector.
-#' @return Numeric vector.
-#' @keywords internal
-#'
-setMethod("guess_cex", "numeric", function(object) {
-  0.5 * sqrt(96 / object)
-}, sealed = SEALED)
-
-
-################################################################################
-
-
-setGeneric("best_layout",
-  function(object, ...) standardGeneric("best_layout"))
-#' Best two-dimensional layout
-#'
-#' Determine number of rows/columns in plot for given number of fields.
-#'
-#' @param object Numeric scalar.
-#' @param by Numeric scalar (width/height relation).
-#' @return Numeric vector of length 2.
-#' @keywords internal
-#'
-setMethod("best_layout", "numeric", function(object, by = 0.75) {
-  assert_length(object, by)
-  if (object < 0)
-    stop("a negative number of fields makes no sense")
-  if (object < 2)
-    return(c(object, object))
-  large <- ceiling(sqrt((1 / by) * object)) # => error unless 'by' is numeric
-  small <- ceiling(object / large)
-  c(large, small)
-}, sealed = SEALED)
-
-
-################################################################################
-
-
-setGeneric("best_range",
-  function(object, ...) standardGeneric("best_range"))
-#' Best range
-#'
-#' Determine an optimal range for plotting.
-#'
-#' @param object Numeric vector.
-#' @param target Numeric scalar. Target difference between min and max. If
-#'   \code{NULL}, this is simply derived from the range of \code{object}.
-#' @param align Character scalar. Where to put the real values relative to min
-#'   and max of \code{target}.
-#' @param offset Numeric scalar. A minimal distance to the margins.
-#' @param prop.offset Numeric scalar. As an alternative to \code{offset}, it
-#'   can be specified as a proportion of \code{target}.
-#' @return Optimal range (numeric vector of length two).
-#' @keywords internal
-#'
-setMethod("best_range", "numeric", function(object, target,
-    align = c("center", "left", "right"),
-    offset = 0, prop.offset = 0) {
-  orig.range <- range(object)
-  orig.diff <- orig.range[2L] - orig.range[1L]
-  case(length(target), target <- orig.diff, assert_length(target))
-  assert_length(offset, prop.offset)
-  if (offset == 0)
-    offset <- target * prop.offset
-  total <- target + 2 * offset
-  if (total < orig.diff) {
-    fmt <- "target (%s) + 2 * offset (%s) smaller than original range (%s)"
-    stop(sprintf(fmt, target, offset, orig.diff))
-  }
-  case(match.arg(align),
-    center = {
-      add <- total / 2
-      mean(orig.range) + c(-add, add)
-    },
-    left = orig.range[1L] + c(-offset, target + offset),
-    right = orig.range[2L] + c(-target - offset, offset)
-  )
-}, sealed = SEALED)
-
 
 ################################################################################
 ################################################################################
@@ -291,7 +126,7 @@ calinski.Ckmeans.1d.dp <- function(x, y, ...) {
 #' @export
 #'
 calinski.kmeanss <- function(x, ...) {
-  sapply(X = x, FUN = calinski, ...)
+  vapply(X = x, FUN = calinski, FUN.VALUE = numeric(1L), ...)
 }
 
 #' @rdname calinski
@@ -372,7 +207,8 @@ borders.kmeans <- function(x, y, ...) {
     stop("'y' must be a vector with the same number of items than 'x'")
   if (length(siz) == 1L)
     return(numeric())
-  ranges <- sapply(seq_along(siz), function(i) range(y[x$cluster == i]))
+  ranges <- vapply(seq_along(siz), function(i) range(y[x$cluster == i]),
+    numeric(2L))
   colMeans(matrix(sort(ranges)[c(-1L, -length(ranges))], nrow = 2L))
 }
 

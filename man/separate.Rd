@@ -108,7 +108,10 @@ stopifnot(sapply(y, class) == c("integer", "factor", "factor"))
 \seealso{
   base::strsplit utils::read.fwf
 
-  Other auxiliary-functions: \code{\link{glob_to_regex}}
+  Other auxiliary-functions: \code{\link{contains}},
+  \code{\link{glob_to_regex}}, \code{\link{kubrick}},
+  \code{\link{listing}}, \code{\link{map_names}},
+  \code{\link{map_values}}, \code{\link{opm_opt}}
 }
 \keyword{character}
 \keyword{manip}
@@ -119,9 +122,9 @@ stopifnot(sapply(y, class) == c("integer", "factor", "factor"))
 \alias{separate,factor-method}
 \alias{separate,data.frame-method}
 \usage{
-  \S4method{separate}{character}(object, split = "/.-_",
-    simplify = FALSE, keep.const = TRUE, 
-    list.wise = FALSE, strip.white = list.wise) 
+  \S4method{separate}{character}(object, split = opm_opt("split"),
+    simplify = FALSE, keep.const = TRUE, list.wise = FALSE, 
+    strip.white = list.wise) 
 
   \S4method{separate}{factor}(object, split = "/.-_",
     simplify = FALSE, keep.const = TRUE, ...) 

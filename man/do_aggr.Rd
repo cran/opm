@@ -59,8 +59,8 @@
   within \code{by} together to form row names.}
 
   \item{...}{Arguments passed from the \code{\link{OPMS}}
-  to the \code{\link{OPM}}, and from the matrix method to
-  \code{fun}.}
+  to the \code{\link{OPM}} method, and from the matrix
+  method to \code{fun}.}
 }
 \value{
   If \code{plain} is \code{FALSE}, an \code{\link{OPMA}}
@@ -86,7 +86,7 @@
   \sQuote{OPM} method to each contained plate in turn;
   there are not interdependencies.  \item Examples with
   \code{plain = TRUE} are not given, as only the return
-  value is different: Let x be the normal result of
+  value is different: Let \code{x} be the normal result of
   \code{do_aggr()}. The matrix returned if \code{plain} is
   \code{TRUE} could then be received using
   \code{aggregated(x)}, whereas the \sQuote{program} and
@@ -133,6 +133,7 @@ x <- matrix(1:10, ncol = 2, dimnames = list(letters[1:5], LETTERS[1:2]))
 grps <- c("a", "b", "a", "b", "a")
 (y <- do_aggr(x, by = grps, fun = mean))
 stopifnot(is.matrix(y), dim(y) == c(2, 2), colnames(y) == colnames(x))
+stopifnot(mode(y) == "numeric")
 }
 \references{
   Brisbin, I. L., Collins, C. T., White, G. C., McCallum,
@@ -158,8 +159,7 @@ stopifnot(is.matrix(y), dim(y) == c(2, 2), colnames(y) == colnames(x))
 \seealso{
   grofit::grofit
 
-  Other aggregation-functions: \code{\link{aggr_settings}},
-  \code{\link{aggregated}}, \code{\link{fast_estimate}},
+  Other aggregation-functions: \code{\link{fast_estimate}},
   \code{\link{param_names}}
 }
 \keyword{smooth}

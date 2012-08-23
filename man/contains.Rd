@@ -68,8 +68,10 @@ stopifnot(contains(vaas_4, vaas_1))
 
   base::identity
 
-  Other list-functions: \code{\link{map_names}},
-  \code{\link{map_values}}
+  Other auxiliary-functions: \code{\link{glob_to_regex}},
+  \code{\link{kubrick}}, \code{\link{listing}},
+  \code{\link{map_names}}, \code{\link{map_values}},
+  \code{\link{opm_opt}}, \code{\link{separate}}
 }
 \keyword{attribute}
 \keyword{list}

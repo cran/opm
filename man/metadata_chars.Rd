@@ -50,28 +50,25 @@ data(vaas_4)
 stopifnot(length(x) > length(y))
 }
 \seealso{
-  Other metadata-functions: \code{\link{collect_template}},
-  \code{\link{extract_columns}},
-  \code{\link{include_metadata}},
-  \code{\link{map_metadata}}, \code{\link{metadata}},
+  Other metadata-functions: \code{\link{include_metadata}},
+  \code{\link{map_metadata}}, \code{\link{metadata.set}},
   \code{\link{metadata.set}}, \code{\link{metadata.set}},
   \code{\link{metadata.set}}, \code{\link{metadata.set}},
   \code{\link{metadata.set}}, \code{\link{metadata.set}},
   \code{\link{metadata.set}}, \code{\link{metadata.set}},
   \code{\link{metadata.set}}, \code{\link{metadata.set}},
-  \code{\link{metadata.set}}, \code{\link{metadata.set}},
-  \code{\link{metadata.set}}, \code{\link{to_metadata}}
+  \code{\link{metadata.set}}, \code{\link{metadata.set}}
 }
 \keyword{attribute}
 
 \docType{methods}
 \alias{metadata_chars-methods}
-\alias{metadata_chars,OPMS-method}
 \alias{metadata_chars,WMD-method}
+\alias{metadata_chars,OPMS-method}
 \usage{
-  \S4method{metadata_chars}{OPMS}(object, ...) 
-
   \S4method{metadata_chars}{WMD}(object, values = TRUE,
     classes = "factor") 
+
+  \S4method{metadata_chars}{OPMS}(object, ...) 
 
 }

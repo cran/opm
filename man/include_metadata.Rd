@@ -41,17 +41,14 @@ stopifnot(is.null(metadata(vaas_1, "Location")))
 stopifnot(identical(metadata(copy, "Location"), "Braunschweig"))
 }
 \seealso{
-  Other metadata-functions: \code{\link{collect_template}},
-  \code{\link{extract_columns}},
-  \code{\link{map_metadata}}, \code{\link{metadata}},
+  Other metadata-functions: \code{\link{map_metadata}},
   \code{\link{metadata.set}}, \code{\link{metadata.set}},
   \code{\link{metadata.set}}, \code{\link{metadata.set}},
   \code{\link{metadata.set}}, \code{\link{metadata.set}},
   \code{\link{metadata.set}}, \code{\link{metadata.set}},
   \code{\link{metadata.set}}, \code{\link{metadata.set}},
   \code{\link{metadata.set}}, \code{\link{metadata.set}},
-  \code{\link{metadata.set}}, \code{\link{metadata_chars}},
-  \code{\link{to_metadata}}
+  \code{\link{metadata.set}}, \code{\link{metadata_chars}}
 }
 \keyword{manip}
 
@@ -60,8 +57,9 @@ stopifnot(identical(metadata(copy, "Location"), "Braunschweig"))
 \alias{include_metadata,OPM-method}
 \alias{include_metadata,OPMS-method}
 \usage{
-  \S4method{include_metadata}{OPM}(object, md, keys = c(SETUP, POS),
-    replace = FALSE, skip.failure = FALSE, remove.keys = TRUE, ...) 
+  \S4method{include_metadata}{OPM}(object, md, 
+    keys = opm_opt("csv.keys"), replace = FALSE, skip.failure = FALSE, 
+    remove.keys = TRUE, ...) 
 
   \S4method{include_metadata}{OPMS}(object, ...) 
 

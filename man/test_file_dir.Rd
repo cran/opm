@@ -17,8 +17,5 @@
 \description{
   Name of directory with test files. Auxiliary function.
 }
-\seealso{
-  Other testing-functions: \code{\link{source_location}}
-}
 \keyword{internal}
 

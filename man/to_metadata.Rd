@@ -39,7 +39,7 @@
 # Character method
 (x <- to_metadata(list(a = 7:8, `b c` = letters[1:2])))
 tmpfile <- tempfile()
-write.table(x, tmpfile, row.names = FALSE, sep = "\\t")
+write.table(x, tmpfile, row.names = FALSE, sep = "\t")
 (x1 <- read.delim(tmpfile))
 (x2 <- to_metadata(tmpfile))
 stopifnot(identical(names(x2), names(x)), !identical(names(x1), names(x)))
@@ -60,21 +60,8 @@ stopifnot(!identical(names(x), names(x1)), identical(names(x), names(x2)))
   \code{\link{clean_filenames}},
   \code{\link{collect_template}},
   \code{\link{explode_dir}}, \code{\link{file_pattern}},
-  \code{\link{opm_files}}, \code{\link{phylo_data}},
-  \code{\link{read_opm}}, \code{\link{read_single_opm}},
-  \code{\link{split_files}}
-
-  Other metadata-functions: \code{\link{collect_template}},
-  \code{\link{extract_columns}},
-  \code{\link{include_metadata}},
-  \code{\link{map_metadata}}, \code{\link{metadata}},
-  \code{\link{metadata.set}}, \code{\link{metadata.set}},
-  \code{\link{metadata.set}}, \code{\link{metadata.set}},
-  \code{\link{metadata.set}}, \code{\link{metadata.set}},
-  \code{\link{metadata.set}}, \code{\link{metadata.set}},
-  \code{\link{metadata.set}}, \code{\link{metadata.set}},
-  \code{\link{metadata.set}}, \code{\link{metadata.set}},
-  \code{\link{metadata.set}}, \code{\link{metadata_chars}}
+  \code{\link{opm_files}}, \code{\link{read_opm}},
+  \code{\link{read_single_opm}}, \code{\link{split_files}}
 }
 \keyword{IO}
 \keyword{manip}

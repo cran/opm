@@ -1,8 +1,8 @@
-\name{assert_length}
-\alias{assert_length}
+\name{LL}
+\alias{LL}
 \title{Assert length}
 \usage{
-  assert_length(..., .wanted = 1L)
+  LL(..., .wanted = 1L)
 }
 \arguments{
   \item{...}{Any R objects to test.}

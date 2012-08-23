@@ -36,8 +36,8 @@
   functions and \code{\link{contains}} for details.}
 
   \item{time}{Logical scalar. If \code{TRUE}, all other
-  arguments are ignored and the object is reduced to a
-  common subset of time point (measurement hours and
+  arguments are ignored and the object is reduced to the
+  common subset of time points (measurement hours and
   minutes).}
 
   \item{use}{Character scalar. An alternative way to
@@ -110,10 +110,10 @@ mustbe(x, y)
   \code{\link{has_aggr}}, \code{\link{hours}},
   \code{\link{length}}, \code{\link{max}},
   \code{\link{measurements}}, \code{\link{metadata}},
-  \code{\link{minmax}}, \code{\link{position}},
-  \code{\link{seq}}, \code{\link{setup_time}},
-  \code{\link{show}}, \code{\link{summary}},
-  \code{\link{thin_out}}, \code{\link{well}},
+  \code{\link{minmax}}, \code{\link{plate_type}},
+  \code{\link{position}}, \code{\link{seq}},
+  \code{\link{setup_time}}, \code{\link{show}},
+  \code{\link{summary}}, \code{\link{well}},
   \code{\link{wells}}
 }
 \keyword{manip}

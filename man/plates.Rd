@@ -39,8 +39,10 @@ stopifnot(is.list(x), length(x) == 5, sapply(x, inherits, what = "OPM"))
 
   Other conversion-functions: \code{\link{extract}},
   \code{\link{extract_columns}}, \code{\link{flatten}},
-  \code{\link{merge}}, \code{\link{oapply}},
-  \code{\link{sort}}, \code{\link{to_yaml}}
+  \code{\link{gen_iii}}, \code{\link{merge}},
+  \code{\link{oapply}}, \code{\link{rep}},
+  \code{\link{rev}}, \code{\link{sort}},
+  \code{\link{thin_out}}, \code{\link{to_yaml}}
 }
 \keyword{attribute}
 

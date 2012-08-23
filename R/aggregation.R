@@ -1,288 +1,108 @@
 
 
+
 ################################################################################
 ################################################################################
 #
-# OPMA class
+# Curve parameter estimation
 #
 
 
-setGeneric("opma_problems",
-  function(object, ...) standardGeneric("opma_problems"))
-#' Check OPMA
+setGeneric("to_grofit_time",
+  function(object, ...) standardGeneric("to_grofit_time"))
+#' Times for grofit
 #'
-#' Check whether a matrix fulfils the requirements for  \code{\link{OPMA}}
-#' aggregated data, or
-#' check whether a list fulfils the requirements for \code{\link{OPMA}}
-#' aggregation settings. Called when constructing an object of the class.
+#' Construct time-points data frame as required by \code{grofit}.
 #'
-#' @param object Matrix of aggregated data or list describing the aggregation
-#'   settings.
-#' @param orig Matrix of original, non-aggregated data.
-#' @param program Character scalar. Program used for aggregating the data
-#'   (currently only \sQuote{grofit} is checked).
-#' @return Character vector with description of problems, empty if there
-#'   are none.
+#' @param object \code{\link{OPM}} object.
+#' @return Dataframe with time points in each row, repeated for each well
+#'   (number of rows is number of wells).
 #' @keywords internal
 #'
-setMethod("opma_problems", "matrix", function(object, orig, program) {
-  errs <- character()
-  # Check content. In contrast to the raw measurements we have to allow NAs.
-  if (!is.numeric(object))
-    errs <- c(errs, "aggregated values are not numeric")
-  # Compare column names with non-aggregated data
-  cols <- colnames(object)
-  bad <- cols[colnames(orig)[-1] != cols]
-  if (length(bad))
-    errs <- c(errs, paste("unknown column name in aggregated data:", bad))
-  if (nrow(object) == 0L) {
-    errs <- c(errs, "no rows in aggregated data")
-    return(errs) # further checks are impossible in that case
-  }
-  # Check row names
-  if (program %in% KNOWN_PROGRAMS) {
-    got <- rownames(object)
-    bad <- got[got != map_grofit_names()]
-    if (length(bad) > 0L)
-      errs <- c(errs, paste("missing row name in aggregated data:", bad))
-  }
-  errs
-}, sealed = SEALED)
-
-setMethod("opma_problems", "list", function(object) {
-  errs <- character()
-  program <- object[[PROGRAM]]
-  if (!is.character(program) || length(program) != 1L)
-    errs <- c(errs, sprintf("need character '%s' entry of length 1", PROGRAM))
-  options <- object[[OPTIONS]]
-  if (!is.list(options) || length(options) < 1L)
-    errs <- c(errs, sprintf("need non-empty list as '%s' entry", OPTIONS))
-  else if (is.null(names(options)) || any(!nzchar(names(options))))
-    errs <- c(errs, sprintf("all '%s' elements must be named", OPTIONS))
-  bad <- setdiff(names(object), c(PROGRAM, OPTIONS))
-  if (length(bad))
-    errs <- c(errs, paste("unknown 'aggr_settings' key:", bad[1L]))
-  errs
+setMethod("to_grofit_time", OPM, function(object) {
+  tp <- hours(object, "all")
+  as.data.frame(matrix(rep.int(tp, length(wells(object))), ncol = length(tp),
+    byrow = TRUE))
 }, sealed = SEALED)
 
 
 ################################################################################
 
 
-#' OPMA class
+setGeneric("to_grofit_data",
+  function(object, ...) standardGeneric("to_grofit_data"))
+#' Data for grofit
 #'
-#' Class for holding single-plate OmniLog(R) phenotype microarray data
-#' together with aggregated values. For further details see its parent class,
-#' \code{\link{OPM}}. \sQuote{OPMA} is an acronym for \sQuote{OPM, aggregated}.
+#' Construct data frame with measurements as required by \code{grofit}.
 #'
-#' @docType class
+#' @param object \code{\link{OPM}} object.
+#' @return Dataframe with columns: (i) well ID, (ii) plate ID, (iii) dummy
+#'   concentration, (iv - end) measurements, one row for each well.
+#' @keywords internal
 #'
-#' @export
-#' @seealso Methods
-#' @family classes
-#' @keywords methods
-#'
-setClass(OPMA,
-  representation = representation(
-    aggregated = "matrix",
-    aggr_settings = "list"
-  ),
-  contains = OPM,
-  validity = function(object) {
-    errs <- opma_problems(object@aggr_settings)
-    errs <- c(errs, opma_problems(object@aggregated, object@measurements,
-      object@aggr_settings[[PROGRAM]]))
-    if (length(errs) == 0L)
-      TRUE
-    else
-      errs
-  },
-  sealed = SEALED
-)
+setMethod("to_grofit_data", OPM, function(object) {
+  w <- wells(object)
+  names <- matrix(nrow = length(w), ncol = 3L,
+    dimnames = list(well = w, value = c("well", "plate_id", "concentration")))
+  names[, 1L] <- w
+  names[, 2L] <- paste(setup_time(object), position(object), collapse = "-")
+  names <- as.data.frame(names, stringsAsFactors = FALSE)
+  names[, 3L] <- 1L # dummy concentration
+  cbind(names, as.data.frame(t(measurements(object)[, -1L, drop = FALSE])))
+}, sealed = SEALED)
 
 
 ################################################################################
+
+
+## NOTE: Not an S4 method because 'grofit' is an S3 class
+
+extract_curve_params <- function(data) UseMethod("extract_curve_params")
+#' Grofit extraction
+#'
+#' Extract and rename estimated curve parameters.
+#'
+#' @param data Object of class \sQuote{grofit}.
+#' @return Matrix.
+#' @method extract_curve_params grofit
+#' @keywords internal
+#'
+extract_curve_params.grofit <- function(data) {
+  settings <- c(data$control)
+  data <- summary(data$gcFit)
+  map <- map_grofit_names()
+  structure(.Data = t(as.matrix(data[, names(map)])),
+    dimnames = list(map, data[, "TestId"]), settings = settings)
+}
+
+
 ################################################################################
-#
-# Getter functions
-#
 
 
-setGeneric("aggregated", function(object, ...) standardGeneric("aggregated"))
-#' Get aggregated kinetic data
+## NOTE: Not an S4 method because there are no arguments
+
+#' Names of curve parameters
 #'
-#' The aggregated values are the curve parameters. If bootstrapping was used,
-#' their CIs are included. The columns represent the wells, the rows the
-#' estimated parameters and their CIs.
+#' Yield the names of the estimated curve parameters used internally and in the
+#' output.
 #'
-#' @param object \code{\link{OPMA}} object.
-#' @param subset Character vector. If not \code{NULL}, restrict to this or
-#'   these parameter(s). See \code{\link{param_names}} for the possible values.
-#' @param ci Logical scalar. Include the estimates of confidence intervals
-#'   (CIs) in the output?
-#' @param trim Character scalar. Parameter estimates from intrinsically negative
-#'   reactions (i.e., no respiration) are sometimes biologically unreasonable
-#'   because they are too large or too small. If \code{trim} is \sQuote{medium}
-#'   or \sQuote{full}, lambda estimates larger than \code{\link{hours}} are set
-#'   to that value. Negative lambda estimates smaller than \code{\link{hours}}
-#'   are set to this value if \code{trim} is \sQuote{medium}; this is a more
-#'   moderate treatment than setting all negative values to zero, which is done
-#'   if \code{trim} is \sQuote{full}. Currently the other parameters are
-#'   not checked, and all \code{NA} values also remain unchanged. If
-#'   \code{trim} is \sQuote{no}, lambda is not modified either.
-#' @param ... Optional arguments passed between the methods.
+#' @return Character vector.
 #' @export
-#' @family getter-functions
 #' @family aggregation-functions
-#' @return Numeric matrix.
-#' @keywords attribute
+#' @keywords utilities
 #' @examples
+#' (x <- param_names())
+#' stopifnot(is.character(x), length(x) == 4L)
+#' stopifnot(identical(unique(x), x))
 #'
-#' # 'OPMA' method
-#' data(vaas_1)
-#' # Get full matrix
-#' summary(x <- aggregated(vaas_1))
-#' stopifnot(is.matrix(x), identical(dim(x), c(12L, 96L)))
-#' # Subsetting
-#' summary(x <- aggregated(vaas_1, "lambda"))
-#' stopifnot(is.matrix(x), identical(dim(x), c(3L, 96L)), any(x < 0))
-#' # Now with lambda correction
-#' summary(x <- aggregated(vaas_1, "lambda", trim = "full"))
-#' stopifnot(is.matrix(x), identical(dim(x), c(3L, 96L)), !any(x < 0))
-#'
-#' # 'OPMS' method
-#' data(vaas_4)
-#' summary(x <- aggregated(vaas_4))
-#' stopifnot(is.list(x), length(x) == length(vaas_4), sapply(x, is.matrix))
-#'
-setMethod("aggregated", OPMA, function(object, subset = NULL, ci = TRUE,
-    trim = c("no", "full", "medium")) {
-
-  # lambda trimming functions
-  trim_into_hours <- function(x, hour, trim) {
-    if (trim == "no")
-      return(x)
-    ok <- !is.na(x)
-    x[ok & x > hour] <- hour
-    case(trim,
-      full = x[ok & x < 0] <- 0,
-      medium = x[ok & x < -hour] <- -hour
-    )
-    x
-  }
-  trim_mat_into_hours <- function(x, hours, trim) {
-    structure(trim_into_hours(x, hours, trim), dim = dim(x),
-      dimnames = dimnames(x))
-  }
-  trim_lambda <- function(x, hours, trim) {
-    is.lambda <- grepl(LAMBDA, rownames(x), fixed = TRUE)
-    x[is.lambda, ] <- trim_mat_into_hours(x[is.lambda, , drop = FALSE],
-      hours, trim = trim)
-    x
-  }
-
-  trim <- match.arg(trim)
-
-  # no subset requested
-  if (is.null(subset))
-    return(trim_lambda(object@aggregated, hours(object), trim))
-
-  # generate subset
-  if (!(program <- object@aggr_settings[[PROGRAM]]) %in% KNOWN_PROGRAMS)
-    warning("unknown 'program' entry (", program, "): subsetting may not work")
-  wanted <- unlist(map_grofit_names(subset, ci))
-  result <- object@aggregated[wanted, , drop = FALSE]
-  if (LAMBDA %in% subset)
-    result <- trim_lambda(result, hours(object), trim = trim)
-  result
-
-}, sealed = SEALED)
+param_names <- function() {
+  CURVE_PARAMS
+}
 
 
 ################################################################################
 
 
-setGeneric("aggr_settings",
-  function(object, ...) standardGeneric("aggr_settings"))
-#' Get aggregation settings
-#'
-#' The settings used for aggregating the kinetic data.
-#'
-#' @param object \code{\link{OPMA}} object.
-#' @param ... Optional arguments passed between the methods.
-#' @return Named list. See the example for details.
-#' @export
-#' @family getter-functions
-#' @family aggregation-functions
-#' @keywords attribute
-#' @examples
-#'
-#' # 'OPM' method
-#' data(vaas_1)
-#' summary(x <- aggr_settings(vaas_1))
-#' stopifnot(is.list(x), identical(names(x), c("program", "options")))
-#' stopifnot(identical(x$program, "grofit"))
-#'
-#' # 'OPMS' method
-#' data(vaas_4)
-#' summary(x <- aggr_settings(vaas_4))
-#' stopifnot(is.list(x), length(x) == length(vaas_4), sapply(x, is.list))
-#'
-setMethod("aggr_settings", OPMA, function(object) object@aggr_settings,
-  sealed = SEALED)
-
-
-################################################################################
-################################################################################
-#
-# Subsetting etc.
-#
-
-
-setMethod("[", OPMA, function(x, i, j, ..., drop = FALSE) {
-  result <- callNextMethod()
-  if (drop)
-    return(as(result, OPM))
-  result@aggregated <- result@aggregated[, j, ..., drop = FALSE]
-  result
-}, sealed = SEALED)
-
-
-################################################################################
-################################################################################
-#
-# Conversion functions: OPMA => other objects. For principle, see description
-# of OPM class. Conversion of OPMA to matrix/data frame is just repeated here
-# from OPM because otherwise some elements would be missing.
-#
-
-
-setAs(from = OPMA, to = "matrix", function(from) {
-  attach_attr(from, from@measurements)
-})
-
-
-setAs(from = OPMA, to = "data.frame", function(from) {
-  attach_attr(from, as.data.frame(from@measurements))
-})
-
-
-setAs(from = OPMA, to = "list", function(from) {
-  result <- as(as(from, OPM), "list")
-  result$aggregated <- apply(aggregated(from), MARGIN = 2L, FUN = as.list)
-  result$aggr_settings <- aggr_settings(from)
-  result
-})
-
-
-################################################################################
-################################################################################
-#
-# Extract curve parameters
-#
-
-
-setGeneric("do_aggr", function(object, ...) standardGeneric("do_aggr"))
 #' Aggregate kinetics using curve-parameter estimation
 #'
 #' Aggregate the kinetic data using curve-parameter estimation, i.e. infer
@@ -329,7 +149,7 @@ setGeneric("do_aggr", function(object, ...) standardGeneric("do_aggr"))
 #' @param sep Character scalar. Used for joining the vectors within \code{by}
 #'   together to form row names.
 #' @param ... Arguments passed from the \code{\link{OPMS}} to the 
-#'   \code{\link{OPM}}, and from the matrix method to \code{fun}.
+#'   \code{\link{OPM}} method, and from the matrix method to \code{fun}.
 #'
 #' @export
 #' @return If \code{plain} is \code{FALSE}, an \code{\link{OPMA}} object.
@@ -347,11 +167,11 @@ setGeneric("do_aggr", function(object, ...) standardGeneric("do_aggr"))
 #'   \item The \sQuote{OPMS} method just applies the \sQuote{OPM} method to
 #'     each contained plate in turn; there are not interdependencies.
 #'   \item Examples with \code{plain = TRUE} are not given, as only the return
-#'     value is different: Let x be the normal result of \code{do_aggr()}. The
-#'     matrix returned if \code{plain} is \code{TRUE} could then be received
-#'     using \code{aggregated(x)}, whereas the \sQuote{program} and the
-#'     \sQuote{settings} attributes could be obtained as components of the list
-#'     returned by \code{aggr_settings(x)}.
+#'     value is different: Let \code{x} be the normal result of 
+#'     \code{do_aggr()}. The matrix returned if \code{plain} is \code{TRUE} 
+#'     could then be received using \code{aggregated(x)}, whereas the 
+#'     \sQuote{program} and the \sQuote{settings} attributes could be obtained
+#'     as components of the list returned by \code{aggr_settings(x)}.
 #' }
 #'
 #' @references Brisbin, I. L., Collins, C. T., White, G. C., McCallum, D. A.
@@ -407,7 +227,10 @@ setGeneric("do_aggr", function(object, ...) standardGeneric("do_aggr"))
 #' grps <- c("a", "b", "a", "b", "a")
 #' (y <- do_aggr(x, by = grps, fun = mean))
 #' stopifnot(is.matrix(y), dim(y) == c(2, 2), colnames(y) == colnames(x))
+#' stopifnot(mode(y) == "numeric")
 #'
+setGeneric("do_aggr", function(object, ...) standardGeneric("do_aggr"))
+
 setMethod("do_aggr", OPM, function(object, boot = 100L, verbose = FALSE,
     cores = 1L, options = list(), program = "grofit", plain = FALSE) {
 
@@ -439,8 +262,6 @@ setMethod("do_aggr", OPM, function(object, boot = 100L, verbose = FALSE,
       control = control)
     extract_curve_params(result)
   }
-
-  assert_length(plain)
 
   case(program <- match.arg(program, KNOWN_PROGRAMS),
 
@@ -479,7 +300,7 @@ setMethod("do_aggr", OPM, function(object, boot = 100L, verbose = FALSE,
 
   attr(result, PROGRAM) <- program
 
-  if (plain)
+  if (L(plain))
     return(result)
   integrate_in_opma(object, result)
 
@@ -489,7 +310,7 @@ setMethod("do_aggr", "matrix", function(object, by, fun, sep = ".", ...) {
   if (is.atomic(by))
     by <- list(by = by)
   result <- stats::aggregate(x = object, by = by, FUN = fun, ..., 
-    simplify = FALSE)
+    simplify = TRUE)
   rn <- result[, by.cols <- seq_len(length(by)), drop = FALSE]
   rn <- apply(rn, 1L, paste, collapse = sep)
   result <- as.matrix(result[, -by.cols, drop = FALSE])
@@ -497,7 +318,156 @@ setMethod("do_aggr", "matrix", function(object, by, fun, sep = ".", ...) {
   result
 }, sealed = SEALED)
 
+setMethod("do_aggr", "OPMS", function(object, ...) {
+  new(OPMS, plates = lapply(object@plates, FUN = do_aggr, ...))
+}, sealed = SEALED)
+
+
 ################################################################################
+
+
+#' CI and point-estimate calculation
+#'
+#' Get point estimates and CIs (if possible) from the result of \code{boot}.
+#'
+#' @param x Object of class \sQuote{boot}.
+#' @param ci Numeric scalar. See \code{\link{fast_estimate}}.
+#' @param as.pe Character scalar. See \code{\link{fast_estimate}}.
+#' @param type Character scalar. See \code{\link{boot.ci}} from the
+#'   \pkg{boot} package.
+#' @param fill.nas Logical scalar. Assume that if the CI borders are both
+#'   \code{NA} bootstrapping yielded constant values if the point estimate is
+#'   not \code{NA}, and replace the CI borders by the point estimate in such
+#'   cases.
+#' @param ... Optional arguments passed to \code{\link{boot.ci}} from the
+#'   \pkg{boot} package.
+#' @return See \code{\link{fast_estimate}}.
+#'
+#' @keywords internal
+#'
+pe_and_ci <- function(x, ...) UseMethod("pe_and_ci")
+
+#' @rdname pe_and_ci
+#' @method pe_and_ci boot
+#'
+pe_and_ci.boot <- function(x, ci = 0.95, as.pe = c("median", "mean", "pe"),
+    type = c("basic", "perc", "norm"), fill.nas = FALSE, ...) {
+  LL(ci, fill.nas)
+  as.pe <- match.arg(as.pe)
+  type <- match.arg(type)
+  if (nrow(x$t) == 0L) {
+    if (as.pe != "pe") {
+      warning("zero bootstrap replicates -- using real point estimate")
+      as.pe <- "pe"
+    }
+    cis <- matrix(nrow = 2L, ncol = length(x$t0), data = NA_real_)
+  } else {
+    cis <- lapply(seq_along(x$t0), FUN = boot::boot.ci, boot.out = x,
+      conf = ci, type = type, ...)
+    ok <- !unlist(lapply(cis, is.null))
+    cis[!ok] <- list(c(NA_real_, NA_real_))
+    cis[ok] <- lapply(cis[ok], `[[`, type, exact = FALSE)
+    cis[ok] <- lapply(cis[ok], FUN = last, i = 2L)
+    cis <- do.call(cbind, cis)
+  }
+  rownames(cis) <- c("ci.low", "ci.high")
+  point.est <- case(as.pe,
+    median = apply(x$t, 2L, median),
+    mean = colMeans(x$t),
+    pe = x$t0
+  )
+  if (fill.nas) {
+    boot.nas <- !is.na(x$t0) & is.na(cis[1L, ]) & is.na(cis[2L, ])
+    cis[2L, boot.nas] <- cis[1L, boot.nas] <- x$t0[boot.nas]
+  }
+  rbind(point.est, cis)
+}
+
+
+################################################################################
+
+
+#' Fast curve-parameter estimation
+#'
+#' Quickly estimate the curve parameters AUC (area under the curve) or A
+#' (maximum height). This is not normally directly called by an \pkg{opm} user
+#' but via \code{\link{do_aggr}}.
+#'
+#' @param x Matrix as output by \code{\link{measurements}}, i.e. with the
+#'   time points in the first columns and the measurements in the remaining
+#'   columns (there must be at least two). For deviations from this scheme see
+#'   \code{time.pos} and \code{transposed}.
+#' @param what Character scalar. Which parameter to estimate. Currently only
+#'   two are supported.
+#' @param boot Integer scalar. Number of bootstrap replicates. Note that under
+#'   the default settings for \code{as.pe}, bootstrapping is also necessary to
+#'   obtain the point estimate.
+#' @param ci Confidence interval to use in the output. Ignored if \code{boot}
+#'   is not positive.
+#' @param as.pe Character scalar determining what to output as the point
+#'   estimate. Either \sQuote{median}, \sQuote{mean} or \sQuote{pe}; the first
+#'   two calculate the point estimate from the bootstrapping replicates, the
+#'   third one use the real point estimate. If \code{boot} is 0, \code{as.pe}
+#'   is reset to \sQuote{pe}, if necessary, and a warning is issued.
+#' @param ci.type Character scalar determining the way the confidence intervals
+#'   are calculated. Either \sQuote{norm}, \sQuote{basic} or \sQuote{perc}; see
+#'   \code{boot.ci} from the \pkg{boot} package for details.
+#' @param time.pos Character or integer scalar indicating the position of the
+#'   column (or row, see next argument) with the time points.
+#' @param transposed Character or integer scalar indicating whether the matrix
+#'   is transposed compared to the default.
+#' @param raw Logical scalar. Return the raw bootstrapping result without CI
+#'   estimation and construction of the usually resulting matrix?
+#' @param ... Optional arguments passed to \code{boot} from the eponymous
+#'   package.
+#'
+#' @export
+#' @return Numeric matrix with three rows (point estimate, lower and upper CI)
+#'   and as many columns as data columns (or rows) in \code{x}. If \code{raw}
+#'   is \code{TRUE}, an object of the class \sQuote{boot}.
+#' @family aggregation-functions
+#' @seealso boot::boot grofit::grofit
+#' @keywords smooth
+#'
+#' @examples
+#' data("vaas_1")
+#' x <- fast_estimate(measurements(vaas_1))
+#' stopifnot(identical(dim(x), c(3L, 96L)))
+#'
+setGeneric("fast_estimate", function(x, ...) standardGeneric("fast_estimate"))
+
+setMethod("fast_estimate", "matrix", function(x, what = c("AUC", "A"),
+    boot = 100L, ci = 0.95, as.pe = "median", ci.type = "norm",
+    time.pos = 1L, transposed = FALSE, raw = FALSE, ...) {
+  LL(time.pos, boot, ci, transposed, raw)
+  if (transposed)
+    x <- t(x)
+  y <- x[, time.pos]
+  x <- x[, -time.pos, drop = FALSE]
+  x.colnames <- colnames(x)
+  case(what <- match.arg(what),
+    A = boot_fun <- function(x, w) apply(x[w, ], 2L, max),
+    AUC = {
+      n.obs <- nrow(x)
+      y <- y[-1L] - y[-n.obs]
+      x <- 0.5 * (x[-1L, , drop = FALSE] + x[-n.obs, , drop = FALSE])
+      boot_fun <- function(x, w) colSums(x[w, , drop = FALSE] * y[w])
+    }
+  )
+  result <- boot::boot(data = x, statistic = boot_fun, R = boot, ...)
+  if (raw)
+    return(result)
+  result <- pe_and_ci(result, ci = ci, as.pe = as.pe, type = ci.type,
+    fill.nas = what == "A")
+  colnames(result) <- x.colnames
+  rownames(result) <- paste(what, rownames(result), sep = ".")
+  result
+}, sealed = SEALED)
+
+
+################################################################################
+
+
 
 
 

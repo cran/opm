@@ -1,0 +1,606 @@
+
+################################################################################
+
+
+2012-08-23 (the 6th release on CRAN)
+
+- corrections of some substrate names according to information provided by
+  the Phenotype MicroArray vendor (thanks to Barry Bochner)
+- novel substrate_info() function for getting external information on 
+  substrates
+- novel opm_opt() method for registering opm-global options, and according
+  changes of the default arguments of a number of functions (not affecting
+  the default behaviour)
+- novel paper_size() and mypdf() functions
+- level_plot() gains three additional arguments for fine-tuning the colour 
+  palette used
+- default color set of xy_plot() changed to 'w3c' (because it contains more 
+  colors than 'nora')
+- novel flatten() method for lists
+- novel 'vline' argument to ci_plot()
+- novel rev() and rep() methods for OPM and OPMS objects
+- novel sort(), duplicated() and anyDuplicated() methods for OPM objects
+- heat_map() now automatically converts 'logical' matrices to 'integer' storage
+  mode
+- novel best_cutoff() helper function for discretization
+- fixed bug in matrix method of do_aggr() causing lists to occur within data 
+  frames
+- sort() for 'OPMS' objects gets much more options
+- merge() for 'OPMS' objects gets a 'sort.first' and 'parse' arguments
+- glob_to_regex() improved: now escapes even more special characters, and keeps 
+  all input attributes (such as names)
+- separate() in 'list.wise' mode now works with NA values
+- entire package refactored by newly assorting the class, method and function
+  definitions to files, almost 1:1 correspondence between function family (as
+  indicated in the manual) and location in source-code files
+- fixed bug in xy_plot() that caused 'space' to overwrite 'legend.fmt'
+- improved `metadata<-`() behaviour if data frames with a single column are
+  supplied
+- find_substrate() now also allows pmatch()-based searching
+- novel 'literally' argument to file_pattern() and batch_process()
+- batch_collect() gets a 'simplify' argument
+
+
+################################################################################
+
+
+2012-05-20 (the 5th release on CRAN)
+
+- included show() method for OPM(S) objects
+- modified `[` to remove incompatibilties with the 'Matrix' package (which uses
+  setMethod("[", ...) in other ways than specified in the documentation of `[`
+  in the base package) (problem noticed by Benjamin Hofner)
+- changed to lazy loading of the datasets (suggestion by Benjamin Hofner)
+- duplicate() and anyDuplicated() get a 'what' argument allowing the detection
+  of duplicate combinations of selected components of the contained OPM objects
+- novel plates() methods for lists and OPM objects
+- added factor methods for find_substrate(), find_positions(), glob_to_regex()
+  `metadata<-`() and the infix operators; metadata() now betters supports
+  factors as keys
+- added character and factor methods for plate_type(); the character method
+  replaces normalize_plate_name(), which has been removed
+- novel case() methods (improved switch())
+- run_kmeans() method for matrices
+- optional arguments for contains() passed to identical() and allowing fine 
+  control of strictness
+- separate has been extended; it now automatically selects multi- vs. 
+  single-character splitting modes if split is a non-empty character vector,
+  and it has a novel 'list.wise' argument
+- added so far missing map_values() for NULL+function; map_names() was 
+  accordingly simplified and made more consistent
+- summary() for OPMS objects is more detailed
+- added formula-based methods for map_values(), map_metadata() and metadata()<-
+- added data frame-based OPMS methods for metadata()<-
+- fixed 'run_opm.R' bug causing an error in conjunction with '-r template'
+- fixed 'run_opm.R' bug causing '-s' to be ignored in conjunction with 
+  '-r template'
+- more functionality (plotting) for 'run_opm.R', and automated tests for it
+- do_aggr() helper method for matrices
+- novel contains() method for OPMS objects
+
+
+################################################################################
+
+2012-04-21 (the 4th release on CRAN)
+
+- added Gen-III-run file to example files
+- sort() method for OPMS objects
+- phylo_data(), heat_map() and radial_plot() methods directly for OPMS objects
+- extract(), select(), discrete() and phylo_data() methods for data frames
+- gplots silenced
+- improved documentation according to http://developer.r-project.org/Rds.html
+  (two exceptions: indentation and line length of the examples, as well as
+  a single instead of two spaces in running text)
+- added full citation information 
+- included preliminary version of radial_plot()
+- added missing OPMS-method documentation entries
+- fixed bug in merge() that caused it to crash with input plates with unequal
+  running times
+- for opm-fast, CIs that cannot be calculated because the values are 
+  constant are not set to NA anymore but to that value (only for the 'A' 
+  parameter)
+- export of phylogenetic data in Hennig86 format, and more flexibility (novel
+  arguments) for phylo_data(); for instance, vector-based merging is possible
+  via the 'join' argument; HTML output has been considerably improved (e.g.,
+  it runs without warnings through Tidy); added 'run.tidy' option for 
+  reformatting it with HTML Tidy
+- improved map_metadata() by using map_values() throughout
+
+
+################################################################################
+
+2012-03-29 (the 3rd release on CRAN)
+
+- fixed problems causing the tests to crash on the Windows version of
+  R-devel and R-2.15.0
+- added methods for the estimation of +, w and - and the subsequent generation
+  of reports for, e.g., IJSEM
+- option for opms() to recognize plate types and construct OPMS objects
+  separately, or select those with a certain plate type
+- redundancies in input plates with 'OTH' as plate type are automatically 
+  removed
+- novel merge() method for OPMS objects, i.e. a function for merging plates 
+  from subsequent runs of the same organism
+- novel arguments to read_opm() (automatically assorting according to the 
+  plate type)
+- novel helper functions for k-means based discretization: to_kmeans(),
+  borders(), calinski(), and, of course, run_kmeans()
+- novel 'digits' argument to listing()
+- map_names() has been completed, including methods for data frames, arrays and
+  matrices, as well as for 'ANY' objects
+- map_values() has been extended
+- applications of structure() that unnecessarily dropped attributes were 
+  replaced
+- novel 'pad' argument of safe_labels()
+- improved documentation of xy_plot() (the arguments passed to wells())
+- improved format of references in the documentation
+- include factor method for separate(), automated removal of constant 
+  columns and 'simplify' argument
+
+
+################################################################################
+
+
+2012-03-09 (the 2nd release on CRAN)
+
+- documentation was changed to syntactical names throughout, and all duplication
+  removed; now there is a single documentation entry for all methods of the 
+  same generic function
+- the documentation was carefully proofread again; thanks to L.A.I.V.
+- the 'see also' references in the documentation now use full names, including
+  the name of the respective package, even for packages that come with the R
+  distribution
+- improved documentation of find_substrate()
+- included OPMS splitting and traversal (looping) examples in the documentation 
+  (e.g., for plotting individual plates)
+- included generation-III hints in the documentation of the IO functions
+- fixed bug regarding 'theor.max' argument of xy_plot()
+- novel oapply() method for applying a function to the entries in an OPMS 
+  object
+- novel seq() method for OPMS objects for easier looping
+- novel duplicated() and anyDuplicated() methods for OPMS objects  
+- added missing filename() and aggr_settings() functions for OPMS objects and
+  more according tests
+- novel map_names() and map_values() methods for other objects, particularly 
+  data frames, and extended functionality via 'coerce = TRUE'; this is also
+  available for map_metadata() and metadata_chars()
+- added splitting function for character entries in dataframes, automatically
+  recognizing the best split pattern; thus easing metadata construction from
+  CSV data; included the treatment of fixed-width strings and a data frame
+  method for this generic function
+- the 'coerce' argument of map_metadata() and metadata_chars() has been renamed
+  to 'classes' (to make this uniform)
+- novel 'include' argument to split_files()
+- curve_params() has been removed and integrated into do_aggr(), which hence
+  has a novel 'plain' argument
+- file input now automatically changes 'OTH' to generation-III plate type
+- improved the 'remove.csv.data' behaviour of include_metadata() (the default 
+  keys were always removed, and 'remove.csv.data' had a distinct effect);
+  changed the argument to 'remove.keys'; also changed argument 'stop.on.error'
+  to 'skip.failure' (with the reverse meaning, but the default behaviour 
+  remained the same)
+- fixed error in the documentation in heat_map() and changed 'gplots' to 
+  default of 'use.fun'
+- replaced use of rep() by rep.int() where possible
+- added tests for the 'time' mode of select()
+
+
+################################################################################
+
+
+13-02-12 (the first release on CRAN)
+
+- novel 'single' and 'invert' arguments for split_files()
+- improved 'demo' mode of split_files() and clean_filenames() and their
+  documentation
+- improved behaviour of clean_filenames() in the (pathological) case of empty
+  output filenames
+- added 'split' and 'clean' result modes to the run_opm.R script and improved 
+  the help message by exapling each result mode
+- improved read_opm() and read_single_opm() error messages
+- extract_labels() has been removed and integrated into extract_columns(),
+  which has a novel 'join' argument to accomodate that
+- novel 'strict' argument of metadata()
+- novel 'exact' and 'strict' arguments to flatten(), extract_columns() and 
+  extract(); both are TRUE by default; that is, these functions by default
+  generate an error in the case of missing metadata; they will now also
+  generate an error, not a warning only, if the numbers of rows in the metadata
+  columns do not fit to each other
+- internally improved extract() and ci_plot() and added more tests for the 
+  former
+- added more tests to heat_map()
+- moved c() to the OPMX virtual class
+- date and version number are now automatically inserted during the build phase
+  of the package documentation
+- deleted the identifer entries in the metadata of vaas_et_al (they are 
+  redundant compared to the combination of the other entries)
+- added more references to the discretization methods
+- added more 'see also' entries to the documentation
+- simplified the stopifnot() statements of the examples
+
+
+################################################################################
+
+
+09-02-12
+
+- novel split_files() function for splitting old-style CSV files with multiple
+  plates; added according example file (which cannot directly be read using the
+  input functions)
+- novel clean_filenames() function for creating nicer filenames
+- described 'opm-fast' parameter estimation in the manual
+- default plate-name normalization now removes the plate subtype/version; was
+  necessary because of the PM-M plates
+- made read_old_opm() more robust against commas in CSV comments
+- improved error messages of read_single_opm() and include_metadata()
+- xy_plot() now correctly sets the baseline to the smallest (!) of the negative
+  control well maxima; see examples for how to use the largest maximum
+- added more tests to the many groups of methods, e.g., numeric, phylogenetic,
+  etc. ones
+- novel arguments 'brewer' and 'brewer.i' for select_colors(); thanks to Nora
+
+
+################################################################################
+
+
+30-01-12
+
+- added 'opm-fast' estimation methods for the curve parameters A and AUC; 
+  because these are based on very simple calculations, they are MUCH faster
+  than the grofit approach; regarding their correspondence with the grofit
+  results, see the examples to do_aggr(); a corresponding -f/--fast option was
+  added to the 'run_opm.R' script.
+- added support for heatmap.2() from the gplots package to heat_map(); it is
+  not used by default and not required for installation but useful, as it adds
+  a legend with the assignment of colors to numeric values; the return value
+  of heat_map() now includes the color mappings of groups to row/column side
+  colors, if these were used
+- added dataframe method for heat_map()
+- added 'time' argument to select(), allowing for the automated restriction
+  of plates to common time points; accordingly enhanced the OPMS `[` method
+  by allowing for lists as third argument (i.e., as the second index)
+- fixed bug in trimming mode of aggregated()
+- finished ALL examples in the documentation except for the CI-plots (waiting
+  for input from Lea); for instance, the IO documentation is now complete; 
+  enhanced some other examples; added selected literature references
+- novel function opm_files() for easy access to the scripts and testdata
+- fixed bug in aggregated() if more than one parameter was requested
+- changed aggregate() to do_aggr() as requested by Lea/Johannes
+- novel 'paren.sep' argument of wells() and hence of all plotting functions
+- novel 'striptext.fmt' argument to level_plot() (OPMS method)
+- 'range = TRUE' now possible for discrete(); improved documentation of 
+  phylogenetic methods; improved output of phylo_data()
+- removed warning messages from collect_template() and fixed a bug regarding 
+  its dataframe output; improved its output; included more tests
+- moved most packaged dependencies from 'depends' to 'import'
+
+
+################################################################################
+
+
+26-01-12
+
+
+- finished the heat_map() function for matrices; added 'as.groups' to extract()
+  to ease the construction of heatmap row-side colors
+- select() now also accepts logical and numeric 'query' arguments and treats
+  them specially; an example for selecting all plates with aggregated values
+  is given
+- the 'trim' argument of aggregated() and extract() was moved to character and
+  now accepts three modes: 'no', 'medium' and 'full'
+- finished OPMS documentation (with the exception of ci_plot() and relatives
+  because they need to be reworked)
+- finished IO documentation with the exception of those marked with NEEDINPUT;
+  see the manual for which kind of information I need from you
+- finished the documentation of the list functions
+- documented the YAML output format (at least its technical details)
+- miscellaneous other improvements to the documentation such as disclaimers 
+  regarding malformatted CSV files in the IO documentation
+- 'ignore.dups' argument of extract() changed to 'dups', its type changed from
+  logical to character; default changed to a warning message
+- novel 'add.cols' argument to all collect_template() methods; the character
+  (filename) version now also works with YAML input with multiple plates
+- improved internal handling of option lists with defaults
+- added more tests to the OPMS methods that collect information from all plates
+  and improved their internal consistency
+- fixed bug causing some arguments to plate_type() being ignored by xy_plot()
+- fixed bug regarding the character labels in phylo_data() output and added
+  'paup.block' argument
+
+
+################################################################################
+
+
+24-01-12
+
+- novel 'space' argument of xy_plot() for OPMS; changed default to 'top'
+- collect_template() is now generic, and OPM and OPMS methods are available
+  (and well documented, by the way)
+- finished the documentation examples of all OPM methods
+- finished the documentation examples of most OPMS methods 
+- fixed bug in some of the '+' methods 
+- improved behaviour of some OPMS methods that are also available for OPM and
+  collect information from the plates
+
+
+################################################################################
+
+
+23-01-12
+
+
+- completed the OPM examples (affects particularly metadata<- and the infix
+  operators)
+- better panel header construction for the OPMS level_plot() method
+- novel 'i' argument to measurements()
+- novel 'word.wise' argument to wells() and plate_type() (and thus to all 
+  plotting functions), other arguments of wells() now also for plate_type()
+- improved behaviour of contains() for nested name-based queries and thus the 
+  behaviour of the list-based %k% operator; also improved the behaviour of %Q%
+  for character queries
+- made to_metadata() and collect_template() more flexible
+- include_metadata() works now with dataframes with a single row only; added
+  more according tests
+
+
+################################################################################
+
+
+20-01-12
+
+- changed default to 'values = TRUE' in select() and improved documentation
+- renamed 'include.args' to 'md.args' to avoid name clash with 'include' in
+  batch_opm_to_yaml()
+- added examples to almost all OPM and OPMA methods, using the small dataset
+- added first examples to the OPMS methods, using the medium-sized dataset,
+  and to some helper and list functions
+- marked all remaining, undone examples as TODO
+- additional arguments for hours(); deleted time_points() because this is now
+  covered by hours(); automated trimming of OPMS objects to same number of
+  time points will soon follow
+
+
+################################################################################
+
+
+19-01-2012
+
+
+- added two smaller datasets, subsets of 'vaas_et_al'
+- added warning message in case of non-uniform measurement running times when
+  building an OPMS object (if users get too annoyed, I'll hasten to remove this
+  again!)
+- moved some of the flatten() parameters that are passed to wells() anyway to
+  '...' and updated the documentation accordingly
+- novel 'brackets' and 'clean' arguments of wells() (and thus of flatten() and
+  the plotting functions)
+- replaced 'set.zero' by 'trim' argument to aggregated() and extract() and
+  improved the underlying algorithm; setting negative values to 0 might be
+  added as an option in the future
+- made improvements of some substrate names; introduced more name checks 
+  during the building of the package
+- fixed bug in error message (not relevant in a successful run) of 
+  include_metadata() and added according test
+
+
+################################################################################
+
+
+17-01-2012
+
+- included examples for phylogeny functions and most helper functions
+- added support for 'logical' datatype and for NEXUS comments to phylo_data()
+- added support for 1 character state to discrete() (not very interesting...)
+- beautified example dataset
+
+
+################################################################################
+
+
+16-01-2012
+
+- the usage entries for '+' and 'metadata<-' are now included in the manual,
+  and the corresponding S4 method for each combination of types of arguments is
+  described in detail separately
+- N.B. a special metadata-deletion method has been omitted because this can 
+  actually be done using metadata(x, key) <- NULL or even metadata(x) <- list();
+  note that 'metadata<-' methods are also defined for the OPMS class
+- the duplicated class manual entries have been combined; textual description
+  and method list now have the same entry
+- well_to_substrate() can now deal with several plate names at once and allows
+  partial matching
+- novel param_names() function for showing the internally used names for the
+  curve parameters
+- additional documentation added to to_metadata(); note particularly that you
+  should prefer this function for inputting metadata tables over read.table(),
+  read.delim() etc. because of the way column names and character data are
+  handled
+- improved argument naming of curve_params() (and thus aggregate()) to make it
+  easier to add other curve-parameter estimation methods in the future; lowered
+  RAM usage by calling grofit() separately for each well
+- added coarse-grained to fine-grained parallelization using multicore: 
+  'coarse' means traversing input files in parallel, 'fine' means traversing
+  the wells of one plate in parallel, but processing files serially; this is
+  somewhat faster for moderate to large numbers of files; note that the
+  meaning of the -c option to run_opm.R has changed!
+- improved the internal structure of the tests, added some new ones
+
+
+################################################################################
+
+13-01-2012
+
+- now only user-level functions appear in the manual, reducing the PDF version
+  to about 80-90 pages; empty crosslinks should also have been fixed
+- made the keywords entries consistent, resulting in an improved 'topics'
+  listing in the manual index
+- the usage entries for the infix functions are now included in the manual
+- miscellaneous other improvements of the documentation; for instance, shell
+  globbing is explained in detail under glob_to_regex()
+- novel normalize_plate_type() and well_to_substrate() functions; the former is
+  now always applied if an OPM object is constructed, and the latter is more
+  convenient user-level function
+- added 'neg.to.zero' argument to aggregated() and extract(), which is FALSE by
+  default
+- improved contains(), which is used by the list-based metadata queries
+
+
+################################################################################
+
+11-01-2012-b
+
+- improved %q% for character queries (should now cope with factors in the 
+  metadata, for instance, and now is really less strict than %Q%, as it should
+  be)
+- added some minor documentation improvements for these functions
+- added updated example dataset
+- fixed problem caused by the last release (the auxiliary functions entirely
+  disappeared from the manual!)
+- additionally marked all auxiliary functions with '*' in their title
+- added arguments to extract() enabling the export of full substrate names as
+  column names
+- WARNING: removed handling of 'subset' vectors of length > 1 from extract();
+  if you need this, you can easily get it for free using lapply() or something
+  like that by yourself
+
+
+################################################################################
+
+
+11-01-2012-a
+
+- fixed persistently unmatched plate names (no bug report => no bug fix!), but
+  needed to guess them for the PM-M plates (Nora's treatment of the PM plates
+  also seems to be mainly based on guessing...)
+- completed map_metadata() and metadata_chars() for applying mappings to stored
+  metadata
+- included 'internal' keyword in all auxiliary functions, causing 
+  help(package = "opm") to report only the user-level functions, and extended 
+  all help headers which are diplayed in that listing
+- miscellaneous additions to the documentation
+
+
+################################################################################
+
+
+09-01-2012
+
+- added example dataset to package; from now on, you MUST take the dataset from
+  the package, not from the original e-mail (this was possible because I 
+  finally found a way to compress the entire dataset below 4MB)
+- added first version of 'run_opm.R', which you can find in the 'scripts'
+  subdirectory of the directory where opm has been installed; already includes
+  'yaml' and 'template' result modes
+- better documented 'metadata<-'
+- added novel map_metadata() and metadata_chars() methods and several auxiliary
+  functions for running these two
+- added arguments to batch_process(), thus improved the file-extension handling 
+  of batch_opm_to_yaml()
+- improved metadata input handling by batch_opm_to_yaml(), and added 'gen.iii'
+  argument, acting like the one of read_opm()
+- fixed bug introduced in last to_metadata() version
+- made some improvements to the package directory and file structure
+
+
+################################################################################
+
+
+06-01-2012
+
+- added 'cores' argument to curve_params() (and thus to aggregate(), too)
+  enabling parallel parameter estimation using the multicore package
+- moved most examples from the manuscript draft to the opm manual and added 
+  examples to '+' and c(), i.e. most functions lacking a 'usage' documentation
+  entry now have at least an 'examples' entry
+- added several 'seealso' links to similar functions from 'base' and other
+  standard R packages
+- move almost all plain functions where useful to S4 methods
+
+
+################################################################################
+
+
+22-12-2011
+
+- added 'exact' argument to contains() and changed default behaviour
+- added %Q% infix operator; changed behaviour of %q% to non-exact matching
+  (i.e. matching one of several alternatives)
+- added user-level function max_rgb_contrast() for arranging user-selected 
+  colours
+- made some internal code rearrangements and improvements of the scripts that
+  repair the documentation
+- added two line-width arguments, 'lwd' and 'base.lwd', to each of the two 
+  xy_plot() functions
+- changed default baseline color to dark grey
+- fixed missing export of select() and improved the documentation
+- fixed two documentation bugs
+- fixed striptext.fmt bug (there is a strange reverse precedence of the 
+  'par.strip.text' parameter of xyplot())
+
+
+################################################################################
+
+
+08-12-2011
+
+- defaults of level_plot() improved (panel header background color)
+- defaults of xy_plot() improved (baseline color)
+- main_title() directly accepts expressions (e.g., for writing stuff in 
+  italics) and thus the 'main' argument of the plotting functions, too
+- the 'panel.header' argument of level_plot() now also accepts expressions
+- added infix operators for querying the metadata of OPM and OPMS objects: %k%,
+  %K% and %q% (documentation usage entries for these are not yet produced)
+- added select() method for OPMS allowing metadata-based selection of subsets
+  using either %k% or %q%
+- improved summary() function
+- YAML_VIA_LIST class extended
+- better adapted batch_opm_to_yaml() to YAML input
+- some documentation improvements
+
+
+################################################################################
+
+
+04-12-2011
+
+- fixed bug in explode_dir() related to the 'wildcard' argument
+- added 'demo' argument to all user-level functions that call explode_dir()
+- renamed two arguments of the IO functions ('input' => 'names', 'pattern' =>
+  'include') to improve consistency
+- removed user-level access to file_pattern(); works now via list arguments to
+  'include' and 'exclude', not affected by 'wildcard'
+- 'wildcard' = TRUE is now the default of these IO functions
+- added more flexibility (i.e., access all explode_dir() arguments) to 
+  collect_template()
+- added third overwrite option (overwrites outfile only if it is older than the
+  input file)
+- changed substrate-query functions to S4 generics and added second 
+  find_position() function
+- miscellaneous improvements of the documentation
+- solved all remaining 'R CMD check' warning messages (but currently the 
+  replacement functions have no 'usage' entry)
+
+
+################################################################################
+
+
+01-12-2011
+
+- improved summary() function
+- novel minmax() function
+- improved 'main' and 'neg.ctrl' arguments auf xy_plot()
+- length() method for OPMS
+- read_opm_yaml() and, hence, read_single_opm() and read_opm() can now work with
+  YAML lists of OPM lists; important for IO of OPMS objects
+- to_yaml() improved (metadata at the beginning)
+- `[` with useful 'drop' argument
+- added easter-egg function
+- virtual class YAML_VIA_LIST documented
+- miscellaneous improvements of the documentation
+- added keywords to all documented objects
+- changed list functions to S4 methods and sorted them together
+
+
+################################################################################
+
+

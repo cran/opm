@@ -17,8 +17,7 @@ stopifnot(is.character(x), length(x) == 4L)
 stopifnot(identical(unique(x), x))
 }
 \seealso{
-  Other aggregation-functions: \code{\link{aggr_settings}},
-  \code{\link{aggregated}}, \code{\link{do_aggr}},
+  Other aggregation-functions: \code{\link{do_aggr}},
   \code{\link{fast_estimate}}
 }
 \keyword{utilities}

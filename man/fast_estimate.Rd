@@ -67,8 +67,7 @@ stopifnot(identical(dim(x), c(3L, 96L)))
 \seealso{
   boot::boot grofit::grofit
 
-  Other aggregation-functions: \code{\link{aggr_settings}},
-  \code{\link{aggregated}}, \code{\link{do_aggr}},
+  Other aggregation-functions: \code{\link{do_aggr}},
   \code{\link{param_names}}
 }
 \keyword{smooth}

@@ -1,9 +1,9 @@
 \name{flatten}
 \alias{flatten}
-\title{Flatten matrix}
+\title{Flatten an OPM matrix or a list}
 \arguments{
   \item{object}{\code{\link{OPM}} or \code{\link{OPMS}}
-  object.}
+  object or list.}
 
   \item{include}{\code{NULL}, character vector or list. If
   not \code{NULL}, include this meta-information in the
@@ -38,12 +38,19 @@
   \sQuote{Time}, \sQuote{Well}, \sQuote{Value}, with the
   obvious meanings. The \code{\link{OPMS}} method yields an
   additional column named \sQuote{Plate}, which contains
-  each plate's number within \code{object}.
+  each plate's number within \code{object}. The list method
+  returns a list.
 }
 \description{
   Convert into \sQuote{flat} data frame, including all
   measurements in a single column (suitable, e.g., for
-  \pkg{lattice}).
+  \pkg{lattice}). The list method returns a non-nested
+  list.
+}
+\note{
+  The list method is based on
+  \url{http://stackoverflow.com/questions/8139677/how-to-flatten-a-list-to-a-list-without-coercion}
+  with some slight improvements.
 }
 \examples{
 # OPM method
@@ -63,14 +70,22 @@ x <- flatten(vaas_4, fixed = "TEST")
 stopifnot(is.data.frame(x), identical(dim(x), c(147456L, 5L)))
 x <- flatten(vaas_4, fixed = "TEST", include = "Strain")
 stopifnot(is.data.frame(x), identical(dim(x), c(147456L, 6L)))
+
+# List method
+x <- list(a = list(b = 1:5, c = letters[1:5]), d = LETTERS[1:3],
+  e = list(pi))
+(y <- flatten(x))
+stopifnot(is.list(y), length(y) == 4, !sapply(y, is.list))
 }
 \seealso{
   stats::reshape
 
   Other conversion-functions: \code{\link{extract}},
-  \code{\link{extract_columns}}, \code{\link{merge}},
-  \code{\link{oapply}}, \code{\link{plates}},
-  \code{\link{sort}}, \code{\link{to_yaml}}
+  \code{\link{extract_columns}}, \code{\link{gen_iii}},
+  \code{\link{merge}}, \code{\link{oapply}},
+  \code{\link{plates}}, \code{\link{rep}},
+  \code{\link{rev}}, \code{\link{sort}},
+  \code{\link{thin_out}}, \code{\link{to_yaml}}
 }
 \keyword{dplot}
 \keyword{manip}
@@ -79,11 +94,14 @@ stopifnot(is.data.frame(x), identical(dim(x), c(147456L, 6L)))
 \alias{flatten-methods}
 \alias{flatten,OPM-method}
 \alias{flatten,OPMS-method}
+\alias{flatten,list-method}
 \usage{
   \S4method{flatten}{OPM}(object, include = NULL, fixed = NULL,
     factors = TRUE, exact = TRUE, strict = TRUE, full = TRUE, ...) 
 
   \S4method{flatten}{OPMS}(object, include = NULL, fixed = list(),
     ...) 
+
+  \S4method{flatten}{list}(object) 
 
 }

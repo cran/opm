@@ -3,7 +3,7 @@
 \title{Collect information from files}
 \usage{
   batch_collect(names, fun, fun.args = list(), ...,
-    simplify = FALSE, demo = FALSE)
+    use.names = TRUE, simplify = FALSE, demo = FALSE)
 }
 \arguments{
   \item{names}{Character vector with file or directory
@@ -21,6 +21,9 @@
 
   \item{simplify}{Logical scalar. Should the resulting list
   be simplified to a vector or matrix if possible?}
+
+  \item{use.names}{Logical scalar. Should \code{names} be
+  used for naming the elements of the result?}
 
   \item{demo}{Logical scalar. Do not read files, but print
   a vector with the names of the files that would be
@@ -53,9 +56,9 @@ if (length(f) > 0L) {
   \code{\link{clean_filenames}},
   \code{\link{collect_template}},
   \code{\link{explode_dir}}, \code{\link{file_pattern}},
-  \code{\link{opm_files}}, \code{\link{phylo_data}},
-  \code{\link{read_opm}}, \code{\link{read_single_opm}},
-  \code{\link{split_files}}, \code{\link{to_metadata}}
+  \code{\link{opm_files}}, \code{\link{read_opm}},
+  \code{\link{read_single_opm}}, \code{\link{split_files}},
+  \code{\link{to_metadata}}
 }
 \keyword{IO}
 

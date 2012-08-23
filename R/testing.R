@@ -12,7 +12,6 @@
 #' \code{source} is used. Auxiliary function.
 #'
 #' @return Name of file in which this function is defined or \code{NULL}.
-#' @family testing-functions
 #' @keywords internal
 #'
 source_location <- function() {
@@ -34,7 +33,6 @@ source_location <- function() {
 #' @param files Character vector. Optional list of of filenames to append
 #'   to the directory name.
 #' @return Name of the directory in which the input files for testing reside.
-#' @family testing-functions
 #' @keywords internal
 #'
 test_file_dir <- function(x = source_location(), files = NULL) {
@@ -57,3 +55,5 @@ test_file_dir <- function(x = source_location(), files = NULL) {
 
 
 ################################################################################
+
+

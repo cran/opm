@@ -148,16 +148,25 @@ metadata(copy, "Type2") <- x
 stopifnot(!identical(metadata(copy, "Type2"), x$Type))
 }
 \seealso{
-  Other metadata-functions: \code{\link{collect_template}},
-  \code{\link{extract_columns}},
-  \code{\link{include_metadata}},
-  \code{\link{map_metadata}}, \code{\link{metadata}},
-  \code{\link{metadata_chars}}, \code{\link{to_metadata}}
+  Other metadata-functions: \code{\link{include_metadata}},
+  \code{\link{map_metadata}}, \code{\link{metadata_chars}}
 }
 \keyword{manip}
 
 \docType{methods}
 \alias{metadata.set-methods}
+\alias{metadata.set,WMD,missing,list-method}
+\alias{metadata<-,WMD,missing,list-method}
+\alias{metadata.set,WMD,missing,formula-method}
+\alias{metadata<-,WMD,missing,formula-method}
+\alias{metadata.set,WMD,numeric,list-method}
+\alias{metadata<-,WMD,numeric,list-method}
+\alias{metadata.set,WMD,list,list-method}
+\alias{metadata<-,WMD,list,list-method}
+\alias{metadata.set,WMD,character,ANY-method}
+\alias{metadata<-,WMD,character,ANY-method}
+\alias{metadata.set,WMD,factor,ANY-method}
+\alias{metadata<-,WMD,factor,ANY-method}
 \alias{metadata.set,OPMS,missing,list-method}
 \alias{metadata<-,OPMS,missing,list-method}
 \alias{metadata.set,OPMS,missing,formula-method}
@@ -172,19 +181,19 @@ stopifnot(!identical(metadata(copy, "Type2"), x$Type))
 \alias{metadata<-,OPMS,character,data.frame-method}
 \alias{metadata.set,OPMS,factor,data.frame-method}
 \alias{metadata<-,OPMS,factor,data.frame-method}
-\alias{metadata.set,WMD,missing,list-method}
-\alias{metadata<-,WMD,missing,list-method}
-\alias{metadata.set,WMD,missing,formula-method}
-\alias{metadata<-,WMD,missing,formula-method}
-\alias{metadata.set,WMD,numeric,list-method}
-\alias{metadata<-,WMD,numeric,list-method}
-\alias{metadata.set,WMD,list,list-method}
-\alias{metadata<-,WMD,list,list-method}
-\alias{metadata.set,WMD,character,ANY-method}
-\alias{metadata<-,WMD,character,ANY-method}
-\alias{metadata.set,WMD,factor,ANY-method}
-\alias{metadata<-,WMD,factor,ANY-method}
 \usage{
+  \S4method{metadata}{WMD,missing,list}(object) <- value
+
+  \S4method{metadata}{WMD,missing,formula}(object) <- value
+
+  \S4method{metadata}{WMD,numeric,list}(object, key) <- value
+
+  \S4method{metadata}{WMD,list,list}(object, key) <- value
+
+  \S4method{metadata}{WMD,character,ANY}(object, key) <- value
+
+  \S4method{metadata}{WMD,factor,ANY}(object, key) <- value
+
   \S4method{metadata}{OPMS,missing,list}(object) <- value
 
   \S4method{metadata}{OPMS,missing,formula}(object) <- value
@@ -200,17 +209,5 @@ stopifnot(!identical(metadata(copy, "Type2"), x$Type))
 
   \S4method{metadata}{OPMS,factor,data.frame}(
     object, key) <- value
-
-  \S4method{metadata}{WMD,missing,list}(object) <- value
-
-  \S4method{metadata}{WMD,missing,formula}(object) <- value
-
-  \S4method{metadata}{WMD,numeric,list}(object, key) <- value
-
-  \S4method{metadata}{WMD,list,list}(object, key) <- value
-
-  \S4method{metadata}{WMD,character,ANY}(object, key) <- value
-
-  \S4method{metadata}{WMD,factor,ANY}(object, key) <- value
 
 }

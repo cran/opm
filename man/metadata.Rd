@@ -48,34 +48,22 @@ stopifnot(x == c("DSM18039", "DSM30083T", "DSM1707", "429SC1"))
   \code{\link{has_aggr}}, \code{\link{hours}},
   \code{\link{length}}, \code{\link{max}},
   \code{\link{measurements}}, \code{\link{minmax}},
-  \code{\link{position}}, \code{\link{select}},
-  \code{\link{seq}}, \code{\link{setup_time}},
-  \code{\link{show}}, \code{\link{summary}},
-  \code{\link{thin_out}}, \code{\link{well}},
+  \code{\link{plate_type}}, \code{\link{position}},
+  \code{\link{select}}, \code{\link{seq}},
+  \code{\link{setup_time}}, \code{\link{show}},
+  \code{\link{summary}}, \code{\link{well}},
   \code{\link{wells}}
-
-  Other metadata-functions: \code{\link{collect_template}},
-  \code{\link{extract_columns}},
-  \code{\link{include_metadata}},
-  \code{\link{map_metadata}}, \code{\link{metadata.set}},
-  \code{\link{metadata.set}}, \code{\link{metadata.set}},
-  \code{\link{metadata.set}}, \code{\link{metadata.set}},
-  \code{\link{metadata.set}}, \code{\link{metadata.set}},
-  \code{\link{metadata.set}}, \code{\link{metadata.set}},
-  \code{\link{metadata.set}}, \code{\link{metadata.set}},
-  \code{\link{metadata.set}}, \code{\link{metadata.set}},
-  \code{\link{metadata_chars}}, \code{\link{to_metadata}}
 }
 \keyword{attribute}
 
 \docType{methods}
 \alias{metadata-methods}
-\alias{metadata,OPMS-method}
 \alias{metadata,WMD-method}
+\alias{metadata,OPMS-method}
 \usage{
-  \S4method{metadata}{OPMS}(object, ...) 
-
   \S4method{metadata}{WMD}(object, key = NULL, exact = TRUE,
     strict = FALSE) 
+
+  \S4method{metadata}{OPMS}(object, ...) 
 
 }

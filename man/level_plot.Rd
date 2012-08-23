@@ -41,6 +41,17 @@
   it is ignored unless metadata are chosen for constructing
   the panel headers.}
 
+  \item{space}{Character scalar passed to
+  \code{colorRampPalette} from the \pkg{grDevices} package.
+  These and the following arguments are for fine-tuning the
+  colour palette used for plotting.}
+
+  \item{bias}{Numeric scalar also passed to
+  \code{colorRampPalette}.}
+
+  \item{num.colors}{Numeric scalar passed to the function
+  returned by \code{colorRampPalette}.}
+
   \item{...}{Arguments that are passed to
   \code{\link{flatten}}.}
 }
@@ -81,10 +92,11 @@ level_plot(vaas_4, include = c("Species", "Strain"))
   \strong{7}, e34846.
 }
 \seealso{
-  lattice::levelplot
+  lattice::levelplot grDevices::colorRampPalette
 
   Other plotting-functions: \code{\link{ci_plot}},
   \code{\link{heat_map}}, \code{\link{max_rgb_contrast}},
+  \code{\link{mypdf}}, \code{\link{paper_size}},
   \code{\link{radial_plot}}, \code{\link{select_colors}},
   \code{\link{xy_plot}}
 }
@@ -95,11 +107,13 @@ level_plot(vaas_4, include = c("Species", "Strain"))
 \alias{level_plot,OPM-method}
 \alias{level_plot,OPMS-method}
 \usage{
-  \S4method{level_plot}{OPM}(x, main = list(), colors = NULL,
-    cex = NULL, ...) 
+  \S4method{level_plot}{OPM}(x, main = list(), 
+    colors = opm_opt("color.borders"), cex = NULL, space = "Lab", bias = 0.5,
+    num.colors = 200L, ...) 
 
-  \S4method{level_plot}{OPMS}(x, main = list(), colors = NULL, 
-    panel.headers = TRUE, cex = NULL, strip.fmt = list(),
-    striptext.fmt = list(), legend.sep = " ", ...) 
+  \S4method{level_plot}{OPMS}(x, main = list(), 
+    colors = opm_opt("color.borders"), panel.headers = TRUE, cex = NULL, 
+    strip.fmt = list(), striptext.fmt = list(), legend.sep = " ", 
+    space = "Lab", bias = 0.5, num.colors = 200L, ...) 
 
 }

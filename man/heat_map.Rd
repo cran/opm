@@ -140,6 +140,7 @@ stopifnot(identical(metadata(vaas_4, "Species"), names(hm$rowColMap)))
 
   Other plotting-functions: \code{\link{ci_plot}},
   \code{\link{level_plot}}, \code{\link{max_rgb_contrast}},
+  \code{\link{mypdf}}, \code{\link{paper_size}},
   \code{\link{radial_plot}}, \code{\link{select_colors}},
   \code{\link{xy_plot}}
 }

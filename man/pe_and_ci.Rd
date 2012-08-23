@@ -1,7 +1,10 @@
-\name{pe_and_ci.boot}
+\name{pe_and_ci}
+\alias{pe_and_ci}
 \alias{pe_and_ci.boot}
 \title{CI and point-estimate calculation}
 \usage{
+  pe_and_ci(x, ...)
+
   \method{pe_and_ci}{boot} (x, ci = 0.95,
     as.pe = c("median", "mean", "pe"),
     type = c("basic", "perc", "norm"), fill.nas = FALSE,

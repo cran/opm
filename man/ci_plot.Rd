@@ -56,9 +56,13 @@
 
   \item{xpd}{Logical scalar. Also passed to that function.}
 
-  \item{...}{Optional other arguments passed to that
-  function, or arguments passed from the \code{\link{OPMS}}
-  method to the data frame method.}
+  \item{vline}{Numeric scalar with the position on the
+  y-axis of a vertical line to be drawn. Ignored if
+  \code{NULL}.}
+
+  \item{...}{Optional other arguments passed to
+  \code{legend}, or arguments passed from the
+  \code{\link{OPMS}} method to the data frame method.}
 }
 \value{
   Character vector describing the plot's legend, returned
@@ -104,6 +108,7 @@ stopifnot(is.character(x), identical(length(x), 4L))
 
   Other plotting-functions: \code{\link{heat_map}},
   \code{\link{level_plot}}, \code{\link{max_rgb_contrast}},
+  \code{\link{mypdf}}, \code{\link{paper_size}},
   \code{\link{radial_plot}}, \code{\link{select_colors}},
   \code{\link{xy_plot}}
 }
@@ -117,7 +122,7 @@ stopifnot(is.character(x), identical(length(x), 4L))
   \S4method{ci_plot}{data.frame}(object, rowname.sep = " ",
     prop.offset = 0.04, align = "center", col = "blue", na.action = "warn",
     draw.legend = TRUE, legend.field = c(1, 1), x = "topleft", xpd = TRUE,
-    ...) 
+    vline = 0, ...) 
 
   \S4method{ci_plot}{OPMS}(object, as.labels, subset = "A", ...) 
 

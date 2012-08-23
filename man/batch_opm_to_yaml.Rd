@@ -3,8 +3,9 @@
 \title{Batch-convert to YAML}
 \usage{
   batch_opm_to_yaml(names, md.args = NULL,
-    aggr.args = NULL, force.aggr = FALSE, gen.iii = FALSE,
-    ..., verbose = TRUE, demo = FALSE)
+    aggr.args = NULL, force.aggr = FALSE,
+    gen.iii = opm_opt("gen.iii"), ..., verbose = TRUE,
+    demo = FALSE)
 }
 \arguments{
   \item{md.args}{If not \code{NULL} but a list, passed as
@@ -142,9 +143,9 @@ if (length(test.files) > 0) {
   \code{\link{clean_filenames}},
   \code{\link{collect_template}},
   \code{\link{explode_dir}}, \code{\link{file_pattern}},
-  \code{\link{opm_files}}, \code{\link{phylo_data}},
-  \code{\link{read_opm}}, \code{\link{read_single_opm}},
-  \code{\link{split_files}}, \code{\link{to_metadata}}
+  \code{\link{opm_files}}, \code{\link{read_opm}},
+  \code{\link{read_single_opm}}, \code{\link{split_files}},
+  \code{\link{to_metadata}}
 }
 \keyword{IO}
 

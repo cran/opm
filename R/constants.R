@@ -40,7 +40,11 @@
 #'     the appropriate objects. OmniLog(R) phenotype microarray data are
 #'     structured in \strong{plates}. Each plate has 12 x 8 \strong{well}
 #'     layout, and each well contains the respiration measurements on one
-#'     substrate or inhibitor, or combination of substrates or inhibitors.}
+#'     substrate or inhibitor, or combination of substrates or inhibitors. 
+#'     For input example files, see \code{\link{opm_files}}.}
+#'   \item{global options}{Options affecting the default parameters of a number
+#'     of \pkg{opm} functions can be set and queried for using 
+#'     \code{\link{opm_opt}}.}
 #'   \item{coercion functions}{Coercion functions for the three classes are only
 #'     briefly listed under each class documentation entry. For details, see
 #'     the documentation of \code{as} from the \pkg{methods} package.}
@@ -59,7 +63,7 @@
 #'     some time. The limiting steps are aggregating (curve-parameter
 #'     estimation) and plotting many curves together. The former step can be
 #'     conducted in parallel if the \pkg{multicore} package is available. It is
-#'     not required for the installation of \pkg{opm}. There is also fast
+#'     not required for the installation of \pkg{opm}. There is also a fast
 #'     estimation method for the parameters \sQuote{area under the curve} and
 #'     \sQuote{maximum height}. See \code{\link{do_aggr}} and the methods it
 #'     refers to for details.}
@@ -321,81 +325,52 @@ PLATE_MAP <- structure(
 )
 
 
-if (FALSE)
-PLATE_MAP <- structure(
-  .Data = c(
-    "Identification",
-    "Carbon Sources",
-    "Carbon Sources",
-    "Nitrogen Sources",
-    "Phosphorus and Sulfur Sources",
-    "Nutrient Supplements",
-    "Peptide Nitrogen Sources",
-    "Peptide Nitrogen Sources",
-    "Peptide Nitrogen Sources",
-    "Osmolytes",
-    "pH",
-    "Chemicals",
-    "Chemicals",
-    "Chemicals",
-    "Chemicals",
-    "Chemicals",
-    "Chemicals",
-    "Chemicals",
-    "Chemicals",
-    "Chemicals",
-    "Chemicals",
-    "Carbon and Energy Sources",
-    "Carbon and Energy Sources / Nitrogen Sources",
-    "Carbon and Energy Sources / Nitrogen Sources",
-    "Carbon and Energy Sources / Nitrogen Sources",
-    "Ions",
-    "Hormones & Metabolic Effectors",
-    "Hormones & Metabolic Effectors",
-    "Hormones & Metabolic Effectors",
-    "Anti-Cancer Agents",
-    "Anti-Cancer Agents",
-    "Anti-Cancer Agents",
-    "Anti-Cancer Agents"
-  ), names = c(
-    "Gen III",
-    "PM01",
-    "PM02-A",
-    "PM03-B",
-    "PM04-A",
-    "PM05",
-    "PM06",
-    "PM07",
-    "PM08",
-    "PM09",
-    "PM10",
-    "PM11-C",
-    "PM12-B",
-    "PM13-B",
-    "PM14-A",
-    "PM15-B",
-    "PM16-A",
-    "PM17-A",
-    "PM18-C",
-    "PM19",
-    "PM20-B",
-    "PM-M01-A",
-    "PM-M02-A",
-    "PM-M03-A",
-    "PM-M04-A",
-    "PM-M05",
-    "PM-M06",
-    "PM-M07",
-    "PM-M08",
-    "PM-M11",
-    "PM-M12",
-    "PM-M13",
-    "PM-M14"
-  )
+################################################################################
+################################################################################
+#
+# Paper sizes (for plotting helper functions)
+#
+
+
+SPECIAL_PAPER_SIZES <- structure(
+  .Data = c(216, 432, 559, 864, 279, 457, 108, 381, 445, 572, 584, 184, 216, 
+  	216, 210, 216, 216, 203, 140, 140, 127, 419, 279, 215.9, 215.9, 457, 140, 
+  	184, 70, 279, 140, 216, 394, 889, 229, 508, 140, 330, 279, 279, 279, 559, 
+  	864, 1118, 432, 610, 171, 508, 572, 889, 711, 267, 304, 330, 330, 304, 330, 
+  	267, 216, 216, 203.2, 533, 432, 355.6, 279.4, 584, 216, 267, 127, 432, 216, 
+  	279, 489, 1143, 279, 635, 216, 483, 432, 377), 
+  .Dim = c(40L, 2L), 
+  .Dimnames = list(c("ansi a", "ansi c", "ansi d", "ansi e", "bible", 
+    "broadsheet", "compact", "crown", "demy", "double demy", "elephant",
+    "executive", "fanfold", "folio", "foolscap", "german std fanfold", 
+    "government legal", "government letter", "half letter", "jepps", 
+    "junior legal", "large post", "ledger", "legal", "letter", "medium",
+    "memo", "monarch", "organizer j", "organizer k", "organizer l",
+    "organizer m", "post", "quad demy", "quarto", "royal", "statement",
+    "super b", "tabloid", "us std fanfold"), c("width","height"))
 )
 
 
 ################################################################################
+################################################################################
+#
+# Default opm options
+#
+
+OPM_OPTIONS <- new.env(parent = emptyenv())
+OPM_OPTIONS$color.borders <- c("#FFFFD4", "#FED98E", "#FE9929", "#D95F0E", 
+ "#993404")
+OPM_OPTIONS$csv.keys <- c(SETUP, POS)
+OPM_OPTIONS$csv.selection <- c(SETUP, POS, FILE)
+OPM_OPTIONS$gen.iii <- FALSE
+OPM_OPTIONS$phylo.fmt <- "epf"
+OPM_OPTIONS$time.fmt <- c("%m/%d/%Y %I:%M:%S %p", "%b %d %Y %I:%M %p", 
+  "%d.%m.%Y %H:%M:%S")
+OPM_OPTIONS$time.zone <- ""
+OPM_OPTIONS$xy.colors <- "w3c"
+OPM_OPTIONS$split <- "/.-_"
+OPM_OPTIONS$digits <- 4L
+
 
 
 

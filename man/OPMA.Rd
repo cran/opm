@@ -22,17 +22,17 @@
 % \docType{class}
 \alias{OPMA-class}
 % \alias{[,OPMA-method}
-% \alias{aggr_settings,OPMA-method}
-% \alias{aggregated,OPMA-method}
-% \alias{coerce,OPMA,data.frame-method}
-% \alias{coerce,OPMA,list-method}
-% \alias{coerce,OPMA,matrix-method}
-% \alias{coerce,list,OPMA-method}
-% 
+%% \alias{aggr_settings,OPMA-method}
+%% \alias{aggregated,OPMA-method}
+%% \alias{coerce,OPMA,data.frame-method}
+%% \alias{coerce,OPMA,list-method}
+%% \alias{coerce,OPMA,matrix-method}
+%% \alias{coerce,list,OPMA-method}
+%% 
 % \title{Class \code{"OPMA"}}
 % \description{
-% %%  ~~ A concise (1-5 lines) description of what the class is. ~~
-% }
+%% %%  ~~ A concise (1-5 lines) description of what the class is. ~~
+%% }
 \section{Objects from the Class}{
 Objects can be created by calls of the form \code{new("OPMA", ...)}.
 %%  ~~ describe objects here ~~ 
@@ -64,14 +64,14 @@ Class \code{"\linkS4class{YAML_VIA_LIST}"}, by class "OPM", distance 2.
 	 }
 }
 % \references{
-% %%  ~~put references to the literature/web site here~~
-% }
+%% %%  ~~put references to the literature/web site here~~
+%% }
 % \author{
-% %%  ~~who you are~~
-% }
+%% %%  ~~who you are~~
+%% }
 % \note{
-% %%  ~~further notes~~
-% }
+%% %%  ~~further notes~~
+%% }
 % 
 % %% ~Make other sections like Warning with \section{Warning }{....} ~
 % 

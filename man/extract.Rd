@@ -90,9 +90,10 @@ stopifnot(identical(attr(y, "row.groups"), x$c))
 
   Other conversion-functions:
   \code{\link{extract_columns}}, \code{\link{flatten}},
-  \code{\link{merge}}, \code{\link{oapply}},
-  \code{\link{plates}}, \code{\link{sort}},
-  \code{\link{to_yaml}}
+  \code{\link{gen_iii}}, \code{\link{merge}},
+  \code{\link{oapply}}, \code{\link{plates}},
+  \code{\link{rep}}, \code{\link{rev}}, \code{\link{sort}},
+  \code{\link{thin_out}}, \code{\link{to_yaml}}
 }
 \keyword{dplot}
 \keyword{manip}

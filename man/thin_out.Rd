@@ -46,18 +46,12 @@ copy <- thin_out(vaas_4, 10)
 stopifnot(identical(x, c(4L, 38L, 96L)))
 }
 \seealso{
-  Other getter-functions: \code{\link{aggr_settings}},
-  \code{\link{aggregated}}, \code{\link{anyDuplicated}},
-  \code{\link{csv_data}}, \code{\link{dim}},
-  \code{\link{duplicated}}, \code{\link{filename}},
-  \code{\link{has_aggr}}, \code{\link{hours}},
-  \code{\link{length}}, \code{\link{max}},
-  \code{\link{measurements}}, \code{\link{metadata}},
-  \code{\link{minmax}}, \code{\link{position}},
-  \code{\link{select}}, \code{\link{seq}},
-  \code{\link{setup_time}}, \code{\link{show}},
-  \code{\link{summary}}, \code{\link{well}},
-  \code{\link{wells}}
+  Other conversion-functions: \code{\link{extract}},
+  \code{\link{extract_columns}}, \code{\link{flatten}},
+  \code{\link{gen_iii}}, \code{\link{merge}},
+  \code{\link{oapply}}, \code{\link{plates}},
+  \code{\link{rep}}, \code{\link{rev}}, \code{\link{sort}},
+  \code{\link{to_yaml}}
 }
 \keyword{manip}
 

@@ -33,10 +33,10 @@ stopifnot(identical(x, 1:4))
   \code{\link{has_aggr}}, \code{\link{hours}},
   \code{\link{length}}, \code{\link{max}},
   \code{\link{measurements}}, \code{\link{metadata}},
-  \code{\link{minmax}}, \code{\link{position}},
-  \code{\link{select}}, \code{\link{setup_time}},
-  \code{\link{show}}, \code{\link{summary}},
-  \code{\link{thin_out}}, \code{\link{well}},
+  \code{\link{minmax}}, \code{\link{plate_type}},
+  \code{\link{position}}, \code{\link{select}},
+  \code{\link{setup_time}}, \code{\link{show}},
+  \code{\link{summary}}, \code{\link{well}},
   \code{\link{wells}}
 }
 \keyword{attribute}

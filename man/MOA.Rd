@@ -24,19 +24,19 @@
 % \docType{class}
 \alias{MOA-class}
 % \alias{discrete,MOA-method}
-% \alias{is_constant,MOA-method}
-% \alias{map_names,MOA,character-method}
-% \alias{map_names,MOA,function-method}
-% \alias{map_names,MOA,missing-method}
-% \alias{map_values,MOA,character-method}
-% \alias{map_values,MOA,function-method}
-% \alias{map_values,MOA,missing-method}
-% \alias{ranging,MOA-method}
-% 
+%% \alias{is_constant,MOA-method}
+%% \alias{map_names,MOA,character-method}
+%% \alias{map_names,MOA,function-method}
+%% \alias{map_names,MOA,missing-method}
+%% \alias{map_values,MOA,character-method}
+%% \alias{map_values,MOA,function-method}
+%% \alias{map_values,MOA,missing-method}
+%% \alias{ranging,MOA-method}
+%% 
 % \title{Class \code{"MOA"}}
 % \description{
-% %%  ~~ A concise (1-5 lines) description of what the class is. ~~
-% }
+%% %%  ~~ A concise (1-5 lines) description of what the class is. ~~
+%% }
 \section{Objects from the Class}{A virtual Class: No objects may be created from it.}
 \section{Methods}{
   \describe{
@@ -52,14 +52,14 @@
 	 }
 }
 % \references{
-% %%  ~~put references to the literature/web site here~~
-% }
+%% %%  ~~put references to the literature/web site here~~
+%% }
 % \author{
-% %%  ~~who you are~~
-% }
+%% %%  ~~who you are~~
+%% }
 % \note{
-% %%  ~~further notes~~
-% }
+%% %%  ~~further notes~~
+%% }
 % 
 % %% ~Make other sections like Warning with \section{Warning }{....} ~
 % 

@@ -64,29 +64,29 @@ stopifnot(list() \%k\% vaas_1)
 
 \docType{methods}
 \alias{infix.k-methods}
-\alias{infix.k,list,OPMS-method}
-\alias{\%k\%,list,OPMS-method}
-\alias{infix.k,character,OPMS-method}
-\alias{\%k\%,character,OPMS-method}
-\alias{infix.k,factor,OPMS-method}
-\alias{\%k\%,factor,OPMS-method}
 \alias{infix.k,character,WMD-method}
 \alias{\%k\%,character,WMD-method}
 \alias{infix.k,list,WMD-method}
 \alias{\%k\%,list,WMD-method}
 \alias{infix.k,factor,WMD-method}
 \alias{\%k\%,factor,WMD-method}
+\alias{infix.k,list,OPMS-method}
+\alias{\%k\%,list,OPMS-method}
+\alias{infix.k,character,OPMS-method}
+\alias{\%k\%,character,OPMS-method}
+\alias{infix.k,factor,OPMS-method}
+\alias{\%k\%,factor,OPMS-method}
 \usage{
-  \S4method{\%k\%}{list,OPMS}(x, table) 
-
-  \S4method{\%k\%}{character,OPMS}(x, table) 
-
-  \S4method{\%k\%}{factor,OPMS}(x, table) 
-
   \S4method{\%k\%}{character,WMD}(x, table) 
 
   \S4method{\%k\%}{list,WMD}(x, table) 
 
   \S4method{\%k\%}{factor,WMD}(x, table) 
+
+  \S4method{\%k\%}{list,OPMS}(x, table) 
+
+  \S4method{\%k\%}{character,OPMS}(x, table) 
+
+  \S4method{\%k\%}{factor,OPMS}(x, table) 
 
 }

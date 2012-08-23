@@ -16,6 +16,7 @@
 #' URLs of their DSMZ catalog entries are given below.
 #'
 #' @docType data
+#' @keywords datasets
 #' @name vaas_et_al
 #' @format \code{\link{OPMS}} object with the dimensions 114 x 384 x 96, i.e.
 #'   114 plates with 384 time points and 96 wells per plate. (10 plates have
@@ -53,6 +54,7 @@ NULL
 #' bacterial strains considered in the study (see \code{\link{vaas_et_al}}).
 #'
 #' @docType data
+#' @keywords datasets
 #' @name vaas_4
 #' @format \code{\link{OPMS}} object with the dimensions 4 x 384 x 96, i.e.
 #'   4 plates with 384 time points and 96 wells per plate.
@@ -88,6 +90,7 @@ NULL
 #' \emph{Escherichia coli} DSM30083T (yes, the type strain of \emph{E. coli}).
 #'
 #' @docType data
+#' @keywords datasets
 #' @name vaas_1
 #' @format \code{\link{OPMA}} object with the dimensions 384 x 96, i.e. a single
 #'   plate with 384 time points and 96 wells.

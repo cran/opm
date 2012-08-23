@@ -110,29 +110,24 @@ copy <- map_metadata(vaas_4, Organism ~ paste(Species, Strain))
 stopifnot(length(x) == 4) # one entry per plate
 }
 \seealso{
-  Other metadata-functions: \code{\link{collect_template}},
-  \code{\link{extract_columns}},
-  \code{\link{include_metadata}}, \code{\link{metadata}},
+  Other metadata-functions: \code{\link{include_metadata}},
   \code{\link{metadata.set}}, \code{\link{metadata.set}},
   \code{\link{metadata.set}}, \code{\link{metadata.set}},
   \code{\link{metadata.set}}, \code{\link{metadata.set}},
   \code{\link{metadata.set}}, \code{\link{metadata.set}},
   \code{\link{metadata.set}}, \code{\link{metadata.set}},
   \code{\link{metadata.set}}, \code{\link{metadata.set}},
-  \code{\link{metadata.set}}, \code{\link{metadata_chars}},
-  \code{\link{to_metadata}}
+  \code{\link{metadata.set}}, \code{\link{metadata_chars}}
 }
 \keyword{manip}
 
 \docType{methods}
 \alias{map_metadata-methods}
-\alias{map_metadata,OPMS,ANY-method}
 \alias{map_metadata,WMD,function-method}
 \alias{map_metadata,WMD,character-method}
 \alias{map_metadata,WMD,formula-method}
+\alias{map_metadata,OPMS,ANY-method}
 \usage{
-  \S4method{map_metadata}{OPMS,ANY}(object, mapping, ...) 
-
   \S4method{map_metadata}{WMD,function}(object, mapping,
     values = TRUE, classes = "ANY", ...) 
 
@@ -140,5 +135,7 @@ stopifnot(length(x) == 4) # one entry per plate
     values = TRUE, classes = "factor") 
 
   \S4method{map_metadata}{WMD,formula}(object, mapping) 
+
+  \S4method{map_metadata}{OPMS,ANY}(object, mapping, ...) 
 
 }

@@ -1,116 +1,90 @@
 
-
-
 ################################################################################
 ################################################################################
 #
-# Pure metadata functions
+# Metadata functions
 #
 
 
-#' WMD class
+setGeneric("include_metadata",
+  function(object, ...) standardGeneric("include_metadata"))
+#' Add metadata (from file or data frame)
 #'
-#' This is a virtual class facilitating the management of metadata. No objects
-#' can be created from it because metadata without data make not much sense. It
-#' is used by its child classes such as \code{\link{OPM}}, but it is not
-#' directly applied by an \pkg{opm} user.
+#' Include metadata by mapping CSV data and column names in a data frame.
 #'
-#' @details \itemize{
-#'   \item \sQuote{WMD} is an acronym for \sQuote{with metadata}.
-#'   \item Conceptually, this class treats metadata as arbitrarily nested
-#'     lists with arbitrary content. Containers of objects that inherit from
-#'     this class are not forced to contain the same metadata entries. Problems
-#'     might arise if such data are queried and attempted to be converted to,
-#'     e.g., data frames because some values might be missing. But metadata can
-#'     be queried beforehand for the keys as well as the values they contain,
-#'     and other methods support setting, modifying and deleting metadata.
-#'   \item For \code{\link{OPM}} and the other \pkg{opm} classes that use it,
-#'     \sQuote{metadata} refers to information that, in contrast to, e.g.,
-#'     \code{\link{csv_data}} must be added by the user \strong{after} reading
-#'     OmniLog(R) CSV files. Metadata might already be present in YAML files
-#'     created by the \pkg{opm} package, however.
-#' }
-#'
-#' @name WMD
-#'
-#' @docType class
-#' @seealso Methods
+#' @param object \code{\link{OPM}} object.
+#' @param md Dataframe containing keys as column names, or name of file
+#'   from which to read the data frame. Handled by \code{\link{to_metadata}}.
+#' @param keys Character vector.
+#' @param replace Logical scalar indicating whether the previous metadata, if
+#'   any, shall be replaced by the novel ones, or whether these shall be
+#'   appended.
+#' @param skip.failure Logical scalar. Do not stop with an error message if
+#'   (unambiguous) selection is impossible but raise a warning only?
+#' @param remove.keys Logical scalar. When including \code{md} in the metadata,
+#'   discard the \code{keys} columns?
+#' @param ... Optional argument passed to \code{\link{to_metadata}}.
 #' @export
-#' @family classes
-#' @keywords methods
-#'
-setClass(WMD,
-  representation = representation(metadata = "list"),
-  contains = "VIRTUAL",
-  sealed = SEALED
-)
-
-
-################################################################################
-################################################################################
-#
-# Getter methods
-#
-
-
-setGeneric("metadata", function(object, ...) standardGeneric("metadata"))
-#' Get metadata
-#'
-#' Get meta-information stored together with the data.
-#'
-#' @param object \code{\link{WMD}} object.
-#' @param key If \code{NULL} or otherwise empty, return all metadata. If a
-#'   non-empty list, treat it as list of keys and return list of corresponding
-#'   metadata values. Here, character vectors of length > 1 can be used to
-#'   query nested metadata lists. If neither empty nor a list (i.e. usually a
-#'   character or numeric scalar), treat \code{key} as a single list key.
-#'   Factors are converted to \sQuote{character} mode.
-#' @param exact Logical scalar. Use exact or partial matching of keys? Has no
-#'   effect if \code{key} is empty.
-#' @param strict Logical scalar. Is it an error if a \code{NULL} value results
-#'   from fetching a metadata key?
-#' @param ... Optional arguments passed between the methods.
-#' @return List (empty if metadata were not set or if subselection using
-#'   \code{key} did not result).
-#' @export
-#' @family getter-functions
+#' @return Novel \code{\link{OPM}} object.
 #' @family metadata-functions
-#' @keywords attribute
+#' @keywords manip
 #' @examples
-#'
-#' # 'OPM' method
 #' data(vaas_1)
-#' (x <- metadata(vaas_1, "Strain"))
-#' stopifnot(identical(x, "DSM30083T"))
+#' (x <- collect_template(vaas_1, add.cols = "Location")) # generate data frame
+#' x[1, "Location"] <- "Braunschweig" # insert additional information
+#' copy <- include_metadata(vaas_1, x) # include the data in new OPM object
+#' stopifnot(is.null(metadata(vaas_1, "Location")))
+#' stopifnot(identical(metadata(copy, "Location"), "Braunschweig"))
 #'
-#' # 'OPMS' method
-#' data(vaas_4)
-#' (x <- metadata(vaas_4, "Strain"))
-#' stopifnot(x == c("DSM18039", "DSM30083T", "DSM1707", "429SC1"))
-#'
-setMethod("metadata", WMD, function(object, key = NULL, exact = TRUE,
-    strict = FALSE) {
-  assert_length(exact, strict)
-  if (length(key) == 0L)
-    return(object@metadata)
-  fetch_fun <- if (strict)
-    function(key) {
-      if (is.factor(key))
-        key <- as.character(key)
-      if (is.null(result <- object@metadata[[key, exact = exact]]))
-        stop(sprintf("got NULL value when using key '%s'", 
-          paste(key, collapse = " -> ")))
-      result
-    }
+setMethod("include_metadata", OPM, function(object, md, 
+    keys = opm_opt("csv.keys"), replace = FALSE, skip.failure = FALSE, 
+    remove.keys = TRUE, ...) {
+
+  selection <- as.list(csv_data(object, keys))
+
+  # Get and check metadata.
+  md <- to_metadata(md, ...)
+  absent.keys <- setdiff(keys, colnames(md))
+  if (length(absent.keys) > 0L)
+    stop("key missing in 'metadata': ", absent.keys[1L])
+
+  # Try to select the necessary information from the metadata.
+  found <- pick_from(md, selection)
+  msg <- if ((nr <- nrow(found)) == 1L)
+    NULL
+  else if (nr == 0L)
+    listing(selection,
+      header = "could not find this key/value combination in 'metadata':")
   else
-    function(key) object@metadata[[key, exact = exact]]
-  if (is.list(key)) {
-    result <- lapply(key, fetch_fun)
-    if (is.null(names(result)))
-      names(result) <- unlist(key)
-    result
-  } else
-    fetch_fun(key)
+    listing(selection,
+      header = "the selection resulted in more than one row for:")
+
+  # Failures.
+  if (!is.null(msg)) {
+    if (skip.failure) {
+      warning(msg)
+      return(object)
+    } else
+      stop(msg)
+  }
+
+  # Success.
+  wanted <- colnames(found)
+  if (remove.keys)
+    wanted <- setdiff(wanted, keys)
+  found <- as.list(found[, wanted, drop = FALSE])
+  result <- object
+  result@metadata <- if (replace)
+    found
+  else
+    c(metadata(result), found)
+
+  result
+
+}, sealed = SEALED)
+
+setMethod("include_metadata", OPMS, function(object, ...) {
+  new(OPMS, plates = lapply(object@plates, FUN = include_metadata, ...))
 }, sealed = SEALED)
 
 
@@ -164,7 +138,6 @@ setGeneric("metadata<-",
 #' @export
 #' @exportMethod "metadata<-"
 #' @family metadata-functions
-#' @family setter-functions
 #' @keywords manip
 #' @examples
 #'
@@ -277,12 +250,13 @@ setMethod("metadata<-", c(WMD, "missing", "formula"), function(object, value) {
   object
 }, sealed = SEALED)
 
+#-------------------------------------------------------------------------------
+
 #' @name metadata.set
 #'
 setMethod("metadata<-", c(WMD, "numeric", "list"), function(object, key,
     value) {
-  assert_length(key)
-  object@metadata <- if (key > 0)
+  object@metadata <- if (L(key) > 0)
     c(value, object@metadata)
   else if (key < 0)
     c(object@metadata, value)
@@ -290,6 +264,8 @@ setMethod("metadata<-", c(WMD, "numeric", "list"), function(object, key,
     value
   object
 }, sealed = SEALED)
+
+#-------------------------------------------------------------------------------
 
 #' @name metadata.set
 #'
@@ -302,6 +278,8 @@ setMethod("metadata<-", c(WMD, "list", "list"), function(object, key, value) {
     object@metadata[[key[[k]]]] <- value[[k]]
   object
 }, sealed = SEALED)
+
+#-------------------------------------------------------------------------------
 
 #' @name metadata.set
 #'
@@ -319,316 +297,79 @@ setMethod("metadata<-", c(WMD, "factor", "ANY"), function(object, key,
   object
 }, sealed = SEALED)
 
+#-------------------------------------------------------------------------------
 
-################################################################################
-################################################################################
-#
-# Infix operators
-#
-
-
-setGeneric("%k%", function(x, table) standardGeneric("%k%"))
-#' Search in metadata keys
+#' @name metadata.set
 #'
-#' Using a character vector as query, this method tests whether all given keys
-#' are present in the top-level names of the metadata (these may be nested, but
-#' all sublists are ignored here). An empty query vector results in
-#' \code{TRUE}. Note that the values of the character vector, not its names, if
-#' any, are used for querying the metadata.
-#' Using a list as query, this method tests whether all given keys are present
-#' in the names of the metadata.
-#' This works like the character method, but because a query list is given, the
-#' comparison of keys can be applied recursively (by using, of course, a nested
-#' query list). This is based on \code{\link{contains}} with the \code{values}
-#' argument set to \code{FALSE}.
-#' The factor method first converts \code{x} to \sQuote{character} mode.
-#'
-#' @name %k%
-#' @aliases infix.k
-#' @rdname infix.k
-#'
-#' @param x Character vector, factor or list.
-#' @param table \code{\link{WMD}} object.
-#' @return Logical scalar.
-#' @exportMethod "%k%"
-#' @export
-#~ @family getter-functions
-#' @keywords attribute
-#'
-#' @examples
-#'
-#' # The dataset contains the metadata keys 'Species' and 'Experiment' but
-#' # neither 'Trial' nor 'Organism' nor 'Run':
-#' data(vaas_1)
-#'
-#' # Character method
-#' stopifnot("Experiment" %k% vaas_1)
-#' stopifnot("Species" %k% vaas_1)
-#' stopifnot(!"Run" %k% vaas_1)
-#' stopifnot(c("Species", "Experiment") %k% vaas_1)
-#' stopifnot(!c("Species", "Trial") %k% vaas_1)
-#' stopifnot(!c("Organism", "Experiment") %k% vaas_1)
-#' stopifnot(character() %k% vaas_1)
-#'
-#' # List method
-#' stopifnot(list(Experiment = "whatever") %k% vaas_1)
-#' stopifnot(list(Species = "ignored") %k% vaas_1)
-#'
-#' # This fails because we query with a named sublist but 'Species' is not
-#' # even a list
-#' stopifnot(!list(Species = list(Genus = "X", Epithet = "Y")) %k% vaas_1)
-#'
-#' # This is OK because we query with an unnamed sublist: it has no names that
-#' # one would fail to find
-#' stopifnot(list(Species = list("X", "Y")) %k% vaas_1)
-#'
-#' # More non-nested query examples
-#' stopifnot(!list(Run = 99) %k% vaas_1)
-#' stopifnot(list(Species = "?", Experiment = NA) %k% vaas_1)
-#' stopifnot(!list(Species = "?", Trial = NA) %k% vaas_1)
-#' stopifnot(!list(Organism = "?", Experiment = NA) %k% vaas_1)
-#' stopifnot(list() %k% vaas_1)
-#'
-setMethod("%k%", c("character", WMD), function(x, table) {
-  all(x %in% names(table@metadata))
+setMethod("metadata<-", c(OPMS, "missing", "list"), function(object, value) {
+  for (i in seq_along(object@plates))
+    metadata(object@plates[[i]]) <- value
+  object
 }, sealed = SEALED)
 
-setMethod("%k%", c("list", WMD), function(x, table) {
-  contains(table@metadata, x, values = FALSE)
+#' @name metadata.set
+#'
+setMethod("metadata<-", c(OPMS, "missing", "formula"), function(object, value) {
+  for (i in seq_along(object@plates))
+    metadata(object@plates[[i]]) <- value
+  object
+}, sealed = SEALED)
+    
+#' @name metadata.set
+#'
+setMethod("metadata<-", c(OPMS, "missing", "data.frame"), function(object, 
+    value) {
+  LL(object, .wanted = nrow(value))
+  if (ncol(value) > 1L)
+    for (i in seq_along(object@plates))
+      metadata(object@plates[[i]]) <- value[i, , drop = TRUE]
+  else
+    for (i in seq_along(object@plates))
+      metadata(object@plates[[i]]) <- as.list(value[i, , drop = FALSE])
+  object
+}, sealed = SEALED)
+    
+#-------------------------------------------------------------------------------    
+    
+#' @name metadata.set
+#'
+setMethod("metadata<-", c(OPMS, "ANY", "ANY"), function(object, key, value) {
+  for (i in seq_along(object@plates))
+    metadata(object@plates[[i]], key) <- value
+  object
 }, sealed = SEALED)
 
-
-################################################################################
-
-
-setGeneric("%K%", function(x, table) standardGeneric("%K%"))
-#' Search in metadata keys
+#' @name metadata.set
 #'
-#' Using a character vector as query, this method tests whether a given key is
-#' present in the metadata and fetches an object that is not \code{NULL}. If
-#' the key has a length > 1, sublists are queried. An empty vector results in
-#' \code{TRUE}. Note that the values of the character vector, not its names, if
-#' any, are used for querying the metadata.
-#' Using a list as query, this function behaves like \code{\link{infix.k}}.
-#' The factor method first converts \code{x} to \sQuote{character} mode.
-#'
-#' @name %K%
-#' @aliases infix.largek
-#' @rdname infix.largek
-#'
-#' @param x Character vector, factor or list.
-#' @param table \code{\link{WMD}} object.
-#' @return Logical scalar.
-#' @export
-#' @exportMethod "%K%"
-#~ @family getter-functions
-#' @keywords attribute
-#'
-#' @examples
-#'
-#' # The dataset contains the metadata keys 'Species' and 'Experiment' but
-#' # neither 'Trial' nor 'Organism' nor 'Run':
-#' data(vaas_1)
-#'
-#' # Character method
-#'
-#' # Single-element queries
-#' stopifnot("Experiment" %K% vaas_1)
-#' stopifnot("Species" %K% vaas_1)
-#' stopifnot(!"Run" %K% vaas_1)
-#' stopifnot(!"Trial" %K% vaas_1)
-#' stopifnot(!"Organism" %k% vaas_1)
-#'
-#' # Zero-element queries
-#' stopifnot(character() %K% vaas_1)
-#'
-#' # Querying with vectors of length > 1 mean nested queries; compare this to
-#' # the behavior of %k%!
-#' stopifnot(!c("Species", "Experiment") %K% vaas_1)
-#'
-#' # List method
-#' # See %k% -- the behavior is identical for lists.
-#'
-setMethod("%K%", c("character", WMD), function(x, table) {
-  if (length(x) == 0L)
-    return(TRUE) # for consistency with %k%
-  tryCatch(!is.null(table@metadata[[x]]), error = function(e) FALSE)
+setMethod("metadata<-", c(OPMS, "ANY", "data.frame"), function(object, key, 
+    value) {
+  LL(object, .wanted = nrow(value))
+  for (i in seq_along(object@plates))
+    metadata(object@plates[[i]], key) <- value[i, , drop = TRUE]
+  object
 }, sealed = SEALED)
-
-setMethod("%K%", c("list", WMD), function(x, table) {
-  contains(table@metadata, x, values = FALSE)
+    
+#-------------------------------------------------------------------------------
+    
+#' @name metadata.set
+#'
+setMethod("metadata<-", c(OPMS, "character", "data.frame"), function(
+    object, key, value) {
+  LL(object, .wanted = nrow(value))
+  j <- last(key)
+  if (!j %in% colnames(value))
+    j <- TRUE
+  for (i in seq_along(object@plates))
+    metadata(object@plates[[i]], key) <- value[i, j, drop = TRUE]
+  object
 }, sealed = SEALED)
-
-
-################################################################################
-
-
-setGeneric("%q%", function(x, table) standardGeneric("%q%"))
-#' Query metadata (non-exact version)
+  
+#' @name metadata.set
 #'
-#' Using a character vector, test whether all given query keys are present in
-#' the top-level names of the metadata and refer to the same query elements.
-#' Using a list, conduct a non-exact query with a query list.
-#' The factor method first converts \code{x} to \sQuote{character} mode.
-#'
-#' @name %q%
-#' @aliases infix.q
-#' @rdname infix.q
-#'
-#' @param x Character vector, factor or list used as query.
-#'   If a character vector, its \code{names} are used to select elements from
-#'   the top level of the metadata. These elements are then converted to
-#'   \sQuote{character} mode before comparison with the values of \code{x}. A
-#'   non-empty vector without a \code{names} attribute is accepted but will
-#'   always yield \code{FALSE}. In contrast, an entirely empty vector yields
-#'   \code{TRUE}.
-#'   If a list, the comparison is applied recursively using
-#'   \code{\link{contains}} with the \code{values} argument set to \code{TRUE}
-#'   but \code{exact} set to \code{FALSE}. The main advantage of using a list
-#'   over the character-based search is that it allows one a nested query.
-#' @param table \code{\link{WMD}} object.
-#' @return Logical scalar.
-#' @exportMethod "%q%"
-#' @export
-#~ @family getter-functions
-#' @keywords attribute
-#'
-#' @examples
-#'
-#' # The dataset contains the metadata keys 'Species' and 'Experiment' with the
-#' # values 'Escherichia coli' and 'First replicate':
-#' data(vaas_1)
-#'
-#' # Character method
-#' stopifnot(!"Experiment" %q% vaas_1) # wrong query here; compare to %k%
-#' stopifnot(!"First replicate" %q% vaas_1) # again wrong query
-#' stopifnot(c(Experiment = "First replicate") %q% vaas_1) # right query
-#'
-#' stopifnot(!"Species" %q% vaas_1)
-#' stopifnot(!"Escherichia coli" %q% vaas_1)
-#' stopifnot(c(Species = "Escherichia coli") %q% vaas_1)
-#'
-#' stopifnot(c(Species = "Escherichia coli",
-#'   Experiment = "First replicate") %q% vaas_1) # Combined query
-#'
-#' stopifnot(character() %q% vaas_1) # Empty query
-#'
-#' # List method
-#' stopifnot(list(Experiment = "First replicate") %q% vaas_1)
-#'
-#' # Choice among alternatives
-#' stopifnot(list(Experiment = c("First replicate",
-#'   "Second replicate")) %q% vaas_1)
-#' stopifnot(!list(Experiment = c("Second replicate",
-#'   "Third replicate")) %q% vaas_1)
-#'
-#' # Combined query together with choice among alternatives
-#' stopifnot(list(Experiment = c("First replicate", "Second replicate"),
-#'   Species = c("Escherichia coli", "Bacillus subtilis")) %q% vaas_1)
-#'
-#' stopifnot(list() %q% vaas_1) # Empty query
-#'
-setMethod("%q%", c("character", WMD), function(x, table) {
-  if (length(keys <- names(x)) == 0L && length(x) > 0L)
-    return(FALSE)
-  all(x == sapply(table@metadata[keys], as.character))
+setMethod("metadata<-", c(OPMS, "factor", "data.frame"), function(
+    object, key, value) {
+  `metadata<-`(object, as.character(key), value)
 }, sealed = SEALED)
-
-setMethod("%q%", c("list", WMD), function(x, table) {
-  contains(table@metadata, x, values = TRUE, exact = FALSE)
-}, sealed = SEALED)
-
-
-################################################################################
-
-
-setGeneric("%Q%", function(x, table) standardGeneric("%Q%"))
-#' Query metadata (strict version)
-#'
-#' Using a character vector as query, test whether all given query keys are
-#' present in the top-level names of the metadata and refer to the same query
-#' elements (without coercion to character).
-#' Using a list, conduct an exact query with this query list.
-#' The factor method first converts \code{x} to \sQuote{character} mode.
-#'
-#' @name %Q%
-#' @aliases infix.largeq
-#' @rdname infix.largeq
-#'
-#' @param x Character vector, factor or list used as query.
-#'   If a character vector, the result is identical to the
-#'   one of \code{\link{infix.q}} except for the fact that metadata elements
-#'   are not coerced to \sQuote{character} mode, making the query more strict.
-#'   If a list, the comparison is applied recursively
-#'   using \code{\link{contains}} with the arguments \code{values} and
-#'   \code{exact} set to \code{TRUE}. This might be too strict for most
-#'   applications. The main advantage of using a list over the character-based
-#'   search is that it allows one a nested query.
-#' @param table \code{\link{WMD}} object.
-#' @return Logical scalar.
-#' @exportMethod "%Q%"
-#' @export
-#~ @family getter-functions
-#' @keywords attribute
-#'
-#' @examples
-#'
-#' # The dataset contains the metadata keys 'Species' and 'Experiment' with the
-#' # values 'Escherichia coli' and 'First replicate':
-#' data(vaas_1)
-#'
-#' # Character method
-#' stopifnot(c(Experiment = "First replicate") %Q% vaas_1)
-#'
-#' # This does not work because the value has the wrong type
-#' stopifnot(!c(`Plate number` = "6") %Q% vaas_1)
-#' # Compare to %q%
-#' stopifnot(c(`Plate number` = "6") %q% vaas_1)
-#'
-#' # Combined query
-#' stopifnot(c(Species = "Escherichia coli",
-#'   Experiment = "First replicate") %Q% vaas_1)
-#'
-#' stopifnot(character() %Q% vaas_1) # Empty query
-#'
-#' # List method
-#' stopifnot(list(Experiment = "First replicate") %Q% vaas_1)
-#'
-#' # Choice among alternatives is not done here: this query fails unless this
-#' # two-element vector is contained. Compare to %q%.
-#' stopifnot(!list(Experiment = c("First replicate",
-#'   "Second replicate")) %Q% vaas_1)
-#'
-#' stopifnot(list() %Q% vaas_1) # Empty query
-#'
-setMethod("%Q%", c("character", WMD), function(x, table) {
-  if (length(keys <- names(x)) == 0L && length(x) > 0L)
-    return(FALSE)
-  all(sapply(keys, function(key) identical(x[[key]], table@metadata[[key]])))
-}, sealed = SEALED)
-
-setMethod("%Q%", c("list", WMD), function(x, table) {
-  contains(table@metadata, x, values = TRUE, exact = TRUE)
-}, sealed = SEALED)
-
-
-################################################################################
-
-
-# Automatically generated factor methods
-
-lapply(c(
-    #+
-    `%k%`,
-    `%K%`,
-    `%q%`,
-    `%Q%`
-    #-
-  ), FUN = function(func_) {
-  setMethod(func_, c("factor", WMD), function(x, table) {
-    func_(structure(.Data = as.character(x), .Names = names(x)), table)
-  }, sealed = SEALED)
-})
 
 
 ################################################################################
@@ -740,8 +481,7 @@ setGeneric("map_metadata",
 #'
 setMethod("map_metadata", c(WMD, "function"), function(object, mapping,
     values = TRUE, classes = "ANY", ...) {
-  assert_length(values)
-  object@metadata <- if (values)
+  object@metadata <- if (L(values))
     map_values(object = object@metadata, mapping = mapping, coerce = classes,
       ...)
   else
@@ -751,8 +491,7 @@ setMethod("map_metadata", c(WMD, "function"), function(object, mapping,
 
 setMethod("map_metadata", c(WMD, "character"), function(object, mapping,
     values = TRUE, classes = "factor") {
-  assert_length(values)
-  object@metadata <- if (values)
+  object@metadata <- if (L(values))
     map_values(object@metadata, mapping, coerce = classes)
   else
     map_names(object@metadata, mapping)
@@ -761,6 +500,14 @@ setMethod("map_metadata", c(WMD, "character"), function(object, mapping,
 
 setMethod("map_metadata", c(WMD, "formula"), function(object, mapping) {
   object@metadata <- map_values(object@metadata, mapping)
+  object
+}, sealed = SEALED)
+
+#-------------------------------------------------------------------------------
+
+setMethod("map_metadata", c(OPMS, "ANY"), function(object, mapping, ...) {
+  object@plates <- lapply(object@plates, FUN = map_metadata, mapping = mapping,
+    ...)
   object
 }, sealed = SEALED)
 
@@ -816,11 +563,14 @@ setGeneric("metadata_chars",
 #'
 setMethod("metadata_chars", WMD, function(object, values = TRUE,
     classes = "factor") {
-  assert_length(values)
-  if (values)
+  if (L(values))
     map_values(object@metadata, coerce = classes)
   else
     map_names(object@metadata)
+}, sealed = SEALED)
+
+setMethod("metadata_chars", OPMS, function(object, ...) {
+  map_values(unlist(lapply(object@plates, FUN = metadata_chars, ...)))
 }, sealed = SEALED)
 
 

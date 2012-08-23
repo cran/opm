@@ -40,7 +40,11 @@
   \strong{plates}. Each plate has 12 x 8 \strong{well}
   layout, and each well contains the respiration
   measurements on one substrate or inhibitor, or
-  combination of substrates or inhibitors.} \item{coercion
+  combination of substrates or inhibitors.  For input
+  example files, see \code{\link{opm_files}}.} \item{global
+  options}{Options affecting the default parameters of a
+  number of \pkg{opm} functions can be set and queried for
+  using \code{\link{opm_opt}}.} \item{coercion
   functions}{Coercion functions for the three classes are
   only briefly listed under each class documentation entry.
   For details, see the documentation of \code{as} from the
@@ -63,7 +67,7 @@
   together. The former step can be conducted in parallel if
   the \pkg{multicore} package is available. It is not
   required for the installation of \pkg{opm}. There is also
-  fast estimation method for the parameters \sQuote{area
+  a fast estimation method for the parameters \sQuote{area
   under the curve} and \sQuote{maximum height}. See
   \code{\link{do_aggr}} and the methods it refers to for
   details.} \item{advanced plotting}{The \pkg{gplots}

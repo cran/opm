@@ -5,7 +5,8 @@
   batch_process(names, out.ext, io.fun, fun.args = list(),
     proc = 1L, outdir = NULL,
     overwrite = c("yes", "older", "no"), in.ext = "any",
-    compressed = TRUE, ..., verbose = TRUE, demo = FALSE)
+    compressed = TRUE, literally = FALSE, ...,
+    verbose = TRUE, demo = FALSE)
 }
 \arguments{
   \item{out.ext}{Character scalar. The extension of the
@@ -15,14 +16,17 @@
   spawn.}
 
   \item{outdir}{Character vector. Directories in which to
-  place the outfiles.  If \code{NULL}, each infile's
-  directory is used.}
+  place the outfiles.  If \code{NULL} or only containing
+  empty strings, each infile's directory is used.}
 
   \item{in.ext}{Character scalar. Passed through
   \code{\link{file_pattern}}, then used for the replacement
   of old file extensions with new ones.}
 
   \item{compressed}{Logical scalar. Passed as 2nd argument
+  to \code{\link{file_pattern}}.}
+
+  \item{literally}{Logical scalar. Passed as 3rd argument
   to \code{\link{file_pattern}}.}
 
   \item{demo}{Logical scalar. Do not convert files, but
@@ -92,9 +96,9 @@ if (length(infiles) > 0) {
   \code{\link{clean_filenames}},
   \code{\link{collect_template}},
   \code{\link{explode_dir}}, \code{\link{file_pattern}},
-  \code{\link{opm_files}}, \code{\link{phylo_data}},
-  \code{\link{read_opm}}, \code{\link{read_single_opm}},
-  \code{\link{split_files}}, \code{\link{to_metadata}}
+  \code{\link{opm_files}}, \code{\link{read_opm}},
+  \code{\link{read_single_opm}}, \code{\link{split_files}},
+  \code{\link{to_metadata}}
 }
 \keyword{IO}
 

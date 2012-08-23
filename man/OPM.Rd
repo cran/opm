@@ -40,49 +40,54 @@
 % \docType{class}
 \alias{OPM-class}
 % \alias{+,OPM,OPM-method}
-% \alias{+,OPM,OPMS-method}
-% \alias{+,OPM,list-method}
-% \alias{+,OPMS,OPM-method}
-% \alias{[,OPM-method}
-% \alias{attach_attr,OPM-method}
-% \alias{coerce,OPM,data.frame-method}
-% \alias{coerce,OPM,list-method}
-% \alias{coerce,OPM,matrix-method}
-% \alias{coerce,list,OPM-method}
-% \alias{collect_template,OPM-method}
-% \alias{contains,OPMS,OPM-method}
-% \alias{csv_data,OPM-method}
-% \alias{dim,OPM-method}
-% \alias{do_aggr,OPM-method}
-% \alias{filename,OPM-method}
-% \alias{flatten,OPM-method}
-% \alias{gen_iii,OPM-method}
-% \alias{has_aggr,OPM-method}
-% \alias{hours,OPM-method}
-% \alias{include_metadata,OPM-method}
-% \alias{initialize,OPM-method}
-% \alias{level_plot,OPM-method}
-% \alias{max,OPM-method}
-% \alias{measurements,OPM-method}
-% \alias{minmax,OPM-method}
-% \alias{other_slots,OPM-method}
-% \alias{plate_type,OPM-method}
-% \alias{plates,OPM-method}
-% \alias{position,OPM-method}
-% \alias{setup_time,OPM-method}
-% \alias{show,OPM-method}
-% \alias{summary,OPM-method}
-% \alias{thin_out,OPM-method}
-% \alias{to_grofit_data,OPM-method}
-% \alias{to_grofit_time,OPM-method}
-% \alias{well,OPM-method}
-% \alias{wells,OPM-method}
-% \alias{xy_plot,OPM-method}
-% 
+%% \alias{+,OPM,OPMS-method}
+%% \alias{+,OPM,list-method}
+%% \alias{+,OPMS,OPM-method}
+%% \alias{[,OPM-method}
+%% \alias{anyDuplicated,OPM-method}
+%% \alias{attach_attr,OPM-method}
+%% \alias{coerce,OPM,data.frame-method}
+%% \alias{coerce,OPM,list-method}
+%% \alias{coerce,OPM,matrix-method}
+%% \alias{coerce,list,OPM-method}
+%% \alias{collect_template,OPM-method}
+%% \alias{contains,OPMS,OPM-method}
+%% \alias{csv_data,OPM-method}
+%% \alias{dim,OPM-method}
+%% \alias{do_aggr,OPM-method}
+%% \alias{duplicated,OPM-method}
+%% \alias{filename,OPM-method}
+%% \alias{flatten,OPM-method}
+%% \alias{gen_iii,OPM-method}
+%% \alias{has_aggr,OPM-method}
+%% \alias{hours,OPM-method}
+%% \alias{include_metadata,OPM-method}
+%% \alias{initialize,OPM-method}
+%% \alias{level_plot,OPM-method}
+%% \alias{max,OPM-method}
+%% \alias{measurements,OPM-method}
+%% \alias{minmax,OPM-method}
+%% \alias{other_slots,OPM-method}
+%% \alias{plate_type,OPM-method}
+%% \alias{plates,OPM-method}
+%% \alias{position,OPM-method}
+%% \alias{rep,OPM-method}
+%% \alias{rev,OPM-method}
+%% \alias{setup_time,OPM-method}
+%% \alias{show,OPM-method}
+%% \alias{sort,OPM-method}
+%% \alias{summary,OPM-method}
+%% \alias{thin_out,OPM-method}
+%% \alias{to_grofit_data,OPM-method}
+%% \alias{to_grofit_time,OPM-method}
+%% \alias{well,OPM-method}
+%% \alias{wells,OPM-method}
+%% \alias{xy_plot,OPM-method}
+%% 
 % \title{Class \code{"OPM"}}
 % \description{
-% %%  ~~ A concise (1-5 lines) description of what the class is. ~~
-% }
+%% %%  ~~ A concise (1-5 lines) description of what the class is. ~~
+%% }
 \section{Objects from the Class}{
 Objects can be created by calls of the form \code{new("OPM", ...)}.
 %%  ~~ describe objects here ~~ 
@@ -106,6 +111,7 @@ Class \code{"\linkS4class{YAML_VIA_LIST}"}, directly.
     \item{+}{\code{signature(e1 = "OPM", e2 = "list")}: ... }
     \item{+}{\code{signature(e1 = "OPMS", e2 = "OPM")}: ... }
     \item{[}{\code{signature(x = "OPM")}: ... }
+    \item{anyDuplicated}{\code{signature(x = "OPM")}: ... }
     \item{attach_attr}{\code{signature(object = "OPM")}: ... }
     \item{coerce}{\code{signature(from = "OPM", to = "data.frame")}: ... }
     \item{coerce}{\code{signature(from = "OPM", to = "list")}: ... }
@@ -116,6 +122,7 @@ Class \code{"\linkS4class{YAML_VIA_LIST}"}, directly.
     \item{csv_data}{\code{signature(object = "OPM")}: ... }
     \item{dim}{\code{signature(x = "OPM")}: ... }
     \item{do_aggr}{\code{signature(object = "OPM")}: ... }
+    \item{duplicated}{\code{signature(x = "OPM")}: ... }
     \item{filename}{\code{signature(object = "OPM")}: ... }
     \item{flatten}{\code{signature(object = "OPM")}: ... }
     \item{gen_iii}{\code{signature(object = "OPM")}: ... }
@@ -131,8 +138,11 @@ Class \code{"\linkS4class{YAML_VIA_LIST}"}, directly.
     \item{plate_type}{\code{signature(object = "OPM")}: ... }
     \item{plates}{\code{signature(object = "OPM")}: ... }
     \item{position}{\code{signature(object = "OPM")}: ... }
+    \item{rep}{\code{signature(x = "OPM")}: ... }
+    \item{rev}{\code{signature(x = "OPM")}: ... }
     \item{setup_time}{\code{signature(object = "OPM")}: ... }
     \item{show}{\code{signature(object = "OPM")}: ... }
+    \item{sort}{\code{signature(x = "OPM")}: ... }
     \item{summary}{\code{signature(object = "OPM")}: ... }
     \item{thin_out}{\code{signature(object = "OPM")}: ... }
     \item{to_grofit_data}{\code{signature(object = "OPM")}: ... }
@@ -143,14 +153,14 @@ Class \code{"\linkS4class{YAML_VIA_LIST}"}, directly.
 	 }
 }
 % \references{
-% %%  ~~put references to the literature/web site here~~
-% }
+%% %%  ~~put references to the literature/web site here~~
+%% }
 % \author{
-% %%  ~~who you are~~
-% }
+%% %%  ~~who you are~~
+%% }
 % \note{
-% %%  ~~further notes~~
-% }
+%% %%  ~~further notes~~
+%% }
 % 
 % %% ~Make other sections like Warning with \section{Warning }{....} ~
 % 

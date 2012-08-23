@@ -57,10 +57,6 @@ summary(x <- aggregated(vaas_4))
 stopifnot(is.list(x), length(x) == length(vaas_4), sapply(x, is.matrix))
 }
 \seealso{
-  Other aggregation-functions: \code{\link{aggr_settings}},
-  \code{\link{do_aggr}}, \code{\link{fast_estimate}},
-  \code{\link{param_names}}
-
   Other getter-functions: \code{\link{aggr_settings}},
   \code{\link{anyDuplicated}}, \code{\link{csv_data}},
   \code{\link{dim}}, \code{\link{duplicated}},
@@ -68,10 +64,10 @@ stopifnot(is.list(x), length(x) == length(vaas_4), sapply(x, is.matrix))
   \code{\link{hours}}, \code{\link{length}},
   \code{\link{max}}, \code{\link{measurements}},
   \code{\link{metadata}}, \code{\link{minmax}},
-  \code{\link{position}}, \code{\link{select}},
-  \code{\link{seq}}, \code{\link{setup_time}},
-  \code{\link{show}}, \code{\link{summary}},
-  \code{\link{thin_out}}, \code{\link{well}},
+  \code{\link{plate_type}}, \code{\link{position}},
+  \code{\link{select}}, \code{\link{seq}},
+  \code{\link{setup_time}}, \code{\link{show}},
+  \code{\link{summary}}, \code{\link{well}},
   \code{\link{wells}}
 }
 \keyword{attribute}

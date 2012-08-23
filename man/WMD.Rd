@@ -42,33 +42,33 @@
 % \docType{class}
 \alias{WMD-class}
 % \alias{\%K\%,character,WMD-method}
-% \alias{\%K\%,factor,WMD-method}
-% \alias{\%K\%,list,WMD-method}
-% \alias{\%Q\%,character,WMD-method}
-% \alias{\%Q\%,factor,WMD-method}
-% \alias{\%Q\%,list,WMD-method}
-% \alias{\%k\%,character,WMD-method}
-% \alias{\%k\%,factor,WMD-method}
-% \alias{\%k\%,list,WMD-method}
-% \alias{\%q\%,character,WMD-method}
-% \alias{\%q\%,factor,WMD-method}
-% \alias{\%q\%,list,WMD-method}
-% \alias{map_metadata,WMD,character-method}
-% \alias{map_metadata,WMD,formula-method}
-% \alias{map_metadata,WMD,function-method}
-% \alias{metadata,WMD-method}
-% \alias{metadata<-,WMD,character,ANY-method}
-% \alias{metadata<-,WMD,factor,ANY-method}
-% \alias{metadata<-,WMD,list,list-method}
-% \alias{metadata<-,WMD,missing,formula-method}
-% \alias{metadata<-,WMD,missing,list-method}
-% \alias{metadata<-,WMD,numeric,list-method}
-% \alias{metadata_chars,WMD-method}
-% 
+%% \alias{\%K\%,factor,WMD-method}
+%% \alias{\%K\%,list,WMD-method}
+%% \alias{\%Q\%,character,WMD-method}
+%% \alias{\%Q\%,factor,WMD-method}
+%% \alias{\%Q\%,list,WMD-method}
+%% \alias{\%k\%,character,WMD-method}
+%% \alias{\%k\%,factor,WMD-method}
+%% \alias{\%k\%,list,WMD-method}
+%% \alias{\%q\%,character,WMD-method}
+%% \alias{\%q\%,factor,WMD-method}
+%% \alias{\%q\%,list,WMD-method}
+%% \alias{map_metadata,WMD,character-method}
+%% \alias{map_metadata,WMD,formula-method}
+%% \alias{map_metadata,WMD,function-method}
+%% \alias{metadata,WMD-method}
+%% \alias{metadata<-,WMD,character,ANY-method}
+%% \alias{metadata<-,WMD,factor,ANY-method}
+%% \alias{metadata<-,WMD,list,list-method}
+%% \alias{metadata<-,WMD,missing,formula-method}
+%% \alias{metadata<-,WMD,missing,list-method}
+%% \alias{metadata<-,WMD,numeric,list-method}
+%% \alias{metadata_chars,WMD-method}
+%% 
 % \title{Class \code{"WMD"}}
 % \description{
-% %%  ~~ A concise (1-5 lines) description of what the class is. ~~
-% }
+%% %%  ~~ A concise (1-5 lines) description of what the class is. ~~
+%% }
 \section{Objects from the Class}{A virtual Class: No objects may be created from it.}
 \section{Slots}{
   \describe{
@@ -103,14 +103,14 @@
 	 }
 }
 % \references{
-% %%  ~~put references to the literature/web site here~~
-% }
+%% %%  ~~put references to the literature/web site here~~
+%% }
 % \author{
-% %%  ~~who you are~~
-% }
+%% %%  ~~who you are~~
+%% }
 % \note{
-% %%  ~~further notes~~
-% }
+%% %%  ~~further notes~~
+%% }
 % 
 % %% ~Make other sections like Warning with \section{Warning }{....} ~
 % 

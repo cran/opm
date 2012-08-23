@@ -40,6 +40,7 @@ stopifnot(identical(x, y) || identical(x, rev(y)))
 
   Other plotting-functions: \code{\link{ci_plot}},
   \code{\link{heat_map}}, \code{\link{level_plot}},
+  \code{\link{mypdf}}, \code{\link{paper_size}},
   \code{\link{radial_plot}}, \code{\link{select_colors}},
   \code{\link{xy_plot}}
 }

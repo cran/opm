@@ -30,8 +30,8 @@
 (x <- opm_files("scripts"))
 (y <- opm_files("testdata"))
 if (length(y) > 0) {
-  stopifnot(grepl("\\\\.R$", x, ignore.case = TRUE))
-  stopifnot(!grepl("\\\\.R$", y, ignore.case = TRUE))
+  stopifnot(grepl("\\\.R$", x, ignore.case = TRUE))
+  stopifnot(!grepl("\\\.R$", y, ignore.case = TRUE))
 }
 
 # On UNIX systems you should be able to do this if Rscript and the optparse
@@ -48,9 +48,8 @@ if (length(y) > 0) {
   \code{\link{clean_filenames}},
   \code{\link{collect_template}},
   \code{\link{explode_dir}}, \code{\link{file_pattern}},
-  \code{\link{phylo_data}}, \code{\link{read_opm}},
-  \code{\link{read_single_opm}}, \code{\link{split_files}},
-  \code{\link{to_metadata}}
+  \code{\link{read_opm}}, \code{\link{read_single_opm}},
+  \code{\link{split_files}}, \code{\link{to_metadata}}
 }
 \keyword{utilities}
 

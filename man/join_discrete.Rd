@@ -29,7 +29,7 @@
 \alias{join_discrete,numeric-method}
 \alias{join_discrete,matrix-method}
 \usage{
-  \S4method{join_discrete}{character}(object, format, digits = 3L) 
+  \S4method{join_discrete}{character}(object, format) 
 
   \S4method{join_discrete}{numeric}(object, format, digits = 3L) 
 

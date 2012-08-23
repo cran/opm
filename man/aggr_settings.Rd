@@ -26,10 +26,6 @@ summary(x <- aggr_settings(vaas_4))
 stopifnot(is.list(x), length(x) == length(vaas_4), sapply(x, is.list))
 }
 \seealso{
-  Other aggregation-functions: \code{\link{aggregated}},
-  \code{\link{do_aggr}}, \code{\link{fast_estimate}},
-  \code{\link{param_names}}
-
   Other getter-functions: \code{\link{aggregated}},
   \code{\link{anyDuplicated}}, \code{\link{csv_data}},
   \code{\link{dim}}, \code{\link{duplicated}},
@@ -37,10 +33,10 @@ stopifnot(is.list(x), length(x) == length(vaas_4), sapply(x, is.list))
   \code{\link{hours}}, \code{\link{length}},
   \code{\link{max}}, \code{\link{measurements}},
   \code{\link{metadata}}, \code{\link{minmax}},
-  \code{\link{position}}, \code{\link{select}},
-  \code{\link{seq}}, \code{\link{setup_time}},
-  \code{\link{show}}, \code{\link{summary}},
-  \code{\link{thin_out}}, \code{\link{well}},
+  \code{\link{plate_type}}, \code{\link{position}},
+  \code{\link{select}}, \code{\link{seq}},
+  \code{\link{setup_time}}, \code{\link{show}},
+  \code{\link{summary}}, \code{\link{well}},
   \code{\link{wells}}
 }
 \keyword{attribute}
@@ -50,7 +46,7 @@ stopifnot(is.list(x), length(x) == length(vaas_4), sapply(x, is.list))
 \alias{aggr_settings,OPMA-method}
 \alias{aggr_settings,OPMS-method}
 \usage{
-  \S4method{aggr_settings}{OPMA}(object)
+  \S4method{aggr_settings}{OPMA}(object) 
 
   \S4method{aggr_settings}{OPMS}(object, ...) 
 

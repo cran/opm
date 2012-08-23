@@ -34,6 +34,14 @@ data(vaas_4)
 summary(copy <- gen_iii(vaas_4))
 stopifnot(identical(vaas_4, copy)) # as above
 }
+\seealso{
+  Other conversion-functions: \code{\link{extract}},
+  \code{\link{extract_columns}}, \code{\link{flatten}},
+  \code{\link{merge}}, \code{\link{oapply}},
+  \code{\link{plates}}, \code{\link{rep}},
+  \code{\link{rev}}, \code{\link{sort}},
+  \code{\link{thin_out}}, \code{\link{to_yaml}}
+}
 \keyword{manip}
 
 \docType{methods}

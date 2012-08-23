@@ -18,6 +18,8 @@
 #' @param type Character scalar indicating the file types to be matched by
 #'   extension.
 #' @param compressed Logical scalar. Shall compressed files also be matched?
+#' @param literally Logical scalar. Interpret \code{type} literally? Also allow
+#'   vectors with more than a single element.
 #' @export
 #' @return Character scalar, holding a regular expression.
 #' @family IO-functions
@@ -29,16 +31,24 @@
 #' stopifnot(nchar(x) > nchar(y))
 #'
 file_pattern <- function(type = c("both", "csv", "yaml", "any", "empty"),
-    compressed = TRUE) {
-  result <- sprintf("\\.%s", case(match.arg(type),
-    both = "(csv|ya?ml)",
-    csv = "csv",
-    yaml = "ya?ml",
-    any = "[^.]+",
-    empty = ""
-  ))
-  assert_length(compressed)
-  if (compressed)
+    compressed = TRUE, literally = FALSE) {
+  result <- if (L(literally)) {
+    if (any(grepl("\\W", type, perl = TRUE)))
+      stop("'type' must not contain non-word characters")
+    case(length(type),
+      stop("'type' must be non-empty"),
+      sprintf("\\.%s", type),
+      sprintf("\\.(%s)", paste(type, collapse = "|"))
+    )
+  } else
+    sprintf("\\.%s", case(match.arg(type),
+      both = "(csv|ya?ml)",
+      csv = "csv",
+      yaml = "ya?ml",
+      any = "[^.]+",
+      empty = ""
+    ))
+  if (L(compressed))
     result <- sprintf("%s(\\.(bz2|gz|lzma|xz))?", result)
   sprintf("%s$", result)
 }
@@ -77,7 +87,6 @@ extended_file_pattern <- function(arg, wildcard) {
 
 ################################################################################
 
-setGeneric("repair_oth", function(x, ...) standardGeneric("repair_oth"))
 #' Repair OTH plates
 #'
 #' Plates run in generation-III mode, if converted to CSV by the OmniLog(R)
@@ -89,6 +98,8 @@ setGeneric("repair_oth", function(x, ...) standardGeneric("repair_oth"))
 #' @return Matrix. Either equal to \code{x} or conatining a single row only.
 #' @keywords internal
 #'
+setGeneric("repair_oth", function(x, ...) standardGeneric("repair_oth"))
+
 setMethod("repair_oth", "matrix", function(x) {
   result <- unique(x[, -1L, drop = FALSE], MARGIN = 1L)
   if ((nr <- nrow(result)) > 2L || !all(result[1L, ] == 0))
@@ -282,8 +293,7 @@ read_opm_yaml <- function(filename) {
 #' # this can be repeated for the other input test files
 #'
 read_single_opm <- function(filename) {
-  assert_length(filename)
-  if (!file.exists(filename <- as.character(filename)))
+  if (!file.exists(filename <- as.character(L(filename))))
     stop(sprintf("file '%s' does not exist", filename))
   errs <- list()
   routines <- list(`New CSV` = read_new_opm, `Old CSV` = read_old_opm,
@@ -544,10 +554,11 @@ opm_files <- function(what = c("scripts", "testdata")) {
 #' }
 #'
 read_opm <- function(names, convert = c("try", "no", "yes", "sep", "grp"),
-    gen.iii = FALSE, include = list(), ..., demo = FALSE) {
-  do_split <- function(x) split(x, sapply(x, plate_type))
+    gen.iii = opm_opt("gen.iii"), include = list(), ..., demo = FALSE) {
+  do_split <- function(x) split(x, vapply(x, plate_type, character(1L)))
   do_opms <- function(x) case(length(x), , x[[1L]], new(OPMS, plates = x))
   convert <- match.arg(convert)
+  LL(gen.iii, demo)
   names <- explode_dir(names = names, include = include, ...)
   if (demo) {
     message(paste(names, collapse = "\n"))
@@ -582,8 +593,6 @@ read_opm <- function(names, convert = c("try", "no", "yes", "sep", "grp"),
 #
 
 
-setGeneric("to_metadata",
-  function(object, ...) standardGeneric("to_metadata"))
 #' Input metadata
 #'
 #' The character method reads metadata from an input file and is only a thin
@@ -607,7 +616,6 @@ setGeneric("to_metadata",
 #'   \code{as.data.frame}.
 #' @export
 #' @return Dataframe.
-#' @family metadata-functions
 #' @family IO-functions
 #' @keywords IO manip
 #' @seealso base::default.stringsAsFactors utils::read.delim base::as.data.frame
@@ -627,11 +635,13 @@ setGeneric("to_metadata",
 #' (x2 <- to_metadata(x))
 #' stopifnot(!identical(names(x), names(x1)), identical(names(x), names(x2)))
 #'
+setGeneric("to_metadata",
+  function(object, ...) standardGeneric("to_metadata"))
+
 setMethod("to_metadata", "character", function(object,
     sep = "\t", check.names = FALSE, strip.white = TRUE,
     stringsAsFactors = FALSE, ...) {
-  assert_length(object)
-  read.delim(object, sep = sep, check.names = check.names,
+  read.delim(L(object), sep = sep, check.names = check.names,
     strip.white = strip.white, stringsAsFactors = stringsAsFactors, ...)
 }, sealed = SEALED)
 
@@ -665,6 +675,8 @@ setMethod("to_metadata", "ANY", function(object, stringsAsFactors = FALSE,
 #' @param ... Optional further arguments passed to \code{\link{explode_dir}}.
 #' @param simplify Logical scalar. Should the resulting list be simplified to a
 #'   vector or matrix if possible?
+#' @param use.names Logical scalar. Should \code{names} be used for naming the
+#'   elements of the result?
 #' @export
 #' @family IO-functions
 #' @return List, potentially simplified to a vector, depending on the output of
@@ -682,23 +694,22 @@ setMethod("to_metadata", "ANY", function(object, stringsAsFactors = FALSE,
 #' }
 #'
 batch_collect <- function(names, fun, fun.args = list(), ...,
-    simplify = FALSE, demo = FALSE) {
+    use.names = TRUE, simplify = FALSE, demo = FALSE) {
   names <- explode_dir(names, ...)
   if (demo) {
     message(paste(names, collapse = "\n"))
     return(invisible(names))
   }
   fun.args <- as.list(fun.args)
+  # TODO: augment this by vapply()-based approach
   sapply(names, FUN = function(infile) do.call(fun, c(infile, fun.args)),
-    simplify = simplify)
+    USE.NAMES = use.names, simplify = simplify)
 }
 
 
 ################################################################################
 
 
-setGeneric("collect_template",
-  function(object, ...) standardGeneric("collect_template"))
 #' Collect metadata template
 #'
 #' Collect a metadata template from OmniLog(R) CSV comments assisting in later
@@ -754,7 +765,6 @@ setGeneric("collect_template",
 #'   \code{\link{read_single_opm}}.
 #' @seealso utils::edit utils::read.delim
 #' @family IO-functions
-#' @family metadata-functions
 #' @references \url{http://www.biolog.com/}
 #' @keywords IO attribute
 #' @examples
@@ -799,9 +809,12 @@ setGeneric("collect_template",
 #' # again see include_metadata() for how to use this to add metadata
 #' # information
 #'
+setGeneric("collect_template",
+  function(object, ...) standardGeneric("collect_template"))
+
 setMethod("collect_template", "character", function(object, outfile = NULL,
     sep = "\t", previous = outfile, md.args = list(),
-    selection = c(SETUP, POS, FILE), add.cols = NULL,
+    selection = opm_opt("csv.selection"), add.cols = NULL,
     include = list(), ..., demo = FALSE) {
   result <- batch_collect(object, fun = function(infile) {
     opm.data <- read_single_opm(infile)
@@ -837,7 +850,7 @@ setMethod("collect_template", "character", function(object, outfile = NULL,
 }, sealed = SEALED)
 
 setMethod("collect_template", OPM, function(object,
-    selection = c(SETUP, POS, FILE), add.cols = NULL) {
+    selection = opm_opt("csv.selection"), add.cols = NULL) {
   result <- as.list(csv_data(object, selection))
   result <- as.data.frame(result, stringsAsFactors = FALSE, optional = TRUE)
   if (length(add.cols) > 0L) {
@@ -933,7 +946,7 @@ process_io <- function(files, io.fun, fun.args = list(),
     else
       "ok"
   }
-  assert_length(files, .wanted = 2L)
+  LL(files, .wanted = 2L)
   overwrite <- match.arg(overwrite)
   result <- list(infile = files[1L], outfile = files[2L], before = "",
     after = "")
@@ -943,7 +956,7 @@ process_io <- function(files, io.fun, fun.args = list(),
     result$after <- conduct_conversion(files[1L], files[2L], io.fun, fun.args)
   }
   if (verbose) {
-    sapply(formatDL(unlist(result), style = "list"), FUN = message)
+    lapply(formatDL(unlist(result), style = "list"), message)
     message("")
   }
   unlist(result)
@@ -967,10 +980,13 @@ process_io <- function(files, io.fun, fun.args = list(),
 #'   the dot).
 #' @param proc Integer scalar. The number of processes to spawn.
 #' @param outdir Character vector. Directories in which to place the outfiles.
-#'   If \code{NULL}, each infile's directory is used.
+#'   If \code{NULL} or only containing empty strings, each infile's directory
+#'   is used.
 #' @param in.ext Character scalar. Passed through \code{\link{file_pattern}},
 #'   then used for the replacement of old file extensions with new ones.
 #' @param compressed Logical scalar. Passed as 2nd argument to
+#'   \code{\link{file_pattern}}.
+#' @param literally Logical scalar. Passed as 3rd argument to
 #'   \code{\link{file_pattern}}.
 #' @param demo Logical scalar. Do not convert files, but print the attempted
 #'   infile-outfile conversions and invisibly return a matrix with infiles in
@@ -1000,18 +1016,18 @@ process_io <- function(files, io.fun, fun.args = list(),
 #' }
 #'
 batch_process <- function(names, out.ext, io.fun, fun.args = list(), proc = 1L,
-    outdir = NULL, overwrite = c("yes", "older", "no"),
-    in.ext = "any", compressed = TRUE,
-    ..., verbose = TRUE, demo = FALSE) {
+    outdir = NULL, overwrite = c("yes", "older", "no"), in.ext = "any", 
+    compressed = TRUE, literally = FALSE, ..., verbose = TRUE, demo = FALSE) {
   create_outfile_names <- function(infiles, outdir, out.ext) {
-    if (length(outdir) == 0L)
+    if (length(outdir) == 0L || all(!nzchar(outdir)))
       outdir <- dirname(infiles)
     result <- sub(in.ext, "", basename(infiles), perl = TRUE,
       ignore.case = TRUE)
     result <- paste(result, sub("^\\.+", "", out.ext), sep = ".")
     file.path(outdir, result)
   }
-  in.ext <- file_pattern(in.ext, compressed)
+  LL(demo, verbose, compressed)
+  in.ext <- file_pattern(in.ext, compressed, literally)
   overwrite <- match.arg(overwrite)
   infiles <- explode_dir(names, ...)
   outfiles <- create_outfile_names(infiles, outdir, out.ext)
@@ -1022,8 +1038,8 @@ batch_process <- function(names, out.ext, io.fun, fun.args = list(), proc = 1L,
   fun.args <- as.list(fun.args)
   data <- mapply(c, infiles, outfiles, SIMPLIFY = FALSE, USE.NAMES = FALSE)
   result <- traverse(object = data, func = process_io, cores = proc,
-    io.fun = io.fun, fun.args = fun.args,
-    overwrite = overwrite, verbose = verbose)
+    io.fun = io.fun, fun.args = fun.args, overwrite = overwrite, 
+    verbose = verbose)
   invisible(do.call(rbind, result))
 }
 
@@ -1130,7 +1146,8 @@ batch_process <- function(names, out.ext, io.fun, fun.args = list(), proc = 1L,
 #' }
 #'
 batch_opm_to_yaml <- function(names, md.args = NULL, aggr.args = NULL,
-    force.aggr = FALSE, gen.iii = FALSE, ..., verbose = TRUE, demo = FALSE) {
+    force.aggr = FALSE, gen.iii = opm_opt("gen.iii"), ..., verbose = TRUE, 
+    demo = FALSE) {
 
   convert_dataset <- function(data) {
     if (gen.iii) {
@@ -1154,6 +1171,8 @@ batch_opm_to_yaml <- function(names, md.args = NULL, aggr.args = NULL,
     data
   }
 
+  LL(force.aggr, gen.iii)
+
   convert_to_yaml <- function(infile, outfile) {
     data <- read_single_opm(infile)
     # YAML input can result in lists of several OPM objects
@@ -1174,7 +1193,8 @@ batch_opm_to_yaml <- function(names, md.args = NULL, aggr.args = NULL,
   }
 
   batch_process(names = names, out.ext = "yml", io.fun = convert_to_yaml,
-    in.ext = "both", compressed = TRUE, ..., verbose = verbose, demo = demo)
+    in.ext = "both", compressed = TRUE, literally = FALSE, ...,
+    verbose = verbose, demo = demo)
 
 }
 
@@ -1269,7 +1289,7 @@ split_files <- function(files, pattern, outdir = "", demo = FALSE,
     format = "%s-%05i.%s", compressed = TRUE, ...) {
 
   create_outnames <- function(files, compressed, outdir) {
-    file.pat <- file_pattern("any", compressed = compressed)
+    file.pat <- file_pattern("any", compressed = compressed, literally = FALSE)
     out.base <- sub(file.pat, "", files, perl = TRUE, ignore.case = TRUE)
     out.ext <- substring(files, nchar(out.base) + 2L)
     if (compressed)
@@ -1279,7 +1299,7 @@ split_files <- function(files, pattern, outdir = "", demo = FALSE,
     list(base = out.base, ext = out.ext)
   }
 
-  assert_length(pattern, outdir, demo, single, wildcard, invert, include,
+  LL(pattern, outdir, demo, single, wildcard, invert, include,
     format, compressed)
   files <- unique(as.character(files))
   out <- create_outnames(files, compressed = compressed, outdir = outdir)
@@ -1368,7 +1388,7 @@ clean_filenames <- function(x, overwrite = FALSE, demo = FALSE,
     x <- lapply(strsplit(x, ".", fixed = TRUE), FUN = clean_parts)
     unlist(lapply(x, FUN = paste, collapse = "."))
   }
-  assert_length(overwrite, demo, empty.tmpl)
+  LL(overwrite, demo, empty.tmpl)
   x <- unique(as.character(x))
   result <- file.path(dirname(x), clean_basenames(basename(x)))
   different <- result != x

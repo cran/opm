@@ -10,6 +10,12 @@
 
   \item{.force}{Logical scalar. Overwite items that are
   already there?}
+
+  \item{.strict}{Logical scalar. If \code{TRUE}, has
+  precedence over \code{.force} and causes some
+  restrictions: Only names that are already present are
+  allowed, and the classes must match the classes of the
+  already contained values.}
 }
 \value{
   List.
@@ -30,6 +36,7 @@
 \alias{insert-methods}
 \alias{insert,list-method}
 \usage{
-  \S4method{insert}{list}(object, other, ..., .force = FALSE) 
+  \S4method{insert}{list}(object, other, ..., .force = FALSE, 
+    .strict = FALSE) 
 
 }

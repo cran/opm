@@ -63,9 +63,8 @@ if (length(test.files) > 0) { # if the folder is found
   \code{\link{clean_filenames}},
   \code{\link{collect_template}},
   \code{\link{explode_dir}}, \code{\link{file_pattern}},
-  \code{\link{opm_files}}, \code{\link{phylo_data}},
-  \code{\link{read_opm}}, \code{\link{split_files}},
-  \code{\link{to_metadata}}
+  \code{\link{opm_files}}, \code{\link{read_opm}},
+  \code{\link{split_files}}, \code{\link{to_metadata}}
 }
 \keyword{IO}
 

@@ -232,18 +232,8 @@ stopifnot(longer(y.noconst, y.nouninf))
 \seealso{
   base::comment base::write
 
-  Other IO-functions: \code{\link{batch_collect}},
-  \code{\link{batch_opm_to_yaml}},
-  \code{\link{batch_process}},
-  \code{\link{clean_filenames}},
-  \code{\link{collect_template}},
-  \code{\link{explode_dir}}, \code{\link{file_pattern}},
-  \code{\link{opm_files}}, \code{\link{read_opm}},
-  \code{\link{read_single_opm}}, \code{\link{split_files}},
-  \code{\link{to_metadata}}
-
-  Other phylogeny-functions: \code{\link{discrete}},
-  \code{\link{safe_labels}}
+  Other phylogeny-functions: \code{\link{best_cutoff}},
+  \code{\link{discrete}}, \code{\link{safe_labels}}
 }
 \keyword{IO}
 \keyword{character}
@@ -255,10 +245,10 @@ stopifnot(longer(y.noconst, y.nouninf))
 \alias{phylo_data,data.frame-method}
 \alias{phylo_data,OPMS-method}
 \usage{
-  \S4method{phylo_data}{matrix}(object, format = "epf",
-    outfile = "", enclose = TRUE, indent = 3L, paup.block = FALSE,
-    delete = "uninf", join = FALSE, digits = 3L, prefer.char = FALSE, 
-    run.tidy = FALSE) 
+  \S4method{phylo_data}{matrix}(object, 
+    format = opm_opt("phylo.fmt"), outfile = "", enclose = TRUE, indent = 3L,
+    paup.block = FALSE, delete = "uninf", join = FALSE, 
+    digits = opm_opt("digits"), prefer.char = FALSE, run.tidy = FALSE) 
 
   \S4method{phylo_data}{data.frame}(object, as.labels = NULL, 
     what = "numeric", sep = " ", ...) 

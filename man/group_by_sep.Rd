@@ -2,10 +2,10 @@
 \alias{group_by_sep}
 \title{Grouping using a separator}
 \arguments{
-  \item{object}{Logical vector.}
+  \item{object}{Logical or character vector, or factor.}
 
   \item{include}{Logical scalar indicating whether the
-  sepator positions should also be included in the factor
+  separator positions should also be included in the factor
   levels instead of being coded as \code{NA}.}
 
   \item{pattern}{Character scalar passed to \code{grepl}.}

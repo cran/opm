@@ -102,8 +102,10 @@ stopifnot(y == c("a", "b"), names(y) == y)
 \seealso{
   base::rapply base::list base::as.list
 
-  Other list-functions: \code{\link{contains}},
-  \code{\link{map_values}}
+  Other auxiliary-functions: \code{\link{contains}},
+  \code{\link{glob_to_regex}}, \code{\link{kubrick}},
+  \code{\link{listing}}, \code{\link{map_values}},
+  \code{\link{opm_opt}}, \code{\link{separate}}
 }
 \keyword{list}
 \keyword{manip}

@@ -31,7 +31,8 @@ stopifnot(nchar(y) > nchar(x))
 }
 \seealso{
   Other naming-functions: \code{\link{find_positions}},
-  \code{\link{find_substrate}}
+  \code{\link{find_substrate}},
+  \code{\link{substrate_info}}
 }
 \keyword{utilities}
 

@@ -61,29 +61,29 @@ stopifnot(list() \%Q\% vaas_1) # Empty query
 
 \docType{methods}
 \alias{infix.largeq-methods}
-\alias{infix.largeq,list,OPMS-method}
-\alias{\%Q\%,list,OPMS-method}
-\alias{infix.largeq,character,OPMS-method}
-\alias{\%Q\%,character,OPMS-method}
-\alias{infix.largeq,factor,OPMS-method}
-\alias{\%Q\%,factor,OPMS-method}
 \alias{infix.largeq,character,WMD-method}
 \alias{\%Q\%,character,WMD-method}
 \alias{infix.largeq,list,WMD-method}
 \alias{\%Q\%,list,WMD-method}
 \alias{infix.largeq,factor,WMD-method}
 \alias{\%Q\%,factor,WMD-method}
+\alias{infix.largeq,list,OPMS-method}
+\alias{\%Q\%,list,OPMS-method}
+\alias{infix.largeq,character,OPMS-method}
+\alias{\%Q\%,character,OPMS-method}
+\alias{infix.largeq,factor,OPMS-method}
+\alias{\%Q\%,factor,OPMS-method}
 \usage{
-  \S4method{\%Q\%}{list,OPMS}(x, table) 
-
-  \S4method{\%Q\%}{character,OPMS}(x, table) 
-
-  \S4method{\%Q\%}{factor,OPMS}(x, table) 
-
   \S4method{\%Q\%}{character,WMD}(x, table) 
 
   \S4method{\%Q\%}{list,WMD}(x, table) 
 
   \S4method{\%Q\%}{factor,WMD}(x, table) 
+
+  \S4method{\%Q\%}{list,OPMS}(x, table) 
+
+  \S4method{\%Q\%}{character,OPMS}(x, table) 
+
+  \S4method{\%Q\%}{factor,OPMS}(x, table) 
 
 }

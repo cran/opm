@@ -129,21 +129,8 @@ stopifnot(identical(dim(x), c(4L, 5L)))
   \code{\link{batch_process}},
   \code{\link{clean_filenames}}, \code{\link{explode_dir}},
   \code{\link{file_pattern}}, \code{\link{opm_files}},
-  \code{\link{phylo_data}}, \code{\link{read_opm}},
-  \code{\link{read_single_opm}}, \code{\link{split_files}},
-  \code{\link{to_metadata}}
-
-  Other metadata-functions: \code{\link{extract_columns}},
-  \code{\link{include_metadata}},
-  \code{\link{map_metadata}}, \code{\link{metadata}},
-  \code{\link{metadata.set}}, \code{\link{metadata.set}},
-  \code{\link{metadata.set}}, \code{\link{metadata.set}},
-  \code{\link{metadata.set}}, \code{\link{metadata.set}},
-  \code{\link{metadata.set}}, \code{\link{metadata.set}},
-  \code{\link{metadata.set}}, \code{\link{metadata.set}},
-  \code{\link{metadata.set}}, \code{\link{metadata.set}},
-  \code{\link{metadata.set}}, \code{\link{metadata_chars}},
-  \code{\link{to_metadata}}
+  \code{\link{read_opm}}, \code{\link{read_single_opm}},
+  \code{\link{split_files}}, \code{\link{to_metadata}}
 }
 \keyword{IO}
 \keyword{attribute}
@@ -156,11 +143,11 @@ stopifnot(identical(dim(x), c(4L, 5L)))
 \usage{
   \S4method{collect_template}{character}(object, outfile = NULL,
     sep = "\t", previous = outfile, md.args = list(),
-    selection = c(SETUP, POS, FILE), add.cols = NULL,
+    selection = opm_opt("csv.selection"), add.cols = NULL,
     include = list(), ..., demo = FALSE) 
 
   \S4method{collect_template}{OPM}(object,
-    selection = c(SETUP, POS, FILE), add.cols = NULL) 
+    selection = opm_opt("csv.selection"), add.cols = NULL) 
 
   \S4method{collect_template}{OPMS}(object, ...) 
 

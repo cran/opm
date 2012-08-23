@@ -42,7 +42,123 @@ PAUP_BLOCK <- c(
 #
 
 
-setGeneric("discrete", function(x, ...) standardGeneric("discrete"))
+#' Determine best cutoff
+#'
+#' Determine the best cutoff for dividing a numeric matrix into two categories
+#' by minimizing within-group discrepancies. That is, for each combination of
+#' row group and column maximize the number of contained elements that are in 
+#' the category in which most of the elements within this combination of row
+#' group and column are located.
+#'
+#' @param x Numeric matrix.
+#' @param y Factor or character vector indicating group affiliations. Its 
+#'   length must correspond to the number of rows of \code{x}.
+#' @param combined Logical scalar. If \code{TRUE}, determine a single threshold
+#'   for the entire matrix. If \code{FALSE}, determine one threshold for each
+#'   group of rows of \code{x} that corresponds to a level of \code{y}.
+#' @param lower Numeric scalar. Lower bound for the cutoff values to test.
+#' @param upper Numeric scalar. Upper bound for the cutoff values to test.
+#' @param all Logical scalar. If \code{TRUE}, calculate the score for all 
+#'   possible cutoffs for \code{x}. This is slow and is only useful for 
+#'   plotting complete optimization curves.
+#' @param ... Optional arguments passed between the methods.
+#' @return If \code{combined} is \code{TRUE}, either a matrix or a vector: If 
+#'   \code{all} is \code{TRUE}, a two-column matrix with (i) the cutoffs 
+#'   examined and (ii) the resulting scores. If \code{all} is \code{FALSE}, a 
+#'   vector with the entries \sQuote{maximum} (the best cutoff) and 
+#'   \sQuote{objective} (the score it achieved). If \code{combined} is 
+#'   \code{FALSE}, either a list of matrices or a matrix. If \code{all} is 
+#'   \code{TRUE}, a list of matrices structures like the single matrix returned
+#'   if \code{combined} is \code{TRUE}. If \code{all} is \code{FALSE}, a matrix
+#'   with two colums called \sQuote{maximum} \sQuote{objective}, and one row
+#'   per level of \code{y}.
+#'
+#' @details The scoring function to be maximized is calculated as follows. All
+#'   values in \code{x} are divided into those larger then the cutoff and those
+#'   at most large as the cutoff. For each combination of group and matrix 
+#'   column the frequencies of the two categories are determined, and the 
+#'   respective larger ones are summed up over all combinations. This value is
+#'   then divided by the frequency over the entire matrix of the more frequent
+#'   of the two categories. This is done to avoid trivial solutions with minimal
+#'   and maximal cutoffs, causing all values to be placed in the same category.
+#'
+#' @export
+#' @family phylogeny-functions
+#' @keywords character category
+#' @seealso stats::optimize
+#'
+#' @examples
+#' x <- matrix(c(5:2, 1:2, 7:8), ncol = 2)
+#' grps <- c("a", "a", "b", "b")
+#'
+#' # combined optimization
+#' (y <- best_cutoff(x, grps))
+#' stopifnot(is.numeric(y), length(y) == 2)
+#' stopifnot(y[["maximum"]] < 4, y[["maximum"]] > 3, y[["objective"]] == 2)
+#' plot(best_cutoff(x, grps, all = TRUE), type = "l")
+#'
+#' # separate optimization
+#' (y <- best_cutoff(x, grps, combined = FALSE))
+#' stopifnot(is.matrix(y), dim(y) == c(2, 2))
+#' stopifnot(y["a", "objective"] == 2, y["b", "objective"] == 2)
+#' (y <- best_cutoff(x, grps, combined = FALSE, all = TRUE))
+#' plot(y$a, type = "l")
+#' plot(y$b, type = "l")
+#'
+setGeneric("best_cutoff", function(x, y, ...) standardGeneric("best_cutoff"))
+
+setMethod("best_cutoff", c("matrix", "character"), function(x, y, ...) {
+  best_cutoff(x, as.factor(y), ...)
+}, sealed = SEALED)
+
+setMethod("best_cutoff", c("matrix", "factor"), function(x, y, 
+    combined = TRUE, lower = min(x, na.rm = TRUE), 
+    upper = max(x, na.rm = TRUE), all = FALSE) {
+  
+  all_cutoffs <- function(x) {
+    x <- sort(unique(as.vector(x)))
+    x[-1L] - diff(x) / 2
+  }
+  freq_score <- function(x) max(tabulate(x, nbins = 2L))
+  freq_scores <- function(x) apply(x, 2L, freq_score)
+  mat_freq_score <- function(x) {
+    sum(unlist(lapply(y, function(i) freq_scores(x[i, , drop = FALSE])))) /
+      freq_score(x)
+  }
+  mat_freq_score_2 <- function(x) sum(freq_scores(x)) / freq_score(x)
+  opt_fun <- function(threshold) mat_freq_score((x > threshold) + 1L)
+  opt_fun_2 <- function(threshold, x) mat_freq_score_2((x > threshold) + 1L)
+
+  LL(all, upper, lower, combined)
+  if (!any(duplicated(na.fail(L(y, wanted = nrow(x))))))
+    stop("'y' contains only singletons")
+
+  y <- indexes(y)
+  if (combined) {
+    if (all)
+      cbind(cutoff = cutoffs <- all_cutoffs(x), 
+        score = vapply(cutoffs, opt_fun, numeric(1L)))
+    else
+      unlist(stats::optimize(f = opt_fun, maximum = TRUE, lower = lower, 
+        upper = upper))
+  } else if (all)
+    lapply(y, function(i) {
+      cutoffs <- all_cutoffs(m <- x[i, , drop = FALSE])
+      cbind(cutoff = cutoffs,
+        score = vapply(cutoffs, opt_fun_2, numeric(1L), x = m))
+    })
+  else
+    do.call(rbind, lapply(y, function(i) {
+      unlist(stats::optimize(f = opt_fun_2, x = x[i, , drop = FALSE], 
+        maximum = TRUE, lower = lower, upper = upper))
+    }))
+
+}, sealed = SEALED)
+
+                    
+################################################################################
+    
+
 #' Convert to discrete characters
 #'
 #' Convert a vector of continuous characters to discrete ones. One of the uses
@@ -151,6 +267,8 @@ setGeneric("discrete", function(x, ...) standardGeneric("discrete"))
 #' head(y <- discrete(x, range = TRUE, gap = TRUE))
 #' stopifnot(c("0", "?", "1") %in% y)
 #'
+setGeneric("discrete", function(x, ...) standardGeneric("discrete"))
+
 setMethod("discrete", "numeric", function(x, range, gap = FALSE,
     output = c("character", "integer", "logical", "factor", "numeric"),
     middle.na = TRUE, states = 32L, ...) {
@@ -179,14 +297,14 @@ setMethod("discrete", "numeric", function(x, range, gap = FALSE,
   output <- match.arg(output)
 
   if (isTRUE(range)) {
-    range <- if (gap)
+    range <- if (L(gap))
       borders(run_kmeans(object = x, k = 3L, ...))[[1L]]
     else
       range(x)
   } else
-    assert_length(range <- sort(range), .wanted = 2L)
+    range <- sort(L(range, wanted = 2L))
 
-  if (gap) { # binary-state mode with a gap due to ambiguity
+  if (L(gap)) { # binary-state mode with a gap due to ambiguity
 
     x.range <- range(x)
     if (range[1L] < x.range[1L] || range[2L] > x.range[2L])
@@ -197,7 +315,7 @@ setMethod("discrete", "numeric", function(x, range, gap = FALSE,
     breaks <- c(x.range[1L], c(range[1L] + tol, range[2L] - tol),
       x.range[2L] + tol)
     ints <- cut(x, breaks, labels = FALSE, right = FALSE)
-    map <- if (middle.na)
+    map <- if (L(middle.na))
       case(output,
         character = c("0", MISSING_CHAR, "1"),
         integer = c(0L, NA_integer_, 1L),
@@ -323,7 +441,7 @@ setGeneric("join_discrete",
 #' @return Character scalar, for the matrix method a vector.
 #' @keywords internal
 #'
-setMethod("join_discrete", "character", function(object, format, digits = 3L) {
+setMethod("join_discrete", "character", function(object, format) {
   check_discrete(object, joined = FALSE)
   object <- sort(unique(object))
   if (length(object) > 1L)
@@ -353,7 +471,7 @@ setMethod("join_discrete", "numeric", function(object, format, digits = 3L) {
       else
         paste(sprintf(fmt, mean(object)), sd.o, sep = "-")
     },
-    html = join_discrete(as.character(object), format, digits = digits),
+    html = join_discrete(as.character(object), format),
     stop("joining is not implemented for data type 'numeric' combined with ",
       sprintf("format '%s'", format))
   )
@@ -453,7 +571,7 @@ safe_labels <- function(chars, format, enclose = TRUE, pad = FALSE) {
     chars <- sub(sprintf("^%s", pat), "", chars, perl = TRUE)
     sub(sprintf("%s$", pat), "", chars, perl = TRUE)
   }
-  assert_length(enclose, pad)
+  LL(enclose, pad)
   not.newick <- "[\\s,:;()]+"
   not.nexus <- "[\\s()\\[\\]{}\\/\\,;:=*'\"`+<>-]+" # see PAUP* manual
   # see http://tnt.insectmuseum.org/index.php/Basic_format (16/04/2012)
@@ -506,7 +624,7 @@ setMethod("phylo_header", "matrix", function(object, format, enclose = TRUE,
       result <- sprintf("Strains: %s.", listing(rownames(object),
         style = "%s, %s", collapse = "; ", force.numbers = TRUE))
       result <- paste(result, paste(c(
-        "+, Positive metabolic response",
+        "+, positive metabolic response",
         "w, weak metabolic response",
         "-, negative metabolic response."), collapse = "; "))
       c(
@@ -689,7 +807,7 @@ setGeneric("phylo_char_mat",
 setMethod("phylo_char_mat", "matrix", function(object, format, enclose = TRUE,
     delete = c("uninf", "constant", "ambig", "none")) {
 
-  assert_length(enclose, delete)
+  LL(enclose, delete)
   format <- match.arg(format, PHYLO_FORMATS)
 
   if (format == "html") {
@@ -814,7 +932,6 @@ setGeneric("phylo_data", function(object, ...) standardGeneric("phylo_data"))
 #' @return Character vector, each element representing a line in a potential
 #'   output file, returned invisibly if \code{outfile} is given.
 #' @family phylogeny-functions
-#' @family IO-functions
 #' @seealso base::comment base::write
 #' @note \itemize{
 #'   \item Exporting PM data in such formats allows one to either infer trees
@@ -926,11 +1043,11 @@ setGeneric("phylo_data", function(object, ...) standardGeneric("phylo_data"))
 #' (y.noconst <- phylo_data(x, "html", delete = "const", join = TRUE))
 #' stopifnot(longer(y.noconst, y.nouninf))
 #'
-setMethod("phylo_data", "matrix", function(object, format = "epf",
-    outfile = "", enclose = TRUE, indent = 3L, paup.block = FALSE,
-    delete = "uninf", join = FALSE, digits = 3L, prefer.char = FALSE, 
-    run.tidy = FALSE) {
-  assert_length(outfile, prefer.char, run.tidy)
+setMethod("phylo_data", "matrix", function(object, 
+    format = opm_opt("phylo.fmt"), outfile = "", enclose = TRUE, indent = 3L,
+    paup.block = FALSE, delete = "uninf", join = FALSE, 
+    digits = opm_opt("digits"), prefer.char = FALSE, run.tidy = FALSE) {
+  LL(outfile, prefer.char, run.tidy)
   if (is.logical(object))
     mode(object) <- "integer"
   if (is.integer(object))

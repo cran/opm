@@ -4,7 +4,8 @@
 \usage{
   read_opm(names,
     convert = c("try", "no", "yes", "sep", "grp"),
-    gen.iii = FALSE, include = list(), ..., demo = FALSE)
+    gen.iii = opm_opt("gen.iii"), include = list(), ...,
+    demo = FALSE)
 }
 \arguments{
   \item{names}{Character vector with names of files in one
@@ -106,9 +107,8 @@ x <- read_opm(".")
   \code{\link{clean_filenames}},
   \code{\link{collect_template}},
   \code{\link{explode_dir}}, \code{\link{file_pattern}},
-  \code{\link{opm_files}}, \code{\link{phylo_data}},
-  \code{\link{read_single_opm}}, \code{\link{split_files}},
-  \code{\link{to_metadata}}
+  \code{\link{opm_files}}, \code{\link{read_single_opm}},
+  \code{\link{split_files}}, \code{\link{to_metadata}}
 }
 \keyword{IO}
 

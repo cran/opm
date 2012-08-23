@@ -6,7 +6,7 @@
   applied.}
 
   \item{set.like}{Logical scalar. Consider objects as
-  identical if there intersection is non-empty?}
+  identical if their intersection is non-empty?}
 
   \item{na.rm}{Logical scalar. Remove \code{NA} elements
   before determining constantness?}

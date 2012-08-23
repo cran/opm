@@ -3,7 +3,7 @@
 \title{File pattern}
 \usage{
   file_pattern(type = c("both", "csv", "yaml", "any", "empty"),
-    compressed = TRUE)
+    compressed = TRUE, literally = FALSE)
 }
 \arguments{
   \item{type}{Character scalar indicating the file types to
@@ -11,6 +11,10 @@
 
   \item{compressed}{Logical scalar. Shall compressed files
   also be matched?}
+
+  \item{literally}{Logical scalar. Interpret \code{type}
+  literally? Also allow vectors with more than a single
+  element.}
 }
 \value{
   Character scalar, holding a regular expression.
@@ -35,9 +39,8 @@ stopifnot(nchar(x) > nchar(y))
   \code{\link{clean_filenames}},
   \code{\link{collect_template}},
   \code{\link{explode_dir}}, \code{\link{opm_files}},
-  \code{\link{phylo_data}}, \code{\link{read_opm}},
-  \code{\link{read_single_opm}}, \code{\link{split_files}},
-  \code{\link{to_metadata}}
+  \code{\link{read_opm}}, \code{\link{read_single_opm}},
+  \code{\link{split_files}}, \code{\link{to_metadata}}
 }
 \keyword{utilities}
 

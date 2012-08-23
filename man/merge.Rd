@@ -9,6 +9,14 @@
   throughout, and its length should fit to the number of
   plates (e.g., either \code{1} or \code{length(x) - 1}
   would work). If missing, \code{0.25} is used.}
+
+  \item{sort.first}{Logical scalar. Sort the plates
+  according to their setup times before merging?}
+
+  \item{parse}{Logical scalar. Ignored unless
+  \code{sort.first} is \code{TRUE}. For sorting, parse the
+  setup times using \code{strptime} from the \pkg{base}
+  package? It is an error if this does not work.}
 }
 \value{
   \code{\link{OPM}} object. The \code{\link{metadata}} and
@@ -31,15 +39,17 @@
   practice.
 }
 \examples{
-data(vaas_4)
+data(vaas_4) # merge() is biologically unreasonable for these data!
 summary(x <- merge(vaas_4))
 stopifnot(is(x, "OPM"), dim(x) == c(sum(hours(vaas_4, "size")), 96))
 }
 \seealso{
   Other conversion-functions: \code{\link{extract}},
   \code{\link{extract_columns}}, \code{\link{flatten}},
-  \code{\link{oapply}}, \code{\link{plates}},
-  \code{\link{sort}}, \code{\link{to_yaml}}
+  \code{\link{gen_iii}}, \code{\link{oapply}},
+  \code{\link{plates}}, \code{\link{rep}},
+  \code{\link{rev}}, \code{\link{sort}},
+  \code{\link{thin_out}}, \code{\link{to_yaml}}
 }
 \keyword{manip}
 
@@ -48,8 +58,10 @@ stopifnot(is(x, "OPM"), dim(x) == c(sum(hours(vaas_4, "size")), 96))
 \alias{merge,OPMS,numeric-method}
 \alias{merge,OPMS,missing-method}
 \usage{
-  \S4method{merge}{OPMS,numeric}(x, y) 
+  \S4method{merge}{OPMS,numeric}(x, y, sort.first = TRUE, 
+    parse = TRUE) 
 
-  \S4method{merge}{OPMS,missing}(x) 
+  \S4method{merge}{OPMS,missing}(x, sort.first = TRUE, 
+    parse = TRUE) 
 
 }

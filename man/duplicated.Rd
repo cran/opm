@@ -26,14 +26,21 @@
 \description{
   Check whether duplicated \code{\link{OPM}} or
   \code{\link{OPMA}} objects are contained within an
-  \code{\link{OPMS}} object.
+  \code{\link{OPMS}} object. For reasons of consistency,
+  the \code{\link{OPM}} method always returns \code{FALSE}.
 }
 \examples{
+## 'OPMS' method
 data(vaas_4)
 stopifnot(!duplicated(vaas_4))
 stopifnot(duplicated(vaas_4, what = "Species") == rep(c(FALSE, TRUE), 2))
 x <- vaas_4[c(1, 1)]
 stopifnot(c(FALSE, TRUE) == duplicated(x))
+
+## 'OPM' method
+data(vaas_1)
+(x <- duplicated(vaas_1))
+stopifnot(identical(x, FALSE))
 }
 \seealso{
   base::duplicate
@@ -45,18 +52,21 @@ stopifnot(c(FALSE, TRUE) == duplicated(x))
   \code{\link{hours}}, \code{\link{length}},
   \code{\link{max}}, \code{\link{measurements}},
   \code{\link{metadata}}, \code{\link{minmax}},
-  \code{\link{position}}, \code{\link{select}},
-  \code{\link{seq}}, \code{\link{setup_time}},
-  \code{\link{show}}, \code{\link{summary}},
-  \code{\link{thin_out}}, \code{\link{well}},
+  \code{\link{plate_type}}, \code{\link{position}},
+  \code{\link{select}}, \code{\link{seq}},
+  \code{\link{setup_time}}, \code{\link{show}},
+  \code{\link{summary}}, \code{\link{well}},
   \code{\link{wells}}
 }
 \keyword{attribute}
 
 \docType{methods}
 \alias{duplicated-methods}
+\alias{duplicated,OPM-method}
 \alias{duplicated,OPMS-method}
 \usage{
+  \S4method{duplicated}{OPM}(x, incomparables = FALSE, ...) 
+
   \S4method{duplicated}{OPMS}(x, incomparables = FALSE,
     what = c("all", "csv", "metadata"), ...) 
 

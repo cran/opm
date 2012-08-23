@@ -57,7 +57,7 @@ stopifnot(is.data.frame(x), identical(dim(x), c(4L, 2L)))
 stopifnot(is.character(x), length(x) == 4L)
 (x <- try(extract_columns(vaas_4, what = list("Species"), join = TRUE,
    dups = "error"), silent = TRUE))
-stopifnot(is(x, "try-error"))
+stopifnot(inherits(x, "try-error"))
 (x <- try(extract_columns(vaas_4, what = list("Species"), join = TRUE,
   dups = "warn"), silent = TRUE))
 stopifnot(is.character(x), length(x) == 4L)
@@ -65,27 +65,17 @@ stopifnot(is.character(x), length(x) == 4L)
 # data-frame method
 x <- data.frame(a = 1:26, b = letters, c = LETTERS)
 (y <- extract_columns(x, c("a", "b"), sep = "-"))
-stopifnot(grepl("^\\\\s*\\\\d+-[a-z]$", y))
+stopifnot(grepl("^\\\s*\\\d+-[a-z]$", y))
 }
 \seealso{
   base::data.frame base::as.data.frame base::cbind
 
   Other conversion-functions: \code{\link{extract}},
-  \code{\link{flatten}}, \code{\link{merge}},
-  \code{\link{oapply}}, \code{\link{plates}},
-  \code{\link{sort}}, \code{\link{to_yaml}}
-
-  Other metadata-functions: \code{\link{collect_template}},
-  \code{\link{include_metadata}},
-  \code{\link{map_metadata}}, \code{\link{metadata}},
-  \code{\link{metadata.set}}, \code{\link{metadata.set}},
-  \code{\link{metadata.set}}, \code{\link{metadata.set}},
-  \code{\link{metadata.set}}, \code{\link{metadata.set}},
-  \code{\link{metadata.set}}, \code{\link{metadata.set}},
-  \code{\link{metadata.set}}, \code{\link{metadata.set}},
-  \code{\link{metadata.set}}, \code{\link{metadata.set}},
-  \code{\link{metadata.set}}, \code{\link{metadata_chars}},
-  \code{\link{to_metadata}}
+  \code{\link{flatten}}, \code{\link{gen_iii}},
+  \code{\link{merge}}, \code{\link{oapply}},
+  \code{\link{plates}}, \code{\link{rep}},
+  \code{\link{rev}}, \code{\link{sort}},
+  \code{\link{thin_out}}, \code{\link{to_yaml}}
 }
 \keyword{dplot}
 \keyword{manip}

@@ -84,6 +84,19 @@ stopifnot(is.factor(z), z == x)
 }
 \seealso{
   base::strtrim base::abbreviate base::gsub
+
+  Other getter-functions: \code{\link{aggr_settings}},
+  \code{\link{aggregated}}, \code{\link{anyDuplicated}},
+  \code{\link{csv_data}}, \code{\link{dim}},
+  \code{\link{duplicated}}, \code{\link{filename}},
+  \code{\link{has_aggr}}, \code{\link{hours}},
+  \code{\link{length}}, \code{\link{max}},
+  \code{\link{measurements}}, \code{\link{metadata}},
+  \code{\link{minmax}}, \code{\link{position}},
+  \code{\link{select}}, \code{\link{seq}},
+  \code{\link{setup_time}}, \code{\link{show}},
+  \code{\link{summary}}, \code{\link{well}},
+  \code{\link{wells}}
 }
 \keyword{attribute}
 \keyword{character}

@@ -13,7 +13,7 @@
   colours are chosen than the number of plate grouping
   levels (see the \code{...} argument below).  For
   user-chosen colour sets, keep in mind that the sets are
-  not checked for duplicates. See
+  not checked for duplicates, and see
   \code{\link{max_rgb_contrast}} as a method for optimally
   arranging user-defined colours.}
 
@@ -172,8 +172,9 @@ xy_plot(vaas_4, include = c("Species", "Strain"),
 
   Other plotting-functions: \code{\link{ci_plot}},
   \code{\link{heat_map}}, \code{\link{level_plot}},
-  \code{\link{max_rgb_contrast}},
-  \code{\link{radial_plot}}, \code{\link{select_colors}}
+  \code{\link{max_rgb_contrast}}, \code{\link{mypdf}},
+  \code{\link{paper_size}}, \code{\link{radial_plot}},
+  \code{\link{select_colors}}
 }
 \keyword{hplot}
 
@@ -189,7 +190,7 @@ xy_plot(vaas_4, include = c("Species", "Strain"),
     strip.fmt = list(), striptext.fmt = list(),
     ...) 
 
-  \S4method{xy_plot}{OPMS}(x, col = "nora", lwd = 1,
+  \S4method{xy_plot}{OPMS}(x, col = opm_opt("xy.colors"), lwd = 1,
     neg.ctrl = "A01", base.col = "black", base.lwd = lwd,
     main = list(), xlab = "Time [h]", ylab = "Value [OmniLog units]",
     theor.max = TRUE, draw.grid = TRUE, space = "top",

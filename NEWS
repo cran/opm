@@ -1,4 +1,36 @@
 
+
+opm 0.6-0
+---------
+
+Bug fixes:
+
+- fixed bug in xy_plot() that caused 'space' to overwrite 'legend.fmt'
+
+- fixed bug in matrix method of do_aggr() causing lists to occur within data 
+  frames
+
+- corrections of some substrate names
+
+Other user-visible changes:
+
+- default color set of xy_plot() changed to 'w3c' (because it contains more 
+  colors than 'nora')
+
+New features:
+
+- novel functions: substrate_info(), opm_opt(), mypdf(), best_cutoff()
+
+- novel methods for OPM(S) objects: rev(), rep(), sort(), duplicated(),
+  anyDuplicated(), sort()
+
+- more arguments for: level_plot(), ci_plot(), merge(), find_substrate(),
+  file_pattern(), batch_process(), batch_collect()
+
+. improved behaviour: separate() in 'list.wise' mode, glob_to_regex(),
+  `metadata<-`() if data frames with a single column are supplied
+
+
 opm 0.5-0
 ---------
 
@@ -11,7 +43,6 @@ Other user-visible changes:
 
 - normalize_plate_name() has been removed; it is replaced by the novel
   character (and factor) methods for plate_type()
-  replaces normalize_plate_name(), which has been removed
 
 - specific show() method for OPM and OPMS objects
 

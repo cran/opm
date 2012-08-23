@@ -46,8 +46,8 @@ stopifnot(grepl("^'.*'$", y))
 \seealso{
   base::gsub
 
-  Other phylogeny-functions: \code{\link{discrete}},
-  \code{\link{phylo_data}}
+  Other phylogeny-functions: \code{\link{best_cutoff}},
+  \code{\link{discrete}}, \code{\link{phylo_data}}
 }
 \keyword{character}
 

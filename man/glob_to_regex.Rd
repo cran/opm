@@ -3,12 +3,9 @@
 \title{Convert wildcard to regular expression}
 \arguments{
   \item{object}{Character vector or factor.}
-
-  \item{...}{Optional arguments passed between the
-  methods.}
 }
 \value{
-  Character vector.
+  Character vector (or factor).
 }
 \description{
   Change a shell globbing wildcard into a regular
@@ -48,12 +45,15 @@ x <- "*what glob2rx() can't handle because a '+' is included*"
 stopifnot(!identical(y, z))
 # Factor method
 (z <- glob_to_regex(as.factor(x)))
-stopifnot(identical(y, z))
+stopifnot(identical(as.factor(y), z))
 }
 \seealso{
   utils::glob2rx base::regex
 
-  Other auxiliary-functions: \code{\link{separate}}
+  Other auxiliary-functions: \code{\link{contains}},
+  \code{\link{kubrick}}, \code{\link{listing}},
+  \code{\link{map_names}}, \code{\link{map_values}},
+  \code{\link{opm_opt}}, \code{\link{separate}}
 }
 \keyword{character}
 
@@ -64,6 +64,6 @@ stopifnot(identical(y, z))
 \usage{
   \S4method{glob_to_regex}{character}(object) 
 
-  \S4method{glob_to_regex}{factor}(object, ...) 
+  \S4method{glob_to_regex}{factor}(object) 
 
 }

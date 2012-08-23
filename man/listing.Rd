@@ -4,7 +4,7 @@
 \usage{
   listing(x, header = NULL, footer = NULL, begin = NULL,
     collapse = "\n", style = "list", force.numbers = FALSE,
-    digits = max(3L, getOption("digits") - 3L), ...)
+    digits = opm_opt("digits"), ...)
 }
 \arguments{
   \item{x}{Object convertible via \code{unlist} to a
@@ -66,6 +66,11 @@ stopifnot(is.character(y), length(y) == 1)
 }
 \seealso{
   base::message base::warning base::stop base::formatDL
+
+  Other auxiliary-functions: \code{\link{contains}},
+  \code{\link{glob_to_regex}}, \code{\link{kubrick}},
+  \code{\link{map_names}}, \code{\link{map_values}},
+  \code{\link{opm_opt}}, \code{\link{separate}}
 }
 \keyword{utilities}
 

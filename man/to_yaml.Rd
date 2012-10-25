@@ -3,7 +3,7 @@
 \title{Convert to YAML}
 \arguments{
   \item{object}{Object of one of the classes belonging to
-  \code{\link{YAML_VIA_LIST-class}}.}
+  \code{\link{YAML_VIA_LIST}}.}
 
   \item{sep}{Logical scalar. Prepend YAML document
   separator \verb{---}?}
@@ -18,7 +18,7 @@
   Character scalar (YAML string).
 }
 \description{
-  Convert some R object to YAML. If the package \pkg{yaml}
+  Convert some \R object to YAML. If the package \pkg{yaml}
   is not installed, a call of this function will result in
   an error.
 }
@@ -46,7 +46,7 @@ write(to_yaml(x), "out.yml")
   \code{\link{gen_iii}}, \code{\link{merge}},
   \code{\link{oapply}}, \code{\link{plates}},
   \code{\link{rep}}, \code{\link{rev}}, \code{\link{sort}},
-  \code{\link{thin_out}}
+  \code{\link{thin_out}}, \code{\link{unique}}
 }
 \keyword{IO}
 \keyword{character}

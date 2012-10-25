@@ -147,176 +147,8 @@ setMethod("best_range", "numeric", function(object, target,
 ################################################################################
 ################################################################################
 #
-# Paper sizes and adapted PDF creation
-#
-
-
-#' Paper size
-#'
-#' Determine the size for a given standard paper format.
-#'
-#' @param object Numeric vector, character vector, or missing. If missing, the
-#'   default \sQuote{papersize} entry is queried using \code{getOption}, and
-#'   the result passed to the other methods. If a numeric vector, specifying
-#'   the paper size in the \sQuote{DIN} series. If a character vecotr, 
-#' @param inches Logical scalar. If \code{TRUE}, output unit is inches, 
-#'   otherwise millimeters.
-#' @param series Character scalar indicating the \sQuote{DIN} series to assume.
-#' @param landscape Logical vector. Where \code{FALSE}, \sQuote{portrait} paper
-#'   orientation is assumed. For the character method, this has only an effect
-#'   for paper size specifiers such as \sQuote{letter} that do not belong to 
-#'   the \sQuote{DIN} series. For the \sQuote{DIN} series, append \sQuote{R} to
-#'   the specifier to obtain \sQuote{landscape} orientation.
-#' @param ... Optional arguments passed between the methods.
-#' @return Numeric matrix with columns \sQuote{width} and \sQuote{height} and
-#'   \code{object} as row names (if ot was a character vector).
-#' @seealso base::getOption
-#' @family plotting-functions
-#' @keywords dplot
-#' @export
-#' @examples
-#' query <- c("A4", "Letter", "unknown")
-#' (x <- paper_size(query))
-#' stopifnot(is.matrix(x), is.numeric(x), rownames(x) == query)
-#' stopifnot(colnames(x) == c("height", "width"), is.na(x["unknown", ]))
-#' (y <- paper_size(4))
-#' stopifnot(identical(y, x[1L, , drop = FALSE]))
-#' @references \url{http://en.wikipedia.org/wiki/Paper_size}
-#'
-setGeneric("paper_size", function(object, ...) standardGeneric("paper_size"))
-
-setMethod("paper_size", "missing", function(...) {
-  paper_size(object = getOption("papersize"), ...)
-}, sealed = SEALED)
-
-setMethod("paper_size", "numeric", function(object, series = c("A", "B", "C"), 
-    landscape = FALSE, ...) {
-  pattern <- sprintf("%s%%i", match.arg(series))
-  must(pattern[landscape] <- sprintf("%sR", pattern[landscape]))
-  paper_size(sprintf(pattern, abs(object)), ...)
-}, sealed = SEALED)
-
-setMethod("paper_size", "character", function(object, inches = FALSE, 
-    landscape = FALSE) {
-  parse_din_string <- function(x) {
-    get_orientation <- function(x) {
-      x <- toupper(sub("^.*\\d", "", x, perl = TRUE))
-      x[!nzchar(x)] <- "L"
-      x
-    }  
-    get_series <- function(x) toupper(substr(x, 1L, 1L))
-    get_size <- function(x) {
-      as.integer(gsub("[A-Z]", "", x, perl = TRUE, ignore.case = TRUE))
-    }
-    y <- gsub("\\W", "", x, perl = TRUE)
-    data.frame(series = get_series(y), size = get_size(y), 
-               orientation = get_orientation(y), 
-               row.names = x, stringsAsFactors = FALSE)
-  }
-  long_size_in_mm <- function(series, size) {
-    get_size <- function(n, m) 0.2 + 1000 * 2^-(0.5 * n - m)
-    m <- numeric(length = length(series))
-    m[series == "A"] <- 0.25
-    m[series == "B"] <- 0.5
-    m[series == "C"] <- 0.375
-    m[m == 0] <- NA_real_
-    get_size(n = size, m = m)
-  }
-  LL(inches, landscape)
-  x <- parse_din_string(object)
-  x$height <- long_size_in_mm(x$series, x$size)
-  across <- x$orientation == "R"
-  x[!across, "width"] <- x[!across, "height"] / sqrt(2)
-  x[across, "width"] <- x[across, "height"]
-  x[across, "height"] <- x[across, "width"] / sqrt(2)
-  x <- as.matrix(x[, 4L:5L])
-  wanted <- is.na(x[, 1L]) & 
-    tolower(rownames(x)) %in% rownames(SPECIAL_PAPER_SIZES)
-  x[wanted, ] <- SPECIAL_PAPER_SIZES[tolower(rownames(x)[wanted]), 2L:1L]
-  if (landscape)
-    x[wanted, ] <- x[wanted, 2L:1L]
-  if (inches)
-    x <- x / 25.4
-  x
-}, sealed = SEALED)
-
-
-#' Create PDF file
-#'
-#' A slightly adapted wrapper for \code{pdf} from the \pkg{grDevices} package.
-#'
-#' @param file See \code{grDevices::pdf}.
-#' @param paper Like \code{grDevices::pdf}, but its \code{\link{paper_size}} is
-#'   used to determine \sQuote{width} and \sQuote{height} of the plotting 
-#'   region.
-#' @param prop Numeric vector. Its values should be between 0 and 1. Its first
-#'   element is multiplied with the width of \code{paper} to yield the width of
-#'   the plotting region. Its last element is multiplied with the height of 
-#'   \code{paper} to yield the height of the plotting region.
-#' @param ... Optional arguments passed to \code{grDevices::pdf}.
-#' @export
-#' @return \code{NULL}. As a side effect, \code{file} is opened.
-#' @family plotting-functions
-#' @seealso grDevices::pdf
-#' @keywords IO
-#' @examples
-#' \dontrun{
-#'   mypdf("example.pdf")
-#'   ## create some plots...
-#'   dev.off()
-#' }
-#'
-mypdf <- function(file, paper = "a4r", prop = 0.9, ...) {
-  paper.size <- paper_size(paper)
-  width <- prop[1L] * paper.size[, "width"]
-  height <- prop[length(prop)] * paper.size[, "height"]
-  pdf(file = file, paper = paper, width = width, height = height, ...)
-}
-
-
-################################################################################
-################################################################################
-#
 # Colours
 #
-
-
-## NOTE: not an S4 method because conversion is done
-
-#' Sort colours
-#'
-#' A helper function for methods such as \code{\link{xy_plot}}.
-#' Arrange colours to achieve that neighboring colours are most distinct with
-#' respect to their RGB coordinates. This is done as follows: (1) Euclidean
-#' distances between the RGB coordinates of the input colours are calculated;
-#' (2) the distances are inversed; (3) a principal-coordinate analysis is
-#' conducted on these inversed distances; (4) the input colours are sorted
-#' according to the first principal coordinate.
-#'
-#' @param col Vector. Names or hexadecimal codes of the colours to be sorted.
-#'   Might also be an integer vector, see \code{col2rgb} from the
-#'   \pkg{grDevices} package for details. Duplicate RGB coordinates and
-#'   unknown names will cause an error.
-#' @export
-#' @return Character vector (rearranged input names).
-#' @family plotting-functions
-#' @seealso grDevices::col2rgb
-#' @keywords color
-#' @note The resulting vector could as well be used in reverse order.
-#' @examples
-#' (x <- max_rgb_contrast(c("darkred", "darkblue", "blue", "red")))
-#' y <- c("darkblue", "red", "blue", "darkred")
-#' stopifnot(identical(x, y) || identical(x, rev(y)))
-#'
-max_rgb_contrast <- function(col) {
-  col.rgb <- t(col2rgb(col))
-  rownames(col.rgb) <- col
-  pco <- cmdscale(1 / log(dist(col.rgb)), k = 1L)
-  names(sort(pco[, 1L]))
-}
-
-
-################################################################################
 
 
 ## NOTE: not an S4 method because check is done using match.arg()
@@ -330,9 +162,9 @@ max_rgb_contrast <- function(col) {
 #'
 #' @param set Character scalar. Name of the colour vector to use. Colour vectors
 #'   have been optimized for maximum contrast between adjacent colours, either
-#'   manually or using \code{\link{max_rgb_contrast}}. Names
-#'   ending in \sQuote{.i} indicate vectors in inverse order (compared to the
-#'   vector with the same name except \sQuote{.i}).
+#'   manually or using \code{max_rgb_contrast} from the \pkg{pkgutils} package.
+#'   Names ending in \sQuote{.i} indicate vectors in inverse order (compared to
+#'   the vector with the same name except \sQuote{.i}).
 #' @export
 #' @return Character vector (names of colours).
 #' @family plotting-functions
@@ -345,7 +177,7 @@ max_rgb_contrast <- function(col) {
 #' stopifnot(is.character(x), length(x) > 0L, identical(x, rev(y)))
 #'
 select_colors <- function(
-    set = c("w3c", "w3c.i", "nora", "nora.i", "brewer", "brewer.i", 
+    set = c("w3c", "w3c.i", "nora", "nora.i", "brewer", "brewer.i",
       "roseobacter", "roseobacter.i")) {
   case(match.arg(set),
     w3c = W3C_COLORS[W3C_NAMES_MAX_CONTRAST],
@@ -430,10 +262,10 @@ setGeneric("xy_plot", function(x, ...) standardGeneric("xy_plot"))
 #'   method, either a character vector with colour codes or one of
 #'   the arguments of \code{\link{select_colors}} (for picking one of the
 #'   predefined colour sets). It is an error if fewer colours are chosen than
-#'   the number of plate grouping levels (see the \code{...} argument below).
+#'   the number of plate grouping levels (see the \code{\dots} argument below).
 #'   For user-chosen colour sets, keep in mind that the sets are not checked
-#'   for duplicates, and see \code{\link{max_rgb_contrast}} as a method for
-#'   optimally arranging user-defined colours.
+#'   for duplicates, and see \code{max_rgb_contrast} from the \pkg{pkgutils}
+#'   package as a method for optimally arranging user-defined colours.
 #' @param lwd Numeric scalar determining the line width.
 #'
 #' @param neg.ctrl Determine the height of a horizontal baseline drawn in each
@@ -529,7 +361,9 @@ setGeneric("xy_plot", function(x, ...) standardGeneric("xy_plot"))
 #'
 #' # OPM method
 #' data(vaas_1)
+#' \dontrun{
 #' xy_plot(vaas_1) # note the default main title built from the plate type
+#' }
 #'
 #' x <- vaas_1[, 11:22]
 #' # Gives a warning message: we have deleted the default negative control:
@@ -543,11 +377,13 @@ setGeneric("xy_plot", function(x, ...) standardGeneric("xy_plot"))
 #'
 #' # OPMS method
 #' data(vaas_4)
+#' \dontrun{
 #' # Color by species and strain; note default main title
 #' xy_plot(vaas_4, include = c("Species", "Strain"))
 #' # Use the largest of the negative-control maxima as baseline
 #' xy_plot(vaas_4, include = c("Species", "Strain"),
 #'   neg.ctrl = max(vaas_4, "A01"))
+#' }
 #'
 setMethod("xy_plot", OPM, function(x, col = "midnightblue", lwd = 1,
     neg.ctrl = "A01", base.col = "grey10", base.lwd = lwd,
@@ -687,10 +523,6 @@ setMethod("xy_plot", OPMS, function(x, col = opm_opt("xy.colors"), lwd = 1,
 #' @keywords internal
 #'
 default_color_regions <- function(colors, space, bias, n) {
-  #if (length(colors) == 0L)
-  #  colors <- c("#FFFFD4", "#FED98E", "#FE9929", "#D95F0E", "#993404")
-  #brewer.div <- colorRampPalette(unique(colors), space = "Lab", bias = 0.5)
-  #brewer.div(200)
   colorRampPalette(colors = unique(colors), space = space, bias = bias)(n)
 }
 
@@ -732,11 +564,11 @@ setGeneric("level_plot", function(x, ...) standardGeneric("level_plot"))
 #'   to \code{\link{flatten}} (see there); it is ignored unless metadata are
 #'   chosen for constructing the panel headers.
 #'
-#' @param space Character scalar passed to \code{colorRampPalette} from the 
-#'   \pkg{grDevices} package. These and the following arguments are for 
+#' @param space Character scalar passed to \code{colorRampPalette} from the
+#'   \pkg{grDevices} package. These and the following arguments are for
 #'   fine-tuning the colour palette used for plotting.
 #' @param bias Numeric scalar also passed to \code{colorRampPalette}.
-#' @param num.colors Numeric scalar passed to the function returned by 
+#' @param num.colors Numeric scalar passed to the function returned by
 #'   \code{colorRampPalette}.
 #'
 #' @param ... Arguments that are passed to \code{\link{flatten}}.
@@ -767,11 +599,13 @@ setGeneric("level_plot", function(x, ...) standardGeneric("level_plot"))
 #' level_plot(vaas_1, main = "Levelplot example")
 #'
 #' # OPMS method
+#' \dontrun{
 #' data(vaas_4)
 #' # headers include species and strain
 #' level_plot(vaas_4, include = c("Species", "Strain"))
+#' }
 #'
-setMethod("level_plot", OPM, function(x, main = list(), 
+setMethod("level_plot", OPM, function(x, main = list(),
     colors = opm_opt("color.borders"), cex = NULL, space = "Lab", bias = 0.5,
     num.colors = 200L, ...) {
   if (is.null(cex))
@@ -782,9 +616,9 @@ setMethod("level_plot", OPM, function(x, main = list(),
     scales = list(cex = cex, lineheight = 10))
 }, sealed = SEALED)
 
-setMethod("level_plot", OPMS, function(x, main = list(), 
-    colors = opm_opt("color.borders"), panel.headers = TRUE, cex = NULL, 
-    strip.fmt = list(), striptext.fmt = list(), legend.sep = " ", 
+setMethod("level_plot", OPMS, function(x, main = list(),
+    colors = opm_opt("color.borders"), panel.headers = TRUE, cex = NULL,
+    strip.fmt = list(), striptext.fmt = list(), legend.sep = " ",
     space = "Lab", bias = 0.5, num.colors = 200L, ...) {
   dims <- dim(x)
   if (is.null(cex))
@@ -802,7 +636,7 @@ setMethod("level_plot", OPMS, function(x, main = list(),
     strip.fmt <- do.call(lattice::strip.custom, strip.fmt)
   }
   lattice::levelplot(Value ~ Time * Well | Plate, data = data,
-    main = main_title(x, main), 
+    main = main_title(x, main),
     col.regions = default_color_regions(colors, space, bias, num.colors),
     strip = strip.fmt, as.table = TRUE, layout = c(dims[1L], 1L),
     par.strip.text = as.list(striptext.fmt),
@@ -868,19 +702,19 @@ setGeneric("ci_plot", function(object, ...) standardGeneric("ci_plot"))
 #' @param x Legend position, passed to \code{legend} from the \pkg{graphics}
 #'   package. Ignored unless \code{draw.legend} is \code{TRUE}.
 #' @param xpd Logical scalar. Also passed to that function.
-#' @param vline Numeric scalar with the position on the y-axis of a vertical 
+#' @param vline Numeric scalar with the position on the y-axis of a vertical
 #'   line to be drawn. Ignored if \code{NULL}.
 #' @param ... Optional other arguments passed to \code{legend}, or arguments
 #'   passed from the \code{\link{OPMS}} method to the data frame method.
 #'
 #'
 #' @note \itemize{
-#'  \item The default placement of the legend is currently not necessarily very
-#'    useful.
-#'  \item When plotting entire PM plates, the \sQuote{mar} parameter of
+#'   \item The default placement of the legend is currently not necessarily
+#'     very useful.
+#'   \item When plotting entire PM plates, the \sQuote{mar} parameter of
 #'     \code{par} most likely would need to be set to a lower value, but it
 #'     is recommended to plot only subsets of plates, i.e. selected wells.
-#'  }
+#'   }
 #'
 #' @references Vaas LAI, Sikorski J, Michael V, Goeker M, Klenk H-P. 2012
 #'   Visualization and curve parameter estimation strategies for efficient
@@ -899,7 +733,7 @@ setGeneric("ci_plot", function(object, ...) standardGeneric("ci_plot"))
 #' # most of the parameters used here are explained under the data.frame
 #' # method of ci_plot()
 #' x <- ci_plot(vaas_4[, , 1:3], as.labels = list("Species", "Strain"),
-#'    subset = "A", x = "bottomright", legend.field = NULL)
+#'   subset = "A", x = "bottomright", legend.field = NULL)
 #' # note that the values on the y axes are drawn to scale
 #' x
 #' stopifnot(is.character(x), identical(length(x), 4L))
@@ -1000,8 +834,8 @@ setGeneric("heat_map", function(object, ...) standardGeneric("heat_map"))
 #' object and pass the result to the matrix method.
 #'
 #' @param object Matrix, data frame or \sQuote{OPMS} object. The matrix method
-#'   is mainly designed for curve-parameter matrices as created by 
-#'   \code{\link{extract}} but can be used with any numeric matrix. If a data 
+#'   is mainly designed for curve-parameter matrices as created by
+#'   \code{\link{extract}} but can be used with any numeric matrix. If a data
 #'   frame, it must contain at least one column with numeric data.
 #'
 #' @param as.labels Character, numeric or logical vector indicating the
@@ -1066,8 +900,8 @@ setGeneric("heat_map", function(object, ...) standardGeneric("heat_map"))
 #'   Note that some defaults of \code{heatmap.2} are overwritten even though
 #'   this is not transparent from the argument list of \code{heat_map}. If set
 #'   explicitly, the default \code{heatmap.2} behaviour is restored.
-#'   \code{...} also represents all arguments passed from the \sQuote{OPMS} or
-#'   data-frame methods to the matrix method.
+#'   \code{\dots} also represents all arguments passed from the \sQuote{OPMS}
+#'   or data-frame methods to the matrix method.
 #'
 #' @param use.fun Character scalar. If \sQuote{gplots}, it is attempted to load
 #'   the \pkg{gplots} package and use its \code{heatmap.2} function (the
@@ -1164,7 +998,7 @@ setMethod("heat_map", "matrix", function(object,
 
   case(match.arg(use.fun),
     gplots = {
-      if (suppressMessages(suppressWarnings(require(gplots, quietly = TRUE, 
+      if (suppressMessages(suppressWarnings(require(gplots, quietly = TRUE,
           warn.conflicts = FALSE)))) {
         arg.list <- insert(arg.list, trace = "none", .force = FALSE)
         heatmap_fun <- gplots::heatmap.2
@@ -1178,7 +1012,7 @@ setMethod("heat_map", "matrix", function(object,
 
   if (storage.mode(object) == "logical")
     storage.mode(object) <- "integer"
-  
+
   result <- do.call(heatmap_fun, c(list(x = object), arg.list))
   result$colColMap <- col.side.colors
   result$rowColMap <- row.side.colors
@@ -1188,7 +1022,7 @@ setMethod("heat_map", "matrix", function(object,
 
 setMethod("heat_map", "data.frame", function(object, as.labels,
     as.groups = NULL, sep = " ", ...) {
-  invisible(heat_map(extract(object, as.labels = as.labels, 
+  invisible(heat_map(extract(object, as.labels = as.labels,
     as.groups = as.groups, sep = sep), ...))
 }, sealed = SEALED)
 
@@ -1290,7 +1124,7 @@ setMethod("radial_plot", "matrix", function(object, rp.type = "p",
   on.exit(par(changed.par))
   changed.par <- plotrix::radial.plot(lengths = object,
     labels = colnames(object), rp.type = rp.type, radlab = radlab,
-    show.centroid = show.centroid,  lwd = lwd, mar = mar,
+    show.centroid = show.centroid, lwd = lwd, mar = mar,
     show.grid.labels = show.grid.labels, line.col = line.col, ...)
   if (!is.null(rn <- rownames(object))) {
     if (draw.legend) {

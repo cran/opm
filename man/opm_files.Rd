@@ -7,7 +7,7 @@
 \arguments{
   \item{what}{Character scalar indicating the subdirectory
   to search in.  Currently the following ones are included:
-  \describe{ \item{scripts}{R script files for
+  \describe{ \item{scripts}{\R script files for
   non-interactive uses of the \pkg{opm} package,
   particularly for the batch processing of many files. When
   called without input arguments or with the \sQuote{-h}
@@ -40,7 +40,7 @@ if (length(y) > 0) {
 # ...and get the usage messages of all scripts.
 }
 \seealso{
-  base::list.files
+  pkgutils::pkg_files
 
   Other IO-functions: \code{\link{batch_collect}},
   \code{\link{batch_opm_to_yaml}},

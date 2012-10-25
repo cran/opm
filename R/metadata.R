@@ -36,8 +36,8 @@ setGeneric("include_metadata",
 #' stopifnot(is.null(metadata(vaas_1, "Location")))
 #' stopifnot(identical(metadata(copy, "Location"), "Braunschweig"))
 #'
-setMethod("include_metadata", OPM, function(object, md, 
-    keys = opm_opt("csv.keys"), replace = FALSE, skip.failure = FALSE, 
+setMethod("include_metadata", OPM, function(object, md,
+    keys = opm_opt("csv.keys"), replace = FALSE, skip.failure = FALSE,
     remove.keys = TRUE, ...) {
 
   selection <- as.list(csv_data(object, keys))
@@ -53,10 +53,10 @@ setMethod("include_metadata", OPM, function(object, md,
   msg <- if ((nr <- nrow(found)) == 1L)
     NULL
   else if (nr == 0L)
-    listing(selection,
+    pkgutils::listing(selection,
       header = "could not find this key/value combination in 'metadata':")
   else
-    listing(selection,
+    pkgutils::listing(selection,
       header = "the selection resulted in more than one row for:")
 
   # Failures.
@@ -101,7 +101,7 @@ setGeneric("metadata<-",
 #'
 #' Set the meta-information stored together with the data. The
 #' \code{\link{OPMS}} methods set the meta-information stored together with the
-#' measurements for all plates at once (but can address the plates 
+#' measurements for all plates at once (but can address the plates
 #' individually if \code{value} is a formula or a data frame, see below).
 #'
 #' @name metadata.set
@@ -127,10 +127,10 @@ setGeneric("metadata<-",
 #'   metadata entry is deleted). If \code{key} is otherwise, \code{value} must
 #'   be list of values to be prepended, appended or set as metadata,
 #'   either entirely or specifically, depending on \code{key}. Formulas can
-#'   also be used as \code{value}. In that case, the formula can specify the 
-#'   key to be replaced. See the examples below and \code{\link{map_values}} 
+#'   also be used as \code{value}. In that case, the formula can specify the
+#'   key to be replaced. See the examples below and \code{\link{map_values}}
 #'   for details. If \code{object} is of class \sQuote{OPMS}, \code{value} can
-#'   be a data frame whose number of rows must be equal to the number of 
+#'   be a data frame whose number of rows must be equal to the number of
 #'   plates. Metadata to be set will then be selected from each individual row
 #'   in turn and in input order.
 #'
@@ -293,7 +293,7 @@ setMethod("metadata<-", c(WMD, "character", "ANY"), function(object, key,
 #'
 setMethod("metadata<-", c(WMD, "factor", "ANY"), function(object, key,
     value) {
-  metadata(object, as.character(key)) <- value                                              
+  metadata(object, as.character(key)) <- value
   object
 }, sealed = SEALED)
 
@@ -314,10 +314,10 @@ setMethod("metadata<-", c(OPMS, "missing", "formula"), function(object, value) {
     metadata(object@plates[[i]]) <- value
   object
 }, sealed = SEALED)
-    
+
 #' @name metadata.set
 #'
-setMethod("metadata<-", c(OPMS, "missing", "data.frame"), function(object, 
+setMethod("metadata<-", c(OPMS, "missing", "data.frame"), function(object,
     value) {
   LL(object, .wanted = nrow(value))
   if (ncol(value) > 1L)
@@ -328,9 +328,9 @@ setMethod("metadata<-", c(OPMS, "missing", "data.frame"), function(object,
       metadata(object@plates[[i]]) <- as.list(value[i, , drop = FALSE])
   object
 }, sealed = SEALED)
-    
-#-------------------------------------------------------------------------------    
-    
+
+#-------------------------------------------------------------------------------
+
 #' @name metadata.set
 #'
 setMethod("metadata<-", c(OPMS, "ANY", "ANY"), function(object, key, value) {
@@ -341,16 +341,16 @@ setMethod("metadata<-", c(OPMS, "ANY", "ANY"), function(object, key, value) {
 
 #' @name metadata.set
 #'
-setMethod("metadata<-", c(OPMS, "ANY", "data.frame"), function(object, key, 
+setMethod("metadata<-", c(OPMS, "ANY", "data.frame"), function(object, key,
     value) {
   LL(object, .wanted = nrow(value))
   for (i in seq_along(object@plates))
     metadata(object@plates[[i]], key) <- value[i, , drop = TRUE]
   object
 }, sealed = SEALED)
-    
+
 #-------------------------------------------------------------------------------
-    
+
 #' @name metadata.set
 #'
 setMethod("metadata<-", c(OPMS, "character", "data.frame"), function(
@@ -363,7 +363,7 @@ setMethod("metadata<-", c(OPMS, "character", "data.frame"), function(
     metadata(object@plates[[i]], key) <- value[i, j, drop = TRUE]
   object
 }, sealed = SEALED)
-  
+
 #' @name metadata.set
 #'
 setMethod("metadata<-", c(OPMS, "factor", "data.frame"), function(

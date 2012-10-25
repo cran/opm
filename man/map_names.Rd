@@ -2,7 +2,7 @@
 \alias{map_names}
 \title{Map names}
 \arguments{
-  \item{object}{Any R object. The default method applies
+  \item{object}{Any \R object. The default method applies
   the mapping to the \sQuote{names} attribute. The
   behaviour is special for lists, which are traversed
   recursively to also consider sublists with names. Data
@@ -22,7 +22,7 @@
 }
 \value{
   Character vector if \code{mapping} is missing, otherwise
-  an R object of the same class than \code{object}.
+  an \R object of the same class than \code{object}.
 }
 \description{
   Use a character vector or a function for recursively
@@ -104,8 +104,8 @@ stopifnot(y == c("a", "b"), names(y) == y)
 
   Other auxiliary-functions: \code{\link{contains}},
   \code{\link{glob_to_regex}}, \code{\link{kubrick}},
-  \code{\link{listing}}, \code{\link{map_values}},
-  \code{\link{opm_opt}}, \code{\link{separate}}
+  \code{\link{map_values}}, \code{\link{opm_opt}},
+  \code{\link{separate}}
 }
 \keyword{list}
 \keyword{manip}

@@ -14,11 +14,11 @@
 #' If possible, create an \code{\link{OPMS}} object, otherwise return a list.
 #'
 #' @param x \code{\link{OPMX}} object.
-#' @param ... Other R objects.
+#' @param ... Other \R objects.
 #' @param recursive Logical scalar. See \code{c} from the \pkg{base} package.
 #' @export
 #' @return \code{\link{OPMS}} object, list, or \code{\link{OPM}} object
-#'   (if \code{...} is not given and \code{x} is such an object).
+#'   (if \code{\dots} is not given and \code{x} is such an object).
 #' @family combination-functions
 #' @seealso base::c
 #' @keywords manip
@@ -43,7 +43,7 @@
 #' stopifnot(identical(dim(x), c(5L, dim(vaas_1))))
 #'
 setMethod("c", OPMX, function(x, ..., recursive = FALSE) {
-  if (missing(...))
+  if (missing(..1))
     return(x)
   try_opms(list(x, ...))
 }, sealed = SEALED)
@@ -189,7 +189,7 @@ setMethod("+", c(OPMS, "list"), function(e1, e2) {
 #' stopifnot(is(x, "OPMS"), length(x) == 8L)
 #'
 opms <- function(..., precomputed = TRUE, skip = FALSE, group = FALSE) {
-  opms_or_opm <- function(x)  {
+  opms_or_opm <- function(x) {
     case(length(x), NULL, x[[1L]], new(OPMS, plates = x))
   }
   if (is.character(group)) {

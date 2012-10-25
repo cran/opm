@@ -36,6 +36,9 @@
 
   \item{na.last}{Logical scalar. Also passed to
   \code{order}.}
+
+  \item{...}{Optional arguments passed between the
+  methods.}
 }
 \value{
   \code{\link{OPMS}} object with not necessarily the same
@@ -88,18 +91,22 @@ stopifnot(identical(x, vaas_1))
   \code{\link{gen_iii}}, \code{\link{merge}},
   \code{\link{oapply}}, \code{\link{plates}},
   \code{\link{rep}}, \code{\link{rev}},
-  \code{\link{thin_out}}, \code{\link{to_yaml}}
+  \code{\link{thin_out}}, \code{\link{to_yaml}},
+  \code{\link{unique}}
 }
 \keyword{manip}
 
 \docType{methods}
 \alias{sort-methods}
-\alias{sort,OPM-method}
-\alias{sort,OPMS-method}
+\alias{sort,OPMX,missing-method}
+\alias{sort,OPM,logical-method}
+\alias{sort,OPMS,logical-method}
 \usage{
-  \S4method{sort}{OPM}(x) 
+  \S4method{sort}{OPMX,missing}(x, decreasing, ...) 
 
-  \S4method{sort}{OPMS}(x, decreasing = FALSE, by = "setup_time", 
+  \S4method{sort}{OPM,logical}(x, decreasing, ...) 
+
+  \S4method{sort}{OPMS,logical}(x, decreasing, by = "setup_time",
     parse = TRUE, exact = TRUE, strict = TRUE, na.last = TRUE) 
 
 }

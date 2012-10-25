@@ -29,15 +29,16 @@ stopifnot(has_aggr(vaas_4))
   Other getter-functions: \code{\link{aggr_settings}},
   \code{\link{aggregated}}, \code{\link{anyDuplicated}},
   \code{\link{csv_data}}, \code{\link{dim}},
+  \code{\link{disc_settings}}, \code{\link{discretized}},
   \code{\link{duplicated}}, \code{\link{filename}},
-  \code{\link{hours}}, \code{\link{length}},
-  \code{\link{max}}, \code{\link{measurements}},
-  \code{\link{metadata}}, \code{\link{minmax}},
-  \code{\link{plate_type}}, \code{\link{position}},
-  \code{\link{select}}, \code{\link{seq}},
-  \code{\link{setup_time}}, \code{\link{show}},
-  \code{\link{summary}}, \code{\link{well}},
-  \code{\link{wells}}
+  \code{\link{has_disc}}, \code{\link{hours}},
+  \code{\link{length}}, \code{\link{max}},
+  \code{\link{measurements}}, \code{\link{metadata}},
+  \code{\link{minmax}}, \code{\link{plate_type}},
+  \code{\link{position}}, \code{\link{select}},
+  \code{\link{seq}}, \code{\link{setup_time}},
+  \code{\link{show}}, \code{\link{summary}},
+  \code{\link{well}}, \code{\link{wells}}
 }
 \keyword{attribute}
 

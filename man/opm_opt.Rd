@@ -84,8 +84,8 @@ stopifnot(identical(gen.3, FALSE))
 
   Other auxiliary-functions: \code{\link{contains}},
   \code{\link{glob_to_regex}}, \code{\link{kubrick}},
-  \code{\link{listing}}, \code{\link{map_names}},
-  \code{\link{map_values}}, \code{\link{separate}}
+  \code{\link{map_names}}, \code{\link{map_values}},
+  \code{\link{separate}}
 }
 \keyword{utilities}
 

@@ -41,6 +41,8 @@ stopifnot(identical(x, y))
 stopifnot(length(x[[1]]) > length(x[[2]]))
 }
 \references{
+  Bochner, B. R., pers. comm.
+
   \url{http://en.wikipedia.org/wiki/CAS_registry_number}
 
   \url{http://www.genome.jp/kegg/}
@@ -60,7 +62,7 @@ stopifnot(length(x[[1]]) > length(x[[2]]))
 \alias{substrate_info,list-method}
 \alias{substrate_info,factor-method}
 \usage{
-  \S4method{substrate_info}{character}(object, 
+  \S4method{substrate_info}{character}(object,
     what = c("cas", "kegg", "metacyc")) 
 
   \S4method{substrate_info}{list}(object, ...) 

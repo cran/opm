@@ -42,13 +42,7 @@ stopifnot(identical(metadata(copy, "Location"), "Braunschweig"))
 }
 \seealso{
   Other metadata-functions: \code{\link{map_metadata}},
-  \code{\link{metadata.set}}, \code{\link{metadata.set}},
-  \code{\link{metadata.set}}, \code{\link{metadata.set}},
-  \code{\link{metadata.set}}, \code{\link{metadata.set}},
-  \code{\link{metadata.set}}, \code{\link{metadata.set}},
-  \code{\link{metadata.set}}, \code{\link{metadata.set}},
-  \code{\link{metadata.set}}, \code{\link{metadata.set}},
-  \code{\link{metadata.set}}, \code{\link{metadata_chars}}
+  \code{\link{metadata.set}},             \code{\link{metadata_chars}}
 }
 \keyword{manip}
 
@@ -57,8 +51,8 @@ stopifnot(identical(metadata(copy, "Location"), "Braunschweig"))
 \alias{include_metadata,OPM-method}
 \alias{include_metadata,OPMS-method}
 \usage{
-  \S4method{include_metadata}{OPM}(object, md, 
-    keys = opm_opt("csv.keys"), replace = FALSE, skip.failure = FALSE, 
+  \S4method{include_metadata}{OPM}(object, md,
+    keys = opm_opt("csv.keys"), replace = FALSE, skip.failure = FALSE,
     remove.keys = TRUE, ...) 
 
   \S4method{include_metadata}{OPMS}(object, ...) 

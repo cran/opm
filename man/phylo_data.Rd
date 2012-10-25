@@ -4,7 +4,7 @@
 \arguments{
   \item{object}{Data frame, numeric matrix or \sQuote{OPMS}
   object (with aggregated values). Currently only
-  \sQuote{integer}, \sQuote{logical}, \sQuote{numeric} and
+  \sQuote{integer}, \sQuote{logical}, \sQuote{double} and
   \sQuote{character} matrix content is supported. The
   data-frame and \sQuote{OPMS} methods first call
   \code{\link{extract}} and then the matrix method.}
@@ -88,7 +88,9 @@
 
   \item{discrete.args}{Optional list of arguments passed
   from the \sQuote{OPMS} method to \code{\link{discrete}}.
-  If set to \code{NULL}, discretization is turned off.}
+  If set to \code{NULL}, discretization is turned off.
+  Ignored if precomputed discretized values are chosen by
+  setting \code{subset} to \sQuote{disc}.}
 
   \item{...}{Optional arguments passed between the methods
   (i.e., from the other methods to the matrix method).}
@@ -232,8 +234,7 @@ stopifnot(longer(y.noconst, y.nouninf))
 \seealso{
   base::comment base::write
 
-  Other phylogeny-functions: \code{\link{best_cutoff}},
-  \code{\link{discrete}}, \code{\link{safe_labels}}
+  Other phylogeny-functions: \code{\link{safe_labels}}
 }
 \keyword{IO}
 \keyword{character}
@@ -245,16 +246,18 @@ stopifnot(longer(y.noconst, y.nouninf))
 \alias{phylo_data,data.frame-method}
 \alias{phylo_data,OPMS-method}
 \usage{
-  \S4method{phylo_data}{matrix}(object, 
+  \S4method{phylo_data}{matrix}(object,
     format = opm_opt("phylo.fmt"), outfile = "", enclose = TRUE, indent = 3L,
-    paup.block = FALSE, delete = "uninf", join = FALSE, 
-    digits = opm_opt("digits"), prefer.char = FALSE, run.tidy = FALSE) 
+    paup.block = FALSE, delete = "none", join = FALSE,
+    digits = opm_opt("digits"),
+    prefer.char = identical(format, "html") || !identical(join, FALSE),
+    run.tidy = FALSE) 
 
-  \S4method{phylo_data}{data.frame}(object, as.labels = NULL, 
+  \S4method{phylo_data}{data.frame}(object, as.labels = NULL,
     what = "numeric", sep = " ", ...) 
 
-  \S4method{phylo_data}{OPMS}(object, as.labels, subset = "A",
-    sep = " ", extract.args = list(), 
+  \S4method{phylo_data}{OPMS}(object, as.labels, subset = "disc",
+    sep = " ", extract.args = list(), join = TRUE,
     discrete.args = list(range = TRUE, gap = TRUE), ...) 
 
 }

@@ -8,9 +8,10 @@
   \item{set}{Character scalar. Name of the colour vector to
   use. Colour vectors have been optimized for maximum
   contrast between adjacent colours, either manually or
-  using \code{\link{max_rgb_contrast}}. Names ending in
-  \sQuote{.i} indicate vectors in inverse order (compared
-  to the vector with the same name except \sQuote{.i}).}
+  using \code{max_rgb_contrast} from the \pkg{pkgutils}
+  package.  Names ending in \sQuote{.i} indicate vectors in
+  inverse order (compared to the vector with the same name
+  except \sQuote{.i}).}
 }
 \value{
   Character vector (names of colours).
@@ -34,9 +35,7 @@ stopifnot(is.character(x), length(x) > 0L, identical(x, rev(y)))
 
   Other plotting-functions: \code{\link{ci_plot}},
   \code{\link{heat_map}}, \code{\link{level_plot}},
-  \code{\link{max_rgb_contrast}}, \code{\link{mypdf}},
-  \code{\link{paper_size}}, \code{\link{radial_plot}},
-  \code{\link{xy_plot}}
+  \code{\link{radial_plot}}, \code{\link{xy_plot}}
 }
 \keyword{color}
 

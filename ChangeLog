@@ -1,4 +1,33 @@
 
+
+################################################################################
+
+
+2012-10-25 (the 7th release on CRAN)
+
+- fixed bug in metadata-file handling of 'run_opm.R' script
+- listing(), max_rgb_contrast(), paper_size() and mypdf(), as well as a series 
+  of internal functions, moved to 'pkgutils' package; introduced dependency on
+  this package
+- Ckmeans.1d.dp is now a mandatory dependency
+- data set 'vaas_et_al' moved to 'opmdata' package for size reasons
+- removed 'kmeans.args' and 'program' arguments of run_kmeans()
+- novel OPMD class and according novel functions do_disc(), has_disc(), 
+  discretized() and disc_settings(), as well as according extensions of the IO
+  and conversion functions
+- extract() can now also extract discretized  data
+- select() gets a 'positive' argument and a  a 'negative' argument
+- phylo_data() has been made more user-friendly
+- summary() for OPM(S) objects now shows whether or not aggregated or
+  discretized values are present
+- improved method definitions of sort(), duplicated() and anyDuplicated(), and
+  novel unique() method for OPM and OPMS objects
+- the vector method of discrete() now preserves the 'names' attribute
+- the matrix method of map_values() now preserves more attributes
+- opm vignette was included
+- improved documentation of flatten()
+
+
 ################################################################################
 
 

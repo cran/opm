@@ -4,14 +4,14 @@
 \arguments{
   \item{x}{\code{\link{OPMX}} object.}
 
-  \item{...}{Other R objects.}
+  \item{...}{Other \R objects.}
 
   \item{recursive}{Logical scalar. See \code{c} from the
   \pkg{base} package.}
 }
 \value{
   \code{\link{OPMS}} object, list, or \code{\link{OPM}}
-  object (if \code{...} is not given and \code{x} is such
+  object (if \code{\dots} is not given and \code{x} is such
   an object).
 }
 \description{

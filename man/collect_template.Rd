@@ -69,7 +69,7 @@
   add these data as novel rows to previously collected
   data. It writes the collected template to a file for use
   with an external editor, and/or creates a data frame for
-  editing the data directly in R with the \code{edit}
+  editing the data directly in \R with the \code{edit}
   function. The \code{\link{OPM}} and \code{\link{OPMS}}
   methods collect a data frame.
 }

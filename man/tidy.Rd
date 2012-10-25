@@ -38,7 +38,7 @@
 \usage{
   \S4method{tidy}{missing}() 
 
-  \S4method{tidy}{character}(object, check = TRUE, 
+  \S4method{tidy}{character}(object, check = TRUE,
     args = c("-u", "-i")) 
 
   \S4method{tidy}{list}(object, ...) 

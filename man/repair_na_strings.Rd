@@ -12,7 +12,7 @@
 }
 \description{
   Replace \sQuote{NA} by \code{NA_character_}. When reading
-  YAML input previously output by R, \sQuote{NA} values
+  YAML input previously output by \R, \sQuote{NA} values
   cause numeric vectors to be interpreted as character.
   This function fixes this problem and also takes care of
   misinterpreted numbers in exponential notation.
@@ -33,6 +33,6 @@
   \S4method{repair_na_strings}{character}(object) 
 
   \S4method{repair_na_strings}{list}(object,
-    type = c("numeric", "integer", "complex")) 
+    type = c("numeric", "integer", "complex", "logical")) 
 
 }

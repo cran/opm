@@ -5,7 +5,7 @@
   is_uniform(x, na.rm = FALSE)
 }
 \arguments{
-  \item{x}{An R object to which \code{duplicated} can be
+  \item{x}{An \R object to which \code{duplicated} can be
   applied.}
 
   \item{na.rm}{Logical scalar. Remove \code{NA} elements

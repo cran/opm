@@ -70,9 +70,11 @@ data(vaas_1)
 level_plot(vaas_1, main = "Levelplot example")
 
 # OPMS method
+\dontrun{
 data(vaas_4)
 # headers include species and strain
 level_plot(vaas_4, include = c("Species", "Strain"))
+}
 }
 \references{
   Jacobsen, J. S., Joyner, D. C., Borglin, S. E., Hazen, T.
@@ -95,10 +97,8 @@ level_plot(vaas_4, include = c("Species", "Strain"))
   lattice::levelplot grDevices::colorRampPalette
 
   Other plotting-functions: \code{\link{ci_plot}},
-  \code{\link{heat_map}}, \code{\link{max_rgb_contrast}},
-  \code{\link{mypdf}}, \code{\link{paper_size}},
-  \code{\link{radial_plot}}, \code{\link{select_colors}},
-  \code{\link{xy_plot}}
+  \code{\link{heat_map}}, \code{\link{radial_plot}},
+  \code{\link{select_colors}}, \code{\link{xy_plot}}
 }
 \keyword{hplot}
 
@@ -107,13 +107,13 @@ level_plot(vaas_4, include = c("Species", "Strain"))
 \alias{level_plot,OPM-method}
 \alias{level_plot,OPMS-method}
 \usage{
-  \S4method{level_plot}{OPM}(x, main = list(), 
+  \S4method{level_plot}{OPM}(x, main = list(),
     colors = opm_opt("color.borders"), cex = NULL, space = "Lab", bias = 0.5,
     num.colors = 200L, ...) 
 
-  \S4method{level_plot}{OPMS}(x, main = list(), 
-    colors = opm_opt("color.borders"), panel.headers = TRUE, cex = NULL, 
-    strip.fmt = list(), striptext.fmt = list(), legend.sep = " ", 
+  \S4method{level_plot}{OPMS}(x, main = list(),
+    colors = opm_opt("color.borders"), panel.headers = TRUE, cex = NULL,
+    strip.fmt = list(), striptext.fmt = list(), legend.sep = " ",
     space = "Lab", bias = 0.5, num.colors = 200L, ...) 
 
 }

@@ -37,334 +37,6 @@ PAUP_BLOCK <- c(
 
 
 ################################################################################
-#
-# Character discretization
-#
-
-
-#' Determine best cutoff
-#'
-#' Determine the best cutoff for dividing a numeric matrix into two categories
-#' by minimizing within-group discrepancies. That is, for each combination of
-#' row group and column maximize the number of contained elements that are in 
-#' the category in which most of the elements within this combination of row
-#' group and column are located.
-#'
-#' @param x Numeric matrix.
-#' @param y Factor or character vector indicating group affiliations. Its 
-#'   length must correspond to the number of rows of \code{x}.
-#' @param combined Logical scalar. If \code{TRUE}, determine a single threshold
-#'   for the entire matrix. If \code{FALSE}, determine one threshold for each
-#'   group of rows of \code{x} that corresponds to a level of \code{y}.
-#' @param lower Numeric scalar. Lower bound for the cutoff values to test.
-#' @param upper Numeric scalar. Upper bound for the cutoff values to test.
-#' @param all Logical scalar. If \code{TRUE}, calculate the score for all 
-#'   possible cutoffs for \code{x}. This is slow and is only useful for 
-#'   plotting complete optimization curves.
-#' @param ... Optional arguments passed between the methods.
-#' @return If \code{combined} is \code{TRUE}, either a matrix or a vector: If 
-#'   \code{all} is \code{TRUE}, a two-column matrix with (i) the cutoffs 
-#'   examined and (ii) the resulting scores. If \code{all} is \code{FALSE}, a 
-#'   vector with the entries \sQuote{maximum} (the best cutoff) and 
-#'   \sQuote{objective} (the score it achieved). If \code{combined} is 
-#'   \code{FALSE}, either a list of matrices or a matrix. If \code{all} is 
-#'   \code{TRUE}, a list of matrices structures like the single matrix returned
-#'   if \code{combined} is \code{TRUE}. If \code{all} is \code{FALSE}, a matrix
-#'   with two colums called \sQuote{maximum} \sQuote{objective}, and one row
-#'   per level of \code{y}.
-#'
-#' @details The scoring function to be maximized is calculated as follows. All
-#'   values in \code{x} are divided into those larger then the cutoff and those
-#'   at most large as the cutoff. For each combination of group and matrix 
-#'   column the frequencies of the two categories are determined, and the 
-#'   respective larger ones are summed up over all combinations. This value is
-#'   then divided by the frequency over the entire matrix of the more frequent
-#'   of the two categories. This is done to avoid trivial solutions with minimal
-#'   and maximal cutoffs, causing all values to be placed in the same category.
-#'
-#' @export
-#' @family phylogeny-functions
-#' @keywords character category
-#' @seealso stats::optimize
-#'
-#' @examples
-#' x <- matrix(c(5:2, 1:2, 7:8), ncol = 2)
-#' grps <- c("a", "a", "b", "b")
-#'
-#' # combined optimization
-#' (y <- best_cutoff(x, grps))
-#' stopifnot(is.numeric(y), length(y) == 2)
-#' stopifnot(y[["maximum"]] < 4, y[["maximum"]] > 3, y[["objective"]] == 2)
-#' plot(best_cutoff(x, grps, all = TRUE), type = "l")
-#'
-#' # separate optimization
-#' (y <- best_cutoff(x, grps, combined = FALSE))
-#' stopifnot(is.matrix(y), dim(y) == c(2, 2))
-#' stopifnot(y["a", "objective"] == 2, y["b", "objective"] == 2)
-#' (y <- best_cutoff(x, grps, combined = FALSE, all = TRUE))
-#' plot(y$a, type = "l")
-#' plot(y$b, type = "l")
-#'
-setGeneric("best_cutoff", function(x, y, ...) standardGeneric("best_cutoff"))
-
-setMethod("best_cutoff", c("matrix", "character"), function(x, y, ...) {
-  best_cutoff(x, as.factor(y), ...)
-}, sealed = SEALED)
-
-setMethod("best_cutoff", c("matrix", "factor"), function(x, y, 
-    combined = TRUE, lower = min(x, na.rm = TRUE), 
-    upper = max(x, na.rm = TRUE), all = FALSE) {
-  
-  all_cutoffs <- function(x) {
-    x <- sort(unique(as.vector(x)))
-    x[-1L] - diff(x) / 2
-  }
-  freq_score <- function(x) max(tabulate(x, nbins = 2L))
-  freq_scores <- function(x) apply(x, 2L, freq_score)
-  mat_freq_score <- function(x) {
-    sum(unlist(lapply(y, function(i) freq_scores(x[i, , drop = FALSE])))) /
-      freq_score(x)
-  }
-  mat_freq_score_2 <- function(x) sum(freq_scores(x)) / freq_score(x)
-  opt_fun <- function(threshold) mat_freq_score((x > threshold) + 1L)
-  opt_fun_2 <- function(threshold, x) mat_freq_score_2((x > threshold) + 1L)
-
-  LL(all, upper, lower, combined)
-  if (!any(duplicated(na.fail(L(y, wanted = nrow(x))))))
-    stop("'y' contains only singletons")
-
-  y <- indexes(y)
-  if (combined) {
-    if (all)
-      cbind(cutoff = cutoffs <- all_cutoffs(x), 
-        score = vapply(cutoffs, opt_fun, numeric(1L)))
-    else
-      unlist(stats::optimize(f = opt_fun, maximum = TRUE, lower = lower, 
-        upper = upper))
-  } else if (all)
-    lapply(y, function(i) {
-      cutoffs <- all_cutoffs(m <- x[i, , drop = FALSE])
-      cbind(cutoff = cutoffs,
-        score = vapply(cutoffs, opt_fun_2, numeric(1L), x = m))
-    })
-  else
-    do.call(rbind, lapply(y, function(i) {
-      unlist(stats::optimize(f = opt_fun_2, x = x[i, , drop = FALSE], 
-        maximum = TRUE, lower = lower, upper = upper))
-    }))
-
-}, sealed = SEALED)
-
-                    
-################################################################################
-    
-
-#' Convert to discrete characters
-#'
-#' Convert a vector of continuous characters to discrete ones. One of the uses
-#' of this functions is to create character data suitable for phylogenetic
-#' studies with programs such as PAUP* and RAxML. These accept only discrete
-#' characters with at most 32 states, coded as 0 to 9 followed by A to V. For
-#' the full export one additionally needs \code{\link{phylo_data}}. The matrix
-#' method is just a wrapper that takes care of the matrix dimensions, and the
-#' data-frame method is a wrapper for that method.
-#'
-#' @param x Numeric vector or a \code{\link{MOA}} object convertible to a
-#'   numeric vector. The data-frame method first calls \code{\link{extract}},
-#'   restricting the columns to the numeric ones.
-#'
-#' @param range In non-\code{gap} mode (see next argument) the assumed real
-#'   range of the data; must contain all elements of \code{x}, but can be much
-#'   wider. In \code{gap} mode, it must, in contrast, lie within the range of
-#'   \code{x}. If \code{range} is set to \code{TRUE}, the empirical range of
-#'   \code{x} is used in non-\code{gap} mode. In \code{gap} mode, the range is
-#'   determined using \code{\link{run_kmeans}} with the number of clusters set
-#'   to \code{3} and then applying \code{\link{borders}} to the result.
-#'
-#' @param gap Logical scalar. If \code{TRUE}, always convert to binary or
-#'   ternary characters, ignoring \code{states}. \code{range} then indicates a
-#'   subrange of \code{x} within which character conversion is ambiguous and
-#'   has to be treated as either missing information or intermediate character
-#'   state, depending on \code{middle.na}. If \code{FALSE} (the default), apply
-#'   an equal-width-intervals discretization with the widths determined from
-#'   the number of requested \code{states} and \code{range}.
-#'
-#' @param output String determining the output mode: \sQuote{character},
-#'   \sQuote{integer}, \sQuote{logical}, \sQuote{factor}, or \sQuote{numeric}.
-#'   \sQuote{numeric} simply returns \code{x}, but performs the range checks.
-#'   One cannot combine \sQuote{logical} with \code{TRUE} values for both
-#'   \sQuote{gap} and \sQuote{middle.na}.
-#'
-#' @param middle.na Logical scalar. Only relevant in \code{gap} mode: if
-#'   \code{TRUE}, the middle value yields \code{NA} (uncertain whether negative
-#'   or positive). If \code{FALSE}, the middle value lies between the left and
-#'   the right one (i.e., a third character state meaning \sQuote{weak}). This
-#'   is simply coded as 0-1-2 and thus cannot be combined with \sQuote{logical}
-#'   as \code{output} setting.
-#'
-#' @param states Integer or character vector. Ignored in \code{gap} mode and if
-#'   \code{output} is not \sQuote{character}. Otherwise, (i) a single-element
-#'   character vector, which is split into its elements, (ii) a multi-element
-#'   character vector which is used directly, or (iii) an integer vector
-#'   indicating the elements to pick from the default character states. In the
-#'   latter case, a single integer is interpreted as the upper bound of an
-#'   integer vector starting at 1.
-#'
-#' @param as.labels Vector of data-frame indices. See \code{\link{extract}}.
-#' @param sep Character scalar. See \code{\link{extract}}.
-#'
-#' @param ... Optional arguments passed between the methods or, if requested,
-#'   to \code{\link{run_kmeans}} (except \code{object} and \code{k}, see there).
-#'
-#' @export
-#' @return Double, integer, character or logical vector or factor, depending on
-#'   \code{output}. For the matrix method, a matrix composed of a vector as
-#'   produced by the numeric method, the original \code{dimensions} and the
-#'   original \code{dimnames} attributes of \code{x}.
-#' @family phylogeny-functions
-#' @seealso base::cut
-#' @keywords character category
-#' @references Dougherty, J., Kohavi, R., Sahami, M. 1995 Supervised and
-#'   unsupervised discretization of continuous features. In: Prieditis, A.,
-#'   Russell, S. (eds.) \emph{Machine Learning: Proceedings of the fifth
-#'   international conference}.
-#' @references Ventura, D., Martinez, T. R. 1995 An empirical comparison of
-#'   discretization methods. \emph{Proceedings of the Tenth International
-#'   Symposium on Computer and Information Sciences}, p. 443--450.
-#' @references Bunuel, L. 1972 \emph{Le charme discret de la bourgeoisie.}
-#'   France/Spain, 96 min.
-#'
-#' @examples
-#' # Treat everything between 3.4 and 4.5 as ambiguous
-#' (x <- discrete(1:5, range = c(3.5, 4.5), gap = TRUE))
-#' stopifnot(identical(x, c("0", "0", "0", "?", "1")))
-#'
-#' # Treat everything between 3.4 and 4.5 as intermediate
-#' (x <- discrete(1:5, range = c(3.5, 4.5), gap = TRUE, middle.na = FALSE))
-#' stopifnot(identical(x, c("0", "0", "0", "1", "2")))
-#'
-#' # Boring example: real and possible range as well as the number of states
-#' # to code the data have a 1:1 relationship
-#' (x <- discrete(1:5, range = c(1, 5), states = 5))
-#' stopifnot(identical(x, as.character(0:4)))
-#'
-#' # Now fit the data into a potential range twice as large, and at the
-#' # beginning of it
-#' (x <- discrete(1:5, range = c(1, 10), states = 5))
-#' stopifnot(identical(x, as.character(c(0, 0, 1, 1, 2))))
-#'
-#' # Matrix and data-frame methods
-#' x <- matrix(as.numeric(1:10), ncol = 2)
-#' (y <- discrete(x, range = c(3.4, 4.5), gap = TRUE))
-#' stopifnot(identical(dim(x), dim(y)))
-#' (yy <- discrete(as.data.frame(x), range = c(3.4, 4.5), gap = TRUE))
-#' stopifnot(y == yy)
-#'
-#' # K-means based discretization of PM data
-#' data(vaas_4)
-#' x <- extract(vaas_4, as.labels = list("Species", "Strain"),
-#'   in.parens = FALSE)
-#' head(y <- discrete(x, range = TRUE, gap = TRUE))
-#' stopifnot(c("0", "?", "1") %in% y)
-#'
-setGeneric("discrete", function(x, ...) standardGeneric("discrete"))
-
-setMethod("discrete", "numeric", function(x, range, gap = FALSE,
-    output = c("character", "integer", "logical", "factor", "numeric"),
-    middle.na = TRUE, states = 32L, ...) {
-
-  convert_states <- function(states) {
-    if (length(states) == 0L)
-      CHARACTER_STATES
-    else if (is.numeric(states))
-      if (length(states) > 1L)
-        CHARACTER_STATES[states]
-      else
-        CHARACTER_STATES[seq(states)]
-    else if (is.character(states))
-      if (length(states) == 1L) {
-        if (!nzchar(states))
-          stop("'states' cannot be the empty string")
-        unlist(strsplit(states, "", fixed = TRUE))
-      } else if (any(nchar(states) != 1L))
-        stop("'states' cannot contain strings of length other than one")
-      else
-        states
-    else
-      stop("'states' must be empty or character or numeric vector")
-  }
-
-  output <- match.arg(output)
-
-  if (isTRUE(range)) {
-    range <- if (L(gap))
-      borders(run_kmeans(object = x, k = 3L, ...))[[1L]]
-    else
-      range(x)
-  } else
-    range <- sort(L(range, wanted = 2L))
-
-  if (L(gap)) { # binary-state mode with a gap due to ambiguity
-
-    x.range <- range(x)
-    if (range[1L] < x.range[1L] || range[2L] > x.range[2L])
-      stop("in 'gap' mode, 'range' must be within the range of 'x'")
-    if (output == "numeric")
-      return(x)
-    tol <- .Machine$double.eps^0.5
-    breaks <- c(x.range[1L], c(range[1L] + tol, range[2L] - tol),
-      x.range[2L] + tol)
-    ints <- cut(x, breaks, labels = FALSE, right = FALSE)
-    map <- if (L(middle.na))
-      case(output,
-        character = c("0", MISSING_CHAR, "1"),
-        integer = c(0L, NA_integer_, 1L),
-        logical = c(FALSE, NA, TRUE),
-        factor = ordered(c(0L, NA_integer_, 1L))
-      )
-    else
-      case(output,
-        character = c("0", "1", "2"),
-        integer = c(0L, 1L, 2L),
-        logical = stop("one cannot combine 'logical' and 'middle.na'"),
-        factor = ordered(c(0L, 1L, 2L))
-      )
-    map[ints]
-
-  } else { # binary- to multi-state mode without a gap
-
-    if (any(x > range[2L] | x < range[1L]))
-      stop("if not in 'gap' mode, all values must be between ", range[1L],
-        " and ", range[2L])
-    if (output == "numeric")
-      return(x)
-    states <- convert_states(states)
-    ints <- if ((nstates <- length(states)) > 1L)
-      cut(x = c(range[1L:2L], x), breaks = nstates, right = FALSE,
-        labels = FALSE)[-1L:-2L]
-    else
-      rep.int(1L, length(x))
-    case(output,
-      character = states[ints],
-      integer = ints,
-      logical = as.logical(ints - 1L),
-      factor = ordered(ints)
-    )
-
-  }
-}, sealed = SEALED)
-
-setMethod("discrete", MOA, function(x, ...) {
-  map_values(object = x, mapping = discrete, ...)
-}, sealed = SEALED)
-
-setMethod("discrete", "data.frame", function(x, as.labels = NULL, sep = " ", 
-    ...) {
-  discrete(extract(x, as.labels = as.labels, sep = sep, what = "numeric"), ...)
-}, sealed = SEALED)
-
-
-################################################################################
 
 
 setGeneric("check_discrete",
@@ -443,7 +115,7 @@ setGeneric("join_discrete",
 #'
 setMethod("join_discrete", "character", function(object, format) {
   check_discrete(object, joined = FALSE)
-  object <- sort(unique(object))
+  object <- sort.int(unique(object))
   if (length(object) > 1L)
     object <- grep(MISSING_CHAR, object, fixed = TRUE, value = TRUE,
       invert = TRUE)
@@ -621,7 +293,7 @@ setMethod("phylo_header", "matrix", function(object, format, enclose = TRUE,
   case(match.arg(format, PHYLO_FORMATS),
 
     html = {
-      result <- sprintf("Strains: %s.", listing(rownames(object),
+      result <- sprintf("Strains: %s.", pkgutils::listing(rownames(object),
         style = "%s, %s", collapse = "; ", force.numbers = TRUE))
       result <- paste(result, paste(c(
         "+, positive metabolic response",
@@ -867,8 +539,8 @@ setGeneric("phylo_data", function(object, ...) standardGeneric("phylo_data"))
 #'
 #' @param object Data frame, numeric matrix or \sQuote{OPMS} object (with
 #'   aggregated values). Currently only \sQuote{integer}, \sQuote{logical},
-#'   \sQuote{numeric} and \sQuote{character} matrix content is supported. The
-#'   data-frame and \sQuote{OPMS} methods first call \code{\link{extract}} and 
+#'   \sQuote{double} and \sQuote{character} matrix content is supported. The
+#'   data-frame and \sQuote{OPMS} methods first call \code{\link{extract}} and
 #'   then the matrix method.
 #' @param format Character scalar, either \sQuote{epf} (Extended Phylip Format),
 #'   \sQuote{nexus}, \sQuote{phylip}, \sQuote{hennig} or \sQuote{html}. If
@@ -894,8 +566,8 @@ setGeneric("phylo_data", function(object, ...) standardGeneric("phylo_data"))
 #'   which are either constant (in the strict sense) or are columns
 #'   in which some fields contain polymorphisms, and no pairs of fields
 #'   share no character states. If \sQuote{ambig}, columns with ambiguities are
-#'   removed. If \sQuote{constant}, columns which are constant in the strict 
-#'   sense are removed. \code{delete} is currently ignored for formats other 
+#'   removed. If \sQuote{constant}, columns which are constant in the strict
+#'   sense are removed. \code{delete} is currently ignored for formats other
 #'   than \sQuote{html}, and note that columns become rows in the final HTML
 #'   output.
 #'
@@ -912,8 +584,8 @@ setGeneric("phylo_data", function(object, ...) standardGeneric("phylo_data"))
 #' @param run.tidy Logical scalar. Filter the resulting HTML through the HTML
 #'   Tidy program? Ignored unless \code{format} is \sQuote{html}. Otherwise, if
 #'   \code{TRUE}, it is an error if the Tidy executable is not found.
-#' 
-#' @param as.labels Vector of data-frame indices or \sQuote{OPMS} metadata 
+#'
+#' @param as.labels Vector of data-frame indices or \sQuote{OPMS} metadata
 #'   entries. See \code{\link{extract}}.
 #' @param what Character scalar. See \code{\link{extract}}.
 #' @param sep Character scalar. See \code{\link{extract}}.
@@ -921,13 +593,14 @@ setGeneric("phylo_data", function(object, ...) standardGeneric("phylo_data"))
 #' @param subset Character scalar passed to the \sQuote{OPMS} method of
 #'   \code{\link{extract}}.
 #' @param extract.args Optional list of arguments passed to that method.
-#' @param discrete.args Optional list of arguments passed from the 
+#' @param discrete.args Optional list of arguments passed from the
 #'   \sQuote{OPMS} method to \code{\link{discrete}}. If set to \code{NULL},
-#'   discretization is turned off.
+#'   discretization is turned off. Ignored if precomputed discretized values are
+#'   chosen by setting \code{subset} to \sQuote{disc}.
 #'
 #' @param ... Optional arguments passed between the methods (i.e., from the
 #'   other methods to the matrix method).
-#' 
+#'
 #' @export
 #' @return Character vector, each element representing a line in a potential
 #'   output file, returned invisibly if \code{outfile} is given.
@@ -984,7 +657,7 @@ setGeneric("phylo_data", function(object, ...) standardGeneric("phylo_data"))
 #'
 #' (y.epf <- phylo_data(x, format = "epf"))
 #' stopifnot(is.character(y.epf), length(y.epf) == 3)
-#' stopifnot(identical(y.epf, phylo_data(as.data.frame(x), what = "factor", 
+#' stopifnot(identical(y.epf, phylo_data(as.data.frame(x), what = "factor",
 #'   format = "epf")))
 #'
 #' (y.phylip <- phylo_data(x, format = "phylip"))
@@ -1023,14 +696,14 @@ setGeneric("phylo_data", function(object, ...) standardGeneric("phylo_data"))
 #' stopifnot(c("</html>", "</head>", "</body>", "") %in% y)
 #'
 #' # 'OPMS' method
-#' (yy <- phylo_data(vaas_4, as.labels = "Species", format = "html", 
+#' (yy <- phylo_data(vaas_4, as.labels = "Species", format = "html",
 #'   join = TRUE, extract.args = list(in.parens = FALSE)))
 #' stopifnot(identical(y, yy))
 #'
 #' # Effect of deletion
 #' (y <- phylo_data(x, "html", delete = "none", join = FALSE))
 #' (y.noambig <- phylo_data(x, "html", delete = "ambig", join = FALSE))
-#' stopifnot(identical(y, y.noambig)) 
+#' stopifnot(identical(y, y.noambig))
 #' # ambiguities are created by joining only
 #' longer <- function(x, y) {
 #'   any(nchar(x) > nchar(y)) && !any(nchar(x) < nchar(y))
@@ -1043,18 +716,21 @@ setGeneric("phylo_data", function(object, ...) standardGeneric("phylo_data"))
 #' (y.noconst <- phylo_data(x, "html", delete = "const", join = TRUE))
 #' stopifnot(longer(y.noconst, y.nouninf))
 #'
-setMethod("phylo_data", "matrix", function(object, 
+setMethod("phylo_data", "matrix", function(object,
     format = opm_opt("phylo.fmt"), outfile = "", enclose = TRUE, indent = 3L,
-    paup.block = FALSE, delete = "uninf", join = FALSE, 
-    digits = opm_opt("digits"), prefer.char = FALSE, run.tidy = FALSE) {
+    paup.block = FALSE, delete = "none", join = FALSE,
+    digits = opm_opt("digits"),
+    prefer.char = identical(format, "html") || !identical(join, FALSE),
+    run.tidy = FALSE) {
   LL(outfile, prefer.char, run.tidy)
   if (is.logical(object))
     mode(object) <- "integer"
   if (is.integer(object))
-    mode(object) <- if (prefer.char)
-      "character"
-    else
-      "numeric"
+    if (prefer.char) {
+      mode(object) <- "character"
+      object[is.na(object)] <- MISSING_CHAR
+    } else
+      mode(object) <- "numeric"
   object <- join_discrete(object, format = format, groups = join,
     digits = digits)
   lines <- c(
@@ -1072,27 +748,30 @@ setMethod("phylo_data", "matrix", function(object,
     lines
 }, sealed = SEALED)
 
-setMethod("phylo_data", "data.frame", function(object, as.labels = NULL, 
+setMethod("phylo_data", "data.frame", function(object, as.labels = NULL,
     what = "numeric", sep = " ", ...) {
   object <- extract(object, as.labels = as.labels, what = what, sep = sep)
   phylo_data(object, ...)
 }, sealed = SEALED)
 
-setMethod("phylo_data", OPMS, function(object, as.labels, subset = "A",
-    sep = " ", extract.args = list(), 
+setMethod("phylo_data", OPMS, function(object, as.labels, subset = "disc",
+    sep = " ", extract.args = list(), join = TRUE,
     discrete.args = list(range = TRUE, gap = TRUE), ...) {
   extract.args <- insert(as.list(extract.args), list(object = object,
     as.labels = as.labels, as.groups = NULL, subset = subset,
-    dataframe = FALSE, ci = FALSE, sep = sep), .force = TRUE)
+    dups = if (isTRUE(join))
+      "ignore"
+    else
+      "warn", dataframe = FALSE, ci = FALSE, sep = sep), .force = TRUE)
   object <- do.call(extract, extract.args)
-  if (!is.null(discrete.args)) {
+  if (!is.null(discrete.args) && !is.logical(object)) {
     discrete.args <- as.list(discrete.args)
     discrete.args$x <- object
     object <- do.call(discrete, discrete.args)
   }
-  phylo_data(object, ...)
+  phylo_data(object = object, join = join, ...)
 }, sealed = SEALED)
-  
+
 
 ################################################################################
 

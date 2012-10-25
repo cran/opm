@@ -26,7 +26,7 @@
   \S4method{parse_time}{character,missing}(object, format,
     tz = opm_opt("time.zone")) 
 
-  \S4method{parse_time}{character,character}(object, format, 
+  \S4method{parse_time}{character,character}(object, format,
     tz = "") 
 
 }

@@ -80,19 +80,19 @@ setMethod("measurements", OPM, function(object, i) {
 #'
 #' @param x \code{\link{OPM}}, \code{\link{OPMA}} or \code{\link{OPMS}} object.
 #' @param i Vector or missing. For the \code{\link{OPM}} and \code{\link{OPMA}}
-#'   method, the indexes of one to several time points. For the 
+#'   method, the indexes of one to several time points. For the
 #'   \code{\link{OPMS}} method, the indexes of one to several plates.
 #' @param j Vector or missing. For the \code{\link{OPM}} and \code{\link{OPMA}}
-#'   method, the indexes or names of one to several wells. For the 
+#'   method, the indexes or names of one to several wells. For the
 #'   \code{\link{OPMS}} method, the indexes of one to several time points. In
-#'   that case, if \code{j} is a list, its values are passed to the respective 
-#'   \code{\link{OPM}} object separately, allowing for individual choices of 
+#'   that case, if \code{j} is a list, its values are passed to the respective
+#'   \code{\link{OPM}} object separately, allowing for individual choices of
 #'   time points. Otherwise \code{j} is used as the \code{i} argument of the
 #'   \code{\link{OPM}} and \code{\link{OPMA}} method.
 #' @param k Vector or missing. The \code{\link{OPMS}} method uses \code{k} as
 #'   \code{j} argument of the \code{\link{OPM}} and \code{\link{OPMA}} method.
 #'   That is, this parameter selects the wells.
-#' @param ... This should \strong{not} be set. It is an error to specify 
+#' @param ... This should \strong{not} be set. It is an error to specify
 #'   additional dimensions.
 #' @param drop Logical scalar. Remove the aggregated data and turn
 #'   \code{\link{OPMA}} to \code{\link{OPM}} objects? Has no effect if \code{x}
@@ -180,10 +180,20 @@ setMethod("[", OPM, function(x, i, j, ..., drop = FALSE) {
 }, sealed = SEALED)
 
 setMethod("[", OPMA, function(x, i, j, ..., drop = FALSE) {
-  result <- callNextMethod()
+  result <- callNextMethod(x = x, i = i, j = j, ..., drop = drop)
   if (drop)
     return(as(result, OPM))
-  result@aggregated <- result@aggregated[, j, ..., drop = FALSE]
+  if (!missing(j))
+    result@aggregated <- result@aggregated[, j, ..., drop = FALSE]
+  result
+}, sealed = SEALED)
+
+setMethod("[", OPMD, function(x, i, j, ..., drop = FALSE) {
+  result <- callNextMethod(x = x, i = i, j = j, ..., drop = drop)
+  if (drop)
+    return(result)
+  if (!missing(j))
+    result@discretized <- result@discretized[j]
   result
 }, sealed = SEALED)
 
@@ -495,19 +505,32 @@ setMethod("length", OPMS, function(x) {
 #' available.
 #'
 #' @param ... \code{\link{OPMS}} objects. Several ones can be provided, but
-#'   only the first one is used. Passing \code{\link{OPMS}} objects together
-#'   with other objects to this function makes the results uninterpretable.
+#'   all but the first one are ignored. For reasons of comparability, the
+#'   \code{\link{OPM}} method deliberately results in an error.
 #' @return Integer vector (starting with 1 and at least of length 2).
 #' @export
 #' @family getter-functions
 #' @keywords attribute
 #' @seealso base::seq
 #' @examples
+#'
+#' # 'OPMS' method
 #' data(vaas_4)
 #' (x <- seq(vaas_4))
 #' stopifnot(identical(x, 1:4))
+#' (y <- seq(vaas_4, letters, LETTERS)) # other arguments are ignored
+#' stopifnot(identical(x, y))
+#'
+#' # 'OPM' method
+#' data(vaas_1)
+#' (x <- try(seq(vaas_1), silent = TRUE))
+#' stopifnot(inherits(x, "try-error"))
 #'
 setGeneric("seq")
+
+setMethod("seq", OPM, function(...) {
+  stop("one cannot loop over an object of class ", class(..1))
+}, sealed = SEALED)
 
 setMethod("seq", OPMS, function(...) {
   seq_along(..1@plates)
@@ -684,7 +707,7 @@ setMethod("filename", OPM, function(object) {
 #' @param brackets Logical scalar.
 #' @param word.wise Logical scalar.
 #' @param paren.sep Character scalar.
-#' @param subtype Logical scalar. Keep the plate subtype indicator, if any? 
+#' @param subtype Logical scalar. Keep the plate subtype indicator, if any?
 #'   Only relevant for the character or factor method.
 #' @param ... Optional arguments passed between the methods.
 #'
@@ -752,7 +775,7 @@ setMethod("plate_type", OPM, function(object, full = FALSE, in.parens = TRUE,
 }, sealed = SEALED)
 
 setMethod("plate_type", "character", function(object, subtype = FALSE) {
-  normalize_pm <- function(x, subtype)  {
+  normalize_pm <- function(x, subtype) {
     x <- sub("^PMM", "PM-M", x, perl = TRUE)
     repl <- if (subtype)
       "-\\1"
@@ -876,7 +899,40 @@ setMethod("position", OPM, function(object) {
 setGeneric("has_aggr", function(object, ...) standardGeneric("has_aggr"))
 
 setMethod("has_aggr", OPM, function(object) {
-  "aggregated" %in% slotNames(class(object))
+  .hasSlot(object, "aggregated")
+}, sealed = SEALED)
+
+
+################################################################################
+
+
+#' Are discretized data present?
+#'
+#' Check whether discretized data are present. This always returns \code{FALSE}
+#' for the \code{\link{OPM}} class, but not necessarily for its child classes.
+#'
+#' @param object \code{\link{OPM}} or \code{\link{OPMS}} object.
+#' @param ... Optional arguments passed between the methods.
+#' @return Logical vector, one element per plate.
+#' @export
+#' @family getter-functions
+#' @keywords attribute
+#' @examples
+#'
+#' # 'OPM' method
+#' data(vaas_1)
+#' (x <- has_disc(vaas_1))
+#' stopifnot(x)
+#'
+#' # 'OPMS' method
+#' data(vaas_4)
+#' (x <- has_disc(vaas_4))
+#' stopifnot(x)
+#'
+setGeneric("has_disc", function(object, ...) standardGeneric("has_disc"))
+
+setMethod("has_disc", OPM, function(object) {
+  .hasSlot(object, "discretized")
 }, sealed = SEALED)
 
 
@@ -920,7 +976,9 @@ setMethod("summary", OPM, function(object, ...) {
     `Plate type` = plate_type(object),
     Position = position(object),
     `Setup time` = setup_time(object),
-    Metadata = sum(rapply(object@metadata, f = function(item) 1L))
+    Metadata = sum(rapply(object@metadata, f = function(item) 1L)),
+    Aggregated = has_aggr(object),
+    Discretized = has_disc(object)
   )
   lapply(formatDL(names(result), unlist(result), ...), FUN = message)
   invisible(result)
@@ -934,7 +992,7 @@ setMethod("summary", OPMS, function(object, ...) {
   dims <- dim(object)
   tmpl <- paste("\n=> %s object with %i plates (%i aggregated) of type '%s',",
     " %i wells and about %i time points.")
-  message(sprintf(tmpl, class(object), dims[1L], 
+  message(sprintf(tmpl, class(object), dims[1L],
     length(which(has_aggr(object))), plate_type(object), dims[3L], dims[2L]))
   invisible(result)
 }, sealed = SEALED)
@@ -945,7 +1003,7 @@ setMethod("summary", OPMS, function(object, ...) {
 
 #' Show OPM or OPMS objects
 #'
-#' Display an \code{\link{OPM}} or \code{\link{OPMS}} object on screen. 
+#' Display an \code{\link{OPM}} or \code{\link{OPMS}} object on screen.
 #' Currently this is just a wrapper for the \code{\link{summary}} method for
 #' these objects.
 #'
@@ -966,11 +1024,11 @@ setMethod("summary", OPMS, function(object, ...) {
 #' vaas_4
 #'
 setMethod("show", OPM, function(object) {
-  summary(object)  
+  summary(object)
 }, sealed = SEALED)
 
 setMethod("show", OPMS, function(object) {
-  summary(object)  
+  summary(object)
 }, sealed = SEALED)
 
 
@@ -1081,7 +1139,7 @@ setMethod("aggregated", OPMA, function(object, subset = NULL, ci = TRUE,
 #'
 #' @param object \code{\link{OPMA}} object.
 #' @param ... Optional arguments passed between the methods.
-#' @return Named list. See the example for details.
+#' @return Named list. See the examples for details.
 #' @export
 #' @family getter-functions
 #' @keywords attribute
@@ -1103,6 +1161,76 @@ setGeneric("aggr_settings",
 
 setMethod("aggr_settings", OPMA, function(object) {
   object@aggr_settings
+}, sealed = SEALED)
+
+
+################################################################################
+
+
+#' Get discretized kinetic data
+#'
+#' This yields the discretized values of the curve parameter
+#' \sQuote{maximum height}.
+#'
+#' @param object \code{\link{OPMD}} or \code{\link{OPMS}} object.
+#' @param ... Optional arguments passed between the methods.
+#' @export
+#' @family getter-functions
+#' @return Logical vector or matrix.
+#' @keywords attribute
+#' @examples
+#'
+#' # 'OPM' method
+#' data(vaas_1)
+#' (x <- discretized(vaas_1))
+#' stopifnot(is.logical(x), !is.matrix(x), length(x) == dim(x)[2L])
+#' stopifnot(names(x) == colnames(aggregated(vaas_1)))
+#'
+#' # 'OPMS' method
+#' data(vaas_4)
+#' (x <- discretized(vaas_4))
+#' stopifnot(is.logical(x), is.matrix(x), ncol(x) == dim(x)[2L])
+#' stopifnot(colnames(x) == colnames(aggregated(vaas_1)))
+#'
+setGeneric("discretized", function(object, ...) standardGeneric("discretized"))
+
+setMethod("discretized", OPMD, function(object) {
+  object@discretized
+}, sealed = SEALED)
+
+
+################################################################################
+
+
+#' Get discretization settings
+#'
+#' The settings used for discretizing the aggregated kinetic data.
+#'
+#' @param object \code{\link{OPMD}} object.
+#' @param ... Optional arguments passed between the methods.
+#' @return Named list. See the examples for details.
+#' @export
+#' @family getter-functions
+#' @keywords attribute
+#' @examples
+#'
+#' # 'OPM' method
+#' data(vaas_1)
+#' summary(x <- disc_settings(vaas_1))
+#' stopifnot(is.list(x), identical(names(x), c("program", "options")))
+#' stopifnot(identical(x$program, "kmeans"))
+#'
+#' # 'OPMS' method
+#' data(vaas_4)
+#' summary(x <- disc_settings(vaas_4))
+#' stopifnot(is.list(x), is.null(names(x)), length(x) == length(vaas_4))
+#' stopifnot(identical(x[[1]]$program, "kmeans"), duplicated(x)[-1])
+#'
+setGeneric("disc_settings",
+  function(object, ...) standardGeneric("disc_settings"))
+
+setMethod("disc_settings", OPMD, function(object) {
+  object@disc_settings
 }, sealed = SEALED)
 
 
@@ -1158,7 +1286,7 @@ setMethod("metadata", WMD, function(object, key = NULL, exact = TRUE,
       if (is.factor(key))
         key <- as.character(key)
       if (is.null(result <- object@metadata[[key, exact = exact]]))
-        stop(sprintf("got NULL value when using key '%s'", 
+        stop(sprintf("got NULL value when using key '%s'",
           paste(key, collapse = " -> ")))
       result
     }
@@ -1210,9 +1338,23 @@ setMethod("metadata", WMD, function(object, key = NULL, exact = TRUE,
 #' @param time Logical scalar. If \code{TRUE}, all other arguments are ignored
 #'   and the object is reduced to the common subset of time points
 #'   (measurement hours and minutes).
+#' @param positive Character scalar. If \sQuote{ignore}, not used, Otherwise
+#'   all previous arguments except \code{object} are ignored. If
+#'   \sQuote{any}, wells are selected that contain positive reactions in at
+#'   least one plate. If \sQuote{all}, wells are selected that contain
+#'   positive reactions in all plates. This works only if all elements of
+#'   \code{object} have discretized values. Using \code{invert} means selecting
+#'   all negative or weak reactions.
+#' @param negative Character scalar. Like \code{positive}, but returns
+#'   the negative reactions. Using \code{invert} means selecting
+#'   all positive or weak reactions.
 #' @param use Character scalar. An alternative way to specify the settings. If
 #'   \sQuote{i} or \sQuote{I}, ignored. If \sQuote{t} or \sQuote{T},
-#'   \code{time} is set to \code{TRUE}. Otherwise, \code{use} is taken directly
+#'   \code{time} is set to \code{TRUE}. If \sQuote{p} or \sQuote{P},
+#'   \code{positive} is set to \sQuote{any} or \sQuote{all}, respectively.
+#'   If \sQuote{n} or \sQuote{N},
+#'   \code{non.negative} is set to \sQuote{any} or \sQuote{all}, respectively.
+#'   Otherwise, \code{use} is taken directly
 #'   as the one-latter name of the infix operators to use for plate
 #'   selection, overriding \code{values} and \code{exact}.
 #' @export
@@ -1224,7 +1366,6 @@ setMethod("metadata", WMD, function(object, key = NULL, exact = TRUE,
 #' @keywords manip
 #' @seealso base::`[` base::`[[` base::subset
 #' @examples
-#'
 #'
 #' ## 'OPMS' method
 #' data(vaas_4)
@@ -1255,6 +1396,16 @@ setMethod("metadata", WMD, function(object, key = NULL, exact = TRUE,
 #' mustbe(hours(x), rep(2.25, 4))
 #' # see also the example with split() given under "["
 #'
+#' # select all wells that have positive reactions
+#' summary(x <- select(vaas_4, use = "p")) # in at least one plate
+#' stopifnot(dim(x)[3] < dim(vaas_4)[3])
+#' summary(y <- select(vaas_4, use = "P")) # in all plates
+#' stopifnot(dim(y)[3] < dim(x)[3])
+#'
+#' # select all wells that have non-negative reactions in at least one plate
+#' summary(y <- select(vaas_4, use = "N", invert = TRUE))
+#' stopifnot(dim(y)[3] > dim(x)[3])
+#'
 #' ## data-frame method
 #' x <- data.frame(a = 1:5, b = letters[1:5], c = LETTERS[1:5])
 #' (y <- select(x, "factor"))
@@ -1268,10 +1419,26 @@ setGeneric("select", function(object, query, ...) standardGeneric("select"))
 
 setMethod("select", OPMS, function(object, query, values = TRUE,
     invert = FALSE, exact = FALSE, time = FALSE,
-    use = c("i", "I", "k", "K", "q", "Q", "t", "T")) {
+    positive = c("ignore", "any", "all"),
+    negative = c("ignore", "any", "all"),
+    use = c("i", "I", "k", "K", "n", "N", "p", "P", "q", "Q", "t", "T")) {
+  select_binary <- function(object, invert.1, combine, invert.2) {
+    x <- discretized(object)
+    if (invert.1)
+      x <- !x
+    x[is.na(x)] <- FALSE
+    x <- apply(x, 2L, combine)
+    if (invert.2)
+      x <- !x
+    object[, , x]
+  }
   case(match.arg(use),
     i =, I = NULL,
     k =, K = values <- FALSE,
+    n = negative <- "any",
+    N = negative <- "all",
+    p = positive <- "any",
+    P = positive <- "all",
     q = {
       values <- TRUE
       exact <- FALSE
@@ -1283,6 +1450,16 @@ setMethod("select", OPMS, function(object, query, values = TRUE,
     t =, T = time <- TRUE
   )
   LL(values, invert, exact, time)
+  case(negative <- match.arg(negative),
+    ignore = NULL,
+    any =,
+    all = return(select_binary(object, TRUE, negative, invert))
+  )
+  case(positive <- match.arg(positive),
+    ignore = NULL,
+    any =,
+    all = return(select_binary(object, FALSE, positive, invert))
+  )
   if (time) {
     tp <- hours(object, what = "all")
     if (is.matrix(tp))
@@ -1320,47 +1497,53 @@ setMethod("select", "data.frame", function(object, query) {
 #' Determine duplicated plates
 #'
 #' Check whether duplicated \code{\link{OPM}} or \code{\link{OPMA}} objects
-#' are contained within an \code{\link{OPMS}} object. For reasons of 
+#' are contained within an \code{\link{OPMS}} object. For reasons of
 #' consistency, the \code{\link{OPM}} method always returns \code{FALSE}.
 #'
 #' @param x \code{\link{OPMS}} object.
-#' @param  incomparables Vector passed to \code{duplicated} from the 
-#'   \pkg{base} package.
-#' @param what Character scalar indicating which parts of \code{x} should be 
+#' @param  incomparables Vector passed to \code{duplicated} from the
+#'   \pkg{base} package. By default this is \code{FALSE}.
+#' @param what Character scalar indicating which parts of \code{x} should be
 #'   compared. \sQuote{all} compares entire \code{OPM} objects; \sQuote{csv}
-#'   compares the CSV data entries \code{\link{setup_time}} and 
-#'   \code{\link{position}}; \sQuote{metadata} compares the entire metadata 
-#'   content. If \code{what} does not match any of these, it is passed as 
+#'   compares the CSV data entries \code{\link{setup_time}} and
+#'   \code{\link{position}}; \sQuote{metadata} compares the entire metadata
+#'   content. If \code{what} does not match any of these, or is not a character
+#'   scalar at all, it is passed as
 #'   \code{key} argument to \code{\link{metadata}}, and the resulting metadata
 #'   subsets are compared.
-#' @param ... Optional arguments passed to \code{duplicated} from the 
+#' @param ... Optional arguments passed to \code{duplicated} from the
 #'   \pkg{base} package.
 #' @export
 #' @return Logical vector.
 #' @family getter-functions
 #' @keywords attribute
-#' @seealso base::duplicate
+#' @seealso base::duplicated
 #' @examples
 #'
-#' ## 'OPMS' method
-#' data(vaas_4)
-#' stopifnot(!duplicated(vaas_4))
-#' stopifnot(duplicated(vaas_4, what = "Species") == rep(c(FALSE, TRUE), 2))
-#' x <- vaas_4[c(1, 1)]
-#' stopifnot(c(FALSE, TRUE) == duplicated(x))
-#'
-#' ## 'OPM' method
+#' # 'OPM' method
 #' data(vaas_1)
 #' (x <- duplicated(vaas_1))
 #' stopifnot(identical(x, FALSE))
 #'
+#' # 'OPMS' method
+#' data(vaas_4)
+#' stopifnot(!duplicated(vaas_4))
+#' stopifnot(!duplicated(vaas_4, what = list("Species", "Strain")))
+#' stopifnot(duplicated(vaas_4, what = "Species") == rep(c(FALSE, TRUE), 2))
+#' x <- vaas_4[c(1, 1)]
+#' stopifnot(c(FALSE, TRUE) == duplicated(x))
+#'
 setGeneric("duplicated")
 
-setMethod("duplicated", OPM, function(x, incomparables = FALSE, ...) {
+setMethod("duplicated", c(OPM, "ANY"), function(x, incomparables, ...) {
   FALSE
 }, sealed = SEALED)
 
-setMethod("duplicated", OPMS, function(x, incomparables = FALSE,
+setMethod("duplicated", c(OPMS, "missing"), function(x, incomparables, ...) {
+  duplicated(x = x, incomparables = FALSE, ...)
+}, sealed = SEALED)
+
+setMethod("duplicated", c(OPMS, "ANY"), function(x, incomparables,
     what = c("all", "csv", "metadata"), ...) {
   selection <- tryCatch(match.arg(what), error = function(e) "other")
   duplicated(x = case(selection,
@@ -1378,39 +1561,49 @@ setMethod("duplicated", OPMS, function(x, incomparables = FALSE,
 #' Determine whether plates are duplicated
 #'
 #' Check whether duplicated \code{\link{OPM}} or \code{\link{OPMA}} objects
-#' are contained within an \code{\link{OPMS}} object.  For reasons of 
+#' are contained within an \code{\link{OPMS}} object.  For reasons of
 #' consistency, the \code{\link{OPM}} method always returns \code{0}.
 #'
 #' @param x \code{\link{OPMS}} object.
-#' @param incomparables Vector passed to \code{\link{duplicated}}.
-#' @param ... Optional arguments passed to \code{\link{duplicated}}.
+#' @param incomparables Vector passed to \code{\link{duplicated}}. The default
+#'   is \code{FALSE}.
+#' @param ... Optional arguments passed to \code{\link{duplicated}}. See the
+#'   examples.
 #' @export
 #' @return Integer scalar. \code{0} if no values are duplicated, the index of
 #'   the first or last (depending on \code{fromLast}) duplicated object
 #'   otherwise.
+#' @seealso base::anyDuplicated
 #' @family getter-functions
 #' @keywords attribute
 #' @examples
 #'
-#' ## 'OPMS' method
-#' data(vaas_4)
-#' stopifnot(anyDuplicated(vaas_4) == 0)
-#' stopifnot(anyDuplicated(vaas_4, what = "Species") == 2)
-#' x <- vaas_4[c(1, 1)]
-#' stopifnot(anyDuplicated(x) == 2)
-#'
-#' ## 'OPM' method
+#' # 'OPM' method
 #' data(vaas_1)
 #' (x <- anyDuplicated(vaas_1))
 #' stopifnot(identical(x, 0L))
+#' (x <- anyDuplicated(vaas_1, what = list("Strain", "Species")))
+#' stopifnot(identical(x, 0L))
+#'
+#' # 'OPMS' method
+#' data(vaas_4)
+#' stopifnot(identical(anyDuplicated(vaas_4), 0L))
+#' stopifnot(identical(anyDuplicated(vaas_4, what = list("Strain")), 0L))
+#' stopifnot(identical(anyDuplicated(vaas_4, what = list("Species")), 2L))
+#' x <- vaas_4[c(1, 1)]
+#' stopifnot(identical(anyDuplicated(x), 2L))
 #'
 setGeneric("anyDuplicated")
 
-setMethod("anyDuplicated", OPM, function(x, incomparables = FALSE, ...) {
+setMethod("anyDuplicated", c(OPM, "ANY"), function(x, incomparables, ...) {
   0L
 }, sealed = SEALED)
 
-setMethod("anyDuplicated", OPMS, function(x, incomparables = FALSE, ...) {
+setMethod("anyDuplicated", c(OPMS, "missing"), function(x, incomparables, ...) {
+  anyDuplicated(x = x, incomparables = FALSE, ...)
+}, sealed = SEALED)
+
+setMethod("anyDuplicated", c(OPMS, "ANY"), function(x, incomparables, ...) {
   dups <- which(duplicated(x = x, incomparables = incomparables, ...))
   case(length(dups), 0L, dups[1L])
 }, sealed = SEALED)
@@ -1442,7 +1635,10 @@ lapply(c(
     aggregated,
     aggr_settings,
     csv_data,
+    discretized,
+    disc_settings,
     has_aggr,
+    has_disc,
     hours,
     measurements,
     metadata,
@@ -1457,9 +1653,9 @@ lapply(c(
       if (any(vapply(x, is.list, logical(1L))) ||
           any(vapply(x, is.matrix, logical(1L))))
         return(x)
-      if (length(len <- unique(vapply(x, length, integer(1L)))) > 1L)
+      if (length(n <- unique(vapply(x, length, integer(1L)))) > 1L)
         return(x)
-      if (len > 1L)
+      if (n > 1L)
         do.call(rbind, x)
       else
         unlist(x)

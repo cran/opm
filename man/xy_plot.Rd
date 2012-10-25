@@ -11,11 +11,12 @@
   arguments of \code{\link{select_colors}} (for picking one
   of the predefined colour sets). It is an error if fewer
   colours are chosen than the number of plate grouping
-  levels (see the \code{...} argument below).  For
+  levels (see the \code{\dots} argument below).  For
   user-chosen colour sets, keep in mind that the sets are
   not checked for duplicates, and see
-  \code{\link{max_rgb_contrast}} as a method for optimally
-  arranging user-defined colours.}
+  \code{max_rgb_contrast} from the \pkg{pkgutils} package
+  as a method for optimally arranging user-defined
+  colours.}
 
   \item{lwd}{Numeric scalar determining the line width.}
 
@@ -137,7 +138,9 @@
 \examples{
 # OPM method
 data(vaas_1)
+\dontrun{
 xy_plot(vaas_1) # note the default main title built from the plate type
+}
 
 x <- vaas_1[, 11:22]
 # Gives a warning message: we have deleted the default negative control:
@@ -151,11 +154,13 @@ xy_plot(x, neg.ctrl = 100, col = "pink", base.col = "yellow", main = "Ugly")
 
 # OPMS method
 data(vaas_4)
+\dontrun{
 # Color by species and strain; note default main title
 xy_plot(vaas_4, include = c("Species", "Strain"))
 # Use the largest of the negative-control maxima as baseline
 xy_plot(vaas_4, include = c("Species", "Strain"),
   neg.ctrl = max(vaas_4, "A01"))
+}
 }
 \references{
   Sarkar, D. 2008 \emph{Lattice: Multivariate Data
@@ -172,9 +177,7 @@ xy_plot(vaas_4, include = c("Species", "Strain"),
 
   Other plotting-functions: \code{\link{ci_plot}},
   \code{\link{heat_map}}, \code{\link{level_plot}},
-  \code{\link{max_rgb_contrast}}, \code{\link{mypdf}},
-  \code{\link{paper_size}}, \code{\link{radial_plot}},
-  \code{\link{select_colors}}
+  \code{\link{radial_plot}}, \code{\link{select_colors}}
 }
 \keyword{hplot}
 

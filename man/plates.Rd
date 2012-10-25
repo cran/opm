@@ -42,7 +42,8 @@ stopifnot(is.list(x), length(x) == 5, sapply(x, inherits, what = "OPM"))
   \code{\link{gen_iii}}, \code{\link{merge}},
   \code{\link{oapply}}, \code{\link{rep}},
   \code{\link{rev}}, \code{\link{sort}},
-  \code{\link{thin_out}}, \code{\link{to_yaml}}
+  \code{\link{thin_out}}, \code{\link{to_yaml}},
+  \code{\link{unique}}
 }
 \keyword{attribute}
 

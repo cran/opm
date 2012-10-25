@@ -51,7 +51,7 @@ stopifnot(identical(x, c(4L, 38L, 96L)))
   \code{\link{gen_iii}}, \code{\link{merge}},
   \code{\link{oapply}}, \code{\link{plates}},
   \code{\link{rep}}, \code{\link{rev}}, \code{\link{sort}},
-  \code{\link{to_yaml}}
+  \code{\link{to_yaml}}, \code{\link{unique}}
 }
 \keyword{manip}
 

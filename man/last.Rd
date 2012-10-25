@@ -5,7 +5,7 @@
   last(x, i = 1L)
 }
 \arguments{
-  \item{x}{An R object to which \code{[} can be applied.}
+  \item{x}{An \R object to which \code{[} can be applied.}
 
   \item{i}{Integer scalar. Number of elements to fetch.}
 }

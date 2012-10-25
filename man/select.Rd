@@ -40,13 +40,31 @@
   common subset of time points (measurement hours and
   minutes).}
 
+  \item{positive}{Character scalar. If \sQuote{ignore}, not
+  used, Otherwise all previous arguments except
+  \code{object} are ignored. If \sQuote{any}, wells are
+  selected that contain positive reactions in at least one
+  plate. If \sQuote{all}, wells are selected that contain
+  positive reactions in all plates. This works only if all
+  elements of \code{object} have discretized values. Using
+  \code{invert} means selecting all negative or weak
+  reactions.}
+
+  \item{negative}{Character scalar. Like \code{positive},
+  but returns the negative reactions. Using \code{invert}
+  means selecting all positive or weak reactions.}
+
   \item{use}{Character scalar. An alternative way to
   specify the settings. If \sQuote{i} or \sQuote{I},
   ignored. If \sQuote{t} or \sQuote{T}, \code{time} is set
-  to \code{TRUE}. Otherwise, \code{use} is taken directly
-  as the one-latter name of the infix operators to use for
-  plate selection, overriding \code{values} and
-  \code{exact}.}
+  to \code{TRUE}. If \sQuote{p} or \sQuote{P},
+  \code{positive} is set to \sQuote{any} or \sQuote{all},
+  respectively.  If \sQuote{n} or \sQuote{N},
+  \code{non.negative} is set to \sQuote{any} or
+  \sQuote{all}, respectively.  Otherwise, \code{use} is
+  taken directly as the one-latter name of the infix
+  operators to use for plate selection, overriding
+  \code{values} and \code{exact}.}
 }
 \value{
   \code{NULL} or \code{\link{OPM}} or \code{\link{OPMS}}
@@ -91,6 +109,16 @@ x <- select(copy, time = TRUE)
 mustbe(hours(x), rep(2.25, 4))
 # see also the example with split() given under "["
 
+# select all wells that have positive reactions
+summary(x <- select(vaas_4, use = "p")) # in at least one plate
+stopifnot(dim(x)[3] < dim(vaas_4)[3])
+summary(y <- select(vaas_4, use = "P")) # in all plates
+stopifnot(dim(y)[3] < dim(x)[3])
+
+# select all wells that have non-negative reactions in at least one plate
+summary(y <- select(vaas_4, use = "N", invert = TRUE))
+stopifnot(dim(y)[3] > dim(x)[3])
+
 ## data-frame method
 x <- data.frame(a = 1:5, b = letters[1:5], c = LETTERS[1:5])
 (y <- select(x, "factor"))
@@ -106,15 +134,16 @@ mustbe(x, y)
   Other getter-functions: \code{\link{aggr_settings}},
   \code{\link{aggregated}}, \code{\link{anyDuplicated}},
   \code{\link{csv_data}}, \code{\link{dim}},
+  \code{\link{disc_settings}}, \code{\link{discretized}},
   \code{\link{duplicated}}, \code{\link{filename}},
-  \code{\link{has_aggr}}, \code{\link{hours}},
-  \code{\link{length}}, \code{\link{max}},
-  \code{\link{measurements}}, \code{\link{metadata}},
-  \code{\link{minmax}}, \code{\link{plate_type}},
-  \code{\link{position}}, \code{\link{seq}},
-  \code{\link{setup_time}}, \code{\link{show}},
-  \code{\link{summary}}, \code{\link{well}},
-  \code{\link{wells}}
+  \code{\link{has_aggr}}, \code{\link{has_disc}},
+  \code{\link{hours}}, \code{\link{length}},
+  \code{\link{max}}, \code{\link{measurements}},
+  \code{\link{metadata}}, \code{\link{minmax}},
+  \code{\link{plate_type}}, \code{\link{position}},
+  \code{\link{seq}}, \code{\link{setup_time}},
+  \code{\link{show}}, \code{\link{summary}},
+  \code{\link{well}}, \code{\link{wells}}
 }
 \keyword{manip}
 
@@ -125,7 +154,9 @@ mustbe(x, y)
 \usage{
   \S4method{select}{OPMS}(object, query, values = TRUE,
     invert = FALSE, exact = FALSE, time = FALSE,
-    use = c("i", "I", "k", "K", "q", "Q", "t", "T")) 
+    positive = c("ignore", "any", "all"),
+    negative = c("ignore", "any", "all"),
+    use = c("i", "I", "k", "K", "n", "N", "p", "P", "q", "Q", "t", "T")) 
 
   \S4method{select}{data.frame}(object, query) 
 

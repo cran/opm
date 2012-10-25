@@ -13,8 +13,8 @@
 ################################################################################
 
 
-library(optparse, quietly = TRUE, warn.conflicts = FALSE)
-library(opm, quietly = TRUE, warn.conflicts = FALSE)
+invisible(lapply(c("optparse", "opm", "pkgutils"), library, quietly = TRUE,
+  warn.conflicts = FALSE, character.only = TRUE))
 
 
 MD.OUTFILE <- "metadata.csv"
@@ -113,8 +113,7 @@ run_yaml_mode <- function(input, opt) {
   md.args <- if (is.null(opt$mdfile))
     NULL
   else
-    list(md = opt$mdfile, sep = opt$sep, missing.error = TRUE,
-      replace = opt$exchange)
+    list(md = opt$mdfile, sep = opt$sep, replace = opt$exchange)
   batch_opm_to_yaml(names = input, proc = proc,
     aggr.args = aggr.args, md.args = md.args, outdir = opt$dir,
     verbose = !opt$quiet, overwrite = opt$overwrite, include = opt$include,
@@ -210,7 +209,7 @@ if (is.null(opt$include))
 if (length(input) == 0L) {
   print_help(option.parser)
   message(listing(RESULT.DESCS, header = "The output modes are:", footer = "",
-    begin = 5L, indent = 10L))
+    prepend = 5L, indent = 10L))
   quit(status = 1L)
 }
 

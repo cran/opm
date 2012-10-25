@@ -57,7 +57,7 @@ to_kmeans.Ckmeans.1d.dp <- function(x, y, ...) {
     stop("'y' must correspond to the input data from which 'x' originates")
   x <- unclass(x)
   x$tot.withinss <- sum(x$withinss)
-  x$totss <- sum(scale(y, scale = FALSE)^2)
+  x$totss <- sum(scale(y, scale = FALSE) ^ 2L)
   x$betweenss <- x$totss - x$tot.withinss
   x$centers <- as.matrix(x$centers)
   x <- x[c("cluster", "centers", "totss", "withinss", "tot.withinss",
@@ -209,7 +209,7 @@ borders.kmeans <- function(x, y, ...) {
     return(numeric())
   ranges <- vapply(seq_along(siz), function(i) range(y[x$cluster == i]),
     numeric(2L))
-  colMeans(matrix(sort(ranges)[c(-1L, -length(ranges))], nrow = 2L))
+  colMeans(matrix(sort.int(ranges)[c(-1L, -length(ranges))], nrow = 2L))
 }
 
 #' @rdname borders
@@ -288,63 +288,38 @@ hist.kmeanss <- function(x, k = NULL, col = "black", lwd = 1L, lty = 1L,
 #' @keywords internal
 #'
 prepare_k <- function(k) {
-  k <- sort(unique(must(as.integer(k))))
+  k <- sort.int(unique(must(as.integer(k))))
   if (length(k) < 1L || any(is.na(k)) || any(k < 1L))
     stop("'k' must contain positive numbers throughout")
-  names(k) <- k  
+  names(k) <- k
   k
 }
 
-  
-################################################################################
-  
-
-#' Run native k-means
-#'
-#' Auxiliary function for checking and slightly adapting k for k-means
-#' partitioning.
-#'
-#' @param x Numeric vector or matrix.
-#' @param k Numeric vector.
-#' @param args Argument list passed to \code{kmeans} form the \pkg{stats}
-#'   package.
-#' @return Named integer vector.
-#' @keywords internal
-#'
-run_native_kmeans <- function(x, k, args) {
-  args <- insert(as.list(args), x = x, .force = TRUE)  
-  sapply(k, function(kk) {
-    args$centers <<- kk
-    do.call(stats::kmeans, args)
-  }, simplify = FALSE)
-}
-
 
 ################################################################################
 
 
-setGeneric("run_kmeans",
-  function(object, k, ...) standardGeneric("run_kmeans"))
 #' Conduct k-means partitioning
 #'
-#' Run a k-means partitioning analysis. This function is currently only useable
-#' for \strong{one-dimensional} data. It is used by \code{\link{discrete}} in
-#' \sQuote{gap} mode to automatically determine the range of ambiguous data.
+#' Run a k-means partitioning analysis. This function is used by
+#' \code{\link{discrete}} in \sQuote{gap} mode to automatically determine the
+#' range of ambiguous data. If applied to such one-dimensional data, it uses
+#' an exact algorithm from the \pkg{Ckmeans.1d.dp} package.
 #'
 #' @param object Numeric vector or matrix.
 #' @param k Numeric vector. Number of clusters requested.
-#' @param program Character scalar. The underlying clustering program to use.
-#'   \sQuote{Ckmeans.1d.dp} is recommended because it exactly solves the
-#'   k-means optimization problem for one-dimensional data, but it requires the
-#'   installation of the eponymous package and cannot be applied to matrix
-#'   input.
-#' @param kmeans.args List of optional arguments passed to \sQuote{kmeans} from
-#'   the \pkg{stats} package.
+#' @param nstart Numeric scalar. Ignored if \sQuote{Ckmeans.1d.dp} is called.
+#'   Otherwise passed to \sQuote{kmeans} from the \pkg{stats} package.
+#' @param ... List of optional arguments passed to \sQuote{kmeans} from the
+#'   \pkg{stats} package.
 #' @return S3 object of class \sQuote{kmeanss}.
 #' @family kmeans-functions
 #' @seealso stats::kmeans Ckmeans.1d.dp::Ckmeans.1d.dp
 #' @keywords cluster
 #' @export
+#' @references Wang, H., Song, M. 2011 Ckmeans.1d.dp: Optimal k-means clustering
+#'   in one dimension by dynamic programming. \emph{The R Journal} \strong{3},
+#'   p. 29--33.
 #' @examples
 #' data(vaas_4)
 #' x <- as.vector(extract(vaas_4, as.labels = NULL, subset = "A"))
@@ -352,42 +327,24 @@ setGeneric("run_kmeans",
 #' stopifnot(inherits(x.km, "kmeanss"), length(x.km) == 10)
 #' stopifnot(sapply(x.km, class) == "kmeans", names(x.km) == 1:10)
 #'
-setMethod("run_kmeans", c("numeric", "numeric"), function(object, k,
-    program = c("Ckmeans.1d.dp", "kmeans"), kmeans.args = list()) {
-  improve_k <- function(x) {
-    vector_centers <- function(n) {
-      n <- 2L * n
-      n <- seq.int(1L, n - 1L, 2L) / n
-      quantile(object, n, names = FALSE)
-    }
-    y <- as.list(x)
-    y[large] <- lapply(y[large <- x > 1L], vector_centers)
-    names(y) <- names(x)
-    y
-  }
-  k <- prepare_k(k)
-  if ((program <- match.arg(program)) == "Ckmeans.1d.dp")
-    if (!require(Ckmeans.1d.dp, quietly = TRUE, warn.conflicts = FALSE)) {
-      warning(program, " requested but not available")
-      program <- "kmeans"
-    }
-  case(program,
-    kmeans = result <- run_native_kmeans(object, improve_k(k), kmeans.args),
-    Ckmeans.1d.dp = {
-      result <- sapply(k, Ckmeans.1d.dp::Ckmeans.1d.dp, x = object,
-        simplify = FALSE)
-      result <- lapply(result, to_kmeans, y = object)
-    }
-  )
-  class(result) <- "kmeanss"
-  attr(result, "input") <- object
-  result
+setGeneric("run_kmeans",
+  function(object, k, ...) standardGeneric("run_kmeans"))
+
+setMethod("run_kmeans", c("numeric", "numeric"), function(object, k) {
+  result <- sapply(prepare_k(k), Ckmeans.1d.dp::Ckmeans.1d.dp, x = object,
+    simplify = FALSE)
+  structure(lapply(result, to_kmeans, y = object), class = "kmeanss",
+    input = object)
 }, sealed = SEALED)
 
-setMethod("run_kmeans", c("matrix", "numeric"), function(object, k, 
-    kmeans.args = list(nstart = 10L)) {
-  result <- run_native_kmeans(object, prepare_k(k), kmeans.args)
-  class(result) <- "kmeanss"
+setMethod("run_kmeans", c("matrix", "numeric"), function(object, k,
+    nstart = 10L, ...) {
+  result <- if (ncol(object) < 2L)
+    run_kmeans(as.vector(object), k)
+  else
+    structure(sapply(prepare_k(k), function(centers) {
+      stats::kmeans(x = x, centers = centers, nstart = nstart, ...)
+    }, simplify = FALSE), class = "kmeanss")
   attr(result, "input") <- object
   result
 }, sealed = SEALED)

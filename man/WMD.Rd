@@ -1,6 +1,7 @@
 \docType{class}
 \name{WMD}
 \alias{WMD}
+\alias{WMD-class}
 \title{WMD class}
 \description{
   This is a virtual class facilitating the management of
@@ -29,96 +30,13 @@
   by the \pkg{opm} package, however. }
 }
 \seealso{
-  Methods
+  methods::Methods
 
   Other classes: \code{\link{MOA}}, \code{\link{OPM}},
-  \code{\link{OPMA}}, \code{\link{OPMS}},
-  \code{\link{OPMX}}, \code{\link{YAML_VIA_LIST}}
-}
-\keyword{methods}
-
-% \name{WMD-class}
-\Rdversion{1.1}
-% \docType{class}
-\alias{WMD-class}
-% \alias{\%K\%,character,WMD-method}
-%% \alias{\%K\%,factor,WMD-method}
-%% \alias{\%K\%,list,WMD-method}
-%% \alias{\%Q\%,character,WMD-method}
-%% \alias{\%Q\%,factor,WMD-method}
-%% \alias{\%Q\%,list,WMD-method}
-%% \alias{\%k\%,character,WMD-method}
-%% \alias{\%k\%,factor,WMD-method}
-%% \alias{\%k\%,list,WMD-method}
-%% \alias{\%q\%,character,WMD-method}
-%% \alias{\%q\%,factor,WMD-method}
-%% \alias{\%q\%,list,WMD-method}
-%% \alias{map_metadata,WMD,character-method}
-%% \alias{map_metadata,WMD,formula-method}
-%% \alias{map_metadata,WMD,function-method}
-%% \alias{metadata,WMD-method}
-%% \alias{metadata<-,WMD,character,ANY-method}
-%% \alias{metadata<-,WMD,factor,ANY-method}
-%% \alias{metadata<-,WMD,list,list-method}
-%% \alias{metadata<-,WMD,missing,formula-method}
-%% \alias{metadata<-,WMD,missing,list-method}
-%% \alias{metadata<-,WMD,numeric,list-method}
-%% \alias{metadata_chars,WMD-method}
-%% 
-% \title{Class \code{"WMD"}}
-% \description{
-%% %%  ~~ A concise (1-5 lines) description of what the class is. ~~
-%% }
-\section{Objects from the Class}{A virtual Class: No objects may be created from it.}
-\section{Slots}{
-  \describe{
-    \item{\code{metadata}:}{Object of class \code{"list"} ~~ }
-  }
-}
-\section{Methods}{
-  \describe{
-    \item{\%K\%}{\code{signature(x = "character", table = "WMD")}: ... }
-    \item{\%K\%}{\code{signature(x = "factor", table = "WMD")}: ... }
-    \item{\%K\%}{\code{signature(x = "list", table = "WMD")}: ... }
-    \item{\%Q\%}{\code{signature(x = "character", table = "WMD")}: ... }
-    \item{\%Q\%}{\code{signature(x = "factor", table = "WMD")}: ... }
-    \item{\%Q\%}{\code{signature(x = "list", table = "WMD")}: ... }
-    \item{\%k\%}{\code{signature(x = "character", table = "WMD")}: ... }
-    \item{\%k\%}{\code{signature(x = "factor", table = "WMD")}: ... }
-    \item{\%k\%}{\code{signature(x = "list", table = "WMD")}: ... }
-    \item{\%q\%}{\code{signature(x = "character", table = "WMD")}: ... }
-    \item{\%q\%}{\code{signature(x = "factor", table = "WMD")}: ... }
-    \item{\%q\%}{\code{signature(x = "list", table = "WMD")}: ... }
-    \item{map_metadata}{\code{signature(object = "WMD", mapping = "character")}: ... }
-    \item{map_metadata}{\code{signature(object = "WMD", mapping = "formula")}: ... }
-    \item{map_metadata}{\code{signature(object = "WMD", mapping = "function")}: ... }
-    \item{metadata}{\code{signature(object = "WMD")}: ... }
-    \item{metadata<-}{\code{signature(object = "WMD", key = "character", value = "ANY")}: ... }
-    \item{metadata<-}{\code{signature(object = "WMD", key = "factor", value = "ANY")}: ... }
-    \item{metadata<-}{\code{signature(object = "WMD", key = "list", value = "list")}: ... }
-    \item{metadata<-}{\code{signature(object = "WMD", key = "missing", value = "formula")}: ... }
-    \item{metadata<-}{\code{signature(object = "WMD", key = "missing", value = "list")}: ... }
-    \item{metadata<-}{\code{signature(object = "WMD", key = "numeric", value = "list")}: ... }
-    \item{metadata_chars}{\code{signature(object = "WMD")}: ... }
-	 }
-}
-% \references{
-%% %%  ~~put references to the literature/web site here~~
-%% }
-% \author{
-%% %%  ~~who you are~~
-%% }
-% \note{
-%% %%  ~~further notes~~
-%% }
-% 
-% %% ~Make other sections like Warning with \section{Warning }{....} ~
-% 
-% \seealso{
-% %%  ~~objects to See Also as \code{\link{~~fun~~}}, ~~~
-% %%  ~~or \code{\linkS4class{CLASSNAME}} for links to other classes ~~~
-% }
-\examples{
-showClass("WMD")
+  \code{\link{OPMA}}, \code{\link{OPMD}},
+  \code{\link{OPMS}}, \code{\link{OPMX}},
+  \code{\link{YAML_VIA_LIST}}
 }
 \keyword{classes}
+\keyword{methods}
+

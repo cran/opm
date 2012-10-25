@@ -44,7 +44,8 @@ stopifnot(is.null(rep(vaas_4, 0)))
   \code{\link{gen_iii}}, \code{\link{merge}},
   \code{\link{oapply}}, \code{\link{plates}},
   \code{\link{rev}}, \code{\link{sort}},
-  \code{\link{thin_out}}, \code{\link{to_yaml}}
+  \code{\link{thin_out}}, \code{\link{to_yaml}},
+  \code{\link{unique}}
 }
 \keyword{manip}
 

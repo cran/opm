@@ -200,8 +200,8 @@ stopifnot(levels(x) == y, names(y) == y)
 
   Other auxiliary-functions: \code{\link{contains}},
   \code{\link{glob_to_regex}}, \code{\link{kubrick}},
-  \code{\link{listing}}, \code{\link{map_names}},
-  \code{\link{opm_opt}}, \code{\link{separate}}
+  \code{\link{map_names}}, \code{\link{opm_opt}},
+  \code{\link{separate}}
 }
 \keyword{list}
 \keyword{manip}

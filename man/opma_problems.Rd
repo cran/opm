@@ -8,8 +8,8 @@
   \item{orig}{Matrix of original, non-aggregated data.}
 
   \item{program}{Character scalar. Program used for
-  aggregating the data (currently only \sQuote{grofit} is
-  checked).}
+  aggregating the data (currently only the \pkg{opm}-native
+  programs are checked).}
 }
 \value{
   Character vector with description of problems, empty if

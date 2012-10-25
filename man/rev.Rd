@@ -37,7 +37,8 @@ stopifnot(identical(x, vaas_1))
   \code{\link{gen_iii}}, \code{\link{merge}},
   \code{\link{oapply}}, \code{\link{plates}},
   \code{\link{rep}}, \code{\link{sort}},
-  \code{\link{thin_out}}, \code{\link{to_yaml}}
+  \code{\link{thin_out}}, \code{\link{to_yaml}},
+  \code{\link{unique}}
 }
 \keyword{manip}
 

@@ -1,5 +1,40 @@
 
 
+opm 0.7-0
+---------
+
+Bug fixes:
+
+- fixed bug in metadata-file handling of 'run_opm.R' script
+
+Removed features:
+
+- listing(), max_rgb_contrast(), paper_size() and mypdf(), as well as a series 
+  of internal functions, moved to 'pkgutils' package; data set 'vaas_et_al' 
+  moved to 'opmdata' package; some arguments of run_kmeans() removed
+
+Other user-visible changes:
+
+- dependencies on 'pkgutils' and 'Ckmeans.1d.dp' packages
+
+New features:
+
+- novel OPMD class and according novel functions do_disc(), has_disc(), 
+  discretized() and disc_settings(); extract() can now also get discretized
+  data
+
+- novel unique() method for OPM and OPMS objects
+
+- enhancements in phylo_data(), discrete(), map_values(), summary(), sort(),
+  select(), duplicated() and anyDuplicated()
+
+Other changes:
+
+- opm vignette was included as tutorial
+
+- some improvements in the documentation in the manual
+
+
 opm 0.6-0
 ---------
 

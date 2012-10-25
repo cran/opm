@@ -91,7 +91,7 @@ data(vaas_4)
 # most of the parameters used here are explained under the data.frame
 # method of ci_plot()
 x <- ci_plot(vaas_4[, , 1:3], as.labels = list("Species", "Strain"),
-   subset = "A", x = "bottomright", legend.field = NULL)
+  subset = "A", x = "bottomright", legend.field = NULL)
 # note that the values on the y axes are drawn to scale
 x
 stopifnot(is.character(x), identical(length(x), 4L))
@@ -107,10 +107,8 @@ stopifnot(is.character(x), identical(length(x), 4L))
   graphics::plot
 
   Other plotting-functions: \code{\link{heat_map}},
-  \code{\link{level_plot}}, \code{\link{max_rgb_contrast}},
-  \code{\link{mypdf}}, \code{\link{paper_size}},
-  \code{\link{radial_plot}}, \code{\link{select_colors}},
-  \code{\link{xy_plot}}
+  \code{\link{level_plot}}, \code{\link{radial_plot}},
+  \code{\link{select_colors}}, \code{\link{xy_plot}}
 }
 \keyword{hplot}
 

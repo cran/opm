@@ -10,7 +10,8 @@
   \code{NULL}.}
 
   \item{subset}{Character vector. The parameter(s) to put
-  in the matrix.}
+  in the matrix. If it is \sQuote{disc}, discretized data
+  are returned, and \code{ci} is ignored.}
 
   \item{ci}{Logical scalar. Also return the CIs?}
 
@@ -58,17 +59,17 @@
   the data-frame method.
 }
 \description{
-  Extract selected aggregated values into common matrix or
-  data frame. The data-frame method creates a matrix by
-  extracting the numeric columns and optionally adds row
-  names.
+  Extract selected aggregated or discretized values into
+  common matrix or data frame. The data-frame method
+  creates a matrix by extracting the numeric columns and
+  optionally adds row names.
 }
 \examples{
 # 'OPMS' method
 data(vaas_4)
 # Matrix
 (x <- extract(vaas_4, as.labels = list("Species", "Strain")))
-stopifnot(is.matrix(x), identical(dim(x), c(4L, 96L)))
+stopifnot(is.matrix(x), identical(dim(x), c(4L, 96L)), is.numeric(x))
 # Data frame
 (x <- extract(vaas_4, as.labels = list("Species", "Strain"),
   dataframe = TRUE))
@@ -77,6 +78,9 @@ stopifnot(is.data.frame(x), identical(dim(x), c(4L, 99L)))
 x <- lapply(param_names(), function(name) extract(vaas_4, subset = name,
   as.labels = list("Species", "Strain"), dataframe = TRUE))
 x <- do.call(rbind, x)
+# Get discretized data
+(x <- extract(vaas_4, subset = "disc", as.labels = list("Strain")))
+stopifnot(is.matrix(x), identical(dim(x), c(4L, 96L)), is.logical(x))
 
 # data-frame method
 x <- data.frame(a = 1:26, b = letters, c = LETTERS)
@@ -93,7 +97,8 @@ stopifnot(identical(attr(y, "row.groups"), x$c))
   \code{\link{gen_iii}}, \code{\link{merge}},
   \code{\link{oapply}}, \code{\link{plates}},
   \code{\link{rep}}, \code{\link{rev}}, \code{\link{sort}},
-  \code{\link{thin_out}}, \code{\link{to_yaml}}
+  \code{\link{thin_out}}, \code{\link{to_yaml}},
+  \code{\link{unique}}
 }
 \keyword{dplot}
 \keyword{manip}
@@ -108,7 +113,7 @@ stopifnot(identical(attr(y, "row.groups"), x$c))
     dups = "warn", exact = TRUE, strict = TRUE, full = TRUE, max = 10000L,
     ...) 
 
-  \S4method{extract}{data.frame}(object, as.labels, 
+  \S4method{extract}{data.frame}(object, as.labels,
     as.groups = NULL, sep = " ", what = "numeric") 
 
 }

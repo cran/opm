@@ -86,11 +86,11 @@
 \examples{
 # Treat everything between 3.4 and 4.5 as ambiguous
 (x <- discrete(1:5, range = c(3.5, 4.5), gap = TRUE))
-stopifnot(identical(x, c("0", "0", "0", "?", "1")))
+stopifnot(x == c("0", "0", "0", "?", "1"))
 
 # Treat everything between 3.4 and 4.5 as intermediate
 (x <- discrete(1:5, range = c(3.5, 4.5), gap = TRUE, middle.na = FALSE))
-stopifnot(identical(x, c("0", "0", "0", "1", "2")))
+stopifnot(x == c("0", "0", "0", "1", "2"))
 
 # Boring example: real and possible range as well as the number of states
 # to code the data have a 1:1 relationship
@@ -109,7 +109,7 @@ stopifnot(identical(dim(x), dim(y)))
 (yy <- discrete(as.data.frame(x), range = c(3.4, 4.5), gap = TRUE))
 stopifnot(y == yy)
 
-# K-means based discretization of PM data
+# K-means based discretization of PM data (prefer do_disc() for this)
 data(vaas_4)
 x <- extract(vaas_4, as.labels = list("Species", "Strain"),
   in.parens = FALSE)
@@ -133,8 +133,8 @@ stopifnot(c("0", "?", "1") \%in\% y)
 \seealso{
   base::cut
 
-  Other phylogeny-functions: \code{\link{best_cutoff}},
-  \code{\link{phylo_data}}, \code{\link{safe_labels}}
+  Other discretization-functions:
+  \code{\link{best_cutoff}}, \code{\link{do_disc}}
 }
 \keyword{category}
 \keyword{character}
@@ -151,7 +151,7 @@ stopifnot(c("0", "?", "1") \%in\% y)
 
   \S4method{discrete}{MOA}(x, ...) 
 
-  \S4method{discrete}{data.frame}(x, as.labels = NULL, sep = " ", 
+  \S4method{discrete}{data.frame}(x, as.labels = NULL, sep = " ",
     ...) 
 
 }

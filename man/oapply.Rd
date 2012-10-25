@@ -2,7 +2,9 @@
 \alias{oapply}
 \title{Apply method for OPMS objects}
 \arguments{
-  \item{object}{\code{\link{OPMS}} object.}
+  \item{object}{\code{\link{OPMS}} object. An
+  \code{\link{OPM}} method is also defined but simply
+  applies \code{fun} once (to \code{object}).}
 
   \item{fun}{A function. Should expect an \code{\link{OPM}}
   (or \code{\link{OPMA}}) object as first argument.}
@@ -32,7 +34,7 @@ data(vaas_4)
 x <- oapply(vaas_4, identity)
 stopifnot(identical(x, vaas_4))
 x <- oapply(vaas_4, identity, simplify = FALSE)
-stopifnot(is.list(x), length(x) == 4, sapply(x, class) == "OPMA")
+stopifnot(is.list(x), length(x) == 4, sapply(x, class) == "OPMD")
 }
 \seealso{
   base::sapply
@@ -42,14 +44,18 @@ stopifnot(is.list(x), length(x) == 4, sapply(x, class) == "OPMA")
   \code{\link{gen_iii}}, \code{\link{merge}},
   \code{\link{plates}}, \code{\link{rep}},
   \code{\link{rev}}, \code{\link{sort}},
-  \code{\link{thin_out}}, \code{\link{to_yaml}}
+  \code{\link{thin_out}}, \code{\link{to_yaml}},
+  \code{\link{unique}}
 }
 \keyword{manip}
 
 \docType{methods}
 \alias{oapply-methods}
+\alias{oapply,OPM-method}
 \alias{oapply,OPMS-method}
 \usage{
+  \S4method{oapply}{OPM}(object, fun, ..., simplify = TRUE) 
+
   \S4method{oapply}{OPMS}(object, fun, ..., simplify = TRUE) 
 
 }

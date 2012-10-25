@@ -10,8 +10,9 @@
   (2012). Metadata have been added to fully describe the
   conducted PM experiments: these plates are the 6th
   technical replicate from the first biological replicate
-  for the four bacterial strains considered in the study
-  (see \code{\link{vaas_et_al}}).
+  for the four bacterial strains considered in the study.
+  The complete data set is available as \code{vaas_et_al}
+  in the \pkg{opmdata} package.
 }
 \examples{
 \dontrun{
@@ -27,6 +28,14 @@ data(vaas_4)
   estimation strategies for efficient exploration of
   Phenotype Microarray kinetics. \emph{PLoS ONE}
   \strong{7}, e34846.
+
+  Selezska, K., Kazmierczak, M., Muesken, M., Garbe, J.,
+  Schobert, M., Haeussler, S., Wiehlmann, L., Rohde, C.,
+  Sikorski, J. 2012 \emph{Pseudomonas aeruginosa}
+  population structure revisited under environmental focus:
+  impact of water quality and phage pressure.
+  \emph{Environmental Microbiology} \strong{14},
+  1952--1967.
 
   \url{http://www.dsmz.de/catalogues/details/culture/DSM-1707.html}
 

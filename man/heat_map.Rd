@@ -92,7 +92,7 @@
   \code{heatmap.2} are overwritten even though this is not
   transparent from the argument list of \code{heat_map}. If
   set explicitly, the default \code{heatmap.2} behaviour is
-  restored.  \code{...} also represents all arguments
+  restored.  \code{\dots} also represents all arguments
   passed from the \sQuote{OPMS} or data-frame methods to
   the matrix method.}
 
@@ -139,10 +139,8 @@ stopifnot(identical(metadata(vaas_4, "Species"), names(hm$rowColMap)))
   stats::heatmap gplots::heatmap.2
 
   Other plotting-functions: \code{\link{ci_plot}},
-  \code{\link{level_plot}}, \code{\link{max_rgb_contrast}},
-  \code{\link{mypdf}}, \code{\link{paper_size}},
-  \code{\link{radial_plot}}, \code{\link{select_colors}},
-  \code{\link{xy_plot}}
+  \code{\link{level_plot}}, \code{\link{radial_plot}},
+  \code{\link{select_colors}}, \code{\link{xy_plot}}
 }
 \keyword{hplot}
 

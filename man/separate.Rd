@@ -110,8 +110,8 @@ stopifnot(sapply(y, class) == c("integer", "factor", "factor"))
 
   Other auxiliary-functions: \code{\link{contains}},
   \code{\link{glob_to_regex}}, \code{\link{kubrick}},
-  \code{\link{listing}}, \code{\link{map_names}},
-  \code{\link{map_values}}, \code{\link{opm_opt}}
+  \code{\link{map_names}}, \code{\link{map_values}},
+  \code{\link{opm_opt}}
 }
 \keyword{character}
 \keyword{manip}
@@ -123,7 +123,7 @@ stopifnot(sapply(y, class) == c("integer", "factor", "factor"))
 \alias{separate,data.frame-method}
 \usage{
   \S4method{separate}{character}(object, split = opm_opt("split"),
-    simplify = FALSE, keep.const = TRUE, list.wise = FALSE, 
+    simplify = FALSE, keep.const = TRUE, list.wise = FALSE,
     strip.white = list.wise) 
 
   \S4method{separate}{factor}(object, split = "/.-_",

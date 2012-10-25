@@ -1,159 +1,11 @@
 
 
 ################################################################################
-################################################################################
-#
-# Miscellaneous utilities
-#
 
 
-#' Modified switch function
+#' @importFrom pkgutils L LL must case sections
 #'
-#' An altered switch statement for flow control.
-#'
-#' @param EXPR A scalar based on which a decision is made. If of mode 
-#'   \sQuote{logical}, exactly two other elements must be passed, the first
-#'   of which is chosen if \code{EXPR} is \code{TRUE}, the second if it is
-#'   \code{FALSE}. If \code{EXPR} is a character scalar, the behaviour is like
-#'   the one of \code{switch} with the exception that unmatched values within 
-#'   \code{...} cause an error. If \code{EXPR} is of mode \sQuote{numeric},
-#'   the behaviour is like \code{switch} but counting starts at 0 and values
-#'   larger than the number of elements within \code{...} select the last 
-#'   element. It is an error if \code{EXPR} is negative.
-#' @param x Chosen if \code{EXPR} is \code{TRUE}.
-#' @param y Chosen if \code{EXPR} is \code{FALSE}.
-#' @param ... Additional arguments from which to select an alternative.
-#' @return Selected value of \code{...}, \code{x} or \code{y}.
-#' @seealso base::switch
-#' @keywords internal
-#'
-setGeneric("case", function(EXPR, ...) standardGeneric("case"))
-
-setMethod("case", "logical", function(EXPR, x, y) {
-  stopifnot(!is.na(EXPR))
-  switch(EXPR = 2L - EXPR, x, y)  
-}, sealed = SEALED)
-
-setMethod("case", "numeric", function(EXPR, ...) {
-  stopifnot(EXPR >= 0L) # this also catches NA values
-  switch(EXPR = pmin(EXPR, nargs() - 2L) + 1L, ...)
-}, sealed = SEALED)
-
-setMethod("case", "character", function(EXPR, ...) {
-  switch(EXPR = EXPR, ..., stop("unmatched 'EXPR' value"))
-}, sealed = SEALED)
-
-
-################################################################################
-
-
-#' Assert class
-#'
-#' Raise an error if the classes of two R objects are different.
-#'
-#' @param x Object to test.
-#' @param y Object with target class.
-#' @return \code{x}.
-#' @keywords internal
-#'
-assert_class <- function(x, y) {
-  if (!identical(cx <- class(x), cy <- class(y))) {
-    join <- function(x) paste(x, collapse = "->")
-    stop(sprintf("expected class '%s', got class '%s'", join(cy), join(cx)))
-  }
-  x
-}
-
-
-################################################################################
-
-
-#' Assert a length
-#'
-#' Raise an error if a given R object does not have the specified length. This
-#' is mainly used to generate more meaningful error messages related to 
-#' function arguments.
-#'
-#' @param x R objects to test.
-#' @param wanted Integer scalar giving the desired length. Note that this can
-#'   \strong{not} be given as scalar with \code{storage.mode} evaluating to
-#'   \sQuote{double}.
-#' @param msg Error message passed to \code{sprintf}, receiving the name of
-#'   the calling function, the name of \code{x} and the value of \code{wanted} 
-#'   as additional arguments.
-#' @return If successful, \code{x}, but an error message is raised if 
-#'   \code{length(x)} is not identical to \code{wanted}.
-#' @keywords internal
-#'
-L <- function(x, wanted = 1L, msg = "need object '%s' of length %i") {
-  if (identical(length(x), wanted))
-    return(x)
-  stop(sprintf(msg, as.character(match.call()[2L]), wanted), call. = FALSE)
-}
-
-
-################################################################################
-
-
-#' Assert length
-#'
-#' Raise an error if a given R object does not have the specified length. This
-#' is mainly used to generate meaningful error messages for function arguments.
-#'
-#' @param ... Any R objects to test.
-#' @param .wanted Integer scalar giving the desired length.
-#' @return The names of the arguments contained in \code{...}, returned
-#'   invisibly.
-#' @keywords internal
-#'
-LL <- function(..., .wanted = 1L) {
-  arg.names <- as.character(match.call())[-1L][seq_along(items <- list(...))]
-  mapply(function(item, name) {
-    if (!identical(length(item), .wanted))
-      stop(sprintf("need object '%s' of length %i", name, .wanted), 
-        call. = FALSE)
-  }, items, arg.names, SIMPLIFY = FALSE, USE.NAMES = FALSE)
-  invisible(arg.names)
-}
-
-
-################################################################################
-
-
-#' Convert warnings to errors
-#'
-#' Raise an error if a warning occurs. Useful for making certain tests more
-#' strict.
-#'
-#' @param expr R expression to evaluate.
-#' @param ... Optional further arguments to \code{tryCatch}.
-#' @return The result of \code{expr} (if no error occurs).
-#' @keywords internal
-#'
-must <- function(expr, ...) {
-  # For some reason, using stop() directly resulted in errors that could not be
-  # catched with tryCatch() any more.
-  tryCatch(expr = expr, warning = function(w) stop(conditionMessage(w)), ...)
-}
-
-
-################################################################################
-
-
-#' Convert errors to their messages
-#'
-#' If an error occurs, return its message. The expression used has to ensure
-#' that its normal result can be distinguished from the error message.
-#'
-#' @param expr R expression to evaluate.
-#' @param ... Optional further arguments to \code{tryCatch}.
-#' @return The result of \code{expr} if no error occurs, otherwise the error
-#'   message as character scalar.
-#' @keywords internal
-#'
-taste <- function(expr, ...) {
-  tryCatch(expr = expr, error = conditionMessage, ...)
-}
+NULL
 
 
 ################################################################################
@@ -165,7 +17,7 @@ taste <- function(expr, ...) {
 #'
 #' Fetch the last element(s) from a subsettable objject.
 #'
-#' @param x An R object to which \code{[} can be applied.
+#' @param x An \R object to which \code{[} can be applied.
 #' @param i Integer scalar. Number of elements to fetch.
 #' @return Object of the same class than \code{x}.
 #' @keywords internal
@@ -186,7 +38,7 @@ last <- function(x, i = 1L) {
 #'
 #' Assess whether all elements in a collection are identical.
 #'
-#' @param x An R object to which \code{duplicated} can be applied.
+#' @param x An \R object to which \code{duplicated} can be applied.
 #' @param na.rm Logical scalar. Remove \code{NA} elements before determining
 #'   uniformity?
 #' @return Either \code{TRUE} or a vector of the class of \code{x} containing
@@ -211,7 +63,7 @@ is_uniform <- function(x, na.rm = FALSE) {
 #' \code{duplicated} by default, but there is also an \sQuote{extended} mode
 #' for list-like objects.
 #'
-#' @param x An R object to which \code{duplicated} can be applied.
+#' @param x An \R object to which \code{duplicated} can be applied.
 #' @param set.like Logical scalar. Consider objects as identical if their
 #'   intersection is non-empty?
 #' @param na.rm Logical scalar. Remove \code{NA} elements before determining
@@ -244,81 +96,12 @@ setMethod("is_constant", "list", function(x, set.like = FALSE, na.rm = TRUE) {
     function(x) all(duplicated(x)[-1L])
   length(x) < 2L || dup_fun(x)
 }, sealed = SEALED)
-  
+
 setMethod("is_constant", "MOA", function(x, margin = 1L, na.rm = TRUE) {
   if (margin == 0L)
     return(is_constant(as.vector(x), na.rm = na.rm))
   apply(X = x, MARGIN = margin, FUN = is_constant, na.rm = na.rm)
 }, sealed = SEALED)
-
-          
-################################################################################
-
-
-## NOTE: not an S4 method because conversion is done
-
-#' Nicer message listings
-#'
-#' Create a nice-looking message listing. This is not normally directly called
-#' by an \pkg{opm} user but by, e.g., the scripts accompanying the package; see
-#' \code{\link{opm_files}} for details.
-#'
-#' @param x Object convertible via \code{unlist} to a vector. Afterwards its
-#'   \sQuote{names} attribute is used as the first column of the resulting
-#'   listing; if it is \code{NULL} or if \code{force.numbers} is \code{TRUE},
-#'   numbers are inserted.
-#' @param header \code{NULL} or character vector. Prepended to the result.
-#' @param footer \code{NULL} or character vector. Appended to the result.
-#' @param begin \code{NULL} or numeric or character vector. Prepended to each
-#'   line except \code{header} and \code{footer}. If a numeric vector, the
-#'   number of spaces. Otherwise converted to \sQuote{character} mode and used
-#'   directly.
-#' @param collapse Character scalar. How to join the resulting vector elements.
-#' @param style Character scalar. If \sQuote{table} or \sQuote{list}, passed
-#'   to \code{formatDL}. Otherwise, a pattern for \code{sprintf} is assumed
-#'   taking two arguments, the names of \code{x} and the values \code{x} (after
-#'   conversion with \code{unlist}).
-#' @param force.numbers Logical scalar. Always use numbers instead of the
-#'   \sQuote{names} attribute?
-#' @param digits Numeric scalar. Ignored unless \code{x} is numeric.
-#' @param ... Optional other arguments passed to \code{formatDL}.
-#' @return Character vector.
-#' @export
-#' @seealso base::message base::warning base::stop base::formatDL
-#' @family auxiliary-functions
-#' @keywords utilities
-#' @examples
-#'
-#' x <- letters[1:5]
-#' names(x) <- LETTERS[1:5]
-#' message(y <- listing(x, header = "Five letters:", footer = "...end here",
-#'   begin = 3))
-#' stopifnot(is.character(y), length(y) == 1)
-#'
-#' x <- c("CTMT", "Chryseobacterium soli DSM 19298T",
-#'   "Chryseobacterium soldanellicola DSM 17072T")
-#' message(y <- listing(x, style = "%s, %s", collapse = "; "))
-#' stopifnot(is.character(y), length(y) == 1)
-#'
-listing <- function(x, header = NULL, footer = NULL, begin = NULL,
-    collapse = "\n", style = "list", force.numbers = FALSE,
-    digits = opm_opt("digits"), ...) {
-  LL(style, collapse, digits, force.numbers)
-  if (is.double(x))
-    x <- signif(x, digits)
-  if (is.null(names(x <- unlist(x))) || force.numbers)
-    names(x) <- seq_along(x)
-  x <- if (style %in% c("table", "list"))
-    formatDL(x, style = style, ...)
-  else
-    sprintf(style, names(x), x)
-  if (length(begin))
-    x <- if (is.numeric(begin))
-      paste(paste(rep.int(" ", begin), collapse = ""), x, sep = "")
-    else
-      paste(begin, x, sep = "")
-  paste(c(header, x, footer), collapse = collapse)
-}
 
 
 ################################################################################
@@ -331,12 +114,12 @@ listing <- function(x, header = NULL, footer = NULL, begin = NULL,
 #' can be a call, a name or a vector. These methods convert it to a vector,
 #' aiming at generating a valid key for indexing a list.
 #'
-#' @param object An object of class \sQuote{call}, \sQuote{name} or 
+#' @param object An object of class \sQuote{call}, \sQuote{name} or
 #'   \sQuote{vector} (S4-based).
 #' @return Vector.
 #' @keywords internal
 #'
-setGeneric("parse_formula_head", 
+setGeneric("parse_formula_head",
   function(object) standardGeneric("parse_formula_head"))
 
 setMethod("parse_formula_head", "vector", function(object) {
@@ -365,19 +148,19 @@ setMethod("parse_formula_head", "call", function(object) {
 #' @param x Character scalar or list. If not given, all current settings are
 #'   returned (as a named list). If a list, it is expected to contain key-value
 #'   pairs that can be set. In that case, it is an error if a key is unknown or
-#'   if the value's class(es) is/are not compatible with the previously stored 
+#'   if the value's class(es) is/are not compatible with the previously stored
 #'   value's class(es). If \code{x} is a character scalar, it is used for
-#'   querying for a value. 
+#'   querying for a value.
 #' @param ... Optional arguments. If \code{x} is missing, these arguments are
-#'   concatenated into a list and used as if \code{x} was given as a list (see 
-#'   above). That is, the argument names are used as the keys for setting 
+#'   concatenated into a list and used as if \code{x} was given as a list (see
+#'   above). That is, the argument names are used as the keys for setting
 #'   values.
 #' @return List or atomic vector.
 #' @family auxiliary-functions
 #' @details The following keys can be used with the following kinds of values:
 #'   \describe{
 #'     \item{color.borders}{Character vector with default color borders between
-#'       which \code{\link{level_plot}} interpolates to obtain a colour 
+#'       which \code{\link{level_plot}} interpolates to obtain a colour
 #'       palette.}
 #'     \item{csv.keys}{Character vector with names of entries of
 #'       \code{\link{csv_data}} be used by \code{\link{include_metadata}}.
@@ -385,7 +168,7 @@ setMethod("parse_formula_head", "call", function(object) {
 #'     \item{csv.selection}{Character vector with names of entries of
 #'       \code{\link{csv_data}} (must be a valid \sQuote{keys} argument) to be
 #'       extracted by \code{\link{collect_template}}.}
-#'     \item{digits}{Integer scalar. Number of digits used by some functions 
+#'     \item{digits}{Integer scalar. Number of digits used by some functions
 #'       generating output text.}
 #'     \item{gen.iii}{Logical scalar indicating whether \code{\link{read_opm}}
 #'       and other IO functions based on it automatically convert to Generation
@@ -395,7 +178,7 @@ setMethod("parse_formula_head", "call", function(object) {
 #'     \item{split}{Character scalar indicating the default spliiting characters
 #'       used by \code{\link{separate}}.}
 #'     \item{time.zone}{Character scalar indicating the time zone to be used
-#'       when parsing \code{\link{setup_time}} entries. This is relevant for 
+#'       when parsing \code{\link{setup_time}} entries. This is relevant for
 #'       \code{\link{merge}}, which by default attempts to sort by parsed setup
 #'       times}
 #'     \item{time.fmt}{Character vector indicating the time formats used for
@@ -441,16 +224,16 @@ setMethod("opm_opt", "list", function(x) {
     if (!all(inherits(x[[i]], class(old[[i]]))))
       stop("new and old value have conflicting class(es) for key ", keys[[i]])
   list2env(x, envir = OPM_OPTIONS)
-  old  
+  old
 }, sealed = SEALED)
- 
+
 setMethod("opm_opt", "missing", function(x, ...) {
   if (nargs())
     opm_opt(list(...))
   else
     as.list(OPM_OPTIONS)
 }, sealed = SEALED)
- 
+
 setMethod("opm_opt", "character", function(x) {
   OPM_OPTIONS[[x]]
 }, sealed = SEALED)
@@ -481,7 +264,7 @@ setMethod("indexes", "factor", function(x) {
 
 #' Parse time strings
 #'
-#' Parse time strings by trying potentially many formats in turn. Each 
+#' Parse time strings by trying potentially many formats in turn. Each
 #' subsequent format is only applied to the \code{NA} values created in the
 #' previous attempt, if any. A warning is issued if final \code{NA} values
 #' remain.
@@ -491,7 +274,7 @@ setMethod("indexes", "factor", function(x) {
 #' @seealso base::strptime
 #' @keywords internal
 #'
-setGeneric("parse_time", 
+setGeneric("parse_time",
   function(object, format, ...) standardGeneric("parse_time"))
 
 setMethod("parse_time", c("character", "missing"), function(object, format,
@@ -499,19 +282,19 @@ setMethod("parse_time", c("character", "missing"), function(object, format,
   parse_time(object, format = opm_opt("time.fmt"), tz = tz)
 }, sealed = SEALED)
 
-setMethod("parse_time", c("character", "character"), function(object, format, 
+setMethod("parse_time", c("character", "character"), function(object, format,
     tz = "") {
   if (!length(format))
-    stop("need non-empty object 'format'")   
+    stop("need non-empty object 'format'")
   result <- strptime(object, format[1L], tz = tz)
   for (fmt in format[-1L])
     result[isna] <- strptime(object[isna <- is.na(result)], fmt, tz = tz)
   if (any(is.na(result)))
     warning("parsing time strings resulted in NA values")
-  result  
+  result
 }, sealed = SEALED)
 
-  
+
 ################################################################################
 
 
@@ -604,17 +387,16 @@ setMethod("parse_time", c("character", "character"), function(object, format,
 setGeneric("separate", function(object, ...) standardGeneric("separate"))
 
 setMethod("separate", "character", function(object, split = opm_opt("split"),
-    simplify = FALSE, keep.const = TRUE, list.wise = FALSE, 
+    simplify = FALSE, keep.const = TRUE, list.wise = FALSE,
     strip.white = list.wise) {
-  
+
   strip_white <- function(x) {
     for (pat in c("^\\s+", "\\s+$"))
       x <- sub(pattern = pat, replacement = "", x = x, perl = TRUE)
     x
   }
-      
+
   simple_if <- function(x) {
-    LL(simplify, keep.const)
     if (is.matrix(x)) {
       if (!keep.const && ncol(x) > 1L) {
         if (all(const <- is_constant(x, 2L)))
@@ -626,7 +408,7 @@ setMethod("separate", "character", function(object, split = opm_opt("split"),
         x[, 1L]
       else
         x
-    } else  if (simplify)
+    } else if (simplify)
       x
     else if (length(x))
       matrix(x)
@@ -635,32 +417,32 @@ setMethod("separate", "character", function(object, split = opm_opt("split"),
   }
 
   p0 <- function(x) paste(x, collapse = "")
-    
+
   char_group <- function(single, multiple) {
     if (length(single)) {
       if (length(multiple))
         sprintf("([%s]|[%s]+)", p0(single), p0(multiple))
       else
         sprintf("[%s]", p0(single))
-    } else 
+    } else
       sprintf("[%s]+", p0(multiple))
   }
-  
+
   split_fixed <- function(x) {
     ws <- c(" ", "\t", "\v", "\r", "\n", "\b", "\a", "\f")
     x <- strsplit(x, split = "", fixed = TRUE)
     max.len <- max(vapply(x, length, integer(1L)))
     x <- lapply(x, function(y) c(y, rep.int(" ", max.len - length(y))))
     x <- do.call(rbind, x)
-    groups <- group_by_sep(apply(x, 2L, function(y) all(y %in% ws)))
+    groups <- sections(apply(x, 2L, function(y) all(y %in% ws)))
     x <- apply(x, 1L, split, f = groups)
     x <- lapply(x, function(y) strip_white(vapply(y, p0, character(1L))))
     do.call(rbind, x)
   }
-  
+
   yields_constant <- function(chars) {
     splits_constant <- function(char, ...) {
-      is_constant(lapply(strsplit(object, char, ...), length))  
+      is_constant(lapply(strsplit(object, char, ...), length))
     }
     vapply(chars, function(char) {
       if (splits_constant(sprintf("[%s]+", char), perl = TRUE))
@@ -671,14 +453,14 @@ setMethod("separate", "character", function(object, split = opm_opt("split"),
         "no"
     }, character(1L))
   }
-  
+
   lists_to_matrix <- function(x, split, strip.white) {
     x <- strsplit(x, split = sprintf("[%s]", p0(split)), perl = TRUE)
     if (strip.white)
       x <- lapply(x, strip_white)
     chars <- unique(na.exclude(unlist(x)))
     result <- matrix(nrow = length(x), ncol = length(chars), data = FALSE)
-    colnames(result) <- sort(chars)
+    colnames(result) <- sort.int(chars)
     rownames(result) <- names(x)
     for (i in seq_along(x)) {
       if (identical(entries <- x[[i]], NA_character_))
@@ -689,40 +471,40 @@ setMethod("separate", "character", function(object, split = opm_opt("split"),
     result
   }
 
-  LL(list.wise, strip.white)    
-    
-  # Fixed-width splitting mode      
+  LL(list.wise, strip.white, simplify, keep.const)
+
+  # Fixed-width splitting mode
   if (isTRUE(split) || all(!nzchar(split <- na.exclude(as.character(split)))))
     return(simple_if(split_fixed(object)))
-  
+
   # Prepare split characters
   split <- unique(unlist(strsplit(x = split, split = "", fixed = TRUE)))
   if (length(split) == 0L)
     return(simple_if(object))
   split <- c(setdiff(split, "-"), intersect(split, "-"))
-  
+
   # List-wise splitting
   if (list.wise)
     return(simple_if(lists_to_matrix(object, split, strip.white)))
-    
+
   # Check and apply split characters
   yields.constant <- vapply(split, yields_constant, character(1L))
   if (all(yields.constant == "no"))
     return(simple_if(object))
-  split <- char_group(split[yields.constant == "single"], 
+  split <- char_group(split[yields.constant == "single"],
     split[yields.constant == "multiple"])
   object <- do.call(rbind, strsplit(object, split, perl = TRUE))
   if (strip.white)
     object <- strip_white(object)
   simple_if(object)
-  
+
 }, sealed = SEALED)
 
 setMethod("separate", "factor", function(object, split = "/.-_",
     simplify = FALSE, keep.const = TRUE, ...) {
   result <- separate(as.character(object), split = split,
     keep.const = keep.const, simplify = FALSE, ...)
-  if (simplify && ncol(result) == 1L)
+  if (L(simplify) && ncol(result) == 1L)
     as.factor(result[, 1L])
   else
     as.data.frame(result, stringsAsFactors = TRUE)
@@ -793,7 +575,7 @@ setMethod("separate", "data.frame", function(object, split = "/.-_",
 #' (z <- glob_to_regex(as.factor(x)))
 #' stopifnot(identical(as.factor(y), z))
 #'
-setGeneric("glob_to_regex", 
+setGeneric("glob_to_regex",
   function(object, ...) standardGeneric("glob_to_regex"))
 
 setMethod("glob_to_regex", "character", function(object) {
@@ -849,6 +631,8 @@ trim_string <- function(str, max, append = ".", clean = TRUE,
     }
     result
   }
+  #message("str is:", str(str))
+  #message("str is:", paste(str, collapse = "||"))
   long <- nchar(str) > max
   str[long] <- do_trim(str[long])
   if (clean)
@@ -954,108 +738,28 @@ setMethod("pick_from", "data.frame", function(object, selection) {
 #'
 kubrick <- function(movie = character()) {
   data <- c(
-    `Paths Of Glory` =
-      "You see, George, those men know that I would never let them down.",
+    `Paths Of Glory` = paste(
+      "You see, George, those men know that I would never let them down."),
     Spartacus = "I am Spartacus!",
     Lolita = "The wedding was a quiet affair.",
-    `Dr. Strangelove` =
-      "Gentlemen, you can't fight in here! This is the War Room!",
+    `Dr. Strangelove` = paste(
+      "Gentlemen, you can't fight in here! This is the War Room!"),
     `2001: A Space Odyssey` = "My God, it's full of stars.",
     `A Clockwork Orange` = paste("It's a sin! Using Ludwig van like that.",
       "He did no harm to anyone. Beethoven just wrote music."),
-    `Barry Lyndon` =
-      "I'm under arrest? Captain Potzdorf, sir! I'm a British officer.",
+    `Barry Lyndon` = paste(
+      "I'm under arrest? Captain Potzdorf, sir! I'm a British officer."),
     `The Shining` = "All work and no play makes Jack a dull boy.",
     `Full Metal Jacket` = "Sir, yes, sir!",
     `Eyes Wide Shut` = "If you men only knew..."
   )
-  idx <- if (length(movie) == 0L)
-    as.integer(runif(1L, max = length(data))) + 1L
-  else
+  idx <- if (length(movie))
     as.character(movie)
+  else
+    as.integer(runif(1L, max = length(data))) + 1L
   message(msg <- data[[idx, exact = FALSE]])
   invisible(msg)
 }
-
-
-################################################################################
-################################################################################
-#
-# Grouping utilities
-#
-
-
-#' Grouping using a separator
-#'
-#' For the \sQuote{logical} method,
-#' treat a logical vector by regarding \code{TRUE} as indicating separating.
-#' Create a factor that could be used with \code{split} to split the logical
-#' vector, or any equal-length object from which it was created, into according
-#' groups. For the character method,
-#' grep for a pattern in a character vector, thus creating a logical vector
-#' indicating the matches. Then use this to construct a factor with the
-#' \sQuote{logical} method.
-#'
-#' @param object Logical or character vector, or factor.
-#' @param include Logical scalar indicating whether the separator positions
-#'   should also be included in the factor levels instead of being coded as
-#'   \code{NA}.
-#' @param pattern Character scalar passed to \code{grepl}.
-#' @param invert Logical scalar. Invert the result of pattern matching with
-#'   \code{grepl}? If so, unmatched lines are treated as separators.
-#' @param ... Optional arguments passed to \code{grepl} or between the methods.
-#'
-#' @return Factor, its length being the one of \code{object}. The levels
-#'   correspond to a groups whose indices correspond to the index of a
-#'   \code{TRUE} value in \code{object} plus the indices of the \code{FALSE}
-#'   values immediately following it. The positions of \code{TRUE} values that
-#'   are followed by \code{TRUE} values are set to \code{NA} (irrespective of
-#'   \code{include}).
-#' @seealso base::split base::grepl
-#' @keywords internal
-#'
-setGeneric("group_by_sep",
-  function(object, ...) standardGeneric("group_by_sep"))
-
-setMethod("group_by_sep", "logical", function(object, include = TRUE) {
-  prepare_clean_part <- function(x) {
-    if (prepend <- !x[1L])
-      x <- c(TRUE, x)
-    if (append <- x[len <- length(x)])
-      x <- c(x, FALSE)
-    pos <- matrix(cumsum(rle(x)$lengths), ncol = 2L, byrow = TRUE)
-    result <- unlist(lapply(seq.int(1L, nrow(pos)), function(i) {
-      rep.int(i, pos[i, 2L] - pos[i, 1L] + 1L)
-    }))
-    if (prepend)
-      result <- result[-1L]
-    if (append)
-      result <- result[-len]
-    result
-  }
-  if (!(len <- length(object)))
-    return(factor())
-  result <- integer(len)
-  true.runs <- object & c(object[-1L] == object[-len], FALSE)
-  result[!true.runs] <- prepare_clean_part(object[!true.runs])
-  if (include)
-    result[true.runs] <- NA_integer_
-  else
-    result[object] <- NA_integer_
-  as.factor(result)
-}, sealed = SEALED)
-
-setMethod("group_by_sep", "character", function(object, pattern,
-    invert = FALSE, include = TRUE, ...) {
-  matches <- grepl(pattern = pattern, x = object, ...)
-  if (invert)
-    matches <- !matches
-  group_by_sep(matches, include)
-}, sealed = SEALED)
-
-setMethod("group_by_sep", "factor", function(object, ...) {
-  group_by_sep(object = as.character(object), ...)
-}, sealed = SEALED)
 
 
 ################################################################################
@@ -1065,7 +769,7 @@ setMethod("group_by_sep", "factor", function(object, ...) {
 #'
 #' Run the HTML Tidy program for check or converting HTML character vectors.
 #'
-#' @param object Query character vector, or list of such vectors, or missing. 
+#' @param object Query character vector, or list of such vectors, or missing.
 #'   If missing, the location of the tidy executable is returned
 #' @param check Logical scalar. If \code{TRUE}, the Tidy checking results,
 #'   potentially including warnings and error messages, are captured in a
@@ -1075,7 +779,7 @@ setMethod("group_by_sep", "factor", function(object, ...) {
 #' @param ... Optional arguments passed between the methods.
 #' @return Character vector, or list of such vectors. If \code{object} is
 #'   missing, the method returns the location of the HTML Tidy executable but
-#'  \code{NULL} if it cannot be found.
+#'   \code{NULL} if it cannot be found.
 #' @keywords internal
 #'
 setGeneric("tidy",  function(object, ...) standardGeneric("tidy"))
@@ -1087,7 +791,7 @@ setMethod("tidy", "missing", function() {
     NULL
 }, sealed = SEALED)
 
-setMethod("tidy", "character", function(object, check = TRUE, 
+setMethod("tidy", "character", function(object, check = TRUE,
     args = c("-u", "-i")) {
   LL(check, program <- tidy())
   bad <- c("-o", "-output", "-config", "-file", "-f", "-modify", "-m")
@@ -1100,7 +804,7 @@ setMethod("tidy", "character", function(object, check = TRUE,
   # The combination of stderr = TRUE and stdout = FALSE/"" is impossible.
   # '-e' turns the output of converted HTML off within Tidy.
   suppressWarnings(system2(command = program, args = unique(args),
-     input = object, stderr = stderr, stdout = TRUE))
+    input = object, stderr = stderr, stdout = TRUE))
 }, sealed = SEALED)
 
 setMethod("tidy", "list", function(object, ...) {
@@ -1115,8 +819,6 @@ setMethod("tidy", "list", function(object, ...) {
 #
 
 
-setGeneric("opm_problems",
-  function(object, ...) standardGeneric("opm_problems"))
 #' Check OPM
 #'
 #' Check whether a matrix fulfils the requirements for \code{\link{OPM}}
@@ -1129,20 +831,19 @@ setGeneric("opm_problems",
 #'   are none.
 #' @keywords internal
 #'
+setGeneric("opm_problems",
+  function(object, ...) standardGeneric("opm_problems"))
+
 setMethod("opm_problems", "matrix", function(object) {
-
   errs <- character()
-
   # Check content
   if (any(is.na(object)))
     errs <- c(errs, "matrix contains NAs")
   if (!is.numeric(object))
     errs <- c(errs, "matrix is not numeric")
-
   # Check row names
   if (!is.null(rownames(object)))
     errs <- c(errs, "non-empty row names")
-
   # Check column names
   col.names <- colnames(object)
   pattern <- sprintf("^([A-H][01]\\d|%s)$", HOUR)
@@ -1154,7 +855,6 @@ setMethod("opm_problems", "matrix", function(object) {
     errs <- c(errs, paste("first entry in header must be", HOUR))
   if (is.unsorted(col.names[-1L]))
     errs <- c(errs, "names of wells must be sorted")
-
   errs
 }, sealed = SEALED)
 
@@ -1173,12 +873,11 @@ setMethod("opm_problems", "character", function(object) {
 
 #' Initialize
 #'
-#' Initialize methods for the \code{\link{OPM}} and \code{\link{OPMS}}
-#' classes.
+#' Initialize methods for the \code{\link{OPM}} class.
 #'
-#' @param .Object \code{\link{OPM}} or \code{\link{OPMS}} object.
+#' @param .Object \code{\link{OPM}} object.
 #' @param ... Additional arguments.
-#' @return \code{\link{OPM}} or \code{\link{OPMS}} object.
+#' @return \code{\link{OPM}} object.
 #' @keywords internal
 #'
 setMethod("initialize", OPM, function(.Object, ...) {
@@ -1199,7 +898,6 @@ setMethod("initialize", OPM, function(.Object, ...) {
 #
 
 
-setGeneric("other_slots", function(object, ...) standardGeneric("other_slots"))
 #' Other slots
 #'
 #' Return the names of all slots except the one holding the measurements.
@@ -1208,15 +906,16 @@ setGeneric("other_slots", function(object, ...) standardGeneric("other_slots"))
 #' @return Character vector.
 #' @keywords internal
 #'
+setGeneric("other_slots", function(object, ...) standardGeneric("other_slots"))
+
 setMethod("other_slots", OPM, function(object) {
-  setdiff(slotNames(class(object)), "measurements")
+  setdiff(slotNames(object), "measurements")
 }, sealed = SEALED)
 
 
 ################################################################################
 
 
-setGeneric("attach_attr", function(object, ...) standardGeneric("attach_attr"))
 #' Attach slots
 #'
 #' Attach the contents of all slots, except the measurements, to another object.
@@ -1227,6 +926,8 @@ setGeneric("attach_attr", function(object, ...) standardGeneric("attach_attr"))
 #' @return \code{other} with additional attributes.
 #' @keywords internal
 #'
+setGeneric("attach_attr", function(object, ...) standardGeneric("attach_attr"))
+
 setMethod("attach_attr", OPM, function(object, other) {
   lapply(other_slots(object), FUN = function(name) {
     attr(other, name) <<- slot(object, name)
@@ -1242,8 +943,6 @@ setMethod("attach_attr", OPM, function(object, other) {
 #
 
 
-setGeneric("opma_problems",
-  function(object, ...) standardGeneric("opma_problems"))
 #' Check OPMA
 #'
 #' Check whether a matrix fulfils the requirements for  \code{\link{OPMA}}
@@ -1255,11 +954,14 @@ setGeneric("opma_problems",
 #'   settings.
 #' @param orig Matrix of original, non-aggregated data.
 #' @param program Character scalar. Program used for aggregating the data
-#'   (currently only \sQuote{grofit} is checked).
+#'   (currently only the \pkg{opm}-native programs are checked).
 #' @return Character vector with description of problems, empty if there
 #'   are none.
 #' @keywords internal
 #'
+setGeneric("opma_problems",
+  function(object, ...) standardGeneric("opma_problems"))
+
 setMethod("opma_problems", "matrix", function(object, orig, program) {
   errs <- character()
   # Check content. In contrast to the raw measurements we have to allow NAs.
@@ -1287,7 +989,7 @@ setMethod("opma_problems", "matrix", function(object, orig, program) {
 setMethod("opma_problems", "list", function(object) {
   errs <- character()
   program <- object[[PROGRAM]]
-  if (!is.character(program) || length(program) != 1L)
+  if (!is.character(program) || length(program) != 1L || is.na(program))
     errs <- c(errs, sprintf("need character '%s' entry of length 1", PROGRAM))
   options <- object[[OPTIONS]]
   if (!is.list(options) || length(options) < 1L)
@@ -1304,12 +1006,54 @@ setMethod("opma_problems", "list", function(object) {
 ################################################################################
 ################################################################################
 #
+# OPMD class
+#
+
+
+#' Check OPMD
+#'
+#' Check whether a matrix fulfils the requirements for  \code{\link{OPMD}}
+#' discretized data, or check whether a list fulfils the requirements for
+#' \code{\link{OPMD}} discretization settings. Called when constructing an
+#' object of the class.
+#'
+#' @param object Matrix of original, non-discretized data, or list describing
+#'   the discretization settings.
+#' @param disc Vector of discretized data.
+#' @return Character vector with description of problems, empty if there
+#'   are none.
+#' @keywords internal
+#'
+setGeneric("opmd_problems",
+  function(object, ...) standardGeneric("opmd_problems"))
+
+setMethod("opmd_problems", "list", function(object) {
+  opma_problems(object)
+}, sealed = SEALED)
+
+setMethod("opmd_problems", "matrix", function(object, disc) {
+  errs <- character()
+  # uncomment this once numeric vectors are allowed, too:
+  #if (!is.vector(disc) || !(is.numeric(disc) || is.logical(disc)))
+  #  errs <- c(errs, "discretized data have wrong storage mode")
+  if (!identical(names(disc), colnames(object)))
+    errs <- c(errs, "discretized data have wrong names")
+  if (length(errs))
+    return(errs) # further tests are impossible in that case
+  ok <- !is.na(disc)
+  if (!identical(order(disc[ok], object["A", ok]), order(object["A", ok])))
+    errs <- c(errs, "discretized data are not consistent with 'A' parameter")
+  errs
+}, sealed = SEALED)
+
+
+################################################################################
+################################################################################
+#
 # OPMS class: object construction functions
 #
 
 
-setGeneric("opms_problems",
-  function(object, ...) standardGeneric("opms_problems"))
 #' Check OPMS list
 #'
 #' Check whether a list fulfils the requirements for \code{\link{OPMS}}
@@ -1320,6 +1064,9 @@ setGeneric("opms_problems",
 #'   are none.
 #' @keywords internal
 #'
+setGeneric("opms_problems",
+  function(object, ...) standardGeneric("opms_problems"))
+
 setMethod("opms_problems", "list", function(object) {
   errs <- character()
   if (length(object) < 2L) {
@@ -1346,6 +1093,15 @@ setMethod("opms_problems", "list", function(object) {
 ################################################################################
 
 
+#' Initialize
+#'
+#' Initialize methods for the \code{\link{OPMS}} class.
+#'
+#' @param .Object \code{\link{OPMS}} object.
+#' @param ... Additional arguments.
+#' @return \code{\link{OPMS}} object.
+#' @keywords internal
+#'
 setMethod("initialize", OPMS, function(.Object, ...) {
   .Object <- callNextMethod()
   names(.Object@plates) <- NULL
@@ -1356,8 +1112,6 @@ setMethod("initialize", OPMS, function(.Object, ...) {
 ################################################################################
 
 
-setGeneric("flattened_to_factor",
-  function(object, ...) standardGeneric("flattened_to_factor"))
 #' Factor from flattened data
 #'
 #' Extract all plate-specifying information from a data frame as created by
@@ -1371,6 +1125,9 @@ setGeneric("flattened_to_factor",
 #' @return Factor with one entry per plate.
 #' @keywords internal
 #'
+setGeneric("flattened_to_factor",
+  function(object, ...) standardGeneric("flattened_to_factor"))
+
 setMethod("flattened_to_factor", "data.frame", function(object, sep = " ") {
   LL(plate.pos <- which(colnames(object) == "Plate"), sep)
   if (plate.pos == 1L)
@@ -1395,7 +1152,8 @@ setAs(from = "list", to = OPM, function(from) {
     if (length(hour.pos <- which(colnames(mat) == HOUR)) != 1L)
       stop("uninterpretable column names in 'measurements' entry of ",
         "input list")
-    sorted.names <- c(colnames(mat)[hour.pos], sort(colnames(mat)[-hour.pos]))
+    sorted.names <- c(colnames(mat)[hour.pos],
+      sort.int(colnames(mat)[-hour.pos]))
     mat[, sorted.names, drop = FALSE]
   }
   new(OPM, csv_data = unlist(from$csv_data),
@@ -1408,7 +1166,7 @@ setAs(from = "list", to = OPMA, function(from) {
   convert_aggregated <- function(mat) {
     mat <- repair_na_strings(mat)
     mat <- as.matrix(as.data.frame(lapply(mat, unlist)))
-    mat[, sort(colnames(mat)), drop = FALSE]
+    mat[, sort.int(colnames(mat)), drop = FALSE]
   }
   opm <- as(from, OPM)
   settings <- as.list(from$aggr_settings)
@@ -1425,11 +1183,32 @@ setAs(from = "list", to = OPMA, function(from) {
 })
 
 
+setAs(from = "list", to = OPMD, function(from) {
+  convert_discretized <- function(x) unlist(repair_na_strings(x, "logical"))
+  opma <- as(from, OPMA)
+  settings <- as.list(from$disc_settings)
+  discretized <- convert_discretized(from$discretized)
+  if (length(program <- settings[[PROGRAM]]) != 1L)
+    stop("need single list entry called ", PROGRAM)
+  if (!program %in% KNOWN_DISC_PROGRAMS)
+    warning("unknown discretization program '", program,
+      "' -- you might experience problems")
+  new(OPMD, csv_data = csv_data(opma), measurements = measurements(opma),
+    metadata = metadata(opma), aggr_settings = aggr_settings(opma),
+    aggregated = aggregated(opma), discretized = discretized,
+    disc_settings = settings)
+})
+
+
 setAs(from = "list", to = OPMS, function(from) {
-  opma.slots <- setdiff(slotNames(OPMA), slotNames(OPM))
-  new(OPMS, plates = lapply(from, FUN = function(sublist) {
-    as(sublist, if (all(opma.slots %in% names(sublist)))
-      OPMA
+  opmd.slots <- setdiff(slotNames(OPMD), opma.slots <- slotNames(OPMA))
+  opma.slots <- setdiff(opma.slots, slotNames(OPM))
+  new(OPMS, plates = lapply(from, FUN = function(x) {
+    as(x, if (all(opma.slots %in% names(x)))
+      if (all(opmd.slots %in% names(x)))
+        OPMD
+      else
+        OPMA
     else
       OPM)
   }))
@@ -1443,7 +1222,6 @@ setAs(from = "list", to = OPMS, function(from) {
 #
 
 
-setGeneric("to_opm_list", function(object, ...) standardGeneric("to_opm_list"))
 #' Convert to OPM list
 #'
 #' Convert to list of \code{\link{OPM}} objects. Used for building an
@@ -1457,10 +1235,13 @@ setGeneric("to_opm_list", function(object, ...) standardGeneric("to_opm_list"))
 #' @return List.
 #' @keywords internal
 #'
+setGeneric("to_opm_list", function(object, ...) standardGeneric("to_opm_list"))
+
 setMethod("to_opm_list", "list", function(object, precomputed = TRUE,
     skip = FALSE, group = FALSE) {
   LL(precomputed, skip, group)
-  opma.slots <- setdiff(slotNames(OPMA), opm.slots <- slotNames(OPM))
+  opmd.slots <- setdiff(slotNames(OPMD), opma.slots <- slotNames(OPMA))
+  opma.slots <- setdiff(opma.slots, opm.slots <- slotNames(OPM))
   convert_recursively <- function(item) {
     if (!is.list(item))
       if (skip)
@@ -1470,7 +1251,10 @@ setMethod("to_opm_list", "list", function(object, precomputed = TRUE,
     keys <- names(item)
     if (all(opm.slots %in% keys))
       as(item, if (all(opma.slots %in% keys))
-        OPMA
+        if (all(opmd.slots %in% keys))
+          OPMD
+        else
+          OPMA
       else
         OPM)
     else
@@ -1499,7 +1283,6 @@ setMethod("to_opm_list", "list", function(object, precomputed = TRUE,
 ################################################################################
 
 
-setGeneric("try_opms", function(object, ...) standardGeneric("try_opms"))
 #' Convert list to OPMS
 #'
 #' Conditionally convert a list to an \code{\link{OPMS}} object. This method
@@ -1512,6 +1295,8 @@ setGeneric("try_opms", function(object, ...) standardGeneric("try_opms"))
 #'   the input \code{object} (if conversions was unsuccessful).
 #' @keywords internal
 #'
+setGeneric("try_opms", function(object, ...) standardGeneric("try_opms"))
+
 setMethod("try_opms", "list", function(object, precomputed = TRUE,
     skip = FALSE) {
   tryCatch(new(OPMS, plates = to_opm_list(object, precomputed = precomputed,
@@ -1533,8 +1318,6 @@ setAs(from = "ANY", to = "ordered", function(from) as.ordered(from))
 ################################################################################
 
 
-setGeneric("prepare_class_names",
-  function(object) standardGeneric("prepare_class_names"))
 #' Prepare class names
 #'
 #' Ensure that a vector of class names contains only unique values and
@@ -1545,6 +1328,9 @@ setGeneric("prepare_class_names",
 #' @return Character vector.
 #' @keywords internal
 #'
+setGeneric("prepare_class_names",
+  function(object) standardGeneric("prepare_class_names"))
+
 setMethod("prepare_class_names", "character", function(object) {
   object <- unique(c("character", object))
   if ("ANY" %in% object)
@@ -1557,8 +1343,6 @@ setMethod("prepare_class_names", "character", function(object) {
 ################################################################################
 
 
-setGeneric("map_values",
-  function(object, mapping, ...) standardGeneric("map_values"))
 #' Map values
 #'
 #' Map \sQuote{character} data using another \sQuote{character} vector, or
@@ -1577,12 +1361,12 @@ setGeneric("map_values",
 #'   If a character vector used as a mapping from its names to its
 #'   values. Values from \code{object} are searched for in the \code{names}
 #'   attribute of \code{mapping}; those found are replaced by the
-#'   corresponding values of \code{mapping}. 
+#'   corresponding values of \code{mapping}.
 #'   If \code{mapping} is missing, a
 #'   character vector is returned (sorted and with duplicates removed) whose
 #'   names are identical to the values. This eases the construction of mapping
 #'   vectors specific for \code{object}. If \code{mapping} is missing, the
-#'   \code{coerce} argument must be named. 
+#'   \code{coerce} argument must be named.
 #'   \code{mapping} changes its usage
 #'   if \code{coerce} is \code{TRUE}. For \code{\link{MOA}} objects, if
 #'   \code{mapping} was a function, it would be applied to
@@ -1740,6 +1524,11 @@ setGeneric("map_values",
 #' (y <- map_values(x))
 #' stopifnot(levels(x) == y, names(y) == y)
 #'
+setGeneric("map_values",
+  function(object, mapping, ...) standardGeneric("map_values"))
+
+#-------------------------------------------------------------------------------
+
 setMethod("map_values", c("list", "character"), function(object, mapping,
     coerce = character()) {
   if (isTRUE(coerce)) {
@@ -1778,7 +1567,7 @@ setMethod("map_values", c("list", "missing"), function(object,
 
 setMethod("map_values", c("list", "formula"), function(object, mapping) {
   if (length(mapping) > 2L) {
-    object[[parse_formula_head(mapping[[2L]])]] <- eval(expr = mapping[[3L]], 
+    object[[parse_formula_head(mapping[[2L]])]] <- eval(expr = mapping[[3L]],
       envir = object)
     object
   } else
@@ -1791,7 +1580,7 @@ setMethod("map_values", c("data.frame", "function"), function(object, mapping,
     coerce = character(), ...) {
   if (identical("ANY", coerce <- prepare_class_names(coerce)))
     coerce <- unique(unlist((lapply(object, class))))
-  for (i in which(vapply(object, function(x) any(class(x) %in% coerce), 
+  for (i in which(vapply(object, function(x) any(class(x) %in% coerce),
       logical(1L))))
     object[[i]] <- mapping(object[[i]], ...)
   object
@@ -1825,7 +1614,7 @@ setMethod("map_values", c("data.frame", "missing"), function(object,
 }, sealed = SEALED)
 
 #-------------------------------------------------------------------------------
-                                                               
+
 setMethod("map_values", c(MOA, "character"), function(object, mapping,
     coerce = TRUE) {
   if (isTRUE(coerce)) {
@@ -1855,12 +1644,12 @@ setMethod("map_values", c(MOA, "missing"), function(object, coerce = TRUE) {
 
 setMethod("map_values", c(MOA, "function"), function(object, mapping, ...) {
   result <- mapping(as.vector(object), ...)
-  mostattributes(result) <- attributes(object)
+  mostattributes(result) <- c(attributes(result), attributes(object))
   result
 }, sealed = SEALED)
 
 #-------------------------------------------------------------------------------
-                                                               
+
 setMethod("map_values", c("character", "function"), function(object, mapping,
     ...) {
   result <- mapping(object, ...)
@@ -1875,12 +1664,12 @@ setMethod("map_values", c("character", "character"), function(object, mapping) {
 }, sealed = SEALED)
 
 setMethod("map_values", c("character", "missing"), function(object) {
-  object <- sort(unique(object))
+  object <- sort.int(unique(object))
   structure(.Data = object, .Names = object)
 }, sealed = SEALED)
 
-#-------------------------------------------------------------------------------                                                               
-                                                               
+#-------------------------------------------------------------------------------
+
 setMethod("map_values", c("factor", "function"), function(object, mapping,
     ...) {
   levels(object) <- map_values(levels(object), mapping, ...)
@@ -1897,7 +1686,7 @@ setMethod("map_values", c("factor", "missing"), function(object) {
 }, sealed = SEALED)
 
 #-------------------------------------------------------------------------------
-                                                               
+
 setMethod("map_values", c("NULL", "function"), function(object, mapping, ...) {
   NULL
 }, sealed = SEALED)
@@ -1914,8 +1703,6 @@ setMethod("map_values", c("NULL", "missing"), function(object, mapping) {
 ################################################################################
 
 
-setGeneric("map_names",
-  function(object, mapping, ...) standardGeneric("map_names"))
 #' Map names
 #'
 #' Use a character vector or a function for recursively mapping list names, or
@@ -1931,7 +1718,7 @@ setGeneric("map_names",
 #' \code{names} attribute; this might be useful if the result is later on used
 #' for some mapping (using this function or \code{\link{map_values}}).
 #'
-#' @param object Any R object. The default method applies the mapping to the
+#' @param object Any \R object. The default method applies the mapping to the
 #'   \sQuote{names} attribute. The behaviour is special for lists, which are
 #'   traversed recursively to also consider sublists with names. Data frames
 #'   and \code{\link{MOA}} objects (that is, including matrices and arrays)
@@ -1943,7 +1730,7 @@ setGeneric("map_names",
 #'   \code{NULL}, irrespective of the value of \code{mapping}.
 #' @param ... Optional further arguments to \code{mapping} (if it is a
 #'   function).
-#' @return Character vector if \code{mapping} is missing, otherwise an R object
+#' @return Character vector if \code{mapping} is missing, otherwise an \R object
 #'   of the same class than \code{object}.
 #' @export
 #' @family auxiliary-functions
@@ -2005,6 +1792,11 @@ setGeneric("map_names",
 #' (y <- map_names(x))
 #' stopifnot(y == c("a", "b"), names(y) == y)
 #'
+setGeneric("map_names",
+  function(object, mapping, ...) standardGeneric("map_names"))
+
+#-------------------------------------------------------------------------------
+
 setMethod("map_names", c("list", "function"), function(object, mapping, ...) {
   map_names_recursively <- function(item) {
     if (is.list(item)) {
@@ -2094,8 +1886,6 @@ setMethod("map_names", c("ANY", "missing"), function(object) {
 #
 
 
-setGeneric("contains",
-  function(object, other, ...) standardGeneric("contains"))
 #' Query a list with a list
 #'
 #' Test whether all names of a query list occur as names in a data list and
@@ -2110,7 +1900,7 @@ setGeneric("contains",
 #' method, which tests whether an \code{\link{OPM}} object is contained.
 #'
 #' @param object List containing the data, or \code{\link{OPMS}} object.
-#' @param other For the list method, a list used as query; for the 
+#' @param other For the list method, a list used as query; for the
 #'   \code{\link{OPMS}} method, an \code{\link{OPM}} object used as query.
 #' @param values Logical scalar. Compare also the values or only the keys? If
 #'   \code{FALSE}, \code{exact} is ignored.
@@ -2120,7 +1910,7 @@ setGeneric("contains",
 #'   correspond to the query value(s), and no coercion is done (see
 #'   \code{identical}) for details). This might be too strict for most
 #'   applications.
-#' @param ... Optional arguments passed to \code{identical} from the 
+#' @param ... Optional arguments passed to \code{identical} from the
 #'   \pkg{base} package, allowing for fine-control of identity. Has no effect
 #'   unless \code{exact} is \code{TRUE}.
 #' @export
@@ -2144,9 +1934,11 @@ setGeneric("contains",
 #'
 #' # OPMS/OPM method
 #' data(vaas_4)
-#' data(vaas_1)
-#' stopifnot(contains(vaas_4, vaas_1))
+#' stopifnot(contains(vaas_4, vaas_4[3]))
 #'
+setGeneric("contains",
+  function(object, other, ...) standardGeneric("contains"))
+
 setMethod("contains", c("list", "list"), function(object, other,
     values = TRUE, exact = FALSE, ...) {
   query.keys <- names(other)
@@ -2194,12 +1986,10 @@ setMethod("contains", c(OPMS, OPM), function(object, other, ...) {
 #
 
 
-setGeneric("repair_na_strings",
-  function(object, ...) standardGeneric("repair_na_strings"))
 #' Repair NAs
 #'
 #' Replace \sQuote{NA} by \code{NA_character_}.
-#' When reading YAML input previously output by R, \sQuote{NA} values cause
+#' When reading YAML input previously output by \R, \sQuote{NA} values cause
 #' numeric vectors to be interpreted as character. This function fixes this
 #' problem and also takes care of misinterpreted numbers in exponential
 #' notation.
@@ -2212,13 +2002,16 @@ setGeneric("repair_na_strings",
 #' @keywords internal
 #' @references \url{http://www.yaml.org/}
 #'
+setGeneric("repair_na_strings",
+  function(object, ...) standardGeneric("repair_na_strings"))
+
 setMethod("repair_na_strings", "character", function(object) {
   object[grepl("^\\s*NA$", object, perl = TRUE)] <- NA_character_
   object
 }, sealed = SEALED)
 
 setMethod("repair_na_strings", "list", function(object,
-    type = c("numeric", "integer", "complex")) {
+    type = c("numeric", "integer", "complex", "logical")) {
   type <- match.arg(type)
   rapply(object, f = function(item) {
     tryCatch(as(repair_na_strings(item), type), warning = function(w) item)
@@ -2229,8 +2022,6 @@ setMethod("repair_na_strings", "list", function(object,
 ################################################################################
 
 
-setGeneric("repair_names",
-  function(object, ...) standardGeneric("repair_names"))
 #' Repair names
 #'
 #' Recursively repair all names of a list, i.e. ensure that \code{names}
@@ -2246,6 +2037,9 @@ setGeneric("repair_names",
 #' @return List.
 #' @keywords internal
 #'
+setGeneric("repair_names",
+  function(object, ...) standardGeneric("repair_names"))
+
 setMethod("repair_names", "list", function(object, fill = TRUE) {
   repair_fun <- if (fill)
     function(keys) {
@@ -2272,8 +2066,6 @@ setMethod("repair_names", "list", function(object, fill = TRUE) {
 #
 
 
-setGeneric("traverse",
-  function(object, func, ...) standardGeneric("traverse"))
 #' Traverse a list with a function
 #'
 #' Apply a function to all list elements in turn, optionally in parallel using
@@ -2289,6 +2081,9 @@ setGeneric("traverse",
 #' @return List.
 #' @keywords internal
 #'
+setGeneric("traverse",
+  function(object, func, ...) standardGeneric("traverse"))
+
 setMethod("traverse", c("list", "function"), function(object, func, cores,
     ...) {
   if (L(cores) > 1L &&
@@ -2310,7 +2105,6 @@ setMethod("traverse", c("list", "function"), function(object, func, cores,
 #
 
 
-setGeneric("insert", function(object, ...) standardGeneric("insert"))
 #' Insert a list in a list
 #'
 #' Insert all values from another list in a list, either by overwriting the
@@ -2319,10 +2113,10 @@ setGeneric("insert", function(object, ...) standardGeneric("insert"))
 #' \code{NULL}.
 #'
 #' @param object List.
-#' @param other R object to insert. List.
+#' @param other \R object to insert. List.
 #' @param ... Optional other items to insert.
 #' @param .force Logical scalar. Overwite items that are already there?
-#' @param .strict Logical scalar. If \code{TRUE}, has precedence over 
+#' @param .strict Logical scalar. If \code{TRUE}, has precedence over
 #'   \code{.force} and causes some restrictions: Only names that are already
 #'   present are allowed, and the classes must match the classes of the
 #'   already contained values.
@@ -2330,7 +2124,9 @@ setGeneric("insert", function(object, ...) standardGeneric("insert"))
 #' @seealso utils::modifyList
 #' @keywords internal
 #'
-setMethod("insert", "list", function(object, other, ..., .force = FALSE, 
+setGeneric("insert", function(object, ...) standardGeneric("insert"))
+
+setMethod("insert", "list", function(object, other, ..., .force = FALSE,
     .strict = FALSE) {
   insert_carefully <- function(x, y) {
     if (length(bad <- setdiff(nn <- names(y), names(x))))
@@ -2339,11 +2135,11 @@ setMethod("insert", "list", function(object, other, ..., .force = FALSE,
       novel <- y[[name]]
       if (!identical(class(novel), wanted <- class(x[[name]])))
         stop(sprintf("value of key '%s' must have class '%s'", name,
-           paste(wanted, collapse = " -> ")))
+          paste(wanted, collapse = " -> ")))
       x[[name]] <- novel
     }
-    x  
-  }  
+    x
+  }
   other <- if (missing(other))
     list(...)
   else if (is.list(other))
@@ -2360,10 +2156,7 @@ setMethod("insert", "list", function(object, other, ..., .force = FALSE,
 }, sealed = SEALED)
 
 
-
-
-
-
+################################################################################
 
 
 

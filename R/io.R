@@ -227,8 +227,8 @@ read_new_opm <- function(filename) {
 #' if no \code{\link{OPM}} or \code{\link{OPMA}} objects can be found at all.
 #'
 #' @param filename Character scalar with the obvious meaning.
-#' @return \code{\link{OPM}}, \code{\link{OPMA}} object, depending on the
-#'   presence of aggregated data.
+#' @return \code{\link{OPM}}, \code{\link{OPMA}} or \code{\link{OPMD}} object,
+#'   depending on the presence of aggregated and discretized data.
 #' @references \url{http://www.yaml.org/}
 #' @keywords internal
 #'
@@ -299,14 +299,14 @@ read_single_opm <- function(filename) {
   routines <- list(`New CSV` = read_new_opm, `Old CSV` = read_old_opm,
     YAML = read_opm_yaml)
   for (name in names(routines)) {
-    result <- taste(routines[[name]](filename))
+    result <- tryCatch(routines[[name]](filename), error = conditionMessage)
     if (!is.character(result))
       return(result)
     errs[[name]] <- result
   }
   names(errs) <- paste(names(errs), "error")
   errs$Filename <- filename
-  stop(listing(errs, header = "Unknown file format:"))
+  stop(pkgutils::listing(errs, header = "Unknown file format:"))
 }
 
 
@@ -436,7 +436,7 @@ explode_dir <- function(names,
 #' @param what Character scalar indicating the subdirectory to search in.
 #'   Currently the following ones are included:
 #'   \describe{
-#'     \item{scripts}{R script files for non-interactive uses of the
+#'     \item{scripts}{\R script files for non-interactive uses of the
 #'       \pkg{opm} package, particularly for the batch processing of many
 #'       files. When called without input arguments or with the
 #'       \sQuote{-h} switch, the scripts output usage information.}
@@ -447,7 +447,7 @@ explode_dir <- function(names,
 #' @return Character vector of filenames.
 #' @note This might fail with unusual installations of the \pkg{opm} package.
 #' @family IO-functions
-#' @seealso base::list.files
+#' @seealso pkgutils::pkg_files
 #' @keywords utilities
 #' @examples
 #' (x <- opm_files("scripts"))
@@ -463,10 +463,7 @@ explode_dir <- function(names,
 #' # ...and get the usage messages of all scripts.
 #'
 opm_files <- function(what = c("scripts", "testdata")) {
-  if (length(result <- path.package("opm", quiet = TRUE)) == 0L)
-    return(character())
-  result <- list.files(file.path(result, match.arg(what)), full.names = TRUE)
-  normalizePath(result)
+  pkgutils::pkg_files(x = "opm", what = match.arg(what))
 }
 
 
@@ -492,8 +489,8 @@ opm_files <- function(what = c("scripts", "testdata")) {
 #' @param convert Character scalar. If \sQuote{no}, always return a list. If
 #'   \sQuote{yes}, convert to \code{NULL}, \code{\link{OPM}} object, or
 #'   \code{\link{OPMS}} object, depending on the number of files read (0, 1, or
-#'   more). \sQuote{try} behaves like \sQuote{yes} but does not result in an 
-#'   error message if conversion to OPMS is impossible; a list is returned in 
+#'   more). \sQuote{try} behaves like \sQuote{yes} but does not result in an
+#'   error message if conversion to OPMS is impossible; a list is returned in
 #'   that case. \sQuote{sep} returns a nested list, each sublist containing
 #'   \code{\link{OPM}} objects of the same plate type. \sQuote{grp} also
 #'   splits into such sublists but converts them to \code{\link{OPMS}}
@@ -717,7 +714,7 @@ batch_collect <- function(names, fun, fun.args = list(), ...,
 #' The character method batch-collects such information from files and
 #' optionally add these data as novel rows to previously collected data.
 #' It writes the collected template to a file for use with an external editor,
-#' and/or creates a data frame for editing the data directly in R with the
+#' and/or creates a data frame for editing the data directly in \R with the
 #' \code{edit} function.
 #' The \code{\link{OPM}} and \code{\link{OPMS}} methods collect a data frame.
 #'
@@ -935,10 +932,10 @@ process_io <- function(files, io.fun, fun.args = list(),
   conduct_conversion <- function(infile, outfile, fun, fun.args) {
     if (!create_parent(outfile))
       return("could not create parent directory")
-    problem <- taste({
+    problem <- tryCatch({
       do.call(fun, c(infile = infile, outfile = outfile, fun.args))
       ""
-    })
+    }, error = conditionMessage)
     if (nzchar(problem))
       problem
     else if (empty(file.info(outfile)))
@@ -1016,7 +1013,7 @@ process_io <- function(files, io.fun, fun.args = list(),
 #' }
 #'
 batch_process <- function(names, out.ext, io.fun, fun.args = list(), proc = 1L,
-    outdir = NULL, overwrite = c("yes", "older", "no"), in.ext = "any", 
+    outdir = NULL, overwrite = c("yes", "older", "no"), in.ext = "any",
     compressed = TRUE, literally = FALSE, ..., verbose = TRUE, demo = FALSE) {
   create_outfile_names <- function(infiles, outdir, out.ext) {
     if (length(outdir) == 0L || all(!nzchar(outdir)))
@@ -1038,7 +1035,7 @@ batch_process <- function(names, out.ext, io.fun, fun.args = list(), proc = 1L,
   fun.args <- as.list(fun.args)
   data <- mapply(c, infiles, outfiles, SIMPLIFY = FALSE, USE.NAMES = FALSE)
   result <- traverse(object = data, func = process_io, cores = proc,
-    io.fun = io.fun, fun.args = fun.args, overwrite = overwrite, 
+    io.fun = io.fun, fun.args = fun.args, overwrite = overwrite,
     verbose = verbose)
   invisible(do.call(rbind, result))
 }
@@ -1146,7 +1143,7 @@ batch_process <- function(names, out.ext, io.fun, fun.args = list(), proc = 1L,
 #' }
 #'
 batch_opm_to_yaml <- function(names, md.args = NULL, aggr.args = NULL,
-    force.aggr = FALSE, gen.iii = opm_opt("gen.iii"), ..., verbose = TRUE, 
+    force.aggr = FALSE, gen.iii = opm_opt("gen.iii"), ..., verbose = TRUE,
     demo = FALSE) {
 
   convert_dataset <- function(data) {
@@ -1308,14 +1305,14 @@ split_files <- function(files, pattern, outdir = "", demo = FALSE,
 
   invisible(mapply(function(infile, out.base, out.ext) {
     data <- readLines(con = infile, encoding = "UTF-8")
-    data <- split(data, group_by_sep(object = data, pattern = pattern,
-      invert = invert, include = include, ...))
+    data <- sections(x = data, pattern = pattern,
+      invert = invert, include = include, ...)
     if ((len <- length(data)) == 0L || (!single && len == 1L))
       return(character())
     outnames <- sprintf(format, out.base, seq_along(data), out.ext)
-    if(demo)
-      message(listing(structure(.Data = outnames, names = seq_along(outnames)),
-        header = infile))
+    if (demo)
+      message(pkgutils::listing(structure(.Data = outnames,
+        names = seq_along(outnames)), header = infile))
     else
       mapply(write, data, outnames, USE.NAMES = FALSE, SIMPLIFY = FALSE)
     outnames
@@ -1398,7 +1395,7 @@ clean_filenames <- function(x, overwrite = FALSE, demo = FALSE,
     result <- result[!file.exists(result)]
   }
   if (demo)
-    message(listing(result, header = "Attempted renamings:"))
+    message(pkgutils::listing(result, header = "Attempted renamings:"))
   else
     result <- result[file.rename(names(result), result)]
   invisible(result)

@@ -4,7 +4,7 @@
 \arguments{
   \item{object}{List.}
 
-  \item{other}{R object to insert. List.}
+  \item{other}{\R object to insert. List.}
 
   \item{...}{Optional other items to insert.}
 
@@ -36,7 +36,7 @@
 \alias{insert-methods}
 \alias{insert,list-method}
 \usage{
-  \S4method{insert}{list}(object, other, ..., .force = FALSE, 
+  \S4method{insert}{list}(object, other, ..., .force = FALSE,
     .strict = FALSE) 
 
 }

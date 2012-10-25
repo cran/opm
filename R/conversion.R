@@ -151,7 +151,7 @@ lapply(c(
 #'   yields an additional column named \sQuote{Plate}, which contains each
 #'   plate's number within \code{object}. The list method returns a list.
 #' @family conversion-functions
-#' @note The list method is based on 
+#' @note The list method is based on
 #'   \url{http://stackoverflow.com/questions/8139677/how-to-flatten-a-list-to-a-list-without-coercion}
 #'   with some slight improvements.
 #' @keywords manip dplot
@@ -160,24 +160,24 @@ lapply(c(
 #'
 #' # OPM method
 #' data(vaas_1)
-#' x <- flatten(vaas_1)
+#' head(x <- flatten(vaas_1))
 #' stopifnot(is.data.frame(x), identical(dim(x), c(36864L, 3L)))
-#' x <- flatten(vaas_1, fixed = "TEST")
+#' head(x <- flatten(vaas_1, fixed = "TEST"))
 #' stopifnot(is.data.frame(x), identical(dim(x), c(36864L, 4L)))
-#' x <- flatten(vaas_1, fixed = "TEST", include = "Strain")
+#' head(x <- flatten(vaas_1, fixed = "TEST", include = "Strain"))
 #' stopifnot(is.data.frame(x), identical(dim(x), c(36864L, 5L)))
 #'
 #' # OPMS method
 #' data(vaas_4)
-#' x <- flatten(vaas_4)
+#' head(x <- flatten(vaas_4))
 #' stopifnot(is.data.frame(x), identical(dim(x), c(147456L, 4L)))
-#' x <- flatten(vaas_4, fixed = "TEST")
+#' head(x <- flatten(vaas_4, fixed = "TEST"))
 #' stopifnot(is.data.frame(x), identical(dim(x), c(147456L, 5L)))
-#' x <- flatten(vaas_4, fixed = "TEST", include = "Strain")
+#' head(x <- flatten(vaas_4, fixed = "TEST", include = "Strain"))
 #' stopifnot(is.data.frame(x), identical(dim(x), c(147456L, 6L)))
 #'
 #' # List method
-#' x <- list(a = list(b = 1:5, c = letters[1:5]), d = LETTERS[1:3], 
+#' x <- list(a = list(b = 1:5, c = letters[1:5]), d = LETTERS[1:3],
 #'   e = list(pi))
 #' (y <- flatten(x))
 #' stopifnot(is.list(y), length(y) == 4, !sapply(y, is.list))
@@ -232,7 +232,7 @@ setMethod("flatten", OPMS, function(object, include = NULL, fixed = list(),
 }, sealed = SEALED)
 
 setMethod("flatten", "list", function(object) {
-  while(any(is.a.list <- vapply(object, is.list, logical(1L)))) {
+  while (any(is.a.list <- vapply(object, is.list, logical(1L)))) {
     object[!is.a.list] <- lapply(object[!is.a.list], list)
     object <- unlist(object, recursive = FALSE)
   }
@@ -286,7 +286,7 @@ setMethod("flatten", "list", function(object) {
 #' (x <- extract_columns(vaas_4, what = list("Species", "Strain"), join = TRUE))
 #' stopifnot(is.character(x), length(x) == 4L)
 #' (x <- try(extract_columns(vaas_4, what = list("Species"), join = TRUE,
-#'    dups = "error"), silent = TRUE))
+#'   dups = "error"), silent = TRUE))
 #' stopifnot(inherits(x, "try-error"))
 #' (x <- try(extract_columns(vaas_4, what = list("Species"), join = TRUE,
 #'   dups = "warn"), silent = TRUE))
@@ -340,11 +340,11 @@ setMethod("extract_columns", "data.frame", function(object, what, sep = " ") {
 #' @param x \code{\link{OPMS}} or \code{\link{OPM}} object.
 #' @param decreasing Logical scalar. Passed to \code{order} from the \pkg{base}
 #'   package.
-#' @param by List or character vector. If a list, a list of one to several keys 
-#'   passed as \code{key} argument to \code{\link{metadata}}. If a character 
-#'   vector of length one, \code{by} must specify the name of one of the 
-#'   functions \code{\link{setup_time}}, \code{\link{filename}} or 
-#'   \code{\link{position}}. If longer, passed step-by-step to 
+#' @param by List or character vector. If a list, a list of one to several keys
+#'   passed as \code{key} argument to \code{\link{metadata}}. If a character
+#'   vector of length one, \code{by} must specify the name of one of the
+#'   functions \code{\link{setup_time}}, \code{\link{filename}} or
+#'   \code{\link{position}}. If longer, passed step-by-step to
 #'   \code{\link{csv_data}} as \code{keys} argument.
 #' @param parse Logical scalar. Convert the \code{\link{setup_time}} via
 #'   \code{strptime} before ordering? Has only an effect if \code{by} is
@@ -353,11 +353,12 @@ setMethod("extract_columns", "data.frame", function(object, what, sep = " ") {
 #'   metadata querying, not directly the sorting.
 #' @param strict Logical scalar. Is it an error if metadata keys are not found?
 #'   If \code{FALSE}, \code{x} gets ordered according to only the found keys,
-#'   and remains in the original order if none of the keys in \code{by} are 
+#'   and remains in the original order if none of the keys in \code{by} are
 #'   found at all. Note that it is always an error if keys are found in the
 #'   \code{\link{metadata}} of some of the\code{\link{plates}} but not in those
 #'   of others.
 #' @param na.last Logical scalar. Also passed to \code{order}.
+#' @param ... Optional arguments passed between the methods.
 #' @export
 #' @return \code{\link{OPMS}} object with not necessarily the same order of
 #'   plates than before, or \code{\link{OPM}} object.
@@ -399,14 +400,18 @@ setMethod("extract_columns", "data.frame", function(object, what, sep = " ") {
 #'
 setGeneric("sort")
 
-setMethod("sort", OPM, function(x) {
+setMethod("sort", c(OPMX, "missing"), function(x, decreasing, ...) {
+  sort(x = x, decreasing = FALSE, ...)
+}, sealed = SEALED)
+
+setMethod("sort", c(OPM, "logical"), function(x, decreasing, ...) {
   x
 }, sealed = SEALED)
 
-setMethod("sort", OPMS, function(x, decreasing = FALSE, by = "setup_time", 
+setMethod("sort", c(OPMS, "logical"), function(x, decreasing, by = "setup_time",
     parse = TRUE, exact = TRUE, strict = TRUE, na.last = TRUE) {
   if (is.list(by)) {
-    keys <- lapply(X = by, FUN = metadata, object = x, exact = exact, 
+    keys <- lapply(X = by, FUN = metadata, object = x, exact = exact,
       strict = strict)
     if (!strict)
       if (!length(keys <- keys[!vapply(keys, is.null, logical(1L))]))
@@ -423,14 +428,68 @@ setMethod("sort", OPMS, function(x, decreasing = FALSE, by = "setup_time",
         filename = filename(x),
         stop(sprintf("if a character scalar, 'by' must not be '%s'", by))
       )),
-      lapply(X = by, FUN = csv_data, object = x)   
+      lapply(X = by, FUN = csv_data, object = x)
     )
   else
     stop("'by' must be a list or a character vector")
-  keys <- insert(keys, decreasing = decreasing, na.last = na.last, 
+  keys <- insert(keys, decreasing = decreasing, na.last = na.last,
     .force = TRUE)
   x@plates <- x@plates[do.call(base::order, keys)]
   x
+}, sealed = SEALED)
+
+
+################################################################################
+
+
+#' Make OPMS objects unique
+#'
+#' Check whether duplicated \code{\link{OPM}} or \code{\link{OPMA}} objects
+#' are contained within an \code{\link{OPMS}} object and remove the duplicated
+#' ones. The \code{\link{OPM}} method just returns the object passed.
+#'
+#' @param x \code{\link{OPMS}} or \code{\link{OPM}} object.
+#' @param incomparables Vector passed to \code{\link{duplicated}}. The default
+#'   is \code{FALSE}.
+#' @param ... Optional further arguments passed to \code{\link{duplicated}}.
+#'   See the examples.
+#' @export
+#' @return \code{\link{OPMS}} or \code{\link{OPM}} object or \code{NULL}.
+#' @family conversion-functions
+#' @keywords manip
+#' @seealso base::unique
+#' @examples
+#'
+#' ## 'OPMS' method
+#' data(vaas_4)
+#' (x <- unique(vaas_4))
+#' stopifnot(identical(x, vaas_4))
+#' (x <- unique(c(vaas_4, vaas_4)))
+#' stopifnot(identical(x, vaas_4))
+#' (x <- unique(vaas_4, what = "Species"))
+#' stopifnot(dim(x)[1L] < dim(vaas_4)[1L])
+#' (x <- unique(vaas_4, what = list("Species", "Strain")))
+#' stopifnot(identical(x, vaas_4))
+#'
+#' ## 'OPM' method
+#' data(vaas_1)
+#' (x <- unique(vaas_1))
+#' stopifnot(identical(x, vaas_1))
+#' (x <- unique(vaas_1, what = list("Species", "Strain")))
+#' stopifnot(identical(x, vaas_1))
+#'
+setGeneric("unique")
+
+setMethod("unique", c(OPM, "ANY"), function(x, incomparables, ...) {
+  x
+}, sealed = SEALED)
+
+setMethod("unique", c(OPMS, "missing"), function(x, incomparables, ...) {
+  unique(x = x, incomparables = FALSE, ...)
+}, sealed = SEALED)
+
+setMethod("unique", c(OPMS, "ANY"), function(x, incomparables, ...) {
+  x[!duplicated(x = x, incomparables = incomparables, ...)]
 }, sealed = SEALED)
 
 
@@ -483,7 +542,7 @@ setMethod("rev", OPMS, function(x) {
 #' Repeat OPMS objects
 #'
 #' Repeat \code{\link{OPMS}} or \code{\link{OPM}} objects zero times, once, or
-#' several times, and accordingly create a novel \code{\link{OPMS}} or 
+#' several times, and accordingly create a novel \code{\link{OPMS}} or
 #' \code{\link{OPM}} object (\code{NULL} if zero length is chosen).
 #'
 #' @param x \code{\link{OPMS}} or \code{\link{OPM}} object.
@@ -537,16 +596,17 @@ setMethod("rep", OPMS, function(x, ...) {
 
 #' Extract aggregated values
 #'
-#' Extract selected aggregated values into common matrix or data frame. The
-#' data-frame method creates a matrix by extracting the numeric columns and
-#' optionally adds row names.
+#' Extract selected aggregated or discretized values into common matrix or data
+#' frame. The data-frame method creates a matrix by extracting the numeric
+#' columns and optionally adds row names.
 #'
 #' @param object \code{\link{OPMS}} object or data frame.
 #' @param as.labels List. Metadata to be joined and used as row names (if
 #'   \code{dataframe} is \code{FALSE}) or additional columns (if otherwise).
 #'   Ignored if \code{NULL}.
 #'
-#' @param subset Character vector. The parameter(s) to put in the matrix.
+#' @param subset Character vector. The parameter(s) to put in the matrix. If it
+#'   is \sQuote{disc}, discretized data are returned, and \code{ci} is ignored.
 #' @param ci Logical scalar. Also return the CIs?
 #' @param trim Character scalar. See \code{\link{aggregated}} for details.
 #' @param dataframe Logical scalar. Return data frame or matrix?
@@ -583,7 +643,7 @@ setMethod("rep", OPMS, function(x, ...) {
 #' data(vaas_4)
 #' # Matrix
 #' (x <- extract(vaas_4, as.labels = list("Species", "Strain")))
-#' stopifnot(is.matrix(x), identical(dim(x), c(4L, 96L)))
+#' stopifnot(is.matrix(x), identical(dim(x), c(4L, 96L)), is.numeric(x))
 #' # Data frame
 #' (x <- extract(vaas_4, as.labels = list("Species", "Strain"),
 #'   dataframe = TRUE))
@@ -592,6 +652,9 @@ setMethod("rep", OPMS, function(x, ...) {
 #' x <- lapply(param_names(), function(name) extract(vaas_4, subset = name,
 #'   as.labels = list("Species", "Strain"), dataframe = TRUE))
 #' x <- do.call(rbind, x)
+#' # Get discretized data
+#' (x <- extract(vaas_4, subset = "disc", as.labels = list("Strain")))
+#' stopifnot(is.matrix(x), identical(dim(x), c(4L, 96L)), is.logical(x))
 #'
 #' # data-frame method
 #' x <- data.frame(a = 1:26, b = letters, c = LETTERS)
@@ -612,11 +675,18 @@ setMethod("extract", OPMS, function(object, as.labels, subset = "A",
   }
 
   # Collect parameters in a matrix
-  subset <- match.arg(subset, unlist(map_grofit_names(plain = TRUE)))
-  if (!all(has_aggr(object)))
-    stop("all plates need aggregated data")
-  result <- do.call(rbind, lapply(object@plates, FUN = aggregated,
-    subset = subset, ci = ci, trim = trim))
+  subset <- match.arg(subset, c(unlist(map_grofit_names(plain = TRUE)), "disc"))
+  if (subset == "disc") {
+    if (!all(has_disc(object)))
+      stop("all plates need discretized data")
+    ci <- FALSE
+    result <- discretized(object)
+  } else {
+    if (!all(has_aggr(object)))
+      stop("all plates need aggregated data")
+    result <- do.call(rbind, lapply(object@plates, FUN = aggregated,
+      subset = subset, ci = ci, trim = trim))
+  }
   colnames(result) <- wells(object, full = full, max = max, ...)
 
   if (dataframe) {
@@ -669,7 +739,7 @@ setMethod("extract", OPMS, function(object, as.labels, subset = "A",
 
 }, sealed = SEALED)
 
-setMethod("extract", "data.frame", function(object, as.labels, 
+setMethod("extract", "data.frame", function(object, as.labels,
     as.groups = NULL, sep = " ", what = "numeric") {
   find_stuff <- function(x, what) {
     x <- select(x, query = what)
@@ -702,15 +772,15 @@ setMethod("extract", "data.frame", function(object, as.labels,
 #'   fit to the number of plates (e.g., either \code{1} or \code{length(x) - 1}
 #'   would work). If missing, \code{0.25} is used.
 #' @param sort.first Logical scalar. Sort the plates according to their setup
-#'   times before merging? 
-#' @param parse Logical scalar. Ignored unless \code{sort.first} is 
-#'   \code{TRUE}. For sorting, parse the setup times using \code{strptime} from 
+#'   times before merging?
+#' @param parse Logical scalar. Ignored unless \code{sort.first} is
+#'   \code{TRUE}. For sorting, parse the setup times using \code{strptime} from
 #'   the \pkg{base} package? It is an error if this does not work.
 #' @export
 #' @return \code{\link{OPM}} object. The \code{\link{metadata}} and
 #'   \code{\link{csv_data}} will be taken from the first contained plate, but
 #'   aggregated values, if any, will be dropped.
-#' @note This function is intended for dealing with slowly growing or reacting 
+#' @note This function is intended for dealing with slowly growing or reacting
 #'   organisms that need to be analyzed with subsequent runs of the same plate
 #'   in PM mode. Results obtained with \emph{Geodermatophilus} strains and
 #'   Generation-III plates indicate that this works well in practice.
@@ -723,7 +793,7 @@ setMethod("extract", "data.frame", function(object, as.labels,
 #'
 setGeneric("merge")
 
-setMethod("merge", c(OPMS, "numeric"), function(x, y, sort.first = TRUE, 
+setMethod("merge", c(OPMS, "numeric"), function(x, y, sort.first = TRUE,
     parse = TRUE) {
   if (any(y <= 0))
     stop("'y' must be positive throughout")
@@ -743,7 +813,7 @@ setMethod("merge", c(OPMS, "numeric"), function(x, y, sort.first = TRUE,
     metadata = metadata(x[1L]))
 }, sealed = SEALED)
 
-setMethod("merge", c(OPMS, "missing"), function(x, sort.first = TRUE, 
+setMethod("merge", c(OPMS, "missing"), function(x, sort.first = TRUE,
     parse = TRUE) {
   merge(x, 0.25, sort.first = sort.first, parse = parse)
 }, sealed = SEALED)
@@ -761,7 +831,7 @@ setMethod("merge", c(OPMS, "missing"), function(x, sort.first = TRUE,
 #' somewhat similar but more flexible).
 #'
 #' @param object List, \code{\link{OPM}} or \code{\link{OPMS}} object.
-#' @return List of \code{\link{OPM}} objects (may be empty instead if 
+#' @return List of \code{\link{OPM}} objects (may be empty instead if
 #'   \code{object} is a list).
 #' @export
 #' @family conversion-functions
@@ -809,7 +879,8 @@ setMethod("plates", "list", function(object) {
 #' \code{\link{OPMS}} object if possible, or other structures simpler than a
 #' list.
 #'
-#' @param object \code{\link{OPMS}} object.
+#' @param object \code{\link{OPMS}} object. An \code{\link{OPM}} method is also
+#'   defined but simply applies \code{fun} once (to \code{object}).
 #' @param fun A function. Should expect an  \code{\link{OPM}} (or
 #'   \code{\link{OPMA}}) object as first argument.
 #' @param ... Optional other arguments passed to \code{fun}.
@@ -828,9 +899,13 @@ setMethod("plates", "list", function(object) {
 #' x <- oapply(vaas_4, identity)
 #' stopifnot(identical(x, vaas_4))
 #' x <- oapply(vaas_4, identity, simplify = FALSE)
-#' stopifnot(is.list(x), length(x) == 4, sapply(x, class) == "OPMA")
+#' stopifnot(is.list(x), length(x) == 4, sapply(x, class) == "OPMD")
 #'
 setGeneric("oapply", function(object, ...) standardGeneric("oapply"))
+
+setMethod("oapply", OPM, function(object, fun, ..., simplify = TRUE) {
+  fun(object, ...)
+}, sealed = SEALED)
 
 setMethod("oapply", OPMS, function(object, fun, ..., simplify = TRUE) {
   result <- sapply(X = object@plates, FUN = fun, ..., simplify = simplify,
@@ -850,11 +925,11 @@ setMethod("oapply", OPMS, function(object, fun, ..., simplify = TRUE) {
 
 #' Convert to YAML
 #'
-#' Convert some R object to YAML. If the package \pkg{yaml} is not installed, a
+#' Convert some \R object to YAML. If the package \pkg{yaml} is not installed, a
 #' call of this function will result in an error.
 #'
 #' @param object Object of one of the classes belonging to
-#'   \code{\link{YAML_VIA_LIST-class}}.
+#'   \code{\link{YAML_VIA_LIST}}.
 #' @param sep Logical scalar. Prepend YAML document separator \verb{---}?
 #' @param line.sep Character scalar used as output line separator.
 #' @param ... Optional other arguments passed to \code{as.yaml} from the

@@ -85,8 +85,8 @@ plot(y$b, type = "l")
 \seealso{
   stats::optimize
 
-  Other phylogeny-functions: \code{\link{discrete}},
-  \code{\link{phylo_data}}, \code{\link{safe_labels}}
+  Other discretization-functions: \code{\link{discrete}},
+  \code{\link{do_disc}}
 }
 \keyword{category}
 \keyword{character}
@@ -98,8 +98,8 @@ plot(y$b, type = "l")
 \usage{
   \S4method{best_cutoff}{matrix,character}(x, y, ...) 
 
-  \S4method{best_cutoff}{matrix,factor}(x, y, 
-    combined = TRUE, lower = min(x, na.rm = TRUE), 
+  \S4method{best_cutoff}{matrix,factor}(x, y,
+    combined = TRUE, lower = min(x, na.rm = TRUE),
     upper = max(x, na.rm = TRUE), all = FALSE) 
 
 }

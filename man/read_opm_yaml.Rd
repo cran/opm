@@ -9,8 +9,9 @@
   meaning.}
 }
 \value{
-  \code{\link{OPM}}, \code{\link{OPMA}} object, depending
-  on the presence of aggregated data.
+  \code{\link{OPM}}, \code{\link{OPMA}} or
+  \code{\link{OPMD}} object, depending on the presence of
+  aggregated and discretized data.
 }
 \description{
   Read \pkg{opm} data from a single YAML file. Arbitrary

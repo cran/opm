@@ -56,16 +56,10 @@ stopifnot(is.numeric(y), names(y) == 1:10)
 }
 \seealso{
   Other kmeans-functions: \code{\link{borders}},
-  \code{\link{borders.Ckmeans.1d.dp}},
-  \code{\link{borders.kmeans}},
-  \code{\link{borders.kmeanss}},
-  \code{\link{hist.Ckmeans.1d.dp}},
+        \code{\link{hist.Ckmeans.1d.dp}},
   \code{\link{hist.kmeans}}, \code{\link{hist.kmeanss}},
   \code{\link{run_kmeans}}, \code{\link{to_kmeans}},
-  \code{\link{to_kmeans.Ckmeans.1d.dp}},
-  \code{\link{to_kmeans.kmeans}},
-  \code{\link{to_kmeans.kmeanss}}
-}
+      }
 \keyword{cluster}
 \keyword{hplot}
 

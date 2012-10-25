@@ -30,13 +30,12 @@
 #'     created by the \pkg{opm} package, however.
 #' }
 #'
-#' @name WMD
-#'
 #' @docType class
-#' @seealso Methods
 #' @export
+#' @aliases WMD-class
+#' @seealso methods::Methods
 #' @family classes
-#' @keywords methods
+#' @keywords methods classes
 #'
 setClass(WMD,
   representation = representation(metadata = "list"),
@@ -56,7 +55,8 @@ setClass(WMD,
 #' metadata. \sQuote{OPM} is an acronym for \sQuote{OmniLog(R) Phenotype
 #' Microarray}.
 #'
-#' @docType class
+#' @details Objects of this class are usually created by inputting files with
+#'   \code{\link{read_single_opm}} or \code{\link{read_opm}}.
 #'
 #' @note Regarding the coercion of this class to other classes (see the
 #'   \code{coerce} methods listed above and \code{as} from the \pkg{methods}
@@ -72,10 +72,13 @@ setClass(WMD,
 #'     \item Methods such as \code{\link{flatten}} might be more
 #'       appropriate for converting \code{\link{OPM}} objects.
 #'   }
+#'
+#' @docType class
 #' @export
-#' @seealso Methods
+#' @aliases OPM-class
+#' @seealso methods::Methods methods::new
 #' @family classes
-#' @keywords methods
+#' @keywords methods classes
 #'
 setClass(OPM,
     representation = representation(
@@ -122,12 +125,17 @@ setAs(from = OPM, to = "list", function(from) {
 #' together with aggregated values. For further details see its parent class,
 #' \code{\link{OPM}}. \sQuote{OPMA} is an acronym for \sQuote{OPM, aggregated}.
 #'
-#' @docType class
+#' @details Objects of this class are usually created by calling
+#'   \code{\link{do_aggr}} on an \code{\link{OPM}} object, or by inputting
+#'   files with \code{\link{read_single_opm}} or \code{\link{read_opm}} if
+#'   these files already contain aggregated data.
 #'
+#' @docType class
 #' @export
-#' @seealso Methods
+#' @aliases OPMA-class
+#' @seealso methods::Methods methods::new
 #' @family classes
-#' @keywords methods
+#' @keywords methods classes
 #'
 setClass(OPMA,
   representation = representation(
@@ -175,6 +183,69 @@ setAs(from = OPMA, to = "list", function(from) {
 ################################################################################
 
 
+#' OPMD class
+#'
+#' Class for holding single-plate OmniLog(R) phenotype microarray data
+#' together with aggregated and discretized values. For further details see its
+#' parent class, \code{\link{OPMA}}. \sQuote{OPMD} is an acronym for
+#' \sQuote{OPM, discretized}.
+#'
+#' @details Objects of this class are usually created by calling
+#'   \code{\link{do_disc}} on an \code{\link{OPMA}} object, or by inputting
+#'   files with \code{\link{read_single_opm}} or \code{\link{read_opm}} if
+#'   these files already contain discretized data.
+#'
+#' @docType class
+#' @export
+#' @aliases OPMD-class
+#' @seealso methods::Methods methods::new
+#' @family classes
+#' @keywords methods classes
+#'
+setClass(OPMD,
+  representation = representation(
+    discretized = "logical",
+    disc_settings = "list"
+  ),
+  contains = OPMA,
+  validity = function(object) {
+    errs <- opmd_problems(object@disc_settings)
+    errs <- c(errs, opmd_problems(object@aggregated, object@discretized))
+    if (length(errs))
+      errs
+    else
+      TRUE
+  },
+  sealed = SEALED
+)
+
+
+# Conversion functions: OPMD => other objects. For principle, see description
+# of OPM class. Conversion of OPMD to matrix/data frame is just repeated here
+# from OPM because otherwise some elements would be missing.
+#
+
+setAs(from = OPMD, to = "matrix", function(from) {
+  attach_attr(from, from@measurements)
+})
+
+
+setAs(from = OPMD, to = "data.frame", function(from) {
+  attach_attr(from, as.data.frame(from@measurements))
+})
+
+
+setAs(from = OPMD, to = "list", function(from) {
+  result <- as(as(from, OPMA), "list")
+  result$discretized <- as.list(discretized(from))
+  result$disc_settings <- disc_settings(from)
+  result
+})
+
+
+################################################################################
+
+
 #' OPMS class
 #'
 #' Class for holding multi-plate OmniLog(R) phenotype microarray data with or
@@ -183,18 +254,25 @@ setAs(from = OPMA, to = "list", function(from) {
 #' type and \strong{must} contain the same wells. Regarding the name:
 #' \sQuote{OPMS} is just the plural of \sQuote{OPM}.
 #'
-#' @docType class
+#' @details Objects of this class are usually created by calling
+#'   \code{\link{opms}} or other combination functions on \code{\link{OPM}} or
+#'   \code{\link{OPM}}-derived objects, or by inputting files with
+#'   \code{\link{read_opm}} if these files altogether contain more
+#'   than a single plate.
 #'
-#' @export
 #' @note As a rule, OPMS has the same methods as the \code{\link{OPM}} class,
 #'   but adapted to a collection of more than one \code{\link{OPM}} object.
 #'   Only the additional ones and those with special arguments and/or behaviors
 #'   are documented in detail. Also, OPMS can hold \code{\link{OPMA}} as well
-#'   as \code{\link{OPM}} objects, even though this is not indicated for all its
-#'   methods in this manual.
+#'   as \code{\link{OPM}} objects, even though this is not indicated for all
+#'   its methods in this manual.
+#'
+#' @docType class
+#' @export
+#' @aliases OPMS-class
+#' @seealso methods::Methods methods::new
 #' @family classes
-#' @seealso Methods
-#' @keywords methods
+#' @keywords methods classes
 #'
 setClass(OPMS,
   representation = representation(plates = "list"),
@@ -230,8 +308,10 @@ setAs(from = OPMS, to = "list", function(from) {
 #'
 #' @docType class
 #' @export
+#' @aliases MOA-class
+#' @seealso methods::Methods base::matrix base::array
 #' @family classes
-#' @keywords methods
+#' @keywords methods classes
 #'
 NULL
 
@@ -252,9 +332,10 @@ setClassUnion(MOA, c("matrix", "array"))
 #'
 #' @docType class
 #' @export
-#' @seealso Methods
+#' @aliases OPMX-class
+#' @seealso methods::Methods
 #' @family classes
-#' @keywords methods
+#' @keywords methods classes
 #'
 NULL
 
@@ -277,8 +358,10 @@ setClassUnion(OPMX, c(OPM, OPMS))
 #'
 #' @docType class
 #' @export
+#' @aliases YAML_VIA_LIST-class
+#' @seealso methods::Methods
 #' @family classes
-#' @keywords methods
+#' @keywords methods classes
 #'
 NULL
 

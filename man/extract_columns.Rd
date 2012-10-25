@@ -56,7 +56,7 @@ stopifnot(is.data.frame(x), identical(dim(x), c(4L, 2L)))
 (x <- extract_columns(vaas_4, what = list("Species", "Strain"), join = TRUE))
 stopifnot(is.character(x), length(x) == 4L)
 (x <- try(extract_columns(vaas_4, what = list("Species"), join = TRUE,
-   dups = "error"), silent = TRUE))
+  dups = "error"), silent = TRUE))
 stopifnot(inherits(x, "try-error"))
 (x <- try(extract_columns(vaas_4, what = list("Species"), join = TRUE,
   dups = "warn"), silent = TRUE))
@@ -75,7 +75,8 @@ stopifnot(grepl("^\\\s*\\\d+-[a-z]$", y))
   \code{\link{merge}}, \code{\link{oapply}},
   \code{\link{plates}}, \code{\link{rep}},
   \code{\link{rev}}, \code{\link{sort}},
-  \code{\link{thin_out}}, \code{\link{to_yaml}}
+  \code{\link{thin_out}}, \code{\link{to_yaml}},
+  \code{\link{unique}}
 }
 \keyword{dplot}
 \keyword{manip}

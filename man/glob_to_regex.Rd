@@ -51,9 +51,9 @@ stopifnot(identical(as.factor(y), z))
   utils::glob2rx base::regex
 
   Other auxiliary-functions: \code{\link{contains}},
-  \code{\link{kubrick}}, \code{\link{listing}},
-  \code{\link{map_names}}, \code{\link{map_values}},
-  \code{\link{opm_opt}}, \code{\link{separate}}
+  \code{\link{kubrick}}, \code{\link{map_names}},
+  \code{\link{map_values}}, \code{\link{opm_opt}},
+  \code{\link{separate}}
 }
 \keyword{character}
 

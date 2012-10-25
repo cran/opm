@@ -111,13 +111,7 @@ stopifnot(length(x) == 4) # one entry per plate
 }
 \seealso{
   Other metadata-functions: \code{\link{include_metadata}},
-  \code{\link{metadata.set}}, \code{\link{metadata.set}},
-  \code{\link{metadata.set}}, \code{\link{metadata.set}},
-  \code{\link{metadata.set}}, \code{\link{metadata.set}},
-  \code{\link{metadata.set}}, \code{\link{metadata.set}},
-  \code{\link{metadata.set}}, \code{\link{metadata.set}},
-  \code{\link{metadata.set}}, \code{\link{metadata.set}},
-  \code{\link{metadata.set}}, \code{\link{metadata_chars}}
+  \code{\link{metadata.set}},             \code{\link{metadata_chars}}
 }
 \keyword{manip}
 

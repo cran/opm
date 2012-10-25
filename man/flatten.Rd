@@ -55,20 +55,20 @@
 \examples{
 # OPM method
 data(vaas_1)
-x <- flatten(vaas_1)
+head(x <- flatten(vaas_1))
 stopifnot(is.data.frame(x), identical(dim(x), c(36864L, 3L)))
-x <- flatten(vaas_1, fixed = "TEST")
+head(x <- flatten(vaas_1, fixed = "TEST"))
 stopifnot(is.data.frame(x), identical(dim(x), c(36864L, 4L)))
-x <- flatten(vaas_1, fixed = "TEST", include = "Strain")
+head(x <- flatten(vaas_1, fixed = "TEST", include = "Strain"))
 stopifnot(is.data.frame(x), identical(dim(x), c(36864L, 5L)))
 
 # OPMS method
 data(vaas_4)
-x <- flatten(vaas_4)
+head(x <- flatten(vaas_4))
 stopifnot(is.data.frame(x), identical(dim(x), c(147456L, 4L)))
-x <- flatten(vaas_4, fixed = "TEST")
+head(x <- flatten(vaas_4, fixed = "TEST"))
 stopifnot(is.data.frame(x), identical(dim(x), c(147456L, 5L)))
-x <- flatten(vaas_4, fixed = "TEST", include = "Strain")
+head(x <- flatten(vaas_4, fixed = "TEST", include = "Strain"))
 stopifnot(is.data.frame(x), identical(dim(x), c(147456L, 6L)))
 
 # List method
@@ -85,7 +85,8 @@ stopifnot(is.list(y), length(y) == 4, !sapply(y, is.list))
   \code{\link{merge}}, \code{\link{oapply}},
   \code{\link{plates}}, \code{\link{rep}},
   \code{\link{rev}}, \code{\link{sort}},
-  \code{\link{thin_out}}, \code{\link{to_yaml}}
+  \code{\link{thin_out}}, \code{\link{to_yaml}},
+  \code{\link{unique}}
 }
 \keyword{dplot}
 \keyword{manip}

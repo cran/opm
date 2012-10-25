@@ -60,8 +60,7 @@ stopifnot(contains(x, y, exact = TRUE, values = FALSE))
 
 # OPMS/OPM method
 data(vaas_4)
-data(vaas_1)
-stopifnot(contains(vaas_4, vaas_1))
+stopifnot(contains(vaas_4, vaas_4[3]))
 }
 \seealso{
   base::list base::as.list base::`[` base::`[[` base::match
@@ -69,9 +68,9 @@ stopifnot(contains(vaas_4, vaas_1))
   base::identity
 
   Other auxiliary-functions: \code{\link{glob_to_regex}},
-  \code{\link{kubrick}}, \code{\link{listing}},
-  \code{\link{map_names}}, \code{\link{map_values}},
-  \code{\link{opm_opt}}, \code{\link{separate}}
+  \code{\link{kubrick}}, \code{\link{map_names}},
+  \code{\link{map_values}}, \code{\link{opm_opt}},
+  \code{\link{separate}}
 }
 \keyword{attribute}
 \keyword{list}

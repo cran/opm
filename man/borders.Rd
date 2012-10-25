@@ -96,15 +96,9 @@ stopifnot(inherits(y, "histogram"))
   graphics::hist graphics::abline
 
   Other kmeans-functions: \code{\link{calinski}},
-  \code{\link{calinski.Ckmeans.1d.dp}},
-  \code{\link{calinski.kmeans}},
-  \code{\link{calinski.kmeanss}},
-  \code{\link{plot.kmeanss}}, \code{\link{run_kmeans}},
+        \code{\link{plot.kmeanss}}, \code{\link{run_kmeans}},
   \code{\link{to_kmeans}},
-  \code{\link{to_kmeans.Ckmeans.1d.dp}},
-  \code{\link{to_kmeans.kmeans}},
-  \code{\link{to_kmeans.kmeanss}}
-}
+      }
 \keyword{cluster}
 \keyword{hplot}
 

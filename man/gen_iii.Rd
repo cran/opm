@@ -40,7 +40,8 @@ stopifnot(identical(vaas_4, copy)) # as above
   \code{\link{merge}}, \code{\link{oapply}},
   \code{\link{plates}}, \code{\link{rep}},
   \code{\link{rev}}, \code{\link{sort}},
-  \code{\link{thin_out}}, \code{\link{to_yaml}}
+  \code{\link{thin_out}}, \code{\link{to_yaml}},
+  \code{\link{unique}}
 }
 \keyword{manip}
 

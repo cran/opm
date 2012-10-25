@@ -165,7 +165,7 @@ well_to_substrate <- function(plate, well = 1L:96L) {
 #' @family naming-functions
 #' @keywords character utilities
 #' @examples
-#' # Note that 'exact' search matches parts of the names, whereas globbing 
+#' # Note that 'exact' search matches parts of the names, whereas globbing
 #' # matches entire strings if there are no wildcards
 #' (x <- find_substrate("a-D-Glucose", search = "exact"))
 #' (y <- find_substrate("a-D-Glucose", search = "glob"))
@@ -184,27 +184,27 @@ well_to_substrate <- function(plate, well = 1L:96L) {
 #' (zz <- find_substrate(as.factor("a-D-Glucose"), search = "approx"))
 #' stopifnot(identical(z, zz))
 #'
-setGeneric("find_substrate", 
+setGeneric("find_substrate",
   function(object, ...) standardGeneric("find_substrate"))
 
 setMethod("find_substrate", "character", function(object,
     search = c("exact", "glob", "approx", "regex", "pmatch"), max.dev = 0.2) {
   find_name <- function(patterns, ...) {
-    sapply(X = patterns, FUN = grep, x = WELL_MAP, value = TRUE, 
+    sapply(X = patterns, FUN = grep, x = WELL_MAP, value = TRUE,
       useBytes = TRUE, ..., simplify = FALSE)
   }
   find_approx <- function(pattern, ...) {
-    sapply(X = pattern, FUN = agrep, x = WELL_MAP, ignore.case = TRUE, 
+    sapply(X = pattern, FUN = agrep, x = WELL_MAP, ignore.case = TRUE,
       value = TRUE, useBytes = TRUE, ..., simplify = FALSE)
   }
   find_partial <- function(pattern) {
     found <- pmatch(x = pattern, table = WELL_MAP, duplicates.ok = TRUE)
-    names(found) <- pattern 
+    names(found) <- pattern
     lapply(as.list(WELL_MAP[found]), na.exclude)
   }
   result <- case(match.arg(search),
     exact = find_name(object, fixed = TRUE),
-    glob = find_name(structure(glob_to_regex(object), names = object), 
+    glob = find_name(structure(glob_to_regex(object), names = object),
       ignore.case = TRUE, perl = TRUE),
     regex = find_name(object, ignore.case = TRUE, perl = TRUE),
     approx = find_approx(object, max.distance = max.dev),
@@ -248,7 +248,7 @@ setMethod("find_substrate", "character", function(object,
 #' (x <- find_positions(find_substrate(c("a-D-Glucose", "a-D-Gloucose"))))
 #' stopifnot(length(x[[1]]) > length(x[[2]]))
 #'
-setGeneric("find_positions", 
+setGeneric("find_positions",
   function(object, ...) standardGeneric("find_positions"))
 
 setMethod("find_positions", "character", function(object) {
@@ -271,7 +271,7 @@ setMethod("find_positions", "list", function(object) {
 
 #' Provide information on substrates
 #'
-#' Return information on substrates such as their CAS number or KEGG ID. The 
+#' Return information on substrates such as their CAS number or KEGG ID. The
 #' query names must be written exactly as used in the stored plate annotations.
 #' To determine their spelling, use \code{\link{find_substrate}}.
 #'
@@ -286,10 +286,11 @@ setMethod("find_positions", "list", function(object) {
 #'   \code{substrate_info} on its elements.
 #' @family naming-functions
 #' @keywords utilities
+#' @references Bochner, B. R., pers. comm.
 #' @references \url{http://en.wikipedia.org/wiki/CAS_registry_number}
 #' @references \url{http://www.genome.jp/kegg/}
 #' @references \url{http://metacyc.org/}
-#' @note Currently the information is incomplete, particularly for the PM-M 
+#' @note Currently the information is incomplete, particularly for the PM-M
 #'   plates.
 #' @examples
 #'
@@ -304,12 +305,12 @@ setMethod("find_positions", "list", function(object) {
 #' (x <- substrate_info(find_substrate(c("a-D-Glucose", "a-D-Gloucose"))))
 #' stopifnot(length(x[[1]]) > length(x[[2]]))
 #'
-setGeneric("substrate_info", 
+setGeneric("substrate_info",
   function(object, ...) standardGeneric("substrate_info"))
 
-setMethod("substrate_info", "character", function(object, 
+setMethod("substrate_info", "character", function(object,
     what = c("cas", "kegg", "metacyc")) {
-  result <- SUBSTRATE_INFO[match(object, rownames(SUBSTRATE_INFO)), 
+  result <- SUBSTRATE_INFO[match(object, rownames(SUBSTRATE_INFO)),
     toupper(match.arg(what))]
   names(result) <- object
   result

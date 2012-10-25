@@ -2,17 +2,23 @@
 \alias{initialize}
 \title{Initialize}
 \arguments{
-  \item{.Object}{\code{\link{OPM}} or \code{\link{OPMS}}
-  object.}
+  \item{.Object}{\code{\link{OPM}} object.}
+
+  \item{...}{Additional arguments.}
+
+  \item{.Object}{\code{\link{OPMS}} object.}
 
   \item{...}{Additional arguments.}
 }
 \value{
-  \code{\link{OPM}} or \code{\link{OPMS}} object.
+  \code{\link{OPM}} object.
+
+  \code{\link{OPMS}} object.
 }
 \description{
-  Initialize methods for the \code{\link{OPM}} and
-  \code{\link{OPMS}} classes.
+  Initialize methods for the \code{\link{OPM}} class.
+
+  Initialize methods for the \code{\link{OPMS}} class.
 }
 \keyword{internal}
 

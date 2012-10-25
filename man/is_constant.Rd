@@ -2,7 +2,7 @@
 \alias{is_constant}
 \title{Check for constantness}
 \arguments{
-  \item{x}{An R object to which \code{duplicated} can be
+  \item{x}{An \R object to which \code{duplicated} can be
   applied.}
 
   \item{set.like}{Logical scalar. Consider objects as

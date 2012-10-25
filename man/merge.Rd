@@ -49,7 +49,8 @@ stopifnot(is(x, "OPM"), dim(x) == c(sum(hours(vaas_4, "size")), 96))
   \code{\link{gen_iii}}, \code{\link{oapply}},
   \code{\link{plates}}, \code{\link{rep}},
   \code{\link{rev}}, \code{\link{sort}},
-  \code{\link{thin_out}}, \code{\link{to_yaml}}
+  \code{\link{thin_out}}, \code{\link{to_yaml}},
+  \code{\link{unique}}
 }
 \keyword{manip}
 
@@ -58,10 +59,10 @@ stopifnot(is(x, "OPM"), dim(x) == c(sum(hours(vaas_4, "size")), 96))
 \alias{merge,OPMS,numeric-method}
 \alias{merge,OPMS,missing-method}
 \usage{
-  \S4method{merge}{OPMS,numeric}(x, y, sort.first = TRUE, 
+  \S4method{merge}{OPMS,numeric}(x, y, sort.first = TRUE,
     parse = TRUE) 
 
-  \S4method{merge}{OPMS,missing}(x, sort.first = TRUE, 
+  \S4method{merge}{OPMS,missing}(x, sort.first = TRUE,
     parse = TRUE) 
 
 }

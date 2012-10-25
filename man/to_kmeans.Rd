@@ -40,13 +40,8 @@ stopifnot(identical(y, to_kmeans(y)))
   Ckmeans.1d.dp::Ckmeans.1d.dp
 
   Other kmeans-functions: \code{\link{borders}},
-  \code{\link{borders.Ckmeans.1d.dp}},
-  \code{\link{borders.kmeans}},
-  \code{\link{borders.kmeanss}}, \code{\link{calinski}},
-  \code{\link{calinski.Ckmeans.1d.dp}},
-  \code{\link{calinski.kmeans}},
-  \code{\link{calinski.kmeanss}},
-  \code{\link{hist.Ckmeans.1d.dp}},
+      \code{\link{calinski}},
+        \code{\link{hist.Ckmeans.1d.dp}},
   \code{\link{hist.kmeans}}, \code{\link{hist.kmeanss}},
   \code{\link{plot.kmeanss}}, \code{\link{run_kmeans}}
 }

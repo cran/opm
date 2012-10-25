@@ -22,9 +22,9 @@ stopifnot(is.character(x), length(x) == 1L)
 }
 \seealso{
   Other auxiliary-functions: \code{\link{contains}},
-  \code{\link{glob_to_regex}}, \code{\link{listing}},
-  \code{\link{map_names}}, \code{\link{map_values}},
-  \code{\link{opm_opt}}, \code{\link{separate}}
+  \code{\link{glob_to_regex}}, \code{\link{map_names}},
+  \code{\link{map_values}}, \code{\link{opm_opt}},
+  \code{\link{separate}}
 }
 \keyword{utilities}
 

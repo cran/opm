@@ -40,10 +40,10 @@
 #'     the appropriate objects. OmniLog(R) phenotype microarray data are
 #'     structured in \strong{plates}. Each plate has 12 x 8 \strong{well}
 #'     layout, and each well contains the respiration measurements on one
-#'     substrate or inhibitor, or combination of substrates or inhibitors. 
+#'     substrate or inhibitor, or combination of substrates or inhibitors.
 #'     For input example files, see \code{\link{opm_files}}.}
 #'   \item{global options}{Options affecting the default parameters of a number
-#'     of \pkg{opm} functions can be set and queried for using 
+#'     of \pkg{opm} functions can be set and queried for using
 #'     \code{\link{opm_opt}}.}
 #'   \item{coercion functions}{Coercion functions for the three classes are only
 #'     briefly listed under each class documentation entry. For details, see
@@ -110,12 +110,12 @@ BUG_MSG <- "a bug -- this should not happen"
 WMD <- "WMD"
 OPM <- "OPM"
 OPMA <- "OPMA"
+OPMD <- "OPMD"
 OPMS <- "OPMS"
 OPMX <- "OPMX"
 YAML_VIA_LIST <- "YAML_VIA_LIST"
 MOA <- "MOA"
-SEALED <- FALSE
-#SEALED <- TRUE
+SEALED <- TRUE #|| SEALED <- FALSE
 
 
 ################################################################################
@@ -156,11 +156,12 @@ MU <- "mu"
 CURVE_PARAMS <- c(MU, LAMBDA, "A", "AUC")
 
 
-# Names used in aggregation settings
+# Names used in aggregation/discretization settings
 #
 PROGRAM <- "program"
 OPTIONS <- "options"
 KNOWN_PROGRAMS <- c("grofit", "opm-fast")
+KNOWN_DISC_PROGRAMS <- c("direct", "kmeans", "best-cutoff")
 
 
 ################################################################################
@@ -213,7 +214,7 @@ W3C_COLORS <- structure(
 
 
 # Names of W3c colours (except white) sorted so as to maximize contrast between
-# adjacent colours.
+# adjacent colours. See pkgutils::max_rgb_contrast().
 #
 W3C_NAMES_MAX_CONTRAST <- c("teal", "purple", "olive", "black", "silver",
   "blue", "lime", "red", "aqua", "fuchsia", "yellow", "navy", "green",
@@ -333,17 +334,17 @@ PLATE_MAP <- structure(
 
 
 SPECIAL_PAPER_SIZES <- structure(
-  .Data = c(216, 432, 559, 864, 279, 457, 108, 381, 445, 572, 584, 184, 216, 
-  	216, 210, 216, 216, 203, 140, 140, 127, 419, 279, 215.9, 215.9, 457, 140, 
-  	184, 70, 279, 140, 216, 394, 889, 229, 508, 140, 330, 279, 279, 279, 559, 
-  	864, 1118, 432, 610, 171, 508, 572, 889, 711, 267, 304, 330, 330, 304, 330, 
-  	267, 216, 216, 203.2, 533, 432, 355.6, 279.4, 584, 216, 267, 127, 432, 216, 
-  	279, 489, 1143, 279, 635, 216, 483, 432, 377), 
-  .Dim = c(40L, 2L), 
-  .Dimnames = list(c("ansi a", "ansi c", "ansi d", "ansi e", "bible", 
+  .Data = c(216, 432, 559, 864, 279, 457, 108, 381, 445, 572, 584, 184, 216,
+    216, 210, 216, 216, 203, 140, 140, 127, 419, 279, 215.9, 215.9, 457, 140,
+    184, 70, 279, 140, 216, 394, 889, 229, 508, 140, 330, 279, 279, 279, 559,
+    864, 1118, 432, 610, 171, 508, 572, 889, 711, 267, 304, 330, 330, 304, 330,
+    267, 216, 216, 203.2, 533, 432, 355.6, 279.4, 584, 216, 267, 127, 432, 216,
+    279, 489, 1143, 279, 635, 216, 483, 432, 377),
+  .Dim = c(40L, 2L),
+  .Dimnames = list(c("ansi a", "ansi c", "ansi d", "ansi e", "bible",
     "broadsheet", "compact", "crown", "demy", "double demy", "elephant",
-    "executive", "fanfold", "folio", "foolscap", "german std fanfold", 
-    "government legal", "government letter", "half letter", "jepps", 
+    "executive", "fanfold", "folio", "foolscap", "german std fanfold",
+    "government legal", "government letter", "half letter", "jepps",
     "junior legal", "large post", "ledger", "legal", "letter", "medium",
     "memo", "monarch", "organizer j", "organizer k", "organizer l",
     "organizer m", "post", "quad demy", "quarto", "royal", "statement",
@@ -358,19 +359,18 @@ SPECIAL_PAPER_SIZES <- structure(
 #
 
 OPM_OPTIONS <- new.env(parent = emptyenv())
-OPM_OPTIONS$color.borders <- c("#FFFFD4", "#FED98E", "#FE9929", "#D95F0E", 
- "#993404")
+OPM_OPTIONS$color.borders <- c("#FFFFD4", "#FED98E", "#FE9929", "#D95F0E",
+  "#993404")
 OPM_OPTIONS$csv.keys <- c(SETUP, POS)
 OPM_OPTIONS$csv.selection <- c(SETUP, POS, FILE)
 OPM_OPTIONS$gen.iii <- FALSE
 OPM_OPTIONS$phylo.fmt <- "epf"
-OPM_OPTIONS$time.fmt <- c("%m/%d/%Y %I:%M:%S %p", "%b %d %Y %I:%M %p", 
+OPM_OPTIONS$time.fmt <- c("%m/%d/%Y %I:%M:%S %p", "%b %d %Y %I:%M %p",
   "%d.%m.%Y %H:%M:%S")
 OPM_OPTIONS$time.zone <- ""
 OPM_OPTIONS$xy.colors <- "w3c"
 OPM_OPTIONS$split <- "/.-_"
 OPM_OPTIONS$digits <- 4L
-
 
 
 

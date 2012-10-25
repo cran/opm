@@ -64,6 +64,8 @@ extract_curve_params <- function(data) UseMethod("extract_curve_params")
 #'
 #' @param data Object of class \sQuote{grofit}.
 #' @return Matrix.
+#'
+#' @rdname extract_curve_params
 #' @method extract_curve_params grofit
 #' @keywords internal
 #'
@@ -111,7 +113,7 @@ param_names <- function() {
 #' Optionally include the aggregated values in a novel \code{\link{OPMA}}
 #' object together with previously collected information.
 #'
-#' @param object \code{\link{OPM}} or \code{\link{OPMS}} object. There is also 
+#' @param object \code{\link{OPM}} or \code{\link{OPMS}} object. There is also
 #'   a helper method for matrix objects.
 #' @param boot Integer scalar. Number of bootstrap replicates used to estimate
 #'   95-percent confidence intervals (CIs) for the parameter. Set this to zero
@@ -144,11 +146,11 @@ param_names <- function() {
 #' @param by List, passed by the matrix method to \code{aggregate} from the
 #'   \pkg{stats} package. Can also be another vector, which is then used as
 #'   single list element.
-#' @param fun Function, passed by the matrix method as \code{FUN} argument to 
+#' @param fun Function, passed by the matrix method as \code{FUN} argument to
 #'   \code{aggregate} from the \pkg{stats} package.
 #' @param sep Character scalar. Used for joining the vectors within \code{by}
 #'   together to form row names.
-#' @param ... Arguments passed from the \code{\link{OPMS}} to the 
+#' @param ... Arguments passed from the \code{\link{OPMS}} to the
 #'   \code{\link{OPM}} method, and from the matrix method to \code{fun}.
 #'
 #' @export
@@ -167,9 +169,9 @@ param_names <- function() {
 #'   \item The \sQuote{OPMS} method just applies the \sQuote{OPM} method to
 #'     each contained plate in turn; there are not interdependencies.
 #'   \item Examples with \code{plain = TRUE} are not given, as only the return
-#'     value is different: Let \code{x} be the normal result of 
-#'     \code{do_aggr()}. The matrix returned if \code{plain} is \code{TRUE} 
-#'     could then be received using \code{aggregated(x)}, whereas the 
+#'     value is different: Let \code{x} be the normal result of
+#'     \code{do_aggr()}. The matrix returned if \code{plain} is \code{TRUE}
+#'     could then be received using \code{aggregated(x)}, whereas the
 #'     \sQuote{program} and the \sQuote{settings} attributes could be obtained
 #'     as components of the list returned by \code{aggr_settings(x)}.
 #' }
@@ -309,7 +311,7 @@ setMethod("do_aggr", OPM, function(object, boot = 100L, verbose = FALSE,
 setMethod("do_aggr", "matrix", function(object, by, fun, sep = ".", ...) {
   if (is.atomic(by))
     by <- list(by = by)
-  result <- stats::aggregate(x = object, by = by, FUN = fun, ..., 
+  result <- stats::aggregate(x = object, by = by, FUN = fun, ...,
     simplify = TRUE)
   rn <- result[, by.cols <- seq_len(length(by)), drop = FALSE]
   rn <- apply(rn, 1L, paste, collapse = sep)

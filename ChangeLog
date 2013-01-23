@@ -3,6 +3,82 @@
 ################################################################################
 
 
+2013-01-22 (the 8th release on CRAN)
+
+- flatten() now correctly uses its 'strict' argument
+- fixed bug in safe_labels() that affected beginnings and ends of strings
+- fixed bug in a non-exported helper function of phylo_data()
+
+- the yaml package is now an obligate dependency, and the latest version is
+  required
+- select() is deprecated in favour of the new OPMS method subset()
+- the content of the disc_settings() and aggr_settings() entries has been
+  modified, causing some incompatibilities between objects stored using save()
+  (or in .RData files), which can be fixed using conversion of OPMX objects to 
+  a list and back; stored YAML files will be automatically converted
+- opm_opt() is more restrictive regarding differences between the data types of
+  default and newly set values
+- the meaning of the 'prefer.char' argument to phylo_data() has been changed
+- extract_columns(), extract() and the functions that depend on them are now
+  stricter regarding the 'as.labels' and 'as.groups' arguments (which are now
+  passed as 'key' argument to metadata() without conversion to a list)
+
+- the 'gen.iii' entry of opm_opt() is changed to a character scalar, and the
+  command-line '-G'/'-Gen3' switch of 'run_opm.R' is accordingly changed to
+  '-t'/'--type'; batch_opm_to_yaml() now also deals with character values used
+  as 'gen.iii' argument
+- the 'xy.colors' argument of opm_opt() is renamed to 'colors' and now also
+  used by radial_plot() and heat_map()
+- opm_opt() gets a 'curve.param' entry, which is used per default as 'subset'
+  argument of extract() and those plotting functions that have such an argument
+- 'split' argument of all separate() methods is now set to the opm_opt() entry
+- opm_opt() gets a 'file.encoding' entry, which is honoured by read_opm() and
+  other input functions, and 'run_opm.R' gets an according '-n'/'--encoding'
+  command-line switch
+- if new entries are set, opm_opt() returns the previous values invisibly
+
+- support for ECO, SF-N2 and SF-P2 plates (Microstation plates), including
+  substrate mappings; inputting them copies superfluous columns directly to
+  the metadata
+- new listing() methods for OPMD and OPMS objects, which create a textual
+  description of the discretized reactions
+- the summary() methods of OPMX objects now yield more information and dedicated
+  S3 summary objects (with own print() methods)
+- do_aggr() directly copies singleton values (point measurements) in case of
+  special plates (Microstation, ID)
+- gen_iii() gets a 'to' argument, and the 'gen.iii' argument of read_opm() is
+  enhanced accordingly
+- csv_data() gets a 'strict' argument
+- phylo_data() gets 'cutoff' and 'html.args' arguments and a helper function
+  default_html_args(); the resulting HTML is much enriched and can be customized
+  in detail using CSS
+- opm_opt() gets according 'css.file' and 'html.class' entries, which are used
+  by phylo_data()
+- opm_files() now also shows the novel 'auxiliary' files (e.g., CSS files)
+- batch_opm_to_yaml() gets arguments 'disc.args' and 'force.disc'
+- wells() and plate_type() get a 'downcase' argument, also available to all
+  functions that pass arguments to either method
+- substrate_info() gets a 'downcase' option of the 'what' argument
+- substrate_info() now also yields MeSH IDs of the substrates
+- substrate_info() is better standardised, and a couple of corrections of the
+  substrate data have been conducted
+
+- updated the package URL to http://opm.dsmz.de/
+
+- some aesthetical improvements (nicer formatting) of the documentation
+- some improvements of the previous documentation's content, e.g. for discrete()
+
+- tests have been improved to make them CRAN-compatible (particularly on
+  Winbuilder)
+- tests are now consistently arranged in files, with a 1:1 relationship to the
+  R code files, and more consistently named
+- more tests have been included
+- some internal improvements of text-processing functions
+
+
+################################################################################
+
+
 2012-10-25 (the 7th release on CRAN)
 
 - fixed bug in metadata-file handling of 'run_opm.R' script
@@ -43,7 +119,7 @@
 - novel paper_size() and mypdf() functions
 - level_plot() gains three additional arguments for fine-tuning the colour 
   palette used
-- default color set of xy_plot() changed to 'w3c' (because it contains more 
+- default colour set of xy_plot() changed to 'w3c' (because it contains more 
   colors than 'nora')
 - novel flatten() method for lists
 - novel 'vline' argument to ci_plot()
@@ -76,10 +152,10 @@
 2012-05-20 (the 5th release on CRAN)
 
 - included show() method for OPM(S) objects
-- modified `[` to remove incompatibilties with the 'Matrix' package (which uses
+- modified `[` to remove incompatibilities with the 'Matrix' package (which uses
   setMethod("[", ...) in other ways than specified in the documentation of `[`
   in the base package) (problem noticed by Benjamin Hofner)
-- changed to lazy loading of the datasets (suggestion by Benjamin Hofner)
+- changed to lazy loading of the data sets (suggestion by Benjamin Hofner)
 - duplicate() and anyDuplicated() get a 'what' argument allowing the detection
   of duplicate combinations of selected components of the contained OPM objects
 - novel plates() methods for lists and OPM objects
@@ -144,7 +220,7 @@
   R-devel and R-2.15.0
 - added methods for the estimation of +, w and - and the subsequent generation
   of reports for, e.g., IJSEM
-- option for opms() to recognize plate types and construct OPMS objects
+- option for opms() to recognise plate types and construct OPMS objects
   separately, or select those with a certain plate type
 - redundancies in input plates with 'OTH' as plate type are automatically 
   removed
@@ -193,8 +269,8 @@
 - novel map_names() and map_values() methods for other objects, particularly 
   data frames, and extended functionality via 'coerce = TRUE'; this is also
   available for map_metadata() and metadata_chars()
-- added splitting function for character entries in dataframes, automatically
-  recognizing the best split pattern; thus easing metadata construction from
+- added splitting function for character entries in data frames, automatically
+  recognising the best split pattern; thus easing metadata construction from
   CSV data; included the treatment of fixed-width strings and a data frame
   method for this generic function
 - the 'coerce' argument of map_metadata() and metadata_chars() has been renamed
@@ -225,10 +301,10 @@
 - improved behaviour of clean_filenames() in the (pathological) case of empty
   output filenames
 - added 'split' and 'clean' result modes to the run_opm.R script and improved 
-  the help message by exapling each result mode
+  the help message by exampling each result mode
 - improved read_opm() and read_single_opm() error messages
 - extract_labels() has been removed and integrated into extract_columns(),
-  which has a novel 'join' argument to accomodate that
+  which has a novel 'join' argument to accommodate that
 - novel 'strict' argument of metadata()
 - novel 'exact' and 'strict' arguments to flatten(), extract_columns() and 
   extract(); both are TRUE by default; that is, these functions by default
@@ -241,7 +317,7 @@
 - moved c() to the OPMX virtual class
 - date and version number are now automatically inserted during the build phase
   of the package documentation
-- deleted the identifer entries in the metadata of vaas_et_al (they are 
+- deleted the identifier entries in the metadata of vaas_et_al (they are 
   redundant compared to the combination of the other entries)
 - added more references to the discretization methods
 - added more 'see also' entries to the documentation
@@ -258,7 +334,7 @@
   input functions)
 - novel clean_filenames() function for creating nicer filenames
 - described 'opm-fast' parameter estimation in the manual
-- default plate-name normalization now removes the plate subtype/version; was
+- default plate-name normalisation now removes the plate subtype/version; was
   necessary because of the PM-M plates
 - made read_old_opm() more robust against commas in CSV comments
 - improved error messages of read_single_opm() and include_metadata()
@@ -282,9 +358,9 @@
 - added support for heatmap.2() from the gplots package to heat_map(); it is
   not used by default and not required for installation but useful, as it adds
   a legend with the assignment of colors to numeric values; the return value
-  of heat_map() now includes the color mappings of groups to row/column side
+  of heat_map() now includes the colour mappings of groups to row/column side
   colors, if these were used
-- added dataframe method for heat_map()
+- added data frame method for heat_map()
 - added 'time' argument to select(), allowing for the automated restriction
   of plates to common time points; accordingly enhanced the OPMS `[` method
   by allowing for lists as third argument (i.e., as the second index)
@@ -292,7 +368,7 @@
 - finished ALL examples in the documentation except for the CI-plots (waiting
   for input from Lea); for instance, the IO documentation is now complete; 
   enhanced some other examples; added selected literature references
-- novel function opm_files() for easy access to the scripts and testdata
+- novel function opm_files() for easy access to the scripts and test data
 - fixed bug in aggregated() if more than one parameter was requested
 - changed aggregate() to do_aggr() as requested by Lea/Johannes
 - novel 'paren.sep' argument of wells() and hence of all plotting functions
@@ -300,7 +376,7 @@
 - 'range = TRUE' now possible for discrete(); improved documentation of 
   phylogenetic methods; improved output of phylo_data()
 - removed warning messages from collect_template() and fixed a bug regarding 
-  its dataframe output; improved its output; included more tests
+  its data frame output; improved its output; included more tests
 - moved most packaged dependencies from 'depends' to 'import'
 
 
@@ -324,7 +400,7 @@
 - finished the documentation of the list functions
 - documented the YAML output format (at least its technical details)
 - miscellaneous other improvements to the documentation such as disclaimers 
-  regarding malformatted CSV files in the IO documentation
+  regarding malformed CSV files in the IO documentation
 - 'ignore.dups' argument of extract() changed to 'dups', its type changed from
   logical to character; default changed to a warning message
 - novel 'add.cols' argument to all collect_template() methods; the character
@@ -368,7 +444,7 @@
   behaviour of the list-based %k% operator; also improved the behaviour of %Q%
   for character queries
 - made to_metadata() and collect_template() more flexible
-- include_metadata() works now with dataframes with a single row only; added
+- include_metadata() works now with data frames with a single row only; added
   more according tests
 
 
@@ -380,8 +456,8 @@
 - changed default to 'values = TRUE' in select() and improved documentation
 - renamed 'include.args' to 'md.args' to avoid name clash with 'include' in
   batch_opm_to_yaml()
-- added examples to almost all OPM and OPMA methods, using the small dataset
-- added first examples to the OPMS methods, using the medium-sized dataset,
+- added examples to almost all OPM and OPMA methods, using the small data set
+- added first examples to the OPMS methods, using the medium-sized data set,
   and to some helper and list functions
 - marked all remaining, undone examples as TODO
 - additional arguments for hours(); deleted time_points() because this is now
@@ -395,7 +471,7 @@
 19-01-2012
 
 
-- added two smaller datasets, subsets of 'vaas_et_al'
+- added two smaller data sets, subsets of 'vaas_et_al'
 - added warning message in case of non-uniform measurement running times when
   building an OPMS object (if users get too annoyed, I'll hasten to remove this
   again!)
@@ -418,9 +494,9 @@
 17-01-2012
 
 - included examples for phylogeny functions and most helper functions
-- added support for 'logical' datatype and for NEXUS comments to phylo_data()
+- added support for 'logical' data type and for NEXUS comments to phylo_data()
 - added support for 1 character state to discrete() (not very interesting...)
-- beautified example dataset
+- beautified example data set
 
 
 ################################################################################
@@ -460,7 +536,7 @@
 13-01-2012
 
 - now only user-level functions appear in the manual, reducing the PDF version
-  to about 80-90 pages; empty crosslinks should also have been fixed
+  to about 80-90 pages; empty cross-links should also have been fixed
 - made the keywords entries consistent, resulting in an improved 'topics'
   listing in the manual index
 - the usage entries for the infix functions are now included in the manual
@@ -482,7 +558,7 @@
   metadata, for instance, and now is really less strict than %Q%, as it should
   be)
 - added some minor documentation improvements for these functions
-- added updated example dataset
+- added updated example data set
 - fixed problem caused by the last release (the auxiliary functions entirely
   disappeared from the manual!)
 - additionally marked all auxiliary functions with '*' in their title
@@ -505,7 +581,7 @@
   metadata
 - included 'internal' keyword in all auxiliary functions, causing 
   help(package = "opm") to report only the user-level functions, and extended 
-  all help headers which are diplayed in that listing
+  all help headers which are displayed in that listing
 - miscellaneous additions to the documentation
 
 
@@ -514,9 +590,9 @@
 
 09-01-2012
 
-- added example dataset to package; from now on, you MUST take the dataset from
-  the package, not from the original e-mail (this was possible because I 
-  finally found a way to compress the entire dataset below 4MB)
+- added example data set to package; from now on, you MUST take the data set
+  from the package, not from the original e-mail (this was possible because I 
+  finally found a way to compress the entire data set below 4MB)
 - added first version of 'run_opm.R', which you can find in the 'scripts'
   subdirectory of the directory where opm has been installed; already includes
   'yaml' and 'template' result modes
@@ -560,7 +636,7 @@
   repair the documentation
 - added two line-width arguments, 'lwd' and 'base.lwd', to each of the two 
   xy_plot() functions
-- changed default baseline color to dark grey
+- changed default baseline colour to dark grey
 - fixed missing export of select() and improved the documentation
 - fixed two documentation bugs
 - fixed striptext.fmt bug (there is a strange reverse precedence of the 
@@ -572,8 +648,8 @@
 
 08-12-2011
 
-- defaults of level_plot() improved (panel header background color)
-- defaults of xy_plot() improved (baseline color)
+- defaults of level_plot() improved (panel header background colour)
+- defaults of xy_plot() improved (baseline colour)
 - main_title() directly accepts expressions (e.g., for writing stuff in 
   italics) and thus the 'main' argument of the plotting functions, too
 - the 'panel.header' argument of level_plot() now also accepts expressions
@@ -617,7 +693,7 @@
 
 - improved summary() function
 - novel minmax() function
-- improved 'main' and 'neg.ctrl' arguments auf xy_plot()
+- improved 'main' and 'neg.ctrl' arguments of xy_plot()
 - length() method for OPMS
 - read_opm_yaml() and, hence, read_single_opm() and read_opm() can now work with
   YAML lists of OPM lists; important for IO of OPMS objects

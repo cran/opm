@@ -16,6 +16,10 @@
   returns \code{FALSE} for the \code{\link{OPM}} class, but
   not necessarily for its child classes.
 }
+\note{
+  See \code{\link{do_disc}} for generating discretized
+  data.
+}
 \examples{
 # 'OPM' method
 data(vaas_1)
@@ -39,7 +43,7 @@ stopifnot(x)
   \code{\link{minmax}}, \code{\link{plate_type}},
   \code{\link{position}}, \code{\link{select}},
   \code{\link{seq}}, \code{\link{setup_time}},
-  \code{\link{show}}, \code{\link{summary}},
+  \code{\link{subset}}, \code{\link{summary}},
   \code{\link{well}}, \code{\link{wells}}
 }
 \keyword{attribute}

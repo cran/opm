@@ -25,27 +25,27 @@ data(vaas_4)
 # are either entirely or partially identical
 
 # OPM+OPM method
-x <- vaas_1 + vaas_1
+summary(x <- vaas_1 + vaas_1)
 stopifnot(identical(dim(x), c(2L, dim(vaas_1))))
 
 # OPM+OPMS method
-x <- vaas_1 + vaas_4
+summary(x <- vaas_1 + vaas_4)
 stopifnot(identical(dim(x), c(5L, dim(vaas_1))))
 
 # OPM+list method
-x <- vaas_1 + list(vaas_1, vaas_1)
+summary(x <- vaas_1 + list(vaas_1, vaas_1))
 stopifnot(identical(dim(x), c(3L, dim(vaas_1))))
 
 # OPMS+OPMS method
-x <- vaas_4 + vaas_4
+summary(x <- vaas_4 + vaas_4)
 stopifnot(identical(dim(x), c(8L, dim(vaas_4)[-1L])))
 
 # OPMS+OPM method
-x <- vaas_4 + vaas_1
+summary(x <- vaas_4 + vaas_1)
 stopifnot(identical(dim(x), c(5L, dim(vaas_1))))
 
 # OPMS+list method
-x <- vaas_4 + list(vaas_1)
+summary(x <- vaas_4 + list(vaas_1))
 stopifnot(identical(dim(x), c(5L, dim(vaas_1))))
 }
 \seealso{

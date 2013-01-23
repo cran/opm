@@ -16,7 +16,7 @@
   representing fixed-width fields are assumed, and
   splitting is done at whitespace-only columns. Beforehand,
   equal-length strings are created by padding with spaces
-  at the right.  After splitting in fixed-width mode,
+  at the right. After splitting in fixed-width mode,
   whitespace characters are trimmed from both ends of the
   resulting strings.}
 
@@ -126,10 +126,10 @@ stopifnot(sapply(y, class) == c("integer", "factor", "factor"))
     simplify = FALSE, keep.const = TRUE, list.wise = FALSE,
     strip.white = list.wise) 
 
-  \S4method{separate}{factor}(object, split = "/.-_",
+  \S4method{separate}{factor}(object, split = opm_opt("split"),
     simplify = FALSE, keep.const = TRUE, ...) 
 
-  \S4method{separate}{data.frame}(object, split = "/.-_",
+  \S4method{separate}{data.frame}(object, split = opm_opt("split"),
     keep.const = TRUE, coerce = TRUE, name.sep = ".", ...) 
 
 }

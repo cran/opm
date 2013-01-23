@@ -1,0 +1,167 @@
+
+
+/************************************************************/
+/*                                                          */
+/*  EXAMPLE CSS STYLE FILE FOR HTML TABLES EXPORTED BY OPM  */
+/*                                                          */
+/*  (C) 2013 by Markus Goeker                               */
+/*    (markus [DOT] goeker [AT] dsmz [DOT] de)              */
+/*                                                          */
+/*  This file is distributed under the terms of the GPL.    */
+/*  For further details see the opm package.                */
+/*                                                          */
+/************************************************************/
+
+
+/******************************************************************************/
+
+
+/*******************/
+/* entire document */
+/*******************/
+
+body { 
+  padding: 2.5%;
+  font-family: Palatino; 
+  background-color: #ffffff;
+}
+
+div {
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+
+
+/******************************************************************************/
+
+
+/************/
+/* headline */
+/************/
+
+.headline {
+  font-size: 150%;
+  font-weight: bold;
+  padding-top: 10px;
+  padding-bottom: 5px;
+}
+
+
+/******************************************************************************/
+
+
+/**********/
+/* legend */
+/**********/
+
+/* organism-list caption */
+.table-legend .organism-list-head {
+  font-weight: bold;
+}
+
+/* full organism names */
+.table-legend .organism-name {
+  font-style: italic; /* not useful unless the names are taxon names */
+}
+
+/* character-state-list caption */
+.table-legend .character-state-list-head {
+  font-weight: bold;
+}
+
+/* 
+  there are more class annotations available, study an HTML file generated 
+  by opm and see also below
+*/
+
+
+/******************************************************************************/
+
+
+/*******************/
+/* character table */
+/*******************/
+
+
+.main-table table div {
+  padding-top: 0px;
+  padding-bottom: 0px;
+}
+
+.main-table table {
+  border-collapse: collapse;
+  background-color: #f6f6f6;
+  border-color: gray;
+}
+
+.main-table table td {
+  text-align: center;
+  padding: 5px;
+  border-color: gray;
+}
+
+
+/************************/
+/* row and column names */
+/************************/
+
+.main-table table .organism-index {
+  font-weight: bold;
+}
+
+.main-table table .character-name {
+  text-align: left;
+  font-weight: bold;
+}
+
+/* 
+  it would be possible to address the distinct character-variability values
+  here, too
+*/
+.main-table table .character-name .constant {
+}
+.main-table table .character-name .uninformative {
+}
+.main-table table .character-name .informative {
+}
+
+
+/***************/
+/* data fields */
+/***************/
+
+/* addressing the distinct character-status values */
+
+/* characters that show some variation between at least two organisms */
+.main-table table .measured-character-states .uninformative {
+  background: #ffdc98;
+}
+/* characters that are fully non-overlapping between at least two organisms */
+.main-table table .measured-character-states .informative {
+  background: #c0c0ff;
+}
+/* entirely constant characters */
+.main-table table .measured-character-states .constant {
+}
+
+
+/* distinct character states within the table */
+
+.main-table table .measured-character-states .state-1 {
+}
+.main-table table .measured-character-states .state-2 {
+  color: magenta;
+}
+.main-table table .measured-character-states .state-3 {
+}
+
+/*
+  ...and so on. If state-2 is intermediary (ambiguous) state, highlighting
+  might make sense. One could also highlight only those states within a
+  uninformative or informative character.
+*/
+
+
+/******************************************************************************/
+
+

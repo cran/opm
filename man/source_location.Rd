@@ -5,12 +5,12 @@
   source_location()
 }
 \value{
-  Name of file in which this function is defined or
-  \code{NULL}.
+  Name of the file in which this function is defined or an
+  empty character vector.
 }
 \description{
   Name of this source file. Does not work if \code{library}
-  instead of \code{source} is used. Auxiliary function.
+  instead of \code{source} is used.
 }
 \keyword{internal}
 

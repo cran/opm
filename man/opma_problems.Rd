@@ -5,11 +5,12 @@
   \item{object}{Matrix of aggregated data or list
   describing the aggregation settings.}
 
-  \item{orig}{Matrix of original, non-aggregated data.}
+  \item{orig.data}{Matrix of original, non-aggregated
+  data.}
 
-  \item{program}{Character scalar. Program used for
-  aggregating the data (currently only the \pkg{opm}-native
-  programs are checked).}
+  \item{settings}{List or \code{NULL}. If a list, settings
+  used for aggregating the data (currently only the
+  \pkg{opm}-native programs are checked).}
 }
 \value{
   Character vector with description of problems, empty if
@@ -29,7 +30,7 @@
 \alias{opma_problems,matrix-method}
 \alias{opma_problems,list-method}
 \usage{
-  \S4method{opma_problems}{matrix}(object, orig, program) 
+  \S4method{opma_problems}{matrix}(object, orig.data, settings) 
 
   \S4method{opma_problems}{list}(object) 
 

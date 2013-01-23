@@ -28,7 +28,7 @@
   etc.} \item{ab*}{Matches \sQuote{abc}, \sQuote{abcdefg},
   \sQuote{abXYZ} etc.  but not \sQuote{acdefg} etc.}
   \item{?bc}{Matches \sQuote{abc}, \sQuote{Xbc}, \sQuote{
-  bc} etc.  but not \sQuote{aabc}, \sQuote{abbc},
+  bc} etc. but not \sQuote{aabc}, \sQuote{abbc},
   \sQuote{bc} etc.} } Despite their simplicity, globbing
   patterns are often sufficient for selecting filenames.
 }

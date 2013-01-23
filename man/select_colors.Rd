@@ -2,7 +2,7 @@
 \alias{select_colors}
 \title{Select colours}
 \usage{
-  select_colors(set = c("w3c", "w3c.i", "nora", "nora.i", "brewer", "brewer.i", "roseobacter", "roseobacter.i"))
+  select_colors(set = c("w3c", "w3c.i", "nora", "nora.i", "brewer", "brewer.i", "roseo", "roseo.i"))
 }
 \arguments{
   \item{set}{Character scalar. Name of the colour vector to
@@ -35,7 +35,8 @@ stopifnot(is.character(x), length(x) > 0L, identical(x, rev(y)))
 
   Other plotting-functions: \code{\link{ci_plot}},
   \code{\link{heat_map}}, \code{\link{level_plot}},
-  \code{\link{radial_plot}}, \code{\link{xy_plot}}
+  \code{\link{radial_plot}}, \code{\link{show}},
+  \code{\link{xy_plot}}
 }
 \keyword{color}
 

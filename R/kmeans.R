@@ -14,8 +14,8 @@
 #'
 #' @param x Object to be converted.
 #' @param y Original numeric vector that was used to create a
-#'   \sQuote{Ckmeans.1d.dp} object, or index of an element of a
-#'   \sQuote{kmeanss} object.
+#'   \sQuote{Ckmeans.1d.dp} object, or index of an element of a \sQuote{kmeanss}
+#'   object.
 #' @param ... Optional arguments passed to and from other methods, and/or
 #'   between the methods.
 #' @return Object of class \sQuote{kmeans}.
@@ -136,7 +136,7 @@ calinski.kmeanss <- function(x, ...) {
 plot.kmeanss <- function(x, xlab = "Number of clusters",
     ylab = "Calinski-Harabasz statistics", ...) {
   x <- as.numeric(names(y <- calinski(x)))
-  graphics::plot(x, y, xlab = xlab, ylab = ylab, ...)
+  plot(x, y, xlab = xlab, ylab = ylab, ...)
   invisible(y)
 }
 
@@ -156,11 +156,10 @@ plot.kmeanss <- function(x, xlab = "Number of clusters",
 #'   \sQuote{kmeanss}.
 #' @param y Vector of original data subjected to clustering. Automatically
 #'   determined for the \sQuote{kmeanss} methods.
-#' @param k Numeric vector or \code{NULL}. If non-empty, it indicates
-#'   the number of groups (previously used as input for \code{kmeans}) for
-#'   which vertical lines should be drawn in the plot that represent the
-#'   cluster borders. If empty, the smallest non-trivial number of clusters is
-#'   chosen.
+#' @param k Numeric vector or \code{NULL}. If non-empty, it indicates the number
+#'   of groups (previously used as input for \code{kmeans}) for which vertical
+#'   lines should be drawn in the plot that represent the cluster borders. If
+#'   empty, the smallest non-trivial number of clusters is chosen.
 #' @param col Graphical parameter passed to \code{abline}. If several values of
 #'   \code{k} are given, \code{col} is recycled as necessary.
 #' @param lwd Like \code{col}.
@@ -303,8 +302,8 @@ prepare_k <- function(k) {
 #'
 #' Run a k-means partitioning analysis. This function is used by
 #' \code{\link{discrete}} in \sQuote{gap} mode to automatically determine the
-#' range of ambiguous data. If applied to such one-dimensional data, it uses
-#' an exact algorithm from the \pkg{Ckmeans.1d.dp} package.
+#' range of ambiguous data. If applied to such one-dimensional data, it uses an
+#' exact algorithm from the \pkg{Ckmeans.1d.dp} package.
 #'
 #' @param object Numeric vector or matrix.
 #' @param k Numeric vector. Number of clusters requested.
@@ -331,7 +330,7 @@ setGeneric("run_kmeans",
   function(object, k, ...) standardGeneric("run_kmeans"))
 
 setMethod("run_kmeans", c("numeric", "numeric"), function(object, k) {
-  result <- sapply(prepare_k(k), Ckmeans.1d.dp::Ckmeans.1d.dp, x = object,
+  result <- sapply(prepare_k(k), Ckmeans.1d.dp, x = object,
     simplify = FALSE)
   structure(lapply(result, to_kmeans, y = object), class = "kmeanss",
     input = object)
@@ -343,7 +342,7 @@ setMethod("run_kmeans", c("matrix", "numeric"), function(object, k,
     run_kmeans(as.vector(object), k)
   else
     structure(sapply(prepare_k(k), function(centers) {
-      stats::kmeans(x = x, centers = centers, nstart = nstart, ...)
+      kmeans(x = x, centers = centers, nstart = nstart, ...)
     }, simplify = FALSE), class = "kmeanss")
   attr(result, "input") <- object
   result

@@ -119,7 +119,7 @@ for (i in seq(vaas_4)) { # OR: for (i in 1:length(vaas_4))
   # now do something with 'x'...
   stopifnot(dim(x) == c(384, 96))
 }
-# see also opms_apply() for a more elegant approach
+# see also oapply() for a more elegant approach
 }
 \seealso{
   base::`[` base::`[[`

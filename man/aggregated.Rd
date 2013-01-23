@@ -38,6 +38,9 @@
   columns represent the wells, the rows the estimated
   parameters and their CIs.
 }
+\note{
+  See \code{\link{do_aggr}} for generating aggregated data.
+}
 \examples{
 # 'OPMA' method
 data(vaas_1)
@@ -68,7 +71,7 @@ stopifnot(is.list(x), length(x) == length(vaas_4), sapply(x, is.matrix))
   \code{\link{minmax}}, \code{\link{plate_type}},
   \code{\link{position}}, \code{\link{select}},
   \code{\link{seq}}, \code{\link{setup_time}},
-  \code{\link{show}}, \code{\link{summary}},
+  \code{\link{subset}}, \code{\link{summary}},
   \code{\link{well}}, \code{\link{wells}}
 }
 \keyword{attribute}

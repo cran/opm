@@ -3,7 +3,8 @@
 \title{Map well names to substrates}
 \usage{
   map_well_names(wells, plate, in.parens = FALSE,
-    brackets = FALSE, paren.sep = " ", ...)
+    brackets = FALSE, paren.sep = " ", downcase = FALSE,
+    ...)
 }
 \arguments{
   \item{wells}{Character vector of original well names
@@ -19,6 +20,8 @@
 
   \item{paren.sep}{Character scalar. See
   \code{\link{wells}}.}
+
+  \item{downcase}{Logical scalar. See \code{\link{wells}}.}
 
   \item{...}{Arguments that can be passed to both
   \code{\link{add_in_parens}} and

@@ -16,7 +16,7 @@
   \code{FALSE} turn panel headers off. \code{TRUE} causes
   the panel headers to be constructed from the plate
   numbers or those metadata that were included by
-  \code{\link{flatten}} (see there).  Character vectors and
+  \code{\link{flatten}} (see there). Character vectors and
   expressions are directly used for the text within these
   panel headers.}
 
@@ -98,7 +98,8 @@ level_plot(vaas_4, include = c("Species", "Strain"))
 
   Other plotting-functions: \code{\link{ci_plot}},
   \code{\link{heat_map}}, \code{\link{radial_plot}},
-  \code{\link{select_colors}}, \code{\link{xy_plot}}
+  \code{\link{select_colors}}, \code{\link{show}},
+  \code{\link{xy_plot}}
 }
 \keyword{hplot}
 

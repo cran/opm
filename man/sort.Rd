@@ -46,7 +46,7 @@
 }
 \description{
   Sort an \code{\link{OPMS}} object based on one to several
-  metadata or CSV data entries. There is also an
+  metadata or \acronym{CSV} data entries. There is also an
   \code{\link{OPM}} method which returns the input data (to
   avoid destructive effects due to the way the default
   \code{sort} interacts with \code{\link{OPM}} indexing).

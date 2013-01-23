@@ -20,21 +20,20 @@
   \code{\link{OPMS}} object, otherwise return a list.
 }
 \examples{
-data(vaas_1)
-data(vaas_4)
+data(vaas_1, vaas_4)
 
 # Adding nothing
-x <- c(vaas_1)
+summary(x <- c(vaas_1))
 stopifnot(identical(x, vaas_1))
-x <- c(vaas_4)
+summary(x <- c(vaas_4))
 stopifnot(identical(x, vaas_4))
 
-# not particularly useful: adding identical plates!
-x <- c(vaas_1, vaas_1) # yields a two-plate OPMS object
+# Not particularly useful: adding identical plates!
+summary(x <- c(vaas_1, vaas_1)) # yields a two-plate OPMS object
 stopifnot(identical(dim(x), c(2L, dim(vaas_1))))
 
-# also not particularly useful: adding partially identical plates!
-x <- c(vaas_4, vaas_1)
+# Also not particularly useful: adding partially identical plates!
+summary(x <- c(vaas_4, vaas_1))
 stopifnot(identical(dim(x), c(5L, dim(vaas_1))))
 }
 \seealso{

@@ -4,10 +4,12 @@
 \alias{OPMA-class}
 \title{OPMA class}
 \description{
-  Class for holding single-plate OmniLog(R) phenotype
-  microarray data together with aggregated values. For
-  further details see its parent class, \code{\link{OPM}}.
-  \sQuote{OPMA} is an acronym for \sQuote{OPM, aggregated}.
+  Class for holding single-plate
+  OmniLog\eqn{\textsuperscript{\textregistered}}{(R)}
+  phenotype microarray data together with aggregated
+  values. For further details see its parent class,
+  \code{\link{OPM}}. \acronym{OPMA} is an acronym for
+  \sQuote{acronym{OPM}, aggregated}.
 }
 \details{
   Objects of this class are usually created by calling

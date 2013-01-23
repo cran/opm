@@ -5,8 +5,8 @@
   \item{object}{\code{\link{OPM}} object.}
 }
 \value{
-  Dataframe with time points in each row, repeated for each
-  well (number of rows is number of wells).
+  Data frame with time points in each row, repeated for
+  each well (number of rows is number of wells).
 }
 \description{
   Construct time-points data frame as required by

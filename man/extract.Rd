@@ -108,10 +108,10 @@ stopifnot(identical(attr(y, "row.groups"), x$c))
 \alias{extract,OPMS-method}
 \alias{extract,data.frame-method}
 \usage{
-  \S4method{extract}{OPMS}(object, as.labels, subset = "A",
-    ci = FALSE, trim = "full", dataframe = FALSE, as.groups = NULL, sep = " ",
-    dups = "warn", exact = TRUE, strict = TRUE, full = TRUE, max = 10000L,
-    ...) 
+  \S4method{extract}{OPMS}(object, as.labels,
+    subset = opm_opt("curve.param"), ci = FALSE, trim = "full",
+    dataframe = FALSE, as.groups = NULL, sep = " ", dups = "warn",
+    exact = TRUE, strict = TRUE, full = TRUE, max = 10000L, ...) 
 
   \S4method{extract}{data.frame}(object, as.labels,
     as.groups = NULL, sep = " ", what = "numeric") 

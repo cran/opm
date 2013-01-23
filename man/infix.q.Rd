@@ -10,7 +10,7 @@
   before comparison with the values of \code{x}. A
   non-empty vector without a \code{names} attribute is
   accepted but will always yield \code{FALSE}. In contrast,
-  an entirely empty vector yields \code{TRUE}.  If a list,
+  an entirely empty vector yields \code{TRUE}. If a list,
   the comparison is applied recursively using
   \code{\link{contains}} with the \code{values} argument
   set to \code{TRUE} but \code{exact} set to \code{FALSE}.

@@ -51,7 +51,7 @@ stopifnot(identical(anyDuplicated(x), 2L))
   \code{\link{minmax}}, \code{\link{plate_type}},
   \code{\link{position}}, \code{\link{select}},
   \code{\link{seq}}, \code{\link{setup_time}},
-  \code{\link{show}}, \code{\link{summary}},
+  \code{\link{subset}}, \code{\link{summary}},
   \code{\link{well}}, \code{\link{wells}}
 }
 \keyword{attribute}

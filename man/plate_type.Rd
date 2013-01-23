@@ -25,8 +25,10 @@
 
   \item{paren.sep}{Character scalar.}
 
+  \item{downcase}{Logical scalar.}
+
   \item{subtype}{Logical scalar. Keep the plate subtype
-  indicator, if any?  Only relevant for the character or
+  indicator, if any? Only relevant for the character or
   factor method.}
 
   \item{...}{Optional arguments passed between the
@@ -39,11 +41,14 @@
   corresponding factor.
 }
 \description{
-  Get the type of the OmniLog(R) plate used in the
-  measuring. This is a convenience function for one of the
-  more important entries of \code{\link{csv_data}} with
-  additional options useful for creating plot titles. The
-  character method normalizes the names of OmniLog(R) PM
+  Get the type of the
+  OmniLog\eqn{\textsuperscript{\textregistered}}{(R)} plate
+  used in the measuring. This is a convenience function for
+  one of the more important entries of
+  \code{\link{csv_data}} with additional options useful for
+  creating plot titles. The character method normalizes the
+  names of
+  OmniLog\eqn{\textsuperscript{\textregistered}}{(R)} PM
   plates to the internally used naming scheme. Unrecognized
   names are returned unchanged. This needs not normally be
   called by the \pkg{opm} user but might be of interest.
@@ -96,7 +101,7 @@ stopifnot(is.factor(z), z == x)
   \code{\link{metadata}}, \code{\link{minmax}},
   \code{\link{position}}, \code{\link{select}},
   \code{\link{seq}}, \code{\link{setup_time}},
-  \code{\link{show}}, \code{\link{summary}},
+  \code{\link{subset}}, \code{\link{summary}},
   \code{\link{well}}, \code{\link{wells}}
 }
 \keyword{attribute}
@@ -112,7 +117,7 @@ stopifnot(is.factor(z), z == x)
 \usage{
   \S4method{plate_type}{OPM}(object, full = FALSE, in.parens = TRUE,
     max = 100L, clean = TRUE, brackets = FALSE, word.wise = FALSE,
-    paren.sep = " ") 
+    paren.sep = " ", downcase = FALSE) 
 
   \S4method{plate_type}{character}(object, subtype = FALSE) 
 

@@ -1,5 +1,62 @@
 
 
+opm 0.8-0
+---------
+
+Bug fixes:
+
+- bug fixes in flatten() ('strict' argument) and safe_labels()
+
+Significant user-visible changes:
+
+- the yaml package is now mandatory
+
+- select() is deprecated in favour of subset()
+
+- the disc_settings() and aggr_settings() entries have other content, and older
+  objects stored using save() or in .RData files are only partially compatible;
+  conversion of OPMX objects to a list and back fixes this (done automatically
+  for stored YAML files)
+
+- opm_opt() is more restrictive regarding the data type of its labels
+
+- extract_columns() and extract() are more restrictive regarding their
+  'as.labels' and 'as.groups' arguments; this effects all methods that are 
+  based on them, such as xy_plot(); as a rule: use a list as 'include', 
+  'as.labels' or 'as.groups' argument
+  
+- the meaning of the 'prefer.char' argument to phylo_data() has been changed
+
+New features:
+
+- added support for ECO, SF-N2 and SF-P2 plates (Microstation plates)
+
+- added listing() method for OPMX objects for generating textual descriptions
+  of the discretized reactions
+
+- novel html_args() function (helper method for phylo_data())
+
+- gen_iii(), read_opm() and batch_opm_to_yaml() now support more plate-type
+  changes
+
+- read_opm() and 'run_opm.R' can be adapted to distinct input file encodings
+
+- more options to be set by opm_opt(), and more functions (by default) modified
+  by them
+
+- more arguments of batch_opm_to_yaml(), wells(), plate_type(), csv_data(),
+  phylo_data(), substrate_info() 
+
+- improved output of the summary() methods of OPMX objects, of
+  substrate_info() (e.g., MeSH IDs), of phylo_data() (better HTML) and of
+  opm_files() ('auxiliary' files)
+
+Other changes:
+
+- improvements of the package URL (http://opm.dsmz.de/), the stored substrate
+  information, the documentation and the unit tests
+
+
 opm 0.7-0
 ---------
 

@@ -73,24 +73,148 @@ map_grofit_names <- function(subset = NULL, ci = TRUE, plain = FALSE,
 #' @param in.parens Logical scalar. See \code{\link{wells}}.
 #' @param brackets Logical scalar. See \code{\link{wells}}.
 #' @param paren.sep Character scalar. See \code{\link{wells}}.
-#' @param ... Arguments that can be passed to both
-#'   \code{\link{add_in_parens}} and \code{\link{trim_string}}.
+#' @param downcase Logical scalar. See \code{\link{wells}}.
+#' @param ... Arguments that can be passed to both \code{\link{add_in_parens}}
+#'   and \code{\link{trim_string}}.
 #' @return Character vector.
 #' @keywords internal
 #' @note The user-level function is \code{\link{well_to_substrate}}.
 #'
 map_well_names <- function(wells, plate, in.parens = FALSE, brackets = FALSE,
-    paren.sep = " ", ...) {
+    paren.sep = " ", downcase = FALSE, ...) {
   pos <- match(L(plate), colnames(WELL_MAP))
   if (is.na(pos)) {
     warning("cannot find plate type ", plate)
-    trim_string(wells, ...)
-  } else if (in.parens)
-    add_in_parens(wells, WELL_MAP[wells, pos], brackets = brackets,
+    return(trim_string(wells, ...))
+  }
+  res <- WELL_MAP[wells, pos]
+  if (downcase)
+    res <- substrate_info(res, "downcase")
+  if (in.parens)
+    add_in_parens(str.1 = wells, str.2 = res, brackets = brackets,
       paren.sep = paren.sep, ...)
   else
-    trim_string(WELL_MAP[wells, pos], ...)
+    trim_string(str = res, ...)
 }
+
+
+################################################################################
+
+
+#' Create sentences
+#'
+#' Create a textual (listing-like) description.
+#'
+#' @param x Logical vector.
+#' @return Character vector, one element per sentence.
+#' @keywords internal
+#'
+to_sentence <- function(x) UseMethod("to_sentence")
+
+#' @rdname to_sentence
+#' @method to_sentence logical
+#'
+to_sentence.logical <- function(x) {
+  sentence <- function(x, what) {
+    if (length(x))
+      sprintf("%s for %s.", what, listing(x, style = "sentence"))
+    else
+      ""
+  }
+  isna <- is.na(x)
+  n <- c("Positive", "Negative", "Ambiguous")
+  result <- c(sentence(names(x)[x & !isna], n[1L]),
+    sentence(names(x)[!x & !isna], n[2L]), sentence(names(x)[isna], n[3L]))
+  names(result) <- n
+  result
+}
+
+
+################################################################################
+
+
+#' Create textual listing
+#'
+#' This creates a textual listing of the discretized values. This is useful to
+#' describe OmniLog\eqn{\textsuperscript{\textregistered}}{(R)} phenotype
+#' microarray results in a manuscript.
+#'
+#' @param x \code{\link{OPMD}} or \code{\link{OPMS}} object.
+#' @param downcase Logical scalar passed to \code{\link{wells}}.
+#' @param full Logical scalar passed to \code{\link{wells}}.
+#' @param in.parens Logical scalar passed to \code{\link{wells}}.
+#' @param as.groups List or \code{NULL}. If a list, passed as \sQuote{key}
+#'   argument to \code{\link{metadata}}. The extracted metadata define groups
+#'   for which the discretized data are aggregated.
+#' @param cutoff Numeric scalar used if \sQuote{as.groups} is a list. If the
+#'   relative frequency of the most frequent entry within the discretized values
+#'   to be joined is below that cutoff, \code{NA} is used.
+#' @param sep Character scalar used for joining the \sQuote{as.groups} entries
+#'   (if any).
+#' @param exact Logical scalar passed to \code{\link{metadata}}.
+#' @param strict Logical scalar also passed to \code{\link{metadata}}.
+#' @param ... Optional arguments passed between the methods or to
+#'   \code{\link{wells}}.
+#' @return Character vector or matrix. See the examples for details.
+#' @export
+#' @family naming-functions
+#' @keywords character category
+#' @note  See \code{\link{do_disc}} for generating discretized data.
+#' @examples
+#'
+#' # 'OPMD' method
+#' data(vaas_1)
+#'
+#' # this yields one sentence for each kind of reaction:
+#' (x <- listing(vaas_1))
+#' stopifnot(is.character(x), length(x) == 3, !is.null(names(x)))
+#'
+#' # 'OPMS' method
+#' data(vaas_4)
+#'
+#' # no grouping, no names
+#' (y <- listing(vaas_4, as.groups = NULL))
+#' stopifnot(is.matrix(y), dim(y) == c(4, 3))
+#' stopifnot(is.null(rownames(y)), !is.null(colnames(y)))
+#'
+#' # in effect no grouping, but names
+#' (y <- listing(vaas_4, as.groups = list("Species", "Strain")))
+#' stopifnot(is.matrix(y), dim(y) == c(4, 3))
+#' stopifnot(!is.null(rownames(y)), !is.null(colnames(y)))
+#'
+#' # two groups
+#' (y <- listing(vaas_4, as.groups = list("Species")))
+#' stopifnot(is.matrix(y), dim(y) == c(2, 3))
+#' stopifnot(!is.null(rownames(y)), !is.null(colnames(y)))
+#'
+setGeneric("listing")
+
+setMethod("listing", OPMD, function(x, downcase = TRUE, full = TRUE,
+    in.parens = FALSE, ...) {
+  res <- discretized(x)
+  names(res) <- wells(object = x, full = full, in.parens = in.parens,
+    downcase = downcase, ...)
+  to_sentence(res)
+}, sealed = SEALED)
+
+setMethod("listing", OPMS, function(x, as.groups, cutoff = 0.5, sep = " ",
+    exact = TRUE, strict = TRUE, downcase = TRUE, full = TRUE,
+    in.parens = FALSE, ...) {
+  LL(cutoff, sep)
+  if (!length(as.groups))
+    return(do.call(rbind, lapply(X = x@plates, FUN = listing,
+      downcase = downcase, full = full, in.parens = in.parens, ...)))
+  disc <- extract(object = x, subset = "disc", as.groups = as.groups,
+    sep = sep, exact = exact, strict = strict, downcase = downcase,
+    full = full, in.parens = in.parens, dataframe = FALSE, as.labels = NULL,
+    ...)
+  groups <- attr(disc, "row.groups")
+  t(vapply(levels(groups), function(group) {
+    y <- disc[groups == group, , drop = FALSE]
+    y <- apply(y, 2L, reduce_to_mode, cutoff = cutoff, use.na = TRUE)
+    to_sentence(y)
+  }, character(3L)))
+}, sealed = SEALED)
 
 
 ################################################################################
@@ -104,8 +228,8 @@ map_well_names <- function(wells, plate, in.parens = FALSE, brackets = FALSE,
 #' substrate names, given the name of the plate.
 #'
 #' @param plate Character vector or factor. The type(s) of the plate(s). See
-#'   \code{\link{plate_type}}. \code{\link{plate_type}} is applied
-#'   before searching for the substrate names, and partial matching is allowed.
+#'   \code{\link{plate_type}}. \code{\link{plate_type}} is applied before
+#'   searching for the substrate names, and partial matching is allowed.
 #' @param well Character vector of original well names (coordinates on the
 #'   plate), or integer vector, or convertible to such.
 #' @export
@@ -148,8 +272,8 @@ well_to_substrate <- function(plate, well = 1L:96L) {
 #'   \sQuote{pmatch}, uses \code{pmatch} from the \pkg{base} package. All
 #'   matching is case-insensitive except for \sQuote{exact} and \sQuote{pmatch}
 #'   search modes.
-#' @param max.dev Numeric scalar indicating the maximum allowed deviation. If
-#'   < 1, the proportion of characters that might deviate, otherwise their
+#' @param max.dev Numeric scalar indicating the maximum allowed deviation. If <
+#'   1, the proportion of characters that might deviate, otherwise their
 #'   absolute number. It can also be a list; see the \sQuote{max.distance}
 #'   argument of \code{agrep} in the \pkg{base} package for details. Has an
 #'   effect only if \sQuote{approx} is chosen as search mode (see the
@@ -157,10 +281,9 @@ well_to_substrate <- function(plate, well = 1L:96L) {
 #' @param ... Optional arguments passed between the methods.
 #' @export
 #' @return List of character vectors (empty if nothing was found), with
-#'   duplicates removed and the rest sorted. The names of the list correspond
-#'   to \code{names}.
-#' @note See \code{\link{glob_to_regex}} for a description of globbing
-#'   patterns.
+#'   duplicates removed and the rest sorted. The names of the list correspond to
+#'   \code{names}.
+#' @note See \code{\link{glob_to_regex}} for a description of globbing patterns.
 #' @seealso base::grep base::agrep
 #' @family naming-functions
 #' @keywords character utilities
@@ -227,25 +350,24 @@ setMethod("find_substrate", "character", function(object,
 #' @param object Query character vector or query list.
 #' @param ... Optional arguments passed between the methods.
 #' @export
-#' @return The character method returns a
-#'   list of character matrices (empty if nothing was found), with one row
-#'   per position found, the plate name in the first column and the well name in
-#'   the second. The names of this list correspond to \code{names}. The list
-#'   method returns lists of such lists.
+#' @return The character method returns a list of character matrices (empty if
+#'   nothing was found), with one row per position found, the plate name in the
+#'   first column and the well name in the second. The names of this list
+#'   correspond to \code{names}. The list method returns lists of such lists.
 #' @family naming-functions
 #' @keywords utilities
 #' @examples
 #'
 #' # Character method; compare correct and misspelled substrate name
-#' (x <- find_positions(c("a-D-Glucose", "a-D-Gloucose")))
+#' (x <- find_positions(c("D-Glucose", "D-Gloucose")))
 #' stopifnot(length(x[[1]]) > length(x[[2]]))
 #'
 #' # Factor method
-#' (y <- find_positions(as.factor(c("a-D-Glucose", "a-D-Gloucose"))))
+#' (y <- find_positions(as.factor(c("D-Glucose", "D-Gloucose"))))
 #' stopifnot(identical(y, x))
 #'
 #' # List method
-#' (x <- find_positions(find_substrate(c("a-D-Glucose", "a-D-Gloucose"))))
+#' (x <- find_positions(find_substrate(c("D-Glucose", "D-Gloucose"))))
 #' stopifnot(length(x[[1]]) > length(x[[2]]))
 #'
 setGeneric("find_positions",
@@ -271,13 +393,18 @@ setMethod("find_positions", "list", function(object) {
 
 #' Provide information on substrates
 #'
-#' Return information on substrates such as their CAS number or KEGG ID. The
-#' query names must be written exactly as used in the stored plate annotations.
-#' To determine their spelling, use \code{\link{find_substrate}}.
+#' Return information on substrates such as their \acronym{CAS} number or
+#' \acronym{KEGG} ID. The query names must be written exactly as used in the
+#' stored plate annotations. To determine their spelling, use
+#' \code{\link{find_substrate}}. Alternatively, this functions converts the
+#' substrate names to lower case, protecting one-letter specifiers, acronyms and
+#' chemical symbols, and translating relevant characters from the Greek
+#' alphabet.
 #'
 #' @param object Query character vector or query list.
 #' @param what Character scalar indicating which kind of information to output.
 #'   See the references for the background of each possible value.
+#'   \sQuote{downcase} is special; see above.
 #' @param ... Optional arguments passed between the methods.
 #' @export
 #' @return The character method returns a character vector with \code{object}
@@ -290,34 +417,61 @@ setMethod("find_positions", "list", function(object) {
 #' @references \url{http://en.wikipedia.org/wiki/CAS_registry_number}
 #' @references \url{http://www.genome.jp/kegg/}
 #' @references \url{http://metacyc.org/}
+#' @references \url{http://www.ncbi.nlm.nih.gov/mesh}
 #' @note Currently the information is incomplete, particularly for the PM-M
-#'   plates.
+#'   plates. While it should eventually be possible to link all substrates to
+#'   \acronym{CAS} numbers, they are not necessarily contained in the other
+#'   databases.
 #' @examples
 #'
 #' # Character method; compare correct and misspelled substrate name
-#' (x <- substrate_info(c("a-D-Glucose", "a-D-Gloucose")))
+#' (x <- substrate_info(c("D-Glucose", "D-Gloucose")))
 #'
 #' # Factor method
-#' (y <- substrate_info(as.factor(c("a-D-Glucose", "a-D-Gloucose"))))
+#' (y <- substrate_info(as.factor(c("D-Glucose", "D-Gloucose"))))
 #' stopifnot(identical(x, y))
 #'
+#' # Character method, safe conversion to lower case
+#' (x <- substrate_info(c("a-D-Glucose", "a-D-Gloucose"), "downcase"))
+#' stopifnot(nchar(x) > nchar(c("a-D-Glucose", "a-D-Gloucose")))
+#' # note the protection of 'D' and the conversion of 'a'
+#' # whether ot not substrate names are known does not matter here
+#'
 #' # List method
-#' (x <- substrate_info(find_substrate(c("a-D-Glucose", "a-D-Gloucose"))))
+#' (x <- substrate_info(find_substrate(c("D-Glucose", "D-Gloucose"))))
 #' stopifnot(length(x[[1]]) > length(x[[2]]))
 #'
 setGeneric("substrate_info",
   function(object, ...) standardGeneric("substrate_info"))
 
 setMethod("substrate_info", "character", function(object,
-    what = c("cas", "kegg", "metacyc")) {
-  result <- SUBSTRATE_INFO[match(object, rownames(SUBSTRATE_INFO)),
-    toupper(match.arg(what))]
-  names(result) <- object
-  result
+    what = c("cas", "kegg", "metacyc", "mesh", "downcase")) {
+  safe_downcase <- function(x) {
+    good_case <- function(x) {
+      bad <- nchar(x) > 1L # avoid changing acronyms and chemical elements
+      bad[bad] <- !grepl("^(pH|[a-z]?[A-Z][A-Z]+|([A-Z][a-z]?\\d*)+)$", x[bad],
+        perl = TRUE)
+      x[bad] <- tolower(x[bad])
+      x
+    }
+    y <- strsplit(x, "\\w+", perl = TRUE)
+    x <- strsplit(x, "\\W+", perl = TRUE)
+    bad <- !vapply(x, function(value) nzchar(value[1L]), logical(1L))
+    x[bad] <- lapply(x[bad], `[`, i = -1L)
+    bad <- vapply(x, length, integer(1L)) < vapply(y, length, integer(1L))
+    x[bad] <- lapply(x[bad], function(value) c(value, ""))
+    x <- lapply(x, good_case)
+    x <- map_values(x, GREEK_LETTERS[, "plain"])
+    mapply(paste, y, x, MoreArgs = list(sep = "", collapse = ""))
+  }
+  structure(.Data = case(what <- match.arg(what),
+    downcase = safe_downcase(object), kegg =, metacyc =, mesh =,
+    cas = SUBSTRATE_INFO[match(object, rownames(SUBSTRATE_INFO)), toupper(what)]
+  ), .Names = object)
 }, sealed = SEALED)
 
 setMethod("substrate_info", "list", function(object, ...) {
-  sapply(X = object, FUN = substrate_info, simplify = FALSE, ...)
+  rapply(object = object, f = substrate_info, how = "replace", ...)
 }, sealed = SEALED)
 
 

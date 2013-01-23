@@ -1,3 +1,5 @@
+
+################################################################################
 ################################################################################
 #
 # Character discretization
@@ -13,16 +15,16 @@
 #' group and column are located.
 #'
 #' @param x Numeric matrix.
-#' @param y Factor or character vector indicating group affiliations. Its
-#'   length must correspond to the number of rows of \code{x}.
+#' @param y Factor or character vector indicating group affiliations. Its length
+#'   must correspond to the number of rows of \code{x}.
 #' @param combined Logical scalar. If \code{TRUE}, determine a single threshold
 #'   for the entire matrix. If \code{FALSE}, determine one threshold for each
 #'   group of rows of \code{x} that corresponds to a level of \code{y}.
 #' @param lower Numeric scalar. Lower bound for the cutoff values to test.
 #' @param upper Numeric scalar. Upper bound for the cutoff values to test.
 #' @param all Logical scalar. If \code{TRUE}, calculate the score for all
-#'   possible cutoffs for \code{x}. This is slow and is only useful for
-#'   plotting complete optimization curves.
+#'   possible cutoffs for \code{x}. This is slow and is only useful for plotting
+#'   complete optimization curves.
 #' @param ... Optional arguments passed between the methods.
 #' @return If \code{combined} is \code{TRUE}, either a matrix or a vector: If
 #'   \code{all} is \code{TRUE}, a two-column matrix with (i) the cutoffs
@@ -32,8 +34,8 @@
 #'   \code{FALSE}, either a list of matrices or a matrix. If \code{all} is
 #'   \code{TRUE}, a list of matrices structures like the single matrix returned
 #'   if \code{combined} is \code{TRUE}. If \code{all} is \code{FALSE}, a matrix
-#'   with two colums called \sQuote{maximum} \sQuote{objective}, and one row
-#'   per level of \code{y}.
+#'   with two colums called \sQuote{maximum} \sQuote{objective}, and one row per
+#'   level of \code{y}.
 #'
 #' @details The scoring function to be maximized is calculated as follows. All
 #'   values in \code{x} are divided into those larger then the cutoff and those
@@ -76,7 +78,10 @@ setMethod("best_cutoff", c("matrix", "character"), function(x, y, ...) {
 setMethod("best_cutoff", c("matrix", "factor"), function(x, y,
     combined = TRUE, lower = min(x, na.rm = TRUE),
     upper = max(x, na.rm = TRUE), all = FALSE) {
-
+  indexes <- function(x) {
+    y <- as.character(x)
+    sapply(levels(x), function(level) which(y == level), simplify = FALSE)
+  }
   all_cutoffs <- function(x) {
     x <- sort.int(unique(as.vector(x)))
     x[-1L] - diff(x) / 2
@@ -101,7 +106,7 @@ setMethod("best_cutoff", c("matrix", "factor"), function(x, y,
       cbind(cutoff = cutoffs <- all_cutoffs(x),
         score = vapply(cutoffs, opt_fun, numeric(1L)))
     else
-      unlist(stats::optimize(f = opt_fun, maximum = TRUE, lower = lower,
+      unlist(optimize(f = opt_fun, maximum = TRUE, lower = lower,
         upper = upper))
   } else if (all)
     lapply(y, function(i) {
@@ -111,7 +116,7 @@ setMethod("best_cutoff", c("matrix", "factor"), function(x, y,
     })
   else
     do.call(rbind, lapply(y, function(i) {
-      unlist(stats::optimize(f = opt_fun_2, x = x[i, , drop = FALSE],
+      unlist(optimize(f = opt_fun_2, x = x[i, , drop = FALSE],
         maximum = TRUE, lower = lower, upper = upper))
     }))
 
@@ -125,11 +130,12 @@ setMethod("best_cutoff", c("matrix", "factor"), function(x, y,
 #'
 #' Convert a vector of continuous characters to discrete ones. One of the uses
 #' of this functions is to create character data suitable for phylogenetic
-#' studies with programs such as PAUP* and RAxML. These accept only discrete
-#' characters with at most 32 states, coded as 0 to 9 followed by A to V. For
-#' the full export one additionally needs \code{\link{phylo_data}}. The matrix
-#' method is just a wrapper that takes care of the matrix dimensions, and the
-#' data-frame method is a wrapper for that method.
+#' studies with programs such as \acronym{PAUP*} and \acronym{RAxML}. These
+#' accept only discrete characters with at most 32 states, coded as 0 to 9
+#' followed by A to V. For the full export one additionally needs
+#' \code{\link{phylo_data}}. The matrix method is just a wrapper that takes care
+#' of the matrix dimensions, and the data-frame method is a wrapper for that
+#' method.
 #'
 #' @param x Numeric vector or a \code{\link{MOA}} object convertible to a
 #'   numeric vector. The data-frame method first calls \code{\link{extract}},
@@ -141,15 +147,17 @@ setMethod("best_cutoff", c("matrix", "factor"), function(x, y,
 #'   \code{x}. If \code{range} is set to \code{TRUE}, the empirical range of
 #'   \code{x} is used in non-\code{gap} mode. In \code{gap} mode, the range is
 #'   determined using \code{\link{run_kmeans}} with the number of clusters set
-#'   to \code{3} and then applying \code{\link{borders}} to the result.
+#'   to \code{3} and then applying \code{\link{borders}} to the result. The
+#'   number of clusters is set to \code{2} if \code{range} is \code{FALSE} in
+#'   \code{gap} mode.
 #'
 #' @param gap Logical scalar. If \code{TRUE}, always convert to binary or
 #'   ternary characters, ignoring \code{states}. \code{range} then indicates a
-#'   subrange of \code{x} within which character conversion is ambiguous and
-#'   has to be treated as either missing information or intermediate character
+#'   subrange of \code{x} within which character conversion is ambiguous and has
+#'   to be treated as either missing information or intermediate character
 #'   state, depending on \code{middle.na}. If \code{FALSE} (the default), apply
-#'   an equal-width-intervals discretization with the widths determined from
-#'   the number of requested \code{states} and \code{range}.
+#'   an equal-width-intervals discretization with the widths determined from the
+#'   number of requested \code{states} and \code{range}.
 #'
 #' @param output String determining the output mode: \sQuote{character},
 #'   \sQuote{integer}, \sQuote{logical}, \sQuote{factor}, or \sQuote{numeric}.
@@ -175,8 +183,16 @@ setMethod("best_cutoff", c("matrix", "factor"), function(x, y,
 #' @param as.labels Vector of data-frame indices. See \code{\link{extract}}.
 #' @param sep Character scalar. See \code{\link{extract}}.
 #'
-#' @param ... Optional arguments passed between the methods or, if requested,
-#'   to \code{\link{run_kmeans}} (except \code{object} and \code{k}, see there).
+#' @param ... Optional arguments passed between the methods or, if requested, to
+#'   \code{\link{run_kmeans}} (except \code{object} and \code{k}, see there).
+#'
+#' @details The term \sQuote{character} as used here has nothing to do \emph{per
+#'   se} with the eponymous mode or class of \R. Rather, the term is borrowed
+#'   from taxonomic classification in biology, where, technically, a single
+#'   \sQuote{character} is stored in one column of a data matrix if each
+#'   organism is stored in one row. Characters are the \emph{quasi-independent
+#'   units} of evolution on the one hand and of phylogenetic reconstruction (and
+#'   thus taxonomic classification) on the other hand.
 #'
 #' @export
 #' @return Double, integer, character or logical vector or factor, depending on
@@ -193,6 +209,9 @@ setMethod("best_cutoff", c("matrix", "factor"), function(x, y,
 #' @references Ventura, D., Martinez, T. R. 1995 An empirical comparison of
 #'   discretization methods. \emph{Proceedings of the Tenth International
 #'   Symposium on Computer and Information Sciences}, p. 443--450.
+#' @references Wiley, E. O., Lieberman, B. S. 2011 \emph{Phylogenetics: Theory
+#'   and Practice of Phylogenetic Systematics}. Hoboken, New Jersey:
+#'   Wiley-Blackwell.
 #' @references Bunuel, L. 1972 \emph{Le charme discret de la bourgeoisie.}
 #'   France/Spain, 96 min.
 #'
@@ -348,20 +367,23 @@ setMethod("discrete", "data.frame", function(x, as.labels = NULL, sep = " ",
 #'
 #' @param object \code{\link{OPMA}} or \code{\link{OPMS}} object.
 #' @param cutoff If non-empty, passed as \code{range} argument to
-#'   \code{discrete} (with \code{gap} set to \code{TRUE}). If \code{NULL},
-#'   a cutoff is determined using \code{\link{best_cutoff}}, which is only
+#'   \code{discrete} (with \code{gap} set to \code{TRUE}). If \code{NULL}, a
+#'   cutoff is determined using \code{\link{best_cutoff}}, which is only
 #'   possible for \code{\link{OPMS}} objects.
 #' @param groups List or character vector passed to \code{\link{extract}},
 #'   logical scalar or \code{NULL}. If \code{TRUE}, groups are automatically
 #'   created with one plate per group. If \code{FALSE}, grouping is not used.
-#'   behaviour differs depending on \code{cutoff}; if that is empty, too,
-#'   an error is raised since \code{\link{best_cutoff}} needs groups with more
-#'   than a single element. Otherwise, if \code{combined} is \code{FALSE},
-#'   groups are automatically created with one plate per group.
+#'   behaviour differs depending on \code{cutoff}; if that is empty, too, an
+#'   error is raised since \code{\link{best_cutoff}} needs groups with more than
+#'   a single element. Otherwise, if \code{combined} is \code{FALSE}, groups are
+#'   automatically created with one plate per group.
 #' @param plain Logical scalar indicating whether or not an \code{\link{OPMD}}
 #'   or \code{\link{OPMS}} object should be created.
 #' @param ... Optional arguments passed to \code{\link{extract}}. Only relevant
 #'   for certain settings of \code{groups}, see above.
+#'
+#' @note The discretized values can be queried for using \code{\link{has_disc}}
+#'   and received using \code{\link{discretized}}.
 #'
 #' @export
 #' @return If \code{plain} is \code{FALSE}, an \code{\link{OPMD}} or
@@ -377,82 +399,88 @@ setMethod("discrete", "data.frame", function(x, as.labels = NULL, sep = " ",
 #'
 #' @examples
 #'
+#' mustbe <- function(a, b) stopifnot(identical(a, b))
+#'
 #' ## OPMA method
 #' data(vaas_1)
 #'
 #' # arbitrary threshold, no ambiguity
 #' summary(x <- do_disc(vaas_1, cutoff = 100))
-#' disc_settings(x)
 #' stopifnot(has_disc(x), dim(x) == dim(vaas_1), !is.na(discretized(x)))
-#' y <- list(program = "direct", options = list(cutoffs = 100, datasets = 1L))
-#' stopifnot(identical(disc_settings(x), y))
+#' # the settings used  have been stored in the resulting object
+#' (y <- disc_settings(x))
+#' mustbe(y$method, "direct")
+#' mustbe(y$options, list(cutoffs = 100, datasets = 1L))
 #'
 #' # arbitrary thresholds, allowing intermediate ('weak') reactions
 #' summary(x <- do_disc(vaas_1, cutoff = c(75, 125)))
-#' disc_settings(x)
 #' stopifnot(has_disc(x), dim(x) == dim(vaas_1), any(is.na(discretized(x))))
-#' y <- list(program = "direct", options = list(cutoffs = c(75, 125),
-#'   datasets = 1L))
-#' stopifnot(identical(disc_settings(x), y))
+#' (y <- disc_settings(x))
+#' mustbe(y$method, "direct")
+#' mustbe(y$options, list(cutoffs = c(75, 125), datasets = 1L))
 #'
 #' # using k-means, no ambiguity
 #' summary(x <- do_disc(vaas_1, cutoff = FALSE))
-#' disc_settings(x)
 #' stopifnot(has_disc(x), dim(x) == dim(vaas_1), !is.na(discretized(x)))
-#' stopifnot(disc_settings(x)$program == "kmeans")
-#' stopifnot(length(disc_settings(x)$options$cutoffs) == 1)
+#' (y <- disc_settings(x))
+#' mustbe(y$method, "kmeans")
+#' mustbe(length(y$options$cutoffs), 1L)
 #'
 #' # using k-means, allowing intermediate ('weak') reactions
 #' summary(x <- do_disc(vaas_1, cutoff = TRUE))
-#' disc_settings(x)
 #' stopifnot(has_disc(x), dim(x) == dim(vaas_1), any(discretized(x)))
-#' stopifnot(disc_settings(x)$program == "kmeans")
-#' stopifnot(length(disc_settings(x)$options$cutoffs) == 2)
+#' (y <- disc_settings(x))
+#' mustbe(y$method, "kmeans")
+#' mustbe(length(y$options$cutoffs), 2L) # now 2 cutoff values
 #'
 #' # OPMS method
 #' data(vaas_4)
 #'
 #' # arbitrary threshold, no ambiguity, no groups
 #' summary(x <- do_disc(vaas_4, cutoff = 100))
-#' disc_settings(x)
 #' stopifnot(has_disc(x), dim(x) == dim(vaas_4), !is.na(discretized(x)))
-#' y <- list(program = "direct", options = list(cutoffs = 100, datasets = 4L))
-#' stopifnot(identical(disc_settings(x)[[1]], y))
+#' # the settings used  have been stored in the resulting object
+#' (y <- disc_settings(x)[[1]])
+#' mustbe(y$method, "direct")
+#' mustbe(y$options, list(cutoffs = 100, datasets = 4L))
 #'
 #' # arbitrary threshold, no ambiguity, with groups, 1 plate per group
 #' summary(x <- do_disc(vaas_4, cutoff = 100, groups = TRUE))
-#' disc_settings(x)
 #' stopifnot(has_disc(x), dim(x) == dim(vaas_4), !is.na(discretized(x)))
-#' y <- list(program = "direct", options = list(cutoffs = 100, datasets = 1L))
-#' y$options$group <- "1" # the plate numbers yield the group names
-#' stopifnot(identical(disc_settings(x)[[1]], y))
+#' (y <- disc_settings(x)[[1]])
+#' mustbe(y$method, "direct")
+#' # here, the plate numbers yield the group names
+#' mustbe(y$options, list(cutoffs = 100, datasets = 1L, group = "1"))
 #'
 #' # arbitrary threshold, no ambiguity, with specified groups
-#' x <- do_disc(vaas_4, cutoff = 100, groups = "Species")
-#' summary(x)
-#' disc_settings(x)
+#' summary(x <- do_disc(vaas_4, cutoff = 100, groups = "Species"))
 #' stopifnot(has_disc(x), dim(x) == dim(vaas_4), !is.na(discretized(x)))
-#' y <- list(program = "direct", options = list(cutoffs = 100, datasets = 2L))
-#' y$options$group <- "Escherichia coli" # groups are from the metadata
-#' stopifnot(identical(disc_settings(x)[[1]], y))
+#' (y <- disc_settings(x)[[1]])
+#' mustbe(y$method, "direct")
+#' # now, groups are from the metadata (but played no role)
+#' mustbe(y$options,
+#'   list(cutoffs = 100, datasets = 2L, group = "Escherichia coli"))
 #'
 #' # using k-means, no ambiguity, with specified groups
-#' x <- do_disc(vaas_4, cutoff = TRUE, groups = "Species")
-#' summary(x)
-#' disc_settings(x)
+#' summary(x <- do_disc(vaas_4, cutoff = TRUE, groups = "Species"))
 #' stopifnot(has_disc(x), dim(x) == dim(vaas_4), any(is.na(discretized(x))))
-#' stopifnot(identical(disc_settings(x)[[1]]$program, "kmeans"))
-#' stopifnot(names(disc_settings(x)[[1]]$options) ==
-#'   c("cutoffs", "datasets", "group"))
+#' (y <- disc_settings(x)[[1]])
+#' mustbe(y$method, "kmeans")
+#' # grouping by species, discretized separately
+#' mustbe(y$options$group, "Escherichia coli")
+#' mustbe(y$options$datasets, 2L)
+#' mustbe(length(y$options$cutoffs), 2L)
 #'
 #' # using best_cutoff()
-#' x <- do_disc(vaas_4, cutoff = NULL, groups = "Species")
-#' summary(x)
-#' disc_settings(x)
+#' summary(x <- do_disc(vaas_4, cutoff = NULL, groups = "Species"))
 #' stopifnot(has_disc(x), dim(x) == dim(vaas_4), any(is.na(discretized(x))))
-#' stopifnot(identical(disc_settings(x)[[1]]$program, "best-cutoff"))
-#' stopifnot(names(disc_settings(x)[[1]]$options) ==
-#'   c("cutoffs", "score", "datasets", "group"))
+#' (y <- disc_settings(x)[[1]])
+#' mustbe(y$method, "best-cutoff")
+#' # groups as above
+#' mustbe(y$options$group, "Escherichia coli")
+#' mustbe(y$options$datasets, 2L)
+#' # ...but some additional entries:
+#' stopifnot(c("cutoffs", "score") %in% names(y$options))
 #'
 setGeneric("do_disc", function(object, ...) standardGeneric("do_disc"))
 
@@ -462,10 +490,12 @@ setMethod("do_disc", OPMA, function(object, cutoff, plain = FALSE) {
   x <- aggregated(object, subset = map_grofit_names("A", ci = FALSE)[[1L]],
     ci = FALSE)[1L, ]
   x <- discrete(x, range = cutoff, gap = TRUE, output = "logical")
-  settings <- list(program = if (is.numeric(cutoff))
+  settings <- list(if (is.numeric(cutoff))
     "direct"
   else
-    "kmeans", options = list(cutoffs = attr(x, "cutoffs"), datasets = 1L))
+    "kmeans", list(cutoffs = attr(x, "cutoffs"), datasets = 1L))
+  settings <- c(settings, as.list(opm_string(version = TRUE)))
+  names(settings) <- c(METHOD, OPTIONS, SOFTWARE, VERSION)
   if (L(plain))
     return(structure(c(x), settings = settings))
   new(OPMD, measurements = measurements(object),
@@ -501,12 +531,14 @@ setMethod("do_disc", "OPMS", function(object, cutoff = TRUE, groups = FALSE,
     grp <- rownames(x)
   else
     grp <- seq.int(nrow(x))
-  disc.settings <- list(program = if (is.numeric(cutoff))
+  disc.settings <- list(if (is.numeric(cutoff))
     "direct"
   else if (use.best)
     "best-cutoff"
   else
-    "kmeans", options = list())
+    "kmeans", list())
+  disc.settings <- c(disc.settings, as.list(opm_string(version = TRUE)))
+  names(disc.settings) <- c(METHOD, OPTIONS, SOFTWARE, VERSION)
 
   if (length(grp)) {
 
@@ -524,9 +556,11 @@ setMethod("do_disc", "OPMS", function(object, cutoff = TRUE, groups = FALSE,
         group <- as.character(grp[idx[1L]])
         settings <- list(cutoffs = bc[group, "maximum"],
           score = bc[group, "objective"], datasets = length(idx), group = group)
-        for (i in idx)
-          disc.settings[[i]] <- list(program = disc.settings[[i]]$program,
-            options = settings)
+        for (i in idx) {
+          tmp <- disc.settings[[i]]
+          tmp[[OPTIONS]] <- settings
+          disc.settings[[i]] <- tmp
+        }
         x[idx, ] <- x[idx, , drop = FALSE] > settings$cutoffs
         is.const <- is_constant(x[idx, , drop = FALSE], 2L)
         x[idx, !is.const] <- NA
@@ -541,9 +575,11 @@ setMethod("do_disc", "OPMS", function(object, cutoff = TRUE, groups = FALSE,
           output = "integer")
         settings <- list(cutoffs = attr(y, "cutoffs"), datasets = length(idx),
           group = as.character(grp[idx[1L]]))
-        for (i in idx)
-          disc.settings[[i]] <- list(program = disc.settings[[i]]$program,
-            options = settings)
+        for (i in idx) {
+          tmp <- disc.settings[[i]]
+          tmp[[OPTIONS]] <- settings
+          disc.settings[[i]] <- tmp
+        }
         x[idx, ] <- y
       }
       mode(x) <- "logical"
@@ -554,8 +590,8 @@ setMethod("do_disc", "OPMS", function(object, cutoff = TRUE, groups = FALSE,
 
     # discrete() partitioning with the entire dataset at once
     x <- discrete(x, range = cutoff, gap = TRUE, output = "logical")
-    disc.settings$options$cutoffs <- attr(x, "cutoffs")
-    disc.settings$options$datasets <- length(object)
+    disc.settings[[OPTIONS]] <- list(cutoffs = attr(x, "cutoffs"),
+      datasets = length(object))
     disc.settings <- rep.int(list(disc.settings), length(object))
 
   } else
@@ -571,7 +607,5 @@ setMethod("do_disc", "OPMS", function(object, cutoff = TRUE, groups = FALSE,
 
 
 ################################################################################
-
-
 
 

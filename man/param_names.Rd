@@ -13,8 +13,7 @@
 }
 \examples{
 (x <- param_names())
-stopifnot(is.character(x), length(x) == 4L)
-stopifnot(identical(unique(x), x))
+stopifnot(is.character(x), length(x) == 4L, identical(unique(x), x))
 }
 \seealso{
   Other aggregation-functions: \code{\link{do_aggr}},

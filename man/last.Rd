@@ -13,7 +13,7 @@
   Object of the same class than \code{x}.
 }
 \description{
-  Fetch the last element(s) from a subsettable objject.
+  Fetch the last element(s) from a subsettable object.
 }
 \keyword{internal}
 

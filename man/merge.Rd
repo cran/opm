@@ -14,7 +14,7 @@
   according to their setup times before merging?}
 
   \item{parse}{Logical scalar. Ignored unless
-  \code{sort.first} is \code{TRUE}. For sorting, parse the
+  \code{sort.first} is \code{TRUE}.  For sorting, parse the
   setup times using \code{strptime} from the \pkg{base}
   package? It is an error if this does not work.}
 }
@@ -58,11 +58,14 @@ stopifnot(is(x, "OPM"), dim(x) == c(sum(hours(vaas_4, "size")), 96))
 \alias{merge-methods}
 \alias{merge,OPMS,numeric-method}
 \alias{merge,OPMS,missing-method}
+\alias{merge,CMAT,ANY-method}
 \usage{
   \S4method{merge}{OPMS,numeric}(x, y, sort.first = TRUE,
     parse = TRUE) 
 
   \S4method{merge}{OPMS,missing}(x, sort.first = TRUE,
     parse = TRUE) 
+
+  \S4method{merge}{CMAT,ANY}(x, y) 
 
 }

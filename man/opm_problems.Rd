@@ -12,8 +12,8 @@
   Check whether a matrix fulfils the requirements for
   \code{\link{OPM}} measurements, or check whether a
   character vector fulfils the requirements for
-  \code{\link{OPM}} CSV data. Called when constructing an
-  object of the class.
+  \code{\link{OPM}} \acronym{CSV} data. Called when
+  constructing an object of the class.
 }
 \keyword{internal}
 

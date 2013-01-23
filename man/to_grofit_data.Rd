@@ -5,9 +5,9 @@
   \item{object}{\code{\link{OPM}} object.}
 }
 \value{
-  Dataframe with columns: (i) well ID, (ii) plate ID, (iii)
-  dummy concentration, (iv - end) measurements, one row for
-  each well.
+  Data frame with columns: (i) well ID, (ii) plate ID,
+  (iii) dummy concentration, (iv - end) measurements, one
+  row for each well.
 }
 \description{
   Construct data frame with measurements as required by

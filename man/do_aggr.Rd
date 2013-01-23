@@ -8,7 +8,7 @@
 
   \item{boot}{Integer scalar. Number of bootstrap
   replicates used to estimate 95-percent confidence
-  intervals (CIs) for the parameter. Set this to zero to
+  intervals (CIs) for the parameters. Set this to zero to
   omit bootstrapping, resulting in \code{NA} entries for
   the CIs.}
 
@@ -27,19 +27,24 @@
   For its use in \sQuote{opm-fast} mode, see
   \code{\link{fast_estimate}}.}
 
-  \item{program}{Character scalar. The aggregation method
-  to use. Currently only the following methods are
-  supported: \describe{ \item{grofit}{The \code{grofit}
-  function in the eponymous package, with spline fitting as
-  default.} \item{opm-fast}{The native, faster parameter
-  estimation. This will only yield two of the four
-  parameters, the area under the curve and the maximum
-  height. The area under the curve is estimated as the sum
-  of the areas given by the trapezoids defined by each pair
-  of adjacent time points. The maximum height is just the
-  result of \code{max}. By default, however, the median
-  bootstrap value is preferred as point estimate over the
-  real point estimate.} }}
+  \item{method}{Character scalar. The aggregation method to
+  use. Currently only the following methods are supported:
+  \describe{ \item{grofit}{The \code{grofit} function in
+  the eponymous package, with spline fitting as default.}
+  \item{opm-fast}{The native, faster parameter estimation.
+  This will only yield two of the four parameters, the area
+  under the curve and the maximum height. The area under
+  the curve is estimated as the sum of the areas given by
+  the trapezoids defined by each pair of adjacent time
+  points. The maximum height is just the result of
+  \code{max}. By default, however, the median bootstrap
+  value is preferred as point estimate over the real point
+  estimate.} }}
+
+  \item{program}{Deprecated. Use \sQuote{method} instead.
+  If provided, \sQuote{program} has precedence over
+  \sQuote{method}, but \sQuote{program} will eventually be
+  removed.}
 
   \item{plain}{Logical scalar. If \code{TRUE}, only the
   aggregated values are returned (as a matrix, for details
@@ -68,9 +73,9 @@
   than the one returned by \code{\link{aggregated}} but
   with an additional \sQuote{settings} attribute containing
   the (potentially modified) list proved via the
-  \code{settings} argument, and a \sQuote{program}
-  attribute corresponding to the \code{program} argument.
-  The matrix method returns a matrix.
+  \code{settings} argument, and a \sQuote{method} attribute
+  corresponding to the \code{method} argument. The matrix
+  method returns a matrix.
 }
 \description{
   Aggregate the kinetic data using curve-parameter
@@ -81,16 +86,30 @@
   \code{\link{OPMA}} object together with previously
   collected information.
 }
+\details{
+  Behaviour is special if the \code{\link{plate_type}} is
+  one of those that have to be explicitly set using
+  \code{\link{gen_iii}} and there is just one point
+  measurement. Because this behaviour is usual for plates
+  measured either in Generation-III (identification) mode
+  or on a
+  MicroStation\eqn{\textsuperscript{\texttrademark}}{(TM)},
+  the point estimate is simply regarded as \sQuote{A}
+  parameter (maximum height) and all other parameters are
+  set to \code{NA}.
+}
 \note{
-  \itemize{ \item The \sQuote{OPMS} method just applies the
-  \sQuote{OPM} method to each contained plate in turn;
-  there are not interdependencies.  \item Examples with
-  \code{plain = TRUE} are not given, as only the return
-  value is different: Let \code{x} be the normal result of
-  \code{do_aggr()}. The matrix returned if \code{plain} is
-  \code{TRUE} could then be received using
-  \code{aggregated(x)}, whereas the \sQuote{program} and
-  the \sQuote{settings} attributes could be obtained as
+  \itemize{ \item The aggregated values can be queried for
+  using \code{\link{has_aggr}} and received using
+  \code{\link{aggregated}}.  \item The \sQuote{OPMS} method
+  just applies the \sQuote{OPM} method to each contained
+  plate in turn; there are not inter-dependencies.  \item
+  Examples with \code{plain = TRUE} are not given, as only
+  the return value is different: Let \code{x} be the normal
+  result of \code{do_aggr()}. The matrix returned if
+  \code{plain} is \code{TRUE} could then be received using
+  \code{aggregated(x)}, whereas the \sQuote{method} and the
+  \sQuote{settings} attributes could be obtained as
   components of the list returned by
   \code{aggr_settings(x)}. }
 }
@@ -99,19 +118,21 @@
 data(vaas_1)
 
 # Run a fast estimate of A and AUC without bootstrapping
-copy <- do_aggr(vaas_1, program = "opm-fast", boot = 0,
+copy <- do_aggr(vaas_1, method = "opm-fast", boot = 0,
   options = list(as.pe = "pe"))
+aggr_settings(vaas_1)
+aggr_settings(copy)
 stopifnot(has_aggr(vaas_1), has_aggr(copy))
-stopifnot(identical(aggr_settings(vaas_1)$program, "grofit"))
-stopifnot(identical(aggr_settings(copy)$program, "opm-fast"))
 
 # Compare the results to the ones precomputed with grofit
+# (1) A
 a.grofit <- aggregated(vaas_1, "A", ci = FALSE)
 a.fast <-  aggregated(copy, "A", ci = FALSE)
 plot(a.grofit, a.fast)
 stopifnot(cor.test(a.fast, a.grofit)$estimate > 0.999)
+# (2) AUC
 auc.grofit <- aggregated(vaas_1, "AUC", ci = FALSE)
-auc.fast <-  aggregated(copy, "AUC", ci = FALSE)
+auc.fast <- aggregated(copy, "AUC", ci = FALSE)
 plot(auc.grofit, auc.fast)
 stopifnot(cor.test(auc.fast, auc.grofit)$estimate > 0.999)
 
@@ -171,7 +192,8 @@ stopifnot(mode(y) == "numeric")
 \alias{do_aggr,OPMS-method}
 \usage{
   \S4method{do_aggr}{OPM}(object, boot = 100L, verbose = FALSE,
-    cores = 1L, options = list(), program = "grofit", plain = FALSE) 
+    cores = 1L, options = list(), method = "grofit", plain = FALSE,
+    program = method) 
 
   \S4method{do_aggr}{matrix}(object, by, fun, sep = ".", ...) 
 

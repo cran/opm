@@ -30,11 +30,14 @@
   is encountered. An error is raised if this is impossible
   (in contrast to \sQuote{try}).}
 
-  \item{gen.iii}{Logical scalar. If \code{TRUE}, invoke
-  \code{\link{gen_iii}} on each plate. This is
-  automatically done with CSV input if the plate type is
-  given as \sQuote{OTH} (which is usually the case for
-  plates run in ID mode).}
+  \item{gen.iii}{Logical or character scalar. If
+  \code{TRUE}, invoke \code{\link{gen_iii}} on each plate.
+  This is automatically done with \acronym{CSV} input if
+  the plate type is given as \sQuote{OTH} (which is usually
+  the case for plates run in ID mode). If a character
+  scalar, it is used as the \code{to} argument of
+  \code{\link{gen_iii}} to set other plate types unless it
+  is empty.}
 
   \item{include}{Pattern for selecting from the input
   files. The default value results in the output of
@@ -51,27 +54,31 @@
 }
 \value{
   \code{\link{OPM}} object (maybe \code{\link{OPMA}} in
-  case of YAML input), or list of such objects, or
-  \code{\link{OPMS}} object. If \code{demo} is \code{TRUE},
-  a character vector instead.
+  case of \acronym{YAML} input), or list of such objects,
+  or \code{\link{OPMS}} object. If \code{demo} is
+  \code{TRUE}, a character vector instead.
 }
 \description{
-  Read OmniLog(R) or \pkg{opm} data file(s) in one of three
-  possible formats: either new- or old-style OmniLog(R) CSV
-  or \pkg{opm} YAML format. Files compressed using gzip,
-  bzip2 or lzma/xz are also understood (but may be excluded
-  using \code{include} and/or \code{exclude}).
+  Read OmniLog\eqn{\textsuperscript{\textregistered}}{(R)}
+  or \pkg{opm} data file(s) in one of three possible
+  formats: either new- or old-style
+  OmniLog\eqn{\textsuperscript{\textregistered}}{(R)}
+  \acronym{CSV} or \pkg{opm} \acronym{YAML} format. Files
+  compressed using \command{gzip}, \command{bzip2},
+  \command{lzma} or \command{xz} are also understood (but
+  may be excluded using \code{include} and/or
+  \code{exclude}).
 }
 \note{
-  Regarding the CSV format, see the remark to
+  Regarding the \acronym{CSV} format, see the remark to
   \code{\link{read_single_opm}}. For splitting lists of
   \code{\link{OPM}} objects according to the plate type,
   see \code{\link{plate_type}}, and consider the plate-type
   selection options of \code{\link{opms}}.
 }
 \examples{
-test.files <- grep("Multiple", opm_files("testdata"), invert = TRUE,
-  value = TRUE, fixed = TRUE)
+test.files <- grep("Multiple|Ecoplate", opm_files("testdata"), invert = TRUE,
+  value = TRUE, perl = TRUE)
 if (length(test.files) > 0L) { # if the folder is found
   x <- read_opm(test.files, demo = TRUE) # check first what you would get
   stopifnot(identical(test.files, x))

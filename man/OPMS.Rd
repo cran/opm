@@ -4,13 +4,14 @@
 \alias{OPMS-class}
 \title{OPMS class}
 \description{
-  Class for holding multi-plate OmniLog(R) phenotype
-  microarray data with or without aggregated values. The
-  data may have been obtained from distinct organisms
-  and/or replicates, but \strong{must} correspond to the
-  same plate type and \strong{must} contain the same wells.
-  Regarding the name: \sQuote{OPMS} is just the plural of
-  \sQuote{OPM}.
+  Class for holding multi-plate
+  OmniLog\eqn{\textsuperscript{\textregistered}}{(R)}
+  phenotype microarray data with or without aggregated
+  values. The data may have been obtained from distinct
+  organisms and/or replicates, but \strong{must} correspond
+  to the same plate type and \strong{must} contain the same
+  wells. Regarding the name: \acronym{OPMS} is just the
+  plural of \acronym{OPM}.
 }
 \details{
   Objects of this class are usually created by calling
@@ -22,12 +23,10 @@
 \note{
   As a rule, OPMS has the same methods as the
   \code{\link{OPM}} class, but adapted to a collection of
-  more than one \code{\link{OPM}} object.  Only the
-  additional ones and those with special arguments and/or
-  behaviors are documented in detail. Also, OPMS can hold
-  \code{\link{OPMA}} as well as \code{\link{OPM}} objects,
-  even though this is not indicated for all its methods in
-  this manual.
+  more than one \code{\link{OPM}} object.  Also, OPMS can
+  hold \code{\link{OPMD}} and \code{\link{OPMA}} as well as
+  \code{\link{OPM}} objects, even though this is not
+  indicated for all its methods in this manual.
 }
 \seealso{
   methods::Methods methods::new

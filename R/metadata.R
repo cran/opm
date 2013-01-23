@@ -6,15 +6,14 @@
 #
 
 
-setGeneric("include_metadata",
-  function(object, ...) standardGeneric("include_metadata"))
 #' Add metadata (from file or data frame)
 #'
-#' Include metadata by mapping CSV data and column names in a data frame.
+#' Include metadata by mapping \acronym{CSV} data and column names in a data
+#' frame.
 #'
 #' @param object \code{\link{OPM}} object.
-#' @param md Dataframe containing keys as column names, or name of file
-#'   from which to read the data frame. Handled by \code{\link{to_metadata}}.
+#' @param md Dataframe containing keys as column names, or name of file from
+#'   which to read the data frame. Handled by \code{\link{to_metadata}}.
 #' @param keys Character vector.
 #' @param replace Logical scalar indicating whether the previous metadata, if
 #'   any, shall be replaced by the novel ones, or whether these shall be
@@ -36,6 +35,9 @@ setGeneric("include_metadata",
 #' stopifnot(is.null(metadata(vaas_1, "Location")))
 #' stopifnot(identical(metadata(copy, "Location"), "Braunschweig"))
 #'
+setGeneric("include_metadata",
+  function(object, ...) standardGeneric("include_metadata"))
+
 setMethod("include_metadata", OPM, function(object, md,
     keys = opm_opt("csv.keys"), replace = FALSE, skip.failure = FALSE,
     remove.keys = TRUE, ...) {
@@ -53,10 +55,10 @@ setMethod("include_metadata", OPM, function(object, md,
   msg <- if ((nr <- nrow(found)) == 1L)
     NULL
   else if (nr == 0L)
-    pkgutils::listing(selection,
+    listing(selection,
       header = "could not find this key/value combination in 'metadata':")
   else
-    pkgutils::listing(selection,
+    listing(selection,
       header = "the selection resulted in more than one row for:")
 
   # Failures.
@@ -89,50 +91,43 @@ setMethod("include_metadata", OPMS, function(object, ...) {
 
 
 ################################################################################
-################################################################################
-#
-# Setter methods
-#
 
 
-setGeneric("metadata<-",
-  function(object, key, ..., value) standardGeneric("metadata<-"))
 #' Replace metadata
 #'
 #' Set the meta-information stored together with the data. The
 #' \code{\link{OPMS}} methods set the meta-information stored together with the
-#' measurements for all plates at once (but can address the plates
-#' individually if \code{value} is a formula or a data frame, see below).
+#' measurements for all plates at once (but can address the plates individually
+#' if \code{value} is a formula or a data frame, see below).
 #'
 #' @name metadata.set
 #' @aliases metadata<-
 #'
 #' @param object \code{\link{WMD}} or \code{\link{OPMS}} object..
-#' @param key Missing, numeric scalar, character vector, factor, or list.
-#'   If missing, replace all metadata by \code{value} (unless \code{value} is
-#'   a formula that specifies the key to replace).
-#'   If a numeric scalar, then if positive, prepend \code{value} to
-#'   old metadata. If negative, append \code{value} to old metadata. If zero,
-#'   replace old metadata entirely by \code{value}.
-#'   If a list, treat it as list of keys; expect \code{value} to be a list
-#'   of corresponding metadata values to be set. Names are replaced by the
-#'   values of either list if they are missing.
-#'   If a character vector, use it as key and set/replace this metadata
-#'   entry to/by \code{value}. It is an error if \code{key} has zero length.
-#'   If it contains more than one entry, a nested query is done. See \code{[[}
-#'   from the \pkg{base} package for details. The factor method calls the
-#'   character method after converting \code{key} to mode \sQuote{character}.
+#' @param key Missing, numeric scalar, character vector, factor, or list. If
+#'   missing, replace all metadata by \code{value} (unless \code{value} is a
+#'   formula that specifies the key to replace). If a numeric scalar, then if
+#'   positive, prepend \code{value} to old metadata. If negative, append
+#'   \code{value} to old metadata. If zero, replace old metadata entirely by
+#'   \code{value}. If a list, treat it as list of keys; expect \code{value} to
+#'   be a list of corresponding metadata values to be set. Names are replaced by
+#'   the values of either list if they are missing. If a character vector, use
+#'   it as key and set/replace this metadata entry to/by \code{value}. It is an
+#'   error if \code{key} has zero length. If it contains more than one entry, a
+#'   nested query is done. See \code{[[} from the \pkg{base} package for
+#'   details. The factor method calls the character method after converting
+#'   \code{key} to mode \sQuote{character}.
 #' @param value If \code{key} is a character vector, this can be arbitrary
-#'   value(s) to be included in the metadata (if \code{NULL}, this
-#'   metadata entry is deleted). If \code{key} is otherwise, \code{value} must
-#'   be list of values to be prepended, appended or set as metadata,
-#'   either entirely or specifically, depending on \code{key}. Formulas can
-#'   also be used as \code{value}. In that case, the formula can specify the
-#'   key to be replaced. See the examples below and \code{\link{map_values}}
-#'   for details. If \code{object} is of class \sQuote{OPMS}, \code{value} can
-#'   be a data frame whose number of rows must be equal to the number of
-#'   plates. Metadata to be set will then be selected from each individual row
-#'   in turn and in input order.
+#'   value(s) to be included in the metadata (if \code{NULL}, this metadata
+#'   entry is deleted). If \code{key} is otherwise, \code{value} must be list of
+#'   values to be prepended, appended or set as metadata, either entirely or
+#'   specifically, depending on \code{key}. Formulas can also be used as
+#'   \code{value}. In that case, the formula can specify the key to be replaced.
+#'   See the examples below and \code{\link{map_values}} for details. If
+#'   \code{object} is of class \sQuote{OPMS}, \code{value} can be a data frame
+#'   whose number of rows must be equal to the number of plates. Metadata to be
+#'   set will then be selected from each individual row in turn and in input
+#'   order.
 #'
 #' @return \code{value}.
 #' @export
@@ -237,6 +232,11 @@ setGeneric("metadata<-",
 #' # if keys do not match, the entire data-frame rows are included
 #' metadata(copy, "Type2") <- x
 #' stopifnot(!identical(metadata(copy, "Type2"), x$Type))
+#'
+setGeneric("metadata<-",
+  function(object, key, ..., value) standardGeneric("metadata<-"))
+
+#' @name metadata.set
 #'
 setMethod("metadata<-", c(WMD, "missing", "list"), function(object, value) {
   object@metadata <- value
@@ -373,41 +373,34 @@ setMethod("metadata<-", c(OPMS, "factor", "data.frame"), function(
 
 
 ################################################################################
-################################################################################
-#
-# Metadata mapping
-#
 
 
-setGeneric("map_metadata",
-  function(object, mapping, ...) standardGeneric("map_metadata"))
 #' Map metadata
 #'
 #' Modify meta-information stored together with the measurements by using a
 #' function (this is just a wrapper for \code{rapply}, with \code{how} set to
 #' \sQuote{replace}, if \code{values} is \code{TRUE}) or a \sQuote{character}
-#' vector-based mapping.
-#' The \code{\link{OPMS}} method applies this to all plates in turn
-#' and returns an \code{\link{OPMS}} object with accordingly modified
-#' metadata.
+#' vector-based mapping. The \code{\link{OPMS}} method applies this to all
+#' plates in turn and returns an \code{\link{OPMS}} object with accordingly
+#' modified metadata.
 #'
 #' @param object \code{\link{WMD}} object or \code{\link{OPMS}} object.
 #' @param mapping A function. It is applied to all non-list elements of
 #'   \code{\link{metadata}}, which is traversed recursively. Alternatively, a
-#'   character vector. See \code{\link{map_values}} for usage
-#'   details. \code{\link{metadata_chars}} can be used to create a template
-#'   for such a vector. \code{mapping} can also be a formula; in that case,
-#'   \code{\link{metadata}} is replaced by the result of the list+formula
-#'   method of \code{\link{map_values}}. If the left side of the formula is
-#'   missing, the entire metadata are replaced by the result, which is an
-#'   error if the result is not a list.
+#'   character vector. See \code{\link{map_values}} for usage details.
+#'   \code{\link{metadata_chars}} can be used to create a template for such a
+#'   vector. \code{mapping} can also be a formula; in that case,
+#'   \code{\link{metadata}} is replaced by the result of the list+formula method
+#'   of \code{\link{map_values}}. If the left side of the formula is missing,
+#'   the entire metadata are replaced by the result, which is an error if the
+#'   result is not a list.
 #' @param values Logical scalar. If \code{FALSE}, metadata names, not values,
 #'   are mapped, and \code{classes} is ignored (names are always of class
 #'   \sQuote{character}).
 #' @param classes Character vector or (for the character vector-based mapping)
 #'   \code{TRUE}. For the mapping with a function or vector, this specifies the
-#'   classes in addition to \sQuote{character} that are mapped (after
-#'   converting to \sQuote{character} mode). If \code{classes} is \code{TRUE},
+#'   classes in addition to \sQuote{character} that are mapped (after converting
+#'   to \sQuote{character} mode). If \code{classes} is \code{TRUE},
 #'   \code{mapping} is treated as a mapping between class names, and the
 #'   according conversions are applied. See the \code{coerce} argument of
 #'   \code{\link{map_values}} for details.
@@ -479,6 +472,9 @@ setGeneric("map_metadata",
 #' (x <- setdiff(metadata_chars(copy), metadata_chars(vaas_4)))
 #' stopifnot(length(x) == 4) # one entry per plate
 #'
+setGeneric("map_metadata",
+  function(object, mapping, ...) standardGeneric("map_metadata"))
+
 setMethod("map_metadata", c(WMD, "function"), function(object, mapping,
     values = TRUE, classes = "ANY", ...) {
   object@metadata <- if (L(values))
@@ -503,8 +499,6 @@ setMethod("map_metadata", c(WMD, "formula"), function(object, mapping) {
   object
 }, sealed = SEALED)
 
-#-------------------------------------------------------------------------------
-
 setMethod("map_metadata", c(OPMS, "ANY"), function(object, mapping, ...) {
   object@plates <- lapply(object@plates, FUN = map_metadata, mapping = mapping,
     ...)
@@ -513,13 +507,8 @@ setMethod("map_metadata", c(OPMS, "ANY"), function(object, mapping, ...) {
 
 
 ################################################################################
-################################################################################
-#
-# Metadata characters
-#
 
-setGeneric("metadata_chars",
-  function(object, ...) standardGeneric("metadata_chars"))
+
 #' Get metadata characters
 #'
 #' Collect all \sQuote{character} entries from the meta-information stored
@@ -561,6 +550,9 @@ setGeneric("metadata_chars",
 #' (y <- metadata_chars(vaas_4, values = FALSE)) # the keys
 #' stopifnot(length(x) > length(y))
 #'
+setGeneric("metadata_chars",
+  function(object, ...) standardGeneric("metadata_chars"))
+
 setMethod("metadata_chars", WMD, function(object, values = TRUE,
     classes = "factor") {
   if (L(values))

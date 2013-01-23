@@ -1,9 +1,9 @@
 \docType{data}
 \name{vaas_4}
 \alias{vaas_4}
-\title{Example dataset from Vaas et al. (2012), four selected plates}
-\format{\code{\link{OPMS}} object with the dimensions 4 x 384 x 96, i.e.
-  4 plates with 384 time points and 96 wells per plate.}
+\title{Example data set from Vaas et al. (2012), four selected plates}
+\format{\code{\link{OPMS}} object with the dimensions 4 x 384 x 96, i.e. 4
+  plates with 384 time points and 96 wells per plate.}
 \description{
   This \code{\link{OPMS}} object contains measurements from
   four selected plates from the study by Vaas et al.

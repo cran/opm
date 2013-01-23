@@ -56,22 +56,30 @@
   \code{\link{read_opm}}.
 }
 \examples{
-# Testing distinct OPM/OPMS combinations -- all should work
+## Testing distinct OPM/OPMS combinations -- all should work
 data(vaas_1, vaas_4)
+
 (x <- opms())
 stopifnot(is.null(x))
+
 summary((x <- opms(vaas_1)))
 stopifnot(identical(x, vaas_1))
+
 summary((x <- opms(vaas_4, group = plate_type(vaas_4))))
 stopifnot(identical(x, vaas_4))
+
 summary((x <- opms(vaas_4, group = "PM01")))
 stopifnot(is.null(x))
+
 summary(x <- opms(vaas_1, vaas_1))
 stopifnot(is(x, "OPMS"), length(x) == 2L)
+
 summary(x <- opms(vaas_4, vaas_1))
 stopifnot(is(x, "OPMS"), length(x) == 5L)
+
 summary(x <- opms(vaas_1, vaas_4))
 stopifnot(is(x, "OPMS"), length(x) == 5L)
+
 summary(x <- opms(vaas_4, vaas_4))
 stopifnot(is(x, "OPMS"), length(x) == 8L)
 }

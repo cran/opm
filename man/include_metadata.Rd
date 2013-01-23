@@ -29,8 +29,8 @@
   Novel \code{\link{OPM}} object.
 }
 \description{
-  Include metadata by mapping CSV data and column names in
-  a data frame.
+  Include metadata by mapping \acronym{CSV} data and column
+  names in a data frame.
 }
 \examples{
 data(vaas_1)
@@ -42,7 +42,7 @@ stopifnot(identical(metadata(copy, "Location"), "Braunschweig"))
 }
 \seealso{
   Other metadata-functions: \code{\link{map_metadata}},
-  \code{\link{metadata.set}},             \code{\link{metadata_chars}}
+  \code{\link{metadata.set}},               \code{\link{metadata_chars}}
 }
 \keyword{manip}
 

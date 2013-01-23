@@ -5,7 +5,7 @@
   \item{object}{\code{\link{OPM}} object.}
 
   \item{i}{Character or numeric vector with name(s) or
-  position(s) of well(s). Wells are originally named
+  position(s) of well(s).  Wells are originally named
   \sQuote{A01} to \sQuote{H12} but might have been subset
   beforehand.}
 
@@ -53,7 +53,7 @@ stopifnot(is.matrix(x), dim(x) == c(4, 384))
   \code{\link{metadata}}, \code{\link{minmax}},
   \code{\link{plate_type}}, \code{\link{position}},
   \code{\link{select}}, \code{\link{seq}},
-  \code{\link{setup_time}}, \code{\link{show}},
+  \code{\link{setup_time}}, \code{\link{subset}},
   \code{\link{summary}}, \code{\link{wells}}
 }
 \keyword{attribute}

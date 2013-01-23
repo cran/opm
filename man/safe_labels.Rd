@@ -2,10 +2,10 @@
 \alias{safe_labels}
 \title{Safe labels}
 \usage{
-  safe_labels(chars, format, enclose = TRUE, pad = FALSE)
+  safe_labels(x, format, enclose = TRUE, pad = FALSE)
 }
 \arguments{
-  \item{chars}{Character vector or convertible to such.}
+  \item{x}{Character vector or convertible to such.}
 
   \item{format}{Character scalar. See
   \code{\link{phylo_data}}.}
@@ -46,7 +46,8 @@ stopifnot(grepl("^'.*'$", y))
 \seealso{
   base::gsub
 
-  Other phylogeny-functions: \code{\link{phylo_data}}
+  Other phylogeny-functions: \code{\link{html_args}},
+  \code{\link{phylo_data}}
 }
 \keyword{character}
 

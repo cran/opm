@@ -11,9 +11,9 @@
   Character scalar.
 }
 \description{
-  Get the name of the original CSV input file. This is a
-  convenience function for one of the more important
-  entries of \code{\link{csv_data}}.
+  Get the name of the original \acronym{CSV} input file.
+  This is a convenience function for one of the more
+  important entries of \code{\link{csv_data}}.
 }
 \examples{
 # 'OPM' method
@@ -38,7 +38,7 @@ stopifnot(is.character(x), length(x) == 4L)
   \code{\link{minmax}}, \code{\link{plate_type}},
   \code{\link{position}}, \code{\link{select}},
   \code{\link{seq}}, \code{\link{setup_time}},
-  \code{\link{show}}, \code{\link{summary}},
+  \code{\link{subset}}, \code{\link{summary}},
   \code{\link{well}}, \code{\link{wells}}
 }
 \keyword{attribute}

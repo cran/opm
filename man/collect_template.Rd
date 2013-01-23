@@ -6,22 +6,23 @@
   \code{\link{OPMS}} object. If a character vector is
   provided, it acts like the \code{names} argument of
   \code{\link{read_opm}}. That is, if it is a directory
-  name, this is automatically scanned for all CSV and YAML
-  files it contains (unless restrictions with patterns are
-  made). One can also provide file names, or a mixture of
-  file and directory names.}
+  name, this is automatically scanned for all \acronym{CSV}
+  and \acronym{YAML} files it contains (unless restrictions
+  with patterns are made). One can also provide file names,
+  or a mixture of file and directory names.}
 
   \item{outfile}{Character scalar. Ignored if \code{NULL}
   or empty string.  Otherwise, interpreted as the name of a
-  CSV output file. If metadata have already been collected
-  in an older file with the same name, old metadata will be
-  kept, identifiers for novel files will be included, their
-  so far empty entries set to \code{NA}. Users who wish to
-  keep the old version can use two distinct names for novel
-  and old files; see \code{previous}.}
+  \acronym{CSV} output file. If metadata have already been
+  collected in an older file with the same name, old
+  metadata will be kept, identifiers for novel files will
+  be included, their so far empty entries set to \code{NA}.
+  Users who wish to keep the old version can use two
+  distinct names for novel and old files; see
+  \code{previous}.}
 
-  \item{sep}{Character scalar. CSV field separator for
-  \code{outfile}.}
+  \item{sep}{Character scalar. \acronym{CSV} field
+  separator for \code{outfile}.}
 
   \item{previous}{Ignored if \code{NULL}. Otherwise passed
   to \code{\link{to_metadata}}. If it is a filename
@@ -36,9 +37,9 @@
   not empty, names of columns to be added, initially
   containing \code{NA}.}
 
-  \item{selection}{Elements to be extracted from the CSV
-  comments contained in each file. Character vector passed
-  to \code{\link{csv_data}}.}
+  \item{selection}{Elements to be extracted from the
+  \acronym{CSV} comments contained in each file. Character
+  vector passed to \code{\link{csv_data}}.}
 
   \item{include}{File inclusion pattern (or generator for a
   pattern). Passed to \code{\link{batch_collect}}.}
@@ -62,25 +63,27 @@
   one row per contained plate.
 }
 \description{
-  Collect a metadata template from OmniLog(R) CSV comments
-  assisting in later on adding metadata using
-  \code{\link{include_metadata}}. The character method
-  batch-collects such information from files and optionally
-  add these data as novel rows to previously collected
-  data. It writes the collected template to a file for use
-  with an external editor, and/or creates a data frame for
-  editing the data directly in \R with the \code{edit}
-  function. The \code{\link{OPM}} and \code{\link{OPMS}}
-  methods collect a data frame.
+  Collect a metadata template from
+  OmniLog\eqn{\textsuperscript{\textregistered}}{(R)}
+  \acronym{CSV} comments assisting in later on adding
+  metadata using \code{\link{include_metadata}}. The
+  character method batch-collects such information from
+  files and optionally add these data as novel rows to
+  previously collected data. It writes the collected
+  template to a file for use with an external editor,
+  and/or creates a data frame for editing the data directly
+  in \R with the \code{edit} function. The
+  \code{\link{OPM}} and \code{\link{OPMS}} methods collect
+  a data frame.
 }
 \note{
-  Regarding the CSV format, see the remark to
+  Regarding the \acronym{CSV} format, see the remark to
   \code{\link{read_single_opm}}.
 }
 \examples{
 # Character method
-test.files <- grep("Multiple", opm_files("testdata"), invert = TRUE,
-  value = TRUE, fixed = TRUE)
+test.files <- grep("Multiple|Ecoplate", opm_files("testdata"), invert = TRUE,
+  value = TRUE, perl = TRUE)
 if (length(test.files) > 0) {
 
   # Without writing to a file

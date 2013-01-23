@@ -24,20 +24,20 @@
 }
 \examples{
 # Character method; compare correct and misspelled substrate name
-(x <- find_positions(c("a-D-Glucose", "a-D-Gloucose")))
+(x <- find_positions(c("D-Glucose", "D-Gloucose")))
 stopifnot(length(x[[1]]) > length(x[[2]]))
 
 # Factor method
-(y <- find_positions(as.factor(c("a-D-Glucose", "a-D-Gloucose"))))
+(y <- find_positions(as.factor(c("D-Glucose", "D-Gloucose"))))
 stopifnot(identical(y, x))
 
 # List method
-(x <- find_positions(find_substrate(c("a-D-Glucose", "a-D-Gloucose"))))
+(x <- find_positions(find_substrate(c("D-Glucose", "D-Gloucose"))))
 stopifnot(length(x[[1]]) > length(x[[2]]))
 }
 \seealso{
   Other naming-functions: \code{\link{find_substrate}},
-  \code{\link{substrate_info}},
+  \code{\link{listing}}, \code{\link{substrate_info}},
   \code{\link{well_to_substrate}}
 }
 \keyword{utilities}

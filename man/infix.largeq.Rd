@@ -7,7 +7,7 @@
   If a character vector, the result is identical to the one
   of \code{\link{infix.q}} except for the fact that
   metadata elements are not coerced to \sQuote{character}
-  mode, making the query more strict.  If a list, the
+  mode, making the query more strict. If a list, the
   comparison is applied recursively using
   \code{\link{contains}} with the arguments \code{values}
   and \code{exact} set to \code{TRUE}. This might be too

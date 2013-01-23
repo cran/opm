@@ -12,7 +12,8 @@
   \code{\link{OPM}} object.
 }
 \description{
-  Read OmniLog(R) data from single CSV file in novel (2011)
+  Read OmniLog\eqn{\textsuperscript{\textregistered}}{(R)}
+  data from single \acronym{CSV} file in novel (2011)
   format.
 }
 \references{

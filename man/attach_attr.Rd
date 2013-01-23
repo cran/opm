@@ -14,6 +14,10 @@
   measurements, to another object. Useful in conversions
   (coercions).
 }
+\note{
+  This method is deliberately \strong{not} defined for
+  \code{\link{OPMS}} objects.
+}
 \keyword{internal}
 
 \docType{methods}

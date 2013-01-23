@@ -14,18 +14,21 @@
   The settings used for discretizing the aggregated kinetic
   data.
 }
+\note{
+  See \code{\link{do_disc}} for generating discretized
+  data.
+}
 \examples{
 # 'OPM' method
 data(vaas_1)
-summary(x <- disc_settings(vaas_1))
-stopifnot(is.list(x), identical(names(x), c("program", "options")))
-stopifnot(identical(x$program, "kmeans"))
+(x <- disc_settings(vaas_1))
+stopifnot(is.list(x), !is.null(names(x)))
 
 # 'OPMS' method
 data(vaas_4)
 summary(x <- disc_settings(vaas_4))
 stopifnot(is.list(x), is.null(names(x)), length(x) == length(vaas_4))
-stopifnot(identical(x[[1]]$program, "kmeans"), duplicated(x)[-1])
+stopifnot(duplicated(x)[-1])
 }
 \seealso{
   Other getter-functions: \code{\link{aggr_settings}},
@@ -39,7 +42,7 @@ stopifnot(identical(x[[1]]$program, "kmeans"), duplicated(x)[-1])
   \code{\link{minmax}}, \code{\link{plate_type}},
   \code{\link{position}}, \code{\link{select}},
   \code{\link{seq}}, \code{\link{setup_time}},
-  \code{\link{show}}, \code{\link{summary}},
+  \code{\link{subset}}, \code{\link{summary}},
   \code{\link{well}}, \code{\link{wells}}
 }
 \keyword{attribute}

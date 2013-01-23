@@ -35,6 +35,11 @@
   \item{paren.sep}{Character scalar. What to insert before
   the opening parenthesis (or bracket).}
 
+  \item{downcase}{Logical scalar indicating whether full
+  names should be (carefully) converted to lower case. This
+  uses \code{\link{substrate_info}} in \sQuote{downcase}
+  mode; see there for details.}
+
   \item{...}{Optional arguments passed between the
   methods.}
 }
@@ -77,7 +82,7 @@ stopifnot(identical(x, xx))
   \code{\link{metadata}}, \code{\link{minmax}},
   \code{\link{plate_type}}, \code{\link{position}},
   \code{\link{select}}, \code{\link{seq}},
-  \code{\link{setup_time}}, \code{\link{show}},
+  \code{\link{setup_time}}, \code{\link{subset}},
   \code{\link{summary}}, \code{\link{well}}
 }
 \keyword{attribute}
@@ -89,7 +94,7 @@ stopifnot(identical(x, xx))
 \usage{
   \S4method{wells}{OPM}(object, full = FALSE, in.parens = TRUE,
     max = 100L, brackets = FALSE, clean = TRUE, word.wise = FALSE,
-    paren.sep = " ") 
+    paren.sep = " ", downcase = FALSE) 
 
   \S4method{wells}{OPMS}(object, ...) 
 

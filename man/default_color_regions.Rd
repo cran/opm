@@ -6,7 +6,7 @@
 }
 \arguments{
   \item{colors}{Character or integer vector with at least
-  two distinct colours. If \code{NULL} or empty, default
+  two distinct colours.  If \code{NULL} or empty, default
   colours are chosen.}
 
   \item{space}{Passed to \code{colorRampPalette}.}

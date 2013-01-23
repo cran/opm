@@ -4,11 +4,12 @@
 \alias{OPMD-class}
 \title{OPMD class}
 \description{
-  Class for holding single-plate OmniLog(R) phenotype
-  microarray data together with aggregated and discretized
-  values. For further details see its parent class,
-  \code{\link{OPMA}}. \sQuote{OPMD} is an acronym for
-  \sQuote{OPM, discretized}.
+  Class for holding single-plate
+  OmniLog\eqn{\textsuperscript{\textregistered}}{(R)}
+  phenotype microarray data together with aggregated and
+  discretized values. For further details see its parent
+  class, \code{\link{OPMA}}. \acronym{OPMD} is an acronym
+  for \sQuote{\acronym{OPM}, discretized}.
 }
 \details{
   Objects of this class are usually created by calling

@@ -16,6 +16,9 @@
   returns \code{FALSE} for the \code{\link{OPM}} class, but
   not necessarily for its child classes.
 }
+\note{
+  See \code{\link{do_aggr}} for generating aggregated data.
+}
 \examples{
 # 'OPM' method
 data(vaas_1)
@@ -37,7 +40,7 @@ stopifnot(has_aggr(vaas_4))
   \code{\link{minmax}}, \code{\link{plate_type}},
   \code{\link{position}}, \code{\link{select}},
   \code{\link{seq}}, \code{\link{setup_time}},
-  \code{\link{show}}, \code{\link{summary}},
+  \code{\link{subset}}, \code{\link{summary}},
   \code{\link{well}}, \code{\link{wells}}
 }
 \keyword{attribute}

@@ -16,30 +16,45 @@
   argument names are used as the keys for setting values.}
 }
 \value{
-  List or atomic vector.
+  List or atomic vector. If one to several values are set,
+  the previous entries are returned invisibly.
 }
 \description{
   Get and set global \pkg{opm} options.
 }
 \details{
   The following keys can be used with the following kinds
-  of values: \describe{ \item{color.borders}{Character
-  vector with default color borders between which
-  \code{\link{level_plot}} interpolates to obtain a colour
-  palette.} \item{csv.keys}{Character vector with names of
-  entries of \code{\link{csv_data}} be used by
+  of values: \describe{ \item{colors}{Default color set
+  used by the \code{\link{OPMS}} method of
+  \code{\link{xy_plot}} and other plotting functions.}
+  \item{color.borders}{Character vector with default color
+  borders between which \code{\link{level_plot}}
+  interpolates to obtain a colour palette.}
+  \item{css.file}{Character scalar. Default \acronym{CSS}
+  file linked by \code{\link{phylo_data}} when producing
+  \acronym{HTML} output. Ignored if empty.}
+  \item{csv.keys}{Character vector with names of entries of
+  \code{\link{csv_data}} be used by
   \code{\link{include_metadata}}.  Should be kept a subset
   of \code{opm_opt("csv.selection")}.}
   \item{csv.selection}{Character vector with names of
   entries of \code{\link{csv_data}} (must be a valid
   \sQuote{keys} argument) to be extracted by
-  \code{\link{collect_template}}.} \item{digits}{Integer
-  scalar. Number of digits used by some functions
-  generating output text.} \item{gen.iii}{Logical scalar
-  indicating whether \code{\link{read_opm}} and other IO
-  functions based on it automatically convert to Generation
-  III as plate type.} \item{phylo.fmt}{Character scalar
-  indicating the default output format used by
+  \code{\link{collect_template}}.}
+  \item{curve.param}{Character scalar. Default
+  \sQuote{subset} argument of \code{\link{extract}} and the
+  plotting functions.} \item{digits}{Integer scalar. Number
+  of digits used by some functions generating output text.}
+  \item{file.encoding}{Character scalar. Character encoding
+  in input files as assumed by \code{\link{read_opm}}.}
+  \item{gen.iii}{Character scalar indicating whether
+  \code{\link{read_opm}} and other IO functions based on it
+  automatically convert to this plate type. If empty,
+  nothing is changed.} \item{html.attr}{Used by
+  \code{\link{phylo_data}} for automatically creating
+  \acronym{HTML} \sQuote{title} and \sQuote{class}
+  attributes.} \item{phylo.fmt}{Character scalar indicating
+  the default output format used by
   \code{\link{phylo_data}}.} \item{split}{Character scalar
   indicating the default spliiting characters used by
   \code{\link{separate}}.} \item{time.zone}{Character
@@ -49,9 +64,7 @@
   parsed setup times} \item{time.fmt}{Character vector
   indicating the time formats used for parsing the
   \code{\link{setup_time}} entries (in the given order).
-  Also relevant for \code{\link{merge}} by default.}
-  \item{xy.colors}{Default color set used by the
-  \code{\link{OPMS}} method of \code{\link{xy_plot}}.} } It
+  Also relevant for \code{\link{merge}} by default.} } It
   is an error to set novel values whose classes are not
   identical to, or derived from, the classes of the old
   value. It is also an error to use a name that is not
@@ -60,24 +73,24 @@
 }
 \examples{
 # fetching a value
-(gen.3 <- opm_opt("gen.iii"))
-stopifnot(identical(gen.3, FALSE))
+(digits <- opm_opt("digits"))
+stopifnot(digits == 4)
 
 # setting a value; previous value is returned as list
-(old.opts <- opm_opt(gen.iii = TRUE))
+(old.opts <- opm_opt(digits = 5L))
 stopifnot(is.list(old.opts), length(old.opts) == 1L)
-stopifnot(identical(old.opts$gen.iii, FALSE))
+stopifnot(old.opts$digits == 4)
 
 # fetching the value again: should now be changed
-(gen.3 <- opm_opt("gen.iii"))
-stopifnot(isTRUE(gen.3))
+(digits <- opm_opt("digits"))
+stopifnot(digits == 5)
 
 # resetting the value
 (old.opts <- opm_opt(old.opts))
 stopifnot(is.list(old.opts), length(old.opts) == 1L)
-stopifnot(isTRUE(old.opts$gen.iii))
-(gen.3 <- opm_opt("gen.iii"))
-stopifnot(identical(gen.3, FALSE))
+stopifnot(old.opts$digits == 5)
+(digits <- opm_opt("digits"))
+stopifnot(digits == 4)
 }
 \seealso{
   base::options base::getOption

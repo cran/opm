@@ -12,8 +12,9 @@
   \code{\link{OPM}} object.
 }
 \description{
-  Read OmniLog(R) data from single pseudo-CSV file in the
-  old(pre-2011) format.
+  Read OmniLog\eqn{\textsuperscript{\textregistered}}{(R)}
+  data from single pseudo-\acronym{CSV} file in the old
+  (pre-2011) format.
 }
 \references{
   \url{http://www.biolog.com/}

@@ -15,6 +15,10 @@
   This yields the discretized values of the curve parameter
   \sQuote{maximum height}.
 }
+\note{
+  See \code{\link{do_disc}} for generating discretized
+  data.
+}
 \examples{
 # 'OPM' method
 data(vaas_1)
@@ -40,7 +44,7 @@ stopifnot(colnames(x) == colnames(aggregated(vaas_1)))
   \code{\link{minmax}}, \code{\link{plate_type}},
   \code{\link{position}}, \code{\link{select}},
   \code{\link{seq}}, \code{\link{setup_time}},
-  \code{\link{show}}, \code{\link{summary}},
+  \code{\link{subset}}, \code{\link{summary}},
   \code{\link{well}}, \code{\link{wells}}
 }
 \keyword{attribute}

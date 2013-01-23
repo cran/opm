@@ -8,7 +8,7 @@
   \code{\link{duplicated}}. The default is \code{FALSE}.}
 
   \item{...}{Optional further arguments passed to
-  \code{\link{duplicated}}.  See the examples.}
+  \code{\link{duplicated}}. See the examples.}
 }
 \value{
   \code{\link{OPMS}} or \code{\link{OPM}} object or

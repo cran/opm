@@ -11,7 +11,7 @@
   not directly applied by an \pkg{opm} user.
 }
 \details{
-  \itemize{ \item \sQuote{WMD} is an acronym for
+  \itemize{ \item \acronym{WMD} is an acronym for
   \sQuote{with metadata}.  \item Conceptually, this class
   treats metadata as arbitrarily nested lists with
   arbitrary content. Containers of objects that inherit
@@ -25,9 +25,11 @@
   \code{\link{OPM}} and the other \pkg{opm} classes that
   use it, \sQuote{metadata} refers to information that, in
   contrast to, e.g., \code{\link{csv_data}} must be added
-  by the user \strong{after} reading OmniLog(R) CSV files.
-  Metadata might already be present in YAML files created
-  by the \pkg{opm} package, however. }
+  by the user \strong{after} reading
+  OmniLog\eqn{\textsuperscript{\textregistered}}{(R)}
+  \acronym{CSV} files.  Metadata might already be present
+  in \acronym{YAML} files created by the \pkg{opm} package,
+  however. }
 }
 \seealso{
   methods::Methods

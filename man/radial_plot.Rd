@@ -65,10 +65,10 @@
 \description{
   A wrapper for \code{radial.plot} from the \pkg{plotrix}
   package with some adaptations likely to be useful for
-  OmniLog(R) data. The data frame and \sQuote{OPMS} methods
-  extract a numeric matrix from a given data frame or
-  \sQuote{OPMS} object and pass the result to the matrix
-  method.
+  OmniLog\eqn{\textsuperscript{\textregistered}}{(R)} data.
+  The data frame and \sQuote{OPMS} methods extract a
+  numeric matrix from a given data frame or \sQuote{OPMS}
+  object and pass the result to the matrix method.
 }
 \note{
   The default positioning of the legend is not necessarily
@@ -87,7 +87,7 @@ stopifnot(is.character(y), names(y) == rownames(x))
 
 # 'OPMS' method
 (yy <- radial_plot(vaas_4[, , 1:5], as.labels = list("Species", "Strain")))
-stopifnot(identical(y, yy))
+stopifnot(identical(y, yy)) # should also yield the same picture than above
 
 # Data-frame method
 x <- extract(vaas_4, as.labels = list("Species", "Strain"), dataframe = TRUE)
@@ -99,7 +99,8 @@ stopifnot(is.character(y), names(y) == paste(x$Species, x$Strain))
 
   Other plotting-functions: \code{\link{ci_plot}},
   \code{\link{heat_map}}, \code{\link{level_plot}},
-  \code{\link{select_colors}}, \code{\link{xy_plot}}
+  \code{\link{select_colors}}, \code{\link{show}},
+  \code{\link{xy_plot}}
 }
 \keyword{hplot}
 
@@ -111,13 +112,13 @@ stopifnot(is.character(y), names(y) == paste(x$Species, x$Strain))
 \usage{
   \S4method{radial_plot}{matrix}(object, rp.type = "p",
     radlab = FALSE, show.centroid = TRUE, show.grid.labels = 1, lwd = 3,
-    mar = c(2, 2, 2, 2), line.col = select_colors(), draw.legend = TRUE,
+    mar = c(2, 2, 2, 2), line.col = opm_opt("colors"), draw.legend = TRUE,
     x = "bottom", y = NULL, xpd = TRUE, pch = 15, legend.args = list(), ...) 
 
   \S4method{radial_plot}{data.frame}(object, as.labels, sep = " ",
     ...) 
 
-  \S4method{radial_plot}{OPMS}(object, as.labels, subset = "A",
-    sep = " ", extract.args = list(), ...) 
+  \S4method{radial_plot}{OPMS}(object, as.labels,
+    subset = opm_opt("curve.param"), sep = " ", extract.args = list(), ...) 
 
 }

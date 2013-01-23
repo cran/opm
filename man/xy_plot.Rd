@@ -11,7 +11,7 @@
   arguments of \code{\link{select_colors}} (for picking one
   of the predefined colour sets). It is an error if fewer
   colours are chosen than the number of plate grouping
-  levels (see the \code{\dots} argument below).  For
+  levels (see the \code{\dots} argument below). For
   user-chosen colour sets, keep in mind that the sets are
   not checked for duplicates, and see
   \code{max_rgb_contrast} from the \pkg{pkgutils} package
@@ -24,7 +24,7 @@
   baseline drawn in each panel. If \code{NULL} or
   \code{FALSE}, no baseline will be drawn. If \code{TRUE},
   the baseline's height is the value of
-  \code{\link{minmax}}.  If a character scalar,
+  \code{\link{minmax}}. If a character scalar,
   \code{neg.ctrl} is interpreted as the name of the wells
   regarded as negative control, and the baseline's height
   becomes the value of \code{\link{minmax}} applied to
@@ -38,7 +38,7 @@
   the baseline (ignored if no baseline is drawn).}
 
   \item{main}{The settings controlling the construction of
-  the main title.  If a list, a named list with the
+  the main title. If a list, a named list with the
   following entries (if missing, they are replaced by the
   respective defaults): \describe{ \item{predef}{Character
   scalar or expression. Predefined title. If set, the other
@@ -84,7 +84,7 @@
   colour by \sQuote{col}, the font by \sQuote{font} and the
   number of lines by \sQuote{lines}. The latter might be of
   interest in conjunction with the \code{paren.sep}
-  argument of \code{\link{wells}}.  See the argument
+  argument of \code{\link{wells}}. See the argument
   \sQuote{par.strip.text} of \code{xyplot} from the
   \pkg{lattice} package for details.}
 
@@ -109,14 +109,19 @@
   \code{include} is particularly important: the selected
   metadata are joined into a single factor, and the
   assignment of plates to this factor's levels determines
-  the curve colour for each plate. That is, each
+  the curve colour for each plate.  That is, each
   combination of metadata entries as chosen using
   \code{include} yields one colour. If no metadata are
   selected (the default), each plate gets a colour of its
-  own.  Also note that arguments passed via
+  own. Also note that arguments passed via
   \code{\link{flatten}} to \code{\link{wells}} can be given
   here which determine the content of the panel
   description.}
+
+  \item{f}{Formula (for the data-frame method).}
+
+  \item{groups}{Character vector (for the data-frame
+  method).}
 }
 \value{
   An object of class \sQuote{trellis}. See \code{xyplot}
@@ -134,6 +139,13 @@
   curve colours are determined according to the
   combinations of these metadata entries, otherwise each
   plate gets its own colour.
+}
+\note{
+  The data-frame method is not intended for phenotype
+  microarray data.  It is currently \strong{undocumented}
+  and potentially subject to frequent changes or even
+  removal. Users interested in the method should contact
+  the authors.
 }
 \examples{
 # OPM method
@@ -177,7 +189,8 @@ xy_plot(vaas_4, include = c("Species", "Strain"),
 
   Other plotting-functions: \code{\link{ci_plot}},
   \code{\link{heat_map}}, \code{\link{level_plot}},
-  \code{\link{radial_plot}}, \code{\link{select_colors}}
+  \code{\link{radial_plot}}, \code{\link{select_colors}},
+  \code{\link{show}}
 }
 \keyword{hplot}
 
@@ -185,6 +198,7 @@ xy_plot(vaas_4, include = c("Species", "Strain"),
 \alias{xy_plot-methods}
 \alias{xy_plot,OPM-method}
 \alias{xy_plot,OPMS-method}
+\alias{xy_plot,data.frame-method}
 \usage{
   \S4method{xy_plot}{OPM}(x, col = "midnightblue", lwd = 1,
     neg.ctrl = "A01", base.col = "grey10", base.lwd = lwd,
@@ -193,12 +207,18 @@ xy_plot(vaas_4, include = c("Species", "Strain"),
     strip.fmt = list(), striptext.fmt = list(),
     ...) 
 
-  \S4method{xy_plot}{OPMS}(x, col = opm_opt("xy.colors"), lwd = 1,
+  \S4method{xy_plot}{OPMS}(x, col = opm_opt("colors"), lwd = 1,
     neg.ctrl = "A01", base.col = "black", base.lwd = lwd,
     main = list(), xlab = "Time [h]", ylab = "Value [OmniLog units]",
     theor.max = TRUE, draw.grid = TRUE, space = "top",
     strip.fmt = list(), striptext.fmt = list(),
     legend.fmt = list(), legend.sep = " ", draw.legend = TRUE,
     ...) 
+
+  \S4method{xy_plot}{data.frame}(x, f, groups,
+    col = opm_opt("colors"), lwd = 1, neg.ctrl = NULL, base.col = "black",
+    base.lwd = lwd, main = groups, xlab = elem(f, 3L:2L), ylab = elem(f, 2L),
+    draw.grid = TRUE, space = "top", strip.fmt = list(), striptext.fmt = list(),
+    legend.fmt = list(), legend.sep = " ", draw.legend = TRUE, ...) 
 
 }

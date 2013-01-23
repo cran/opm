@@ -1,11 +1,14 @@
-\name{extract_curve_params.grofit}
+\name{extract_curve_params}
+\alias{extract_curve_params}
 \alias{extract_curve_params.grofit}
 \title{Grofit extraction}
 \usage{
-  \method{extract_curve_params}{grofit} (data)
+  extract_curve_params(x)
+
+  \method{extract_curve_params}{grofit} (x)
 }
 \arguments{
-  \item{data}{Object of class \sQuote{grofit}.}
+  \item{x}{Object of class \sQuote{grofit}.}
 }
 \value{
   Matrix.

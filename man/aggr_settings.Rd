@@ -13,12 +13,14 @@
 \description{
   The settings used for aggregating the kinetic data.
 }
+\note{
+  See \code{\link{do_aggr}} for generating aggregated data.
+}
 \examples{
 # 'OPM' method
 data(vaas_1)
-summary(x <- aggr_settings(vaas_1))
-stopifnot(is.list(x), identical(names(x), c("program", "options")))
-stopifnot(identical(x$program, "grofit"))
+(x <- aggr_settings(vaas_1))
+stopifnot(is.list(x), !is.null(names(x)))
 
 # 'OPMS' method
 data(vaas_4)
@@ -37,7 +39,7 @@ stopifnot(is.list(x), length(x) == length(vaas_4), sapply(x, is.list))
   \code{\link{minmax}}, \code{\link{plate_type}},
   \code{\link{position}}, \code{\link{select}},
   \code{\link{seq}}, \code{\link{setup_time}},
-  \code{\link{show}}, \code{\link{summary}},
+  \code{\link{subset}}, \code{\link{summary}},
   \code{\link{well}}, \code{\link{wells}}
 }
 \keyword{attribute}

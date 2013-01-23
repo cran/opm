@@ -10,8 +10,8 @@
 
   \item{what}{Character scalar indicating which parts of
   \code{x} should be compared. \sQuote{all} compares entire
-  \code{OPM} objects; \sQuote{csv} compares the CSV data
-  entries \code{\link{setup_time}} and
+  \code{OPM} objects; \sQuote{csv} compares the
+  \acronym{CSV} data entries \code{\link{setup_time}} and
   \code{\link{position}}; \sQuote{metadata} compares the
   entire metadata content. If \code{what} does not match
   any of these, or is not a character scalar at all, it is
@@ -58,7 +58,7 @@ stopifnot(c(FALSE, TRUE) == duplicated(x))
   \code{\link{minmax}}, \code{\link{plate_type}},
   \code{\link{position}}, \code{\link{select}},
   \code{\link{seq}}, \code{\link{setup_time}},
-  \code{\link{show}}, \code{\link{summary}},
+  \code{\link{subset}}, \code{\link{summary}},
   \code{\link{well}}, \code{\link{wells}}
 }
 \keyword{attribute}

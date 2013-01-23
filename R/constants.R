@@ -3,98 +3,6 @@
 ################################################################################
 ################################################################################
 #
-# Package description and package-wide constants
-#
-
-
-#' The opm package
-#'
-#' Package for analysing OmniLog(R) phenotype microarray data.
-#'
-#' @name opm.package
-#' @docType package
-#'
-#' @note As a brief guideline for using this manual, including the definition
-#'   of frequently used terms, consider the following:
-#' \describe{
-#'   \item{families}{All functions and methods are assigned to one or several
-#'     families of functions and methods with similar purposes. The respective
-#'     other family members are listed under each \sQuote{See Also} entry.}
-#'   \item{classes}{To make sense of this package, one usually has to create
-#'     at least one object of one of the classes \code{\link{OPM}},
-#'     \code{\link{OPMA}} or \code{\link{OPMS}}. The documentation entry for
-#'     each class contains a complete list of its user-level methods.
-#'     Conceptually, all these classes store PM data; they differ in whether
-#'     they also contain aggregated values (OPMA), and whether they contain
-#'     more than a single plate (OPMS). Note that objects of the class OPMS
-#'     may also contain aggregated values.}
-#'   \item{methods}{The class \code{\link{OPMA}} inherits from the class
-#'     \code{\link{OPM}} and, hence, has all its methods, even though
-#'     they are not listed as \code{\link{OPMA}} methods. \code{\link{OPM}}
-#'     itself inherits from \code{\link{WMD}} and has all its methods. Objects
-#'     of the \code{\link{OPMS}} class act as containers for \code{\link{OPM}}
-#'     and/or \code{\link{OPMA}} objects, and its methods usually traverse the
-#'     contained objects in some manner.}
-#'   \item{input}{Most \pkg{opm} users will start with data input using either
-#'     \code{\link{read_single_opm}} or \code{\link{read_opm}}, which create
-#'     the appropriate objects. OmniLog(R) phenotype microarray data are
-#'     structured in \strong{plates}. Each plate has 12 x 8 \strong{well}
-#'     layout, and each well contains the respiration measurements on one
-#'     substrate or inhibitor, or combination of substrates or inhibitors.
-#'     For input example files, see \code{\link{opm_files}}.}
-#'   \item{global options}{Options affecting the default parameters of a number
-#'     of \pkg{opm} functions can be set and queried for using
-#'     \code{\link{opm_opt}}.}
-#'   \item{coercion functions}{Coercion functions for the three classes are only
-#'     briefly listed under each class documentation entry. For details, see
-#'     the documentation of \code{as} from the \pkg{methods} package.}
-#'   \item{scalars}{This documentation uses the term \sQuote{scalar} for
-#'     single-element vectors, even though technically these are, well,
-#'     vectors.}
-#'   \item{YAML}{Input and output of YAML files needs the \pkg{yaml} package.
-#'     Because this package is not required for the installation of
-#'     \pkg{opm}, warnings or error messages will not occur before any of the
-#'     YAML-dependent functions are called. We recommend installing one of
-#'     the newer versions of \pkg{yaml} (>= v2.1.3) which are based on libyaml
-#'     as parser instead of Syck, are faster and contain some bug fixes. The
-#'     YAML-related functions of \pkg{opm} are \code{\link{to_yaml}} and
-#'     \code{\link{batch_opm_to_yaml}}.}
-#'   \item{running time}{Computations on such high-dimensional data may take
-#'     some time. The limiting steps are aggregating (curve-parameter
-#'     estimation) and plotting many curves together. The former step can be
-#'     conducted in parallel if the \pkg{multicore} package is available. It is
-#'     not required for the installation of \pkg{opm}. There is also a fast
-#'     estimation method for the parameters \sQuote{area under the curve} and
-#'     \sQuote{maximum height}. See \code{\link{do_aggr}} and the methods it
-#'     refers to for details.}
-#'   \item{advanced plotting}{The \pkg{gplots} package is also not required for
-#'     the installation of \pkg{opm} but can be used to draw more advanced
-#'     heatmaps. See \code{\link{heat_map}} and its accompanying methods for
-#'     details.}
-#' }
-#' @references \url{http://www.biolog.com/}
-#' @references Bochner, B. R., Gadzinski, P., Panomitros, E. 2001 Phenotype
-#'   MicroArrays for high throughput phenotypic testing and assay of gene
-#'   function. \emph{Genome Research} \strong{11}, 1246--1255.
-#' @references Bochner, B. R. 2009 Global phenotypic characterization of
-#'   bacteria. \emph{FEMS Microbiological Reviews} \strong{33}, 191--205.
-#' @references \url{
-#'   http://www.dsmz.de/research/microorganisms/projects/analysis-of-omnilog-phenotype-microarray-data.html
-#' }
-#' @references Vaas, L. A. I., Sikorski, J., Michael, V., Goeker, M., Klenk
-#'   H.-P. 2012 Visualization and curve parameter estimation strategies for
-#'   efficient exploration of Phenotype Microarray kinetics. \emph{PLoS ONE}
-#'   \strong{7}, e34846.
-#' @references \url{http://www.yaml.org/}
-#~ @export
-#' @keywords package
-#'
-NULL
-
-
-################################################################################
-################################################################################
-#
 # Programming constants
 #
 
@@ -105,7 +13,7 @@ NOT_YET <- "not yet implemented"
 BUG_MSG <- "a bug -- this should not happen"
 
 
-# Class names and settings
+# Class names
 #
 WMD <- "WMD"
 OPM <- "OPM"
@@ -115,6 +23,13 @@ OPMS <- "OPMS"
 OPMX <- "OPMX"
 YAML_VIA_LIST <- "YAML_VIA_LIST"
 MOA <- "MOA"
+CMAT <- "CMAT"
+
+
+# Used in all S4 method definitions. The idea is to keep it FALSE during
+# programming but set it to TRUE when building the package. The line contains a
+# special  comment used by pkgutils and should not be changed.
+#
 SEALED <- TRUE #|| SEALED <- FALSE
 
 
@@ -127,18 +42,25 @@ SEALED <- TRUE #|| SEALED <- FALSE
 
 # Names used in CSV data
 #
-FILE <- "File"
-PLATE_TYPE <- "Plate Type"
-HOUR <- "Hour"
-POS <- "Position"
-SETUP <- "Setup Time"
-GEN_III <- "Gen III"
+CSV_NAMES <- c(FILE = "File", PLATE_TYPE = "Plate Type", POS = "Position",
+  SETUP = "Setup Time")
 
 
-# Range of the OmniLog(R) measurements
+# Expected name of time points in input data
 #
-THEOR_MIN <- 0
-THEOR_MAX <- 400
+HOUR <- "Hour"
+
+
+# The known special plates
+#
+SPECIAL_PLATES <- c("Gen III", "ECO", "SF-N2", "SF-P2")
+names(SPECIAL_PLATES) <- c("gen.iii", "eco", "sf.n2", "sf.p2")
+
+
+# Theoretically expected range of the OmniLog measurements (Bochner, pers.
+# comm.)
+#
+THEOR_RANGE <- c(0, 400)
 
 
 ################################################################################
@@ -149,19 +71,25 @@ THEOR_MAX <- 400
 
 
 # Curve parameters
-# N.B.: The order must be kept in sync with map_grofit_names()
+# N.B.: The order must be kept in sync with map_grofit_names() and with the
+# functions that fetch the name of lambda using CURVE_PARAMS[2L]. So this should
+# not be changed unless great care is taken.
 #
-LAMBDA <- "lambda"
-MU <- "mu"
-CURVE_PARAMS <- c(MU, LAMBDA, "A", "AUC")
+CURVE_PARAMS <- c("mu", "lambda", "A", "AUC")
 
 
 # Names used in aggregation/discretization settings
 #
-PROGRAM <- "program"
+SOFTWARE <- "software"
+VERSION <- "version"
+UNKNOWN_VERSION <- "0.0.0"
+PROGRAM <- "program" # from the old style, synonym of METHOD in new style
+METHOD <- "method"
 OPTIONS <- "options"
-KNOWN_PROGRAMS <- c("grofit", "opm-fast")
-KNOWN_DISC_PROGRAMS <- c("direct", "kmeans", "best-cutoff")
+KNOWN_METHODS <- list(
+  aggregation = c("grofit", "opm-fast", "shortcut"),
+  discretization = c("direct", "kmeans", "best-cutoff")
+)
 
 
 ################################################################################
@@ -213,143 +141,13 @@ W3C_COLORS <- structure(
 )
 
 
-# Names of W3c colours (except white) sorted so as to maximize contrast between
-# adjacent colours. See pkgutils::max_rgb_contrast().
-#
-W3C_NAMES_MAX_CONTRAST <- c("teal", "purple", "olive", "black", "silver",
-  "blue", "lime", "red", "aqua", "fuchsia", "yellow", "navy", "green",
-  "maroon", "gray")
-
-
-# Colours manually selected and sorted by Nora Buddruhs for maximum contrast.
-#
-NORAS_COLORS <- c("midnightblue", "darkred", "darkgreen", "orange",
-  "lightslateblue", "seashell4", "saddlebrown", "firebrick2",
-  "palevioletred3", "purple4")
-
-
-# Shades of pink...
-#
-ROSEOBACTER_COLORS <- c("maroon1", "palevioletred3", "hotpink1",
-  "mediumvioletred", "violetred3", "deeppink3", "lightcoral", "pink1",
-  "indianred3", "magenta1")
-
-
-# Colours from two ColorBrewer palettes, sorted so as to maximize contrast
-# between adjacent colours.
-#
-BREWER_COLORS <- c(
-  "#CAB2D6", "#A6CEE3", "#80B1D3", "#CCEBC5", "#FDB462", "#8DD3C7",
-  "#33A02C", "#B3DE69", "#B15928", "#FF7F00", "#1F78B4", "#B2DF8A",
-  "#6A3D9A", "#E31A1C", "#FFED6F", "#FFFF99", "#FB8072", "#FFFFB3",
-  "#FDBF6F", "#D9D9D9", "#FB9A99", "#FCCDE5", "#BC80BD", "#BEBADA"
-)
-
-
 ################################################################################
 ################################################################################
 #
-# Plates and substrates
+# Storage of precomputed values
 #
 
-
-PLATE_MAP <- structure(
-  .Data = c(
-    "Identification",
-    "Carbon Sources",
-    "Carbon Sources",
-    "Nitrogen Sources",
-    "Phosphorus and Sulfur Sources",
-    "Nutrient Supplements",
-    "Peptide Nitrogen Sources",
-    "Peptide Nitrogen Sources",
-    "Peptide Nitrogen Sources",
-    "Osmolytes",
-    "pH",
-    "Chemicals",
-    "Chemicals",
-    "Chemicals",
-    "Chemicals",
-    "Chemicals",
-    "Chemicals",
-    "Chemicals",
-    "Chemicals",
-    "Chemicals",
-    "Chemicals",
-    "Carbon and Energy Sources",
-    "Carbon and Energy Sources / Nitrogen Sources",
-    "Carbon and Energy Sources / Nitrogen Sources",
-    "Carbon and Energy Sources / Nitrogen Sources",
-    "Ions",
-    "Hormones & Metabolic Effectors",
-    "Hormones & Metabolic Effectors",
-    "Hormones & Metabolic Effectors",
-    "Anti-Cancer Agents",
-    "Anti-Cancer Agents",
-    "Anti-Cancer Agents",
-    "Anti-Cancer Agents"
-  ), names = c(
-    "Gen III",
-    "PM01",
-    "PM02",
-    "PM03",
-    "PM04",
-    "PM05",
-    "PM06",
-    "PM07",
-    "PM08",
-    "PM09",
-    "PM10",
-    "PM11",
-    "PM12",
-    "PM13",
-    "PM14",
-    "PM15",
-    "PM16",
-    "PM17",
-    "PM18",
-    "PM19",
-    "PM20",
-    "PM-M01",
-    "PM-M02",
-    "PM-M03",
-    "PM-M04",
-    "PM-M05",
-    "PM-M06",
-    "PM-M07",
-    "PM-M08",
-    "PM-M11",
-    "PM-M12",
-    "PM-M13",
-    "PM-M14"
-  )
-)
-
-
-################################################################################
-################################################################################
-#
-# Paper sizes (for plotting helper functions)
-#
-
-
-SPECIAL_PAPER_SIZES <- structure(
-  .Data = c(216, 432, 559, 864, 279, 457, 108, 381, 445, 572, 584, 184, 216,
-    216, 210, 216, 216, 203, 140, 140, 127, 419, 279, 215.9, 215.9, 457, 140,
-    184, 70, 279, 140, 216, 394, 889, 229, 508, 140, 330, 279, 279, 279, 559,
-    864, 1118, 432, 610, 171, 508, 572, 889, 711, 267, 304, 330, 330, 304, 330,
-    267, 216, 216, 203.2, 533, 432, 355.6, 279.4, 584, 216, 267, 127, 432, 216,
-    279, 489, 1143, 279, 635, 216, 483, 432, 377),
-  .Dim = c(40L, 2L),
-  .Dimnames = list(c("ansi a", "ansi c", "ansi d", "ansi e", "bible",
-    "broadsheet", "compact", "crown", "demy", "double demy", "elephant",
-    "executive", "fanfold", "folio", "foolscap", "german std fanfold",
-    "government legal", "government letter", "half letter", "jepps",
-    "junior legal", "large post", "ledger", "legal", "letter", "medium",
-    "memo", "monarch", "organizer j", "organizer k", "organizer l",
-    "organizer m", "post", "quad demy", "quarto", "royal", "statement",
-    "super b", "tabloid", "us std fanfold"), c("width","height"))
-)
+MEMOIZED <- new.env(parent = emptyenv())
 
 
 ################################################################################
@@ -361,16 +159,40 @@ SPECIAL_PAPER_SIZES <- structure(
 OPM_OPTIONS <- new.env(parent = emptyenv())
 OPM_OPTIONS$color.borders <- c("#FFFFD4", "#FED98E", "#FE9929", "#D95F0E",
   "#993404")
-OPM_OPTIONS$csv.keys <- c(SETUP, POS)
-OPM_OPTIONS$csv.selection <- c(SETUP, POS, FILE)
-OPM_OPTIONS$gen.iii <- FALSE
+OPM_OPTIONS$css.file <- ""
+OPM_OPTIONS$csv.keys <- unname(CSV_NAMES[c("SETUP", "POS")])
+OPM_OPTIONS$csv.selection <- unname(CSV_NAMES[c("SETUP", "POS", "FILE")])
+OPM_OPTIONS$gen.iii <- ""
+OPM_OPTIONS$html.class <- "section-level-%i"
 OPM_OPTIONS$phylo.fmt <- "epf"
 OPM_OPTIONS$time.fmt <- c("%m/%d/%Y %I:%M:%S %p", "%b %d %Y %I:%M %p",
   "%d.%m.%Y %H:%M:%S")
 OPM_OPTIONS$time.zone <- ""
-OPM_OPTIONS$xy.colors <- "w3c"
+OPM_OPTIONS$colors <- "w3c"
 OPM_OPTIONS$split <- "/.-_"
 OPM_OPTIONS$digits <- 4L
+OPM_OPTIONS$file.encoding <- ""
+OPM_OPTIONS$curve.param <- "A"
 
+
+################################################################################
+################################################################################
+#
+# Constants related to the phylogeny functions
+#
+
+
+CHARACTER_STATES <- c(0L:9L, LETTERS)[1L:32L]
+
+MISSING_CHAR <- "?"
+
+PHYLO_FORMATS <- c("epf", "nexus", "phylip", "hennig", "html")
+
+# only those Greek letters that are likely to occur in substrate names, and
+# deliberately not the uppercase versions
+GREEK_LETTERS <- c("alpha", "beta", "gamma", "delta", "epsilon")
+names(GREEK_LETTERS) <- substring(GREEK_LETTERS, 1L, 1L)
+GREEK_LETTERS <- cbind(plain = GREEK_LETTERS,
+  html = sprintf("&%s;", GREEK_LETTERS))
 
 

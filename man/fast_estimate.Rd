@@ -60,8 +60,8 @@
   \code{\link{do_aggr}}.
 }
 \examples{
-data("vaas_1")
-x <- fast_estimate(measurements(vaas_1))
+data(vaas_1)
+summary(x <- fast_estimate(measurements(vaas_1)))
 stopifnot(identical(dim(x), c(3L, 96L)))
 }
 \seealso{

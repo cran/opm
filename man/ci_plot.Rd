@@ -45,7 +45,7 @@
 
   \item{legend.field}{Two-element numeric vector. Indicates
   the panel in which the legend is drawn. Subsequent
-  arguments work then relative to this panel. If
+  arguments work then relative to this panel.  If
   \code{legend.field} has less then two fields, the number
   of panels is set to 1 (the entire plot), and the legend
   is drawn relative to that.}
@@ -88,8 +88,6 @@
 \examples{
 data(vaas_4)
 
-# most of the parameters used here are explained under the data.frame
-# method of ci_plot()
 x <- ci_plot(vaas_4[, , 1:3], as.labels = list("Species", "Strain"),
   subset = "A", x = "bottomright", legend.field = NULL)
 # note that the values on the y axes are drawn to scale
@@ -108,7 +106,8 @@ stopifnot(is.character(x), identical(length(x), 4L))
 
   Other plotting-functions: \code{\link{heat_map}},
   \code{\link{level_plot}}, \code{\link{radial_plot}},
-  \code{\link{select_colors}}, \code{\link{xy_plot}}
+  \code{\link{select_colors}}, \code{\link{show}},
+  \code{\link{xy_plot}}
 }
 \keyword{hplot}
 
@@ -122,6 +121,7 @@ stopifnot(is.character(x), identical(length(x), 4L))
     draw.legend = TRUE, legend.field = c(1, 1), x = "topleft", xpd = TRUE,
     vline = 0, ...) 
 
-  \S4method{ci_plot}{OPMS}(object, as.labels, subset = "A", ...) 
+  \S4method{ci_plot}{OPMS}(object, as.labels,
+    subset = opm_opt("curve.param"), ...) 
 
 }

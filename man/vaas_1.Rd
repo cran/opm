@@ -1,7 +1,7 @@
 \docType{data}
 \name{vaas_1}
 \alias{vaas_1}
-\title{Example dataset from Vaas et al. (2012), a single selected plate}
+\title{Example data set from Vaas et al. (2012), a single selected plate}
 \format{\code{\link{OPMD}} object with the dimensions 384 x 96, i.e. a single
   plate with 384 time points and 96 wells.}
 \description{

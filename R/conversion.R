@@ -2,6 +2,195 @@
 
 
 ################################################################################
+################################################################################
+#
+# Miscellaneous methods
+#
+
+
+#' Merge plates
+#'
+#' Combine all plates in a single \code{\link{OPM}} object by treating them as
+#' originating from subsequent runs of the same experimental plate. Adjust the
+#' times accordingly.
+#'
+#' @param x \code{\link{OPMS}} object.
+#' @param y Numeric vector indicating the time(s) (in hours) between two
+#'   subsequent plates. Must be positive throughout, and its length should fit
+#'   to the number of plates (e.g., either \code{1} or \code{length(x) - 1}
+#'   would work). If missing, \code{0.25} is used.
+#' @param sort.first Logical scalar. Sort the plates according to their setup
+#'   times before merging?
+#' @param parse Logical scalar. Ignored unless \code{sort.first} is \code{TRUE}.
+#'   For sorting, parse the setup times using \code{strptime} from the
+#'   \pkg{base} package? It is an error if this does not work.
+#' @export
+#' @return \code{\link{OPM}} object. The \code{\link{metadata}} and
+#'   \code{\link{csv_data}} will be taken from the first contained plate, but
+#'   aggregated values, if any, will be dropped.
+#' @note This function is intended for dealing with slowly growing or reacting
+#'   organisms that need to be analyzed with subsequent runs of the same plate
+#'   in PM mode. Results obtained with \emph{Geodermatophilus} strains and
+#'   Generation-III plates indicate that this works well in practice.
+#' @family conversion-functions
+#' @keywords manip
+#' @examples
+#' data(vaas_4) # merge() is biologically unreasonable for these data!
+#' summary(x <- merge(vaas_4))
+#' stopifnot(is(x, "OPM"), dim(x) == c(sum(hours(vaas_4, "size")), 96))
+#'
+setGeneric("merge")
+
+setMethod("merge", c(OPMS, "numeric"), function(x, y, sort.first = TRUE,
+    parse = TRUE) {
+  if (any(y <= 0))
+    stop("'y' must be positive throughout")
+  if (L(sort.first))
+    x <- sort(x, by = "setup_time", parse = parse, na.last = TRUE)
+  m <- do.call(rbind, measurements(x))
+  if (is.matrix(tp <- hours(x, what = "all"))) {
+    to.add <- c(0, must(cumsum(tp[-nrow(tp), ncol(tp), drop = FALSE]) + y))
+    m[, 1L] <- as.vector(t(tp + to.add))
+  } else if (is.list(tp)) {
+    to.add <- c(0, must(cumsum(vapply(tp[-length(tp)], last, numeric(1L))) + y))
+    m[, 1L] <- unlist(mapply(`+`, tp, to.add, SIMPLIFY = FALSE,
+      USE.NAMES = FALSE))
+  } else
+    stop(BUG_MSG)
+  new(OPM, measurements = m, csv_data = csv_data(x[1L]),
+    metadata = metadata(x[1L]))
+}, sealed = SEALED)
+
+setMethod("merge", c(OPMS, "missing"), function(x, sort.first = TRUE,
+    parse = TRUE) {
+  merge(x, 0.25, sort.first = sort.first, parse = parse)
+}, sealed = SEALED)
+
+setMethod("merge", c(CMAT, "ANY"), function(x, y) {
+  if (is.logical(y))
+    if (L(y))
+      groups <- as.factor(rownames(x))
+    else
+      groups <- as.factor(seq.int(nrow(x)))
+  else
+    groups <- as.factor(y)
+  if (length(groups) != nrow(x)) # this also covers NULL row names
+    stop("length of 'groups' not equal to number of rows")
+  if (any(is.na(groups)))
+    stop("'groups' must not contain NA values")
+  if (length(levels(groups)) == length(groups))
+    return(x)
+  cn <- colnames(x) # later put back, avoiding correction of duplicate names
+  x <- as.data.frame(x, stringsAsFactors = FALSE)
+  x <- aggregate(x, by = list(groups), FUN = c, recursive = TRUE,
+    simplify = FALSE)
+  x <- as.matrix(x[, -1L, drop = FALSE])
+  x[] <- lapply(x, sort.int, na.last = TRUE)
+  rownames(x) <- levels(groups)
+  colnames(x) <- cn
+  new(CMAT, x)
+}, sealed = SEALED)
+
+
+################################################################################
+
+
+#' Get available plates
+#'
+#' Get all plates contained in an \code{\link{OPMS}} object or a list, or create
+#' a list containing a single \code{\link{OPM}} object as element. The list
+#' method traverses the input recursively and skips all objects of other classes
+#' than \code{\link{OPM}} (see also \code{\link{opms}}, which is somewhat
+#' similar but more flexible).
+#'
+#' @param object List, \code{\link{OPM}} or \code{\link{OPMS}} object.
+#' @return List of \code{\link{OPM}} objects (may be empty instead if
+#'   \code{object} is a list).
+#' @export
+#' @family conversion-functions
+#' @keywords attribute
+#' @seealso base::list base::as.list
+#' @examples
+#'
+#' # 'OPM' method
+#' data(vaas_1)
+#' summary(x <- plates(vaas_1))
+#' stopifnot(is.list(x), length(x) == 1L, sapply(x, inherits, what = "OPM"))
+#'
+#' # 'OPMS' method
+#' data(vaas_4)
+#' summary(x <- plates(vaas_4))
+#' stopifnot(is.list(x), length(x) == 4L, sapply(x, inherits, what = "OPM"))
+#'
+#' # list method
+#' x <- list(vaas_1, letters, vaas_4, 1:10)
+#' summary(x <- plates(x))
+#' stopifnot(is.list(x), length(x) == 5, sapply(x, inherits, what = "OPM"))
+#'
+setGeneric("plates", function(object, ...) standardGeneric("plates"))
+
+setMethod("plates", OPMS, function(object) {
+  object@plates
+}, sealed = SEALED)
+
+setMethod("plates", OPM, function(object) {
+  list(object)
+}, sealed = SEALED)
+
+setMethod("plates", "list", function(object) {
+  to_opm_list(object, precomputed = TRUE, skip = TRUE, group = FALSE)
+}, sealed = SEALED)
+
+
+################################################################################
+
+
+#' Apply method for OPMS objects
+#'
+#' Apply a function to all \code{\link{OPM}} or \code{\link{OPMA}} objects
+#' within an \code{\link{OPMS}} object. Optionally simplify the result to an
+#' \code{\link{OPMS}} object if possible, or other structures simpler than a
+#' list.
+#'
+#' @param object \code{\link{OPMS}} object. An \code{\link{OPM}} method is also
+#'   defined but simply applies \code{fun} once (to \code{object}).
+#' @param fun A function. Should expect an  \code{\link{OPM}} (or
+#'   \code{\link{OPMA}}) object as first argument.
+#' @param ... Optional other arguments passed to \code{fun}.
+#' @param simplify Logical scalar. If \code{FALSE}, the result is a list. If
+#'   \code{TRUE}, it is attempted to simplify the result to a vector or matrix
+#'   or to an \code{\link{OPMS}} object (if the result is a list of
+#'   \code{\link{OPM}} or \code{\link{OPMA}} objects). If this is impossible, a
+#'   list is returned.
+#' @export
+#' @return List, vector, matrix or \code{\link{OPMS}} object.
+#' @family conversion-functions
+#' @keywords manip
+#' @seealso base::sapply
+#' @examples
+#' data(vaas_4)
+#' x <- oapply(vaas_4, identity)
+#' stopifnot(identical(x, vaas_4))
+#' x <- oapply(vaas_4, identity, simplify = FALSE)
+#' stopifnot(is.list(x), length(x) == 4, sapply(x, class) == "OPMD")
+#'
+setGeneric("oapply", function(object, ...) standardGeneric("oapply"))
+
+setMethod("oapply", OPM, function(object, fun, ..., simplify = TRUE) {
+  fun(object, ...)
+}, sealed = SEALED)
+
+setMethod("oapply", OPMS, function(object, fun, ..., simplify = TRUE) {
+  result <- sapply(X = object@plates, FUN = fun, ..., simplify = simplify,
+    USE.NAMES = FALSE)
+  if (simplify && is.list(result))
+    result <- try_opms(result)
+  result
+}, sealed = SEALED)
+
+
+
+################################################################################
 
 
 #' Thin out the measurements
@@ -57,20 +246,27 @@ setMethod("thin_out", OPM, function(object, factor, drop = FALSE) {
 ################################################################################
 
 
-#' Change to Generation III
+#' Change to Generation III (or other plate type)
 #'
-#' Change the plate type of an \code{\link{OPM}} object to
-#' \sQuote{Generation III}. The actual spelling used might differ but is
-#' internally consistent.
+#' Change the plate type of an \code{\link{OPM}} object to \sQuote{Generation
+#' III} or another plate type. The actual spelling used might differ but is
+#' internally consistent. It is an error to set one of the PM plate types or to
+#' assign an unknown plate type.
 #'
 #' @param object \code{\link{OPM}} object.
+#' @param to Character scalar indicating the plate type. User-defined plate
+#'   types must be given literally. For generation-III plates, use
+#'   \sQuote{gen.iii}; for ecoplates, use \sQuote{eco}; the remaining allowed
+#'   values are only \sQuote{sf.n2} and \sQuote{sf.p2}, but matching is
+#'   case-insensitive.
 #' @param ... Optional arguments passed between the methods.
 #' @return Novel \code{\link{OPM}} object.
 #' @export
 #' @note This is currently the only function to change plate names. It is
 #'   intended for Generation-III plates which were run like PM plates. Usually
-#'   they will be annotated as some PM plate by the OmniLog(R) system. In
-#'   contrast, input ID-mode plates are automatically detected (see
+#'   they will be annotated as some PM plate by the
+#'   OmniLog\eqn{\textsuperscript{\textregistered}}{(R)} system. In contrast,
+#'   input ID-mode plates are automatically detected (see
 #'   \code{\link{read_single_opm}}).
 #' @keywords manip
 #' @family conversion-functions
@@ -80,16 +276,21 @@ setMethod("thin_out", OPM, function(object, factor, drop = FALSE) {
 #' data(vaas_1)
 #' summary(copy <- gen_iii(vaas_1))
 #' stopifnot(identical(vaas_1, copy)) # the dataset already had that plate type
+#' summary(copy <- gen_iii(vaas_1, "eco")) # which is wrong, actually
+#' stopifnot(!identical(vaas_1, copy))
 #'
 #' # 'OPMS' method
 #' data(vaas_4)
 #' summary(copy <- gen_iii(vaas_4))
 #' stopifnot(identical(vaas_4, copy)) # as above
+#' summary(copy <- gen_iii(vaas_4, "eco"))
+#' stopifnot(!identical(vaas_4, copy)) # as above
 #'
 setGeneric("gen_iii", function(object, ...) standardGeneric("gen_iii"))
 
-setMethod("gen_iii", OPM, function(object) {
-  object@csv_data[[PLATE_TYPE]] <- GEN_III
+setMethod("gen_iii", OPM, function(object, to = "gen.iii") {
+  to <- match.arg(tolower(to), names(SPECIAL_PLATES))
+  object@csv_data[[CSV_NAMES[["PLATE_TYPE"]]]] <- SPECIAL_PLATES[[to]]
   object
 }, sealed = SEALED)
 
@@ -124,11 +325,10 @@ lapply(c(
 #
 
 
-#' Flatten an OPM matrix or a list
+#' Flatten measurements from OPM or OPMS objects
 #'
-#' Convert into \sQuote{flat} data frame, including all measurements in a
-#' single column (suitable, e.g., for \pkg{lattice}). The list method returns
-#' a non-nested list.
+#' Convert into \sQuote{flat} data frame, including all measurements in a single
+#' column (suitable, e.g., for \pkg{lattice}).
 #'
 #' @param object \code{\link{OPM}} or \code{\link{OPMS}} object or list.
 #' @param include \code{NULL}, character vector or list. If not \code{NULL},
@@ -149,11 +349,8 @@ lapply(c(
 #'   names). The three last columns are: \sQuote{Time}, \sQuote{Well},
 #'   \sQuote{Value}, with the obvious meanings. The \code{\link{OPMS}} method
 #'   yields an additional column named \sQuote{Plate}, which contains each
-#'   plate's number within \code{object}. The list method returns a list.
+#'   plate's number within \code{object}.
 #' @family conversion-functions
-#' @note The list method is based on
-#'   \url{http://stackoverflow.com/questions/8139677/how-to-flatten-a-list-to-a-list-without-coercion}
-#'   with some slight improvements.
 #' @keywords manip dplot
 #' @seealso stats::reshape
 #' @examples
@@ -176,13 +373,7 @@ lapply(c(
 #' head(x <- flatten(vaas_4, fixed = "TEST", include = "Strain"))
 #' stopifnot(is.data.frame(x), identical(dim(x), c(147456L, 6L)))
 #'
-#' # List method
-#' x <- list(a = list(b = 1:5, c = letters[1:5]), d = LETTERS[1:3],
-#'   e = list(pi))
-#' (y <- flatten(x))
-#' stopifnot(is.list(y), length(y) == 4, !sapply(y, is.list))
-#'
-setGeneric("flatten", function(object, ...) standardGeneric("flatten"))
+setGeneric("flatten")
 
 setMethod("flatten", OPM, function(object, include = NULL, fixed = NULL,
     factors = TRUE, exact = TRUE, strict = TRUE, full = TRUE, ...) {
@@ -208,14 +399,14 @@ setMethod("flatten", OPM, function(object, include = NULL, fixed = NULL,
   }
 
   # Include fixed stuff
-  if (length(fixed) > 0L)
+  if (length(fixed))
     result <- cbind(as.data.frame(as.list(fixed), stringsAsFactors = factors),
       result)
 
   # Pick metadata and include them in the data frame
-  if (length(include) > 0L) {
-    result <- cbind(as.data.frame(metadata(object, as.list(include),
-      exact = exact), stringsAsFactors = factors), result)
+  if (length(include)) {
+    result <- cbind(as.data.frame(metadata(object, include,
+      exact = exact, strict = strict), stringsAsFactors = factors), result)
   }
 
   result
@@ -231,12 +422,33 @@ setMethod("flatten", OPMS, function(object, include = NULL, fixed = list(),
   }, object@plates, plate.nums, SIMPLIFY = FALSE))
 }, sealed = SEALED)
 
-setMethod("flatten", "list", function(object) {
-  while (any(is.a.list <- vapply(object, is.list, logical(1L)))) {
-    object[!is.a.list] <- lapply(object[!is.a.list], list)
-    object <- unlist(object, recursive = FALSE)
-  }
-  object
+
+################################################################################
+
+
+#' Factor from flattened data
+#'
+#' Extract all plate-specifying information from a data frame as created by
+#' \code{\link{flatten}}. If metadata have been included, these will be joined
+#' together; otherwise the plate identifiers (basically numbers) themselves are
+#' used.
+#'
+#' @param object Object as returned by \code{\link{flatten}}.
+#' @param sep Character scalar. Separator used for joining the columns together.
+#' @return Factor with one entry per plate.
+#' @keywords internal
+#'
+setGeneric("flattened_to_factor",
+  function(object, ...) standardGeneric("flattened_to_factor"))
+
+setMethod("flattened_to_factor", "data.frame", function(object, sep = " ") {
+  LL(plate.pos <- which(colnames(object) == "Plate"), sep)
+  if (plate.pos == 1L)
+    return(unique(object$Plate))
+  result <- aggregate(object[, seq.int(1L, plate.pos)],
+    by = list(object$Plate), FUN = `[[`, i = 1L)
+  result <- as.list(result[, seq.int(2L, ncol(result) - 1L), drop = FALSE])
+  as.factor(do.call(paste, c(result, sep = sep)))
 }, sealed = SEALED)
 
 
@@ -245,23 +457,22 @@ setMethod("flatten", "list", function(object) {
 
 #' Create data frame or vector from metadata
 #'
-#' Extract selected metadata entries for use as additional columns in a
-#' data frame or (after joining) as character vector with labels. This is not
-#' normally directly called by an \pkg{opm} user because
-#' \code{\link{extract}} is available, which uses this function, but can be
-#' used for testing the applied metadata selections beforehand. The data-frame
-#' method is trivial: it extracts the selected columns and joins them to form a
-#' character vector.
+#' Extract selected metadata entries for use as additional columns in a data
+#' frame or (after joining) as character vector with labels. This is not
+#' normally directly called by an \pkg{opm} user because \code{\link{extract}}
+#' is available, which uses this function, but can be used for testing the
+#' applied metadata selections beforehand. The data-frame method is trivial: it
+#' extracts the selected columns and joins them to form a character vector.
 #'
 #' @param object \code{\link{OPMS}} object or data frame.
-#' @param what List of metadata keys to consider, or single such key; passed
-#'   to \code{\link{metadata}}. For the data-frame method, just the names of
-#'   the columns to extract, or their indices, as vector.
+#' @param what List of metadata keys to consider, or single such key; passed to
+#'   \code{\link{metadata}}. For the data-frame method, just the names of the
+#'   columns to extract, or their indices, as vector.
 #' @param join Logical scalar. Join each row together to yield a character
 #'   vector? Otherwise it is just attempted to construct a data frame.
 #' @param sep Character scalar. Used as separator between the distinct metadata
-#'   entries if these are to be pasted together. Ignored unless \code{join}
-#'   is \code{TRUE}. The data-frame method always joins the data.
+#'   entries if these are to be pasted together. Ignored unless \code{join} is
+#'   \code{TRUE}. The data-frame method always joins the data.
 #' @param dups Character scalar specifying what to do in the case of duplicate
 #'   labels: either \sQuote{warn}, \sQuote{error} or \sQuote{ignore}. Ignored
 #'   unless \code{join} is \code{TRUE}.
@@ -303,8 +514,11 @@ setGeneric("extract_columns",
 setMethod("extract_columns", OPMS, function(object, what, join = FALSE,
     sep = " ", dups = c("warn", "error", "ignore"), exact = TRUE,
     strict = TRUE) {
-  result <- metadata(object, as.list(what), exact = exact, strict = strict)
-  result <- lapply(result, FUN = rapply, f = as.character)
+  result <- metadata(object, what, exact = exact, strict = strict)
+  result <- if (is.list(result))
+    lapply(result, FUN = rapply, f = as.character)
+  else
+    as.list(as.character(result))
   if (L(join)) {
     labels <- unlist(lapply(result, FUN = paste, collapse = sep))
     msg <- if (is.dup <- anyDuplicated(labels))
@@ -328,14 +542,18 @@ setMethod("extract_columns", "data.frame", function(object, what, sep = " ") {
 
 
 ################################################################################
+################################################################################
+#
+# Sorting etc.
+#
 
 
 #' Sort OPMS objects
 #'
-#' Sort an \code{\link{OPMS}} object based on one to several metadata or CSV
-#' data entries. There is also an \code{\link{OPM}} method which returns the
-#' input data (to avoid destructive effects due to the way the default
-#' \code{sort} interacts with \code{\link{OPM}} indexing).
+#' Sort an \code{\link{OPMS}} object based on one to several metadata or
+#' \acronym{CSV} data entries. There is also an \code{\link{OPM}} method which
+#' returns the input data (to avoid destructive effects due to the way the
+#' default \code{sort} interacts with \code{\link{OPM}} indexing).
 #'
 #' @param x \code{\link{OPMS}} or \code{\link{OPM}} object.
 #' @param decreasing Logical scalar. Passed to \code{order} from the \pkg{base}
@@ -434,7 +652,7 @@ setMethod("sort", c(OPMS, "logical"), function(x, decreasing, by = "setup_time",
     stop("'by' must be a list or a character vector")
   keys <- insert(keys, decreasing = decreasing, na.last = na.last,
     .force = TRUE)
-  x@plates <- x@plates[do.call(base::order, keys)]
+  x@plates <- x@plates[do.call(order, keys)]
   x
 }, sealed = SEALED)
 
@@ -444,15 +662,15 @@ setMethod("sort", c(OPMS, "logical"), function(x, decreasing, by = "setup_time",
 
 #' Make OPMS objects unique
 #'
-#' Check whether duplicated \code{\link{OPM}} or \code{\link{OPMA}} objects
-#' are contained within an \code{\link{OPMS}} object and remove the duplicated
-#' ones. The \code{\link{OPM}} method just returns the object passed.
+#' Check whether duplicated \code{\link{OPM}} or \code{\link{OPMA}} objects are
+#' contained within an \code{\link{OPMS}} object and remove the duplicated ones.
+#' The \code{\link{OPM}} method just returns the object passed.
 #'
 #' @param x \code{\link{OPMS}} or \code{\link{OPM}} object.
 #' @param incomparables Vector passed to \code{\link{duplicated}}. The default
 #'   is \code{FALSE}.
-#' @param ... Optional further arguments passed to \code{\link{duplicated}}.
-#'   See the examples.
+#' @param ... Optional further arguments passed to \code{\link{duplicated}}. See
+#'   the examples.
 #' @export
 #' @return \code{\link{OPMS}} or \code{\link{OPM}} object or \code{NULL}.
 #' @family conversion-functions
@@ -506,8 +724,8 @@ setMethod("unique", c(OPMS, "ANY"), function(x, incomparables, ...) {
 #'
 #' @param x \code{\link{OPMS}} or \code{\link{OPM}} object.
 #' @export
-#' @return \code{\link{OPMS}} object with the reversed order of plates, or
-#'   or \code{\link{OPM}} object.
+#' @return \code{\link{OPMS}} object with the reversed order of plates, or or
+#'   \code{\link{OPM}} object.
 #' @family conversion-functions
 #' @keywords manip
 #' @seealso base::rev
@@ -549,8 +767,8 @@ setMethod("rev", OPMS, function(x) {
 #' @param ... Optional parameters passed to \code{rep} from the \pkg{base}
 #'   package.
 #' @export
-#' @return \code{\link{OPMS}} object with another number of plates, or
-#'   or \code{\link{OPM}} object, or \code{NULL}.
+#' @return \code{\link{OPMS}} object with another number of plates, or or
+#'   \code{\link{OPM}} object, or \code{NULL}.
 #' @family conversion-functions
 #' @keywords manip
 #' @seealso base::rep
@@ -621,15 +839,15 @@ setMethod("rep", OPMS, function(x, ...) {
 #' @param exact Logical scalar. See \code{\link{extract_columns}}.
 #' @param strict Logical scalar. See \code{\link{extract_columns}}.
 #'
-#' @param full Logical scalar indicating whether full substrate names shall
-#'   be used. This is passed to \code{\link{wells}}, but in contrast to what
+#' @param full Logical scalar indicating whether full substrate names shall be
+#'   used. This is passed to \code{\link{wells}}, but in contrast to what
 #'   \code{\link{flatten}} is doing the argument here refers to the generation
 #'   of the column names.
 #' @param max Numeric scalar. Passed to \code{\link{wells}}.
 #' @param ... Optional other arguments passed to \code{\link{wells}}.
 #'
-#' @param what Character scalar. The name of the class to extract from the
-#'   data frame to form the matrix values.
+#' @param what Character scalar. The name of the class to extract from the data
+#'   frame to form the matrix values.
 #'
 #' @export
 #' @return Numeric matrix or data frame; always a numeric matrix for the
@@ -664,10 +882,10 @@ setMethod("rep", OPMS, function(x, ...) {
 #'
 setGeneric("extract", function(object, ...) standardGeneric("extract"))
 
-setMethod("extract", OPMS, function(object, as.labels, subset = "A",
-    ci = FALSE, trim = "full", dataframe = FALSE, as.groups = NULL, sep = " ",
-    dups = "warn", exact = TRUE, strict = TRUE, full = TRUE, max = 10000L,
-    ...) {
+setMethod("extract", OPMS, function(object, as.labels,
+    subset = opm_opt("curve.param"), ci = FALSE, trim = "full",
+    dataframe = FALSE, as.groups = NULL, sep = " ", dups = "warn",
+    exact = TRUE, strict = TRUE, full = TRUE, max = 10000L, ...) {
 
   do_extract <- function(what, join, dups = "ignore") {
     extract_columns(object, what = what, join = join, sep = sep, dups = dups,
@@ -677,13 +895,13 @@ setMethod("extract", OPMS, function(object, as.labels, subset = "A",
   # Collect parameters in a matrix
   subset <- match.arg(subset, c(unlist(map_grofit_names(plain = TRUE)), "disc"))
   if (subset == "disc") {
-    if (!all(has_disc(object)))
-      stop("all plates need discretized data")
+    #if (!all(has_disc(object)))
+    #  stop("all plates need discretized data")
     ci <- FALSE
     result <- discretized(object)
   } else {
-    if (!all(has_aggr(object)))
-      stop("all plates need aggregated data")
+    #if (!all(has_aggr(object)))
+    #  stop("all plates need aggregated data")
     result <- do.call(rbind, lapply(object@plates, FUN = aggregated,
       subset = subset, ci = ci, trim = trim))
   }
@@ -742,10 +960,10 @@ setMethod("extract", OPMS, function(object, as.labels, subset = "A",
 setMethod("extract", "data.frame", function(object, as.labels,
     as.groups = NULL, sep = " ", what = "numeric") {
   find_stuff <- function(x, what) {
-    x <- select(x, query = what)
-    if (ncol(x) == 0L)
-      stop(sprintf("no data of class '%s' found", what))
-    as.matrix(x)
+    x <- x[, vapply(x, inherits, logical(1L), what = what), drop = FALSE]
+    if (ncol(x))
+      return(as.matrix(x))
+    stop(sprintf("no data of class '%s' found", what))
   }
   result <- find_stuff(object, L(what))
   if (length(as.labels))
@@ -753,165 +971,6 @@ setMethod("extract", "data.frame", function(object, as.labels,
   if (length(as.groups))
     attr(result, "row.groups") <- as.factor(extract_columns(object,
       what = as.groups, sep = sep))
-  result
-}, sealed = SEALED)
-
-
-################################################################################
-
-
-#' Merge plates
-#'
-#' Combine all plates in a single \code{\link{OPM}} object by treating them as
-#' originating from subsequent runs of the same experimental plate. Adjust the
-#' times accordingly.
-#'
-#' @param x \code{\link{OPMS}} object.
-#' @param y Numeric vector indicating the time(s) (in hours) between two
-#'   subsequent plates. Must be positive throughout, and its length should
-#'   fit to the number of plates (e.g., either \code{1} or \code{length(x) - 1}
-#'   would work). If missing, \code{0.25} is used.
-#' @param sort.first Logical scalar. Sort the plates according to their setup
-#'   times before merging?
-#' @param parse Logical scalar. Ignored unless \code{sort.first} is
-#'   \code{TRUE}. For sorting, parse the setup times using \code{strptime} from
-#'   the \pkg{base} package? It is an error if this does not work.
-#' @export
-#' @return \code{\link{OPM}} object. The \code{\link{metadata}} and
-#'   \code{\link{csv_data}} will be taken from the first contained plate, but
-#'   aggregated values, if any, will be dropped.
-#' @note This function is intended for dealing with slowly growing or reacting
-#'   organisms that need to be analyzed with subsequent runs of the same plate
-#'   in PM mode. Results obtained with \emph{Geodermatophilus} strains and
-#'   Generation-III plates indicate that this works well in practice.
-#' @family conversion-functions
-#' @keywords manip
-#' @examples
-#' data(vaas_4) # merge() is biologically unreasonable for these data!
-#' summary(x <- merge(vaas_4))
-#' stopifnot(is(x, "OPM"), dim(x) == c(sum(hours(vaas_4, "size")), 96))
-#'
-setGeneric("merge")
-
-setMethod("merge", c(OPMS, "numeric"), function(x, y, sort.first = TRUE,
-    parse = TRUE) {
-  if (any(y <= 0))
-    stop("'y' must be positive throughout")
-  if (L(sort.first))
-    x <- sort(x, by = "setup_time", parse = parse, na.last = TRUE)
-  m <- do.call(rbind, measurements(x))
-  if (is.matrix(tp <- hours(x, what = "all"))) {
-    to.add <- c(0, must(cumsum(tp[-nrow(tp), ncol(tp), drop = FALSE]) + y))
-    m[, 1L] <- as.vector(t(tp + to.add))
-  } else if (is.list(tp)) {
-    to.add <- c(0, must(cumsum(vapply(tp[-length(tp)], last, numeric(1L))) + y))
-    m[, 1L] <- unlist(mapply(`+`, tp, to.add, SIMPLIFY = FALSE,
-      USE.NAMES = FALSE))
-  } else
-    stop(BUG_MSG)
-  new(OPM, measurements = m, csv_data = csv_data(x[1L]),
-    metadata = metadata(x[1L]))
-}, sealed = SEALED)
-
-setMethod("merge", c(OPMS, "missing"), function(x, sort.first = TRUE,
-    parse = TRUE) {
-  merge(x, 0.25, sort.first = sort.first, parse = parse)
-}, sealed = SEALED)
-
-
-################################################################################
-
-
-#' Get available plates
-#'
-#' Get all plates contained in an \code{\link{OPMS}} object or a list, or
-#' create a list containing a single \code{\link{OPM}} object as element. The
-#' list method traverses the input recursively and skips all objects of other
-#' classes than \code{\link{OPM}} (see also \code{\link{opms}}, which is
-#' somewhat similar but more flexible).
-#'
-#' @param object List, \code{\link{OPM}} or \code{\link{OPMS}} object.
-#' @return List of \code{\link{OPM}} objects (may be empty instead if
-#'   \code{object} is a list).
-#' @export
-#' @family conversion-functions
-#' @keywords attribute
-#' @seealso base::list base::as.list
-#' @examples
-#'
-#' # 'OPM' method
-#' data(vaas_1)
-#' summary(x <- plates(vaas_1))
-#' stopifnot(is.list(x), length(x) == 1L, sapply(x, inherits, what = "OPM"))
-#'
-#' # 'OPMS' method
-#' data(vaas_4)
-#' summary(x <- plates(vaas_4))
-#' stopifnot(is.list(x), length(x) == 4L, sapply(x, inherits, what = "OPM"))
-#'
-#' # list method
-#' x <- list(vaas_1, letters, vaas_4, 1:10)
-#' summary(x <- plates(x))
-#' stopifnot(is.list(x), length(x) == 5, sapply(x, inherits, what = "OPM"))
-#'
-setGeneric("plates", function(object, ...) standardGeneric("plates"))
-
-setMethod("plates", OPMS, function(object) {
-  object@plates
-}, sealed = SEALED)
-
-setMethod("plates", OPM, function(object) {
-  list(object)
-}, sealed = SEALED)
-
-setMethod("plates", "list", function(object) {
-  to_opm_list(object, precomputed = TRUE, skip = TRUE, group = FALSE)
-}, sealed = SEALED)
-
-
-################################################################################
-
-
-#' Apply method for OPMS objects
-#'
-#' Apply a function to all \code{\link{OPM}} or \code{\link{OPMA}} objects
-#' within an \code{\link{OPMS}} object. Optionally simplify the result to an
-#' \code{\link{OPMS}} object if possible, or other structures simpler than a
-#' list.
-#'
-#' @param object \code{\link{OPMS}} object. An \code{\link{OPM}} method is also
-#'   defined but simply applies \code{fun} once (to \code{object}).
-#' @param fun A function. Should expect an  \code{\link{OPM}} (or
-#'   \code{\link{OPMA}}) object as first argument.
-#' @param ... Optional other arguments passed to \code{fun}.
-#' @param simplify Logical scalar. If \code{FALSE}, the result is a list. If
-#'   \code{TRUE}, it is attempted to simplify the result to a vector or matrix
-#'   or to an \code{\link{OPMS}} object (if the result is a list of
-#'   \code{\link{OPM}} or \code{\link{OPMA}} objects). If this is impossible,
-#'   a list is returned.
-#' @export
-#' @return List, vector, matrix or \code{\link{OPMS}} object.
-#' @family conversion-functions
-#' @keywords manip
-#' @seealso base::sapply
-#' @examples
-#' data(vaas_4)
-#' x <- oapply(vaas_4, identity)
-#' stopifnot(identical(x, vaas_4))
-#' x <- oapply(vaas_4, identity, simplify = FALSE)
-#' stopifnot(is.list(x), length(x) == 4, sapply(x, class) == "OPMD")
-#'
-setGeneric("oapply", function(object, ...) standardGeneric("oapply"))
-
-setMethod("oapply", OPM, function(object, fun, ..., simplify = TRUE) {
-  fun(object, ...)
-}, sealed = SEALED)
-
-setMethod("oapply", OPMS, function(object, fun, ..., simplify = TRUE) {
-  result <- sapply(X = object@plates, FUN = fun, ..., simplify = simplify,
-    USE.NAMES = FALSE)
-  if (simplify && is.list(result))
-    result <- try_opms(result)
   result
 }, sealed = SEALED)
 
@@ -925,23 +984,29 @@ setMethod("oapply", OPMS, function(object, fun, ..., simplify = TRUE) {
 
 #' Convert to YAML
 #'
-#' Convert some \R object to YAML. If the package \pkg{yaml} is not installed, a
-#' call of this function will result in an error.
+#' Convert some \R object to \acronym{YAML}. If the package \pkg{yaml} is not
+#' installed, a call of this function will result in an error.
 #'
 #' @param object Object of one of the classes belonging to
 #'   \code{\link{YAML_VIA_LIST}}.
-#' @param sep Logical scalar. Prepend YAML document separator \verb{---}?
+#' @param sep Logical scalar. Prepend \acronym{YAML} document separator
+#'   \verb{---}?
 #' @param line.sep Character scalar used as output line separator.
 #' @param ... Optional other arguments passed to \code{as.yaml} from the
 #'   \pkg{yaml} package.
 #' @export
-#' @return Character scalar (YAML string).
+#' @return Character scalar (\acronym{YAML} string).
 #' @family conversion-functions
 #' @keywords character IO
 #' @references \url{http://www.yaml.org/}
-#' @note Many PM datasets can be batch-converted into YAML format using
-#'   \code{\link{batch_opm_to_yaml}}. The output format for the child classes
-#'   is described in detail there.
+#' @details \acronym{YAML} is a useful data-serialization standard that is
+#'   understood by many programming languages. It is particularly more human
+#'   readable than \acronym{XML}, and vector-like data structures (such as
+#'   Phenotype MicroArray measurements) can be much more compactly encoded.
+#' @note Many PM datasets can be batch-converted into \acronym{YAML} format
+#'   using \code{\link{batch_opm_to_yaml}}. The output format for the child
+#'   classes is described in detail there, as well as other aspects relevant in
+#'   practice.
 #' @seealso yaml::as.yaml yaml::yaml.load_file
 #'
 #' @examples \dontrun{
@@ -955,11 +1020,8 @@ setGeneric("to_yaml", function(object, ...) standardGeneric("to_yaml"))
 
 setMethod("to_yaml", YAML_VIA_LIST, function(object, sep = TRUE,
     line.sep = "\n", ...) {
-  LL(sep, line.sep)
-  if (!require("yaml", quietly = TRUE, warn.conflicts = FALSE))
-    stop("package 'yaml' is not available")
-  result <- yaml::as.yaml(x = as(object, "list"), line.sep = line.sep, ...)
-  if (sep)
+  result <- as.yaml(x = as(object, "list"), line.sep = L(line.sep), ...)
+  if (L(sep))
     result <- sprintf(sprintf("---%s%%s%s", line.sep, line.sep), result)
   result
 }, sealed = SEALED)
@@ -967,7 +1029,3 @@ setMethod("to_yaml", YAML_VIA_LIST, function(object, sep = TRUE,
 
 
 ################################################################################
-
-
-
-

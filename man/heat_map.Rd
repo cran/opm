@@ -40,9 +40,11 @@
 
   \item{scale}{Character scalar. See \code{heatmap} for
   details. The default was changed to no rescaling because
-  the curve parameters estimated from OmniLog(R) data have
-  the same scale. If the relative changes per substrate are
-  of interest, \sQuote{column} should be used.}
+  the curve parameters estimated from
+  OmniLog\eqn{\textsuperscript{\textregistered}}{(R)} data
+  have the same scale. If the relative changes per
+  substrate are of interest, \sQuote{column} should be
+  used.}
 
   \item{r.groups}{Determines the plotting of a colour bar
   indicating row groups. If \code{NULL}, ignored. If a
@@ -112,7 +114,8 @@
 \description{
   A wrapper for \code{heatmap} from the \pkg{stats} package
   and \code{heatmap.2} from the \pkg{gplots} package with
-  some adaptations likely to be useful for OmniLog(R) data.
+  some adaptations likely to be useful for
+  OmniLog\eqn{\textsuperscript{\textregistered}}{(R)} data.
   The data-frame and \sQuote{OPMS} methods extract a
   numeric matrix from a given data frame or \sQuote{OPMS}
   object and pass the result to the matrix method.
@@ -140,7 +143,8 @@ stopifnot(identical(metadata(vaas_4, "Species"), names(hm$rowColMap)))
 
   Other plotting-functions: \code{\link{ci_plot}},
   \code{\link{level_plot}}, \code{\link{radial_plot}},
-  \code{\link{select_colors}}, \code{\link{xy_plot}}
+  \code{\link{select_colors}}, \code{\link{show}},
+  \code{\link{xy_plot}}
 }
 \keyword{hplot}
 
@@ -152,8 +156,8 @@ stopifnot(identical(metadata(vaas_4, "Species"), names(hm$rowColMap)))
 \usage{
   \S4method{heat_map}{matrix}(object,
     hclustfun = "ward", distfun = "euclidean", scale = "none",
-    r.groups = "row.groups", r.col = select_colors(),
-    c.groups = "col.groups", c.col = select_colors(),
+    r.groups = "row.groups", r.col = opm_opt("colors"),
+    c.groups = "col.groups", c.col = opm_opt("colors"),
     magnif = 4, cexRow = magnif[1L] / sqrt(nrow(object)),
     cexCol = magnif[length(magnif)] / sqrt(ncol(object)),
     borders = c(0.55, 0.75),
@@ -169,7 +173,8 @@ stopifnot(identical(metadata(vaas_4, "Species"), names(hm$rowColMap)))
   \S4method{heat_map}{data.frame}(object, as.labels,
     as.groups = NULL, sep = " ", ...) 
 
-  \S4method{heat_map}{OPMS}(object, as.labels, subset = "A",
-    as.groups = NULL, sep = " ", extract.args = list(), ...) 
+  \S4method{heat_map}{OPMS}(object, as.labels,
+    subset = opm_opt("curve.param"), as.groups = NULL, sep = " ",
+    extract.args = list(), ...) 
 
 }

@@ -69,7 +69,7 @@
   \sQuote{after} is the empty string if no conversion was
   tried (see \code{overwrite}), \sQuote{ok} if conversion
   was successful and a message describing the problems
-  otherwise.  For the results of the \code{demo} mode see
+  otherwise. For the results of the \code{demo} mode see
   above.
 }
 \description{

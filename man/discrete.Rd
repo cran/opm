@@ -16,7 +16,8 @@
   mode. In \code{gap} mode, the range is determined using
   \code{\link{run_kmeans}} with the number of clusters set
   to \code{3} and then applying \code{\link{borders}} to
-  the result.}
+  the result. The number of clusters is set to \code{2} if
+  \code{range} is \code{FALSE} in \code{gap} mode.}
 
   \item{gap}{Logical scalar. If \code{TRUE}, always convert
   to binary or ternary characters, ignoring \code{states}.
@@ -75,13 +76,24 @@
   Convert a vector of continuous characters to discrete
   ones. One of the uses of this functions is to create
   character data suitable for phylogenetic studies with
-  programs such as PAUP* and RAxML. These accept only
-  discrete characters with at most 32 states, coded as 0 to
-  9 followed by A to V. For the full export one
-  additionally needs \code{\link{phylo_data}}. The matrix
-  method is just a wrapper that takes care of the matrix
-  dimensions, and the data-frame method is a wrapper for
-  that method.
+  programs such as \acronym{PAUP*} and \acronym{RAxML}.
+  These accept only discrete characters with at most 32
+  states, coded as 0 to 9 followed by A to V. For the full
+  export one additionally needs \code{\link{phylo_data}}.
+  The matrix method is just a wrapper that takes care of
+  the matrix dimensions, and the data-frame method is a
+  wrapper for that method.
+}
+\details{
+  The term \sQuote{character} as used here has nothing to
+  do \emph{per se} with the eponymous mode or class of \R.
+  Rather, the term is borrowed from taxonomic
+  classification in biology, where, technically, a single
+  \sQuote{character} is stored in one column of a data
+  matrix if each organism is stored in one row. Characters
+  are the \emph{quasi-independent units} of evolution on
+  the one hand and of phylogenetic reconstruction (and thus
+  taxonomic classification) on the other hand.
 }
 \examples{
 # Treat everything between 3.4 and 4.5 as ambiguous
@@ -126,6 +138,10 @@ stopifnot(c("0", "?", "1") \%in\% y)
   of discretization methods. \emph{Proceedings of the Tenth
   International Symposium on Computer and Information
   Sciences}, p. 443--450.
+
+  Wiley, E. O., Lieberman, B. S. 2011 \emph{Phylogenetics:
+  Theory and Practice of Phylogenetic Systematics}.
+  Hoboken, New Jersey: Wiley-Blackwell.
 
   Bunuel, L. 1972 \emph{Le charme discret de la
   bourgeoisie.} France/Spain, 96 min.

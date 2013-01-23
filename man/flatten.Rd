@@ -1,6 +1,6 @@
 \name{flatten}
 \alias{flatten}
-\title{Flatten an OPM matrix or a list}
+\title{Flatten measurements from OPM or OPMS objects}
 \arguments{
   \item{object}{\code{\link{OPM}} or \code{\link{OPMS}}
   object or list.}
@@ -38,19 +38,12 @@
   \sQuote{Time}, \sQuote{Well}, \sQuote{Value}, with the
   obvious meanings. The \code{\link{OPMS}} method yields an
   additional column named \sQuote{Plate}, which contains
-  each plate's number within \code{object}. The list method
-  returns a list.
+  each plate's number within \code{object}.
 }
 \description{
   Convert into \sQuote{flat} data frame, including all
   measurements in a single column (suitable, e.g., for
-  \pkg{lattice}). The list method returns a non-nested
-  list.
-}
-\note{
-  The list method is based on
-  \url{http://stackoverflow.com/questions/8139677/how-to-flatten-a-list-to-a-list-without-coercion}
-  with some slight improvements.
+  \pkg{lattice}).
 }
 \examples{
 # OPM method
@@ -70,12 +63,6 @@ head(x <- flatten(vaas_4, fixed = "TEST"))
 stopifnot(is.data.frame(x), identical(dim(x), c(147456L, 5L)))
 head(x <- flatten(vaas_4, fixed = "TEST", include = "Strain"))
 stopifnot(is.data.frame(x), identical(dim(x), c(147456L, 6L)))
-
-# List method
-x <- list(a = list(b = 1:5, c = letters[1:5]), d = LETTERS[1:3],
-  e = list(pi))
-(y <- flatten(x))
-stopifnot(is.list(y), length(y) == 4, !sapply(y, is.list))
 }
 \seealso{
   stats::reshape
@@ -95,14 +82,11 @@ stopifnot(is.list(y), length(y) == 4, !sapply(y, is.list))
 \alias{flatten-methods}
 \alias{flatten,OPM-method}
 \alias{flatten,OPMS-method}
-\alias{flatten,list-method}
 \usage{
   \S4method{flatten}{OPM}(object, include = NULL, fixed = NULL,
     factors = TRUE, exact = TRUE, strict = TRUE, full = TRUE, ...) 
 
   \S4method{flatten}{OPMS}(object, include = NULL, fixed = list(),
     ...) 
-
-  \S4method{flatten}{list}(object) 
 
 }

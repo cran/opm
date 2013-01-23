@@ -4,12 +4,15 @@
 \alias{OPM-class}
 \title{OPM class}
 \description{
-  Class for holding single-plate OmniLog(R) phenotype
-  microarray data without aggregated values, but with
-  information read from the original input CSV files as
-  well as an additional arbitrary amount of arbitrarily
-  organized metadata. \sQuote{OPM} is an acronym for
-  \sQuote{OmniLog(R) Phenotype Microarray}.
+  Class for holding single-plate
+  OmniLog\eqn{\textsuperscript{\textregistered}}{(R)}
+  phenotype microarray data without aggregated values, but
+  with information read from the original input
+  \acronym{CSV} files as well as an additional arbitrary
+  amount of arbitrarily organised metadata. \acronym{OPM}
+  is an acronym for
+  \sQuote{OmniLog\eqn{\textsuperscript{\textregistered}}{(R)}
+  Phenotype Microarray}.
 }
 \details{
   Objects of this class are usually created by inputting
@@ -24,11 +27,11 @@
   classes) to a list (and vice versa) relies on a mapping
   between slot names and keys in the list, i.e. the list
   must be appropriately named. For instance, this is the
-  mechanism when reading from and writing to YAML, see
-  \code{\link{to_yaml}}.  \item Coercions to other data
-  frames and matrices first coerce the
-  \code{\link{measurements}} and then add the other slots
-  as attributes.  \item Methods such as
+  mechanism when reading from and writing to
+  \acronym{YAML}, see \code{\link{to_yaml}}.  \item
+  Coercions to other data frames and matrices first coerce
+  the \code{\link{measurements}} and then add the other
+  slots as attributes.  \item Methods such as
   \code{\link{flatten}} might be more appropriate for
   converting \code{\link{OPM}} objects.  }
 }

@@ -6,8 +6,11 @@
 
   \item{keys}{Character vector (or other objects usable as
   vector index). An optional sub-selection. If empty (the
-  default), all CSV data are returned.  It is an error to
-  select non-existing items.}
+  default), all \acronym{CSV} data are returned. By default
+  it is an error to select non-existing items.}
+
+  \item{strict}{Logical scalar indicating whether or not it
+  is an error if \code{keys} are not found.}
 
   \item{...}{Optional arguments passed between the
   methods.}
@@ -17,7 +20,7 @@
 }
 \description{
   Information about the plate as originally read from the
-  input CSV file. See \code{\link{read_opm}} and
+  input \acronym{CSV} file. See \code{\link{read_opm}} and
   \code{\link{read_single_opm}} for reading such files.
 }
 \examples{
@@ -44,7 +47,7 @@ stopifnot(is.character(x), length(x) == 4)
   \code{\link{minmax}}, \code{\link{plate_type}},
   \code{\link{position}}, \code{\link{select}},
   \code{\link{seq}}, \code{\link{setup_time}},
-  \code{\link{show}}, \code{\link{summary}},
+  \code{\link{subset}}, \code{\link{summary}},
   \code{\link{well}}, \code{\link{wells}}
 }
 \keyword{attribute}
@@ -54,7 +57,8 @@ stopifnot(is.character(x), length(x) == 4)
 \alias{csv_data,OPM-method}
 \alias{csv_data,OPMS-method}
 \usage{
-  \S4method{csv_data}{OPM}(object, keys = character()) 
+  \S4method{csv_data}{OPM}(object, keys = character(),
+    strict = TRUE) 
 
   \S4method{csv_data}{OPMS}(object, ...) 
 

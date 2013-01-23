@@ -39,10 +39,13 @@
 \alias{ranging-methods}
 \alias{ranging,numeric-method}
 \alias{ranging,MOA-method}
+\alias{ranging,list-method}
 \usage{
   \S4method{ranging}{numeric}(object, extended = !zscores,
     zscores = FALSE, na.rm = TRUE, fac = 1) 
 
   \S4method{ranging}{MOA}(object, ...) 
+
+  \S4method{ranging}{list}(object, ...) 
 
 }

@@ -12,9 +12,9 @@
 }
 \description{
   Get the setup time of the PM experiment as recorded by
-  the OmniLog(R) device. This is a convenience function for
-  one of the more important entries of
-  \code{\link{csv_data}}.
+  the OmniLog\eqn{\textsuperscript{\textregistered}}{(R)}
+  instrument. This is a convenience function for one of the
+  more important entries of \code{\link{csv_data}}.
 }
 \examples{
 # 'OPM' method
@@ -44,7 +44,7 @@ stopifnot(inherits(parsed, "POSIXlt"), length(parsed) == 4)
   \code{\link{metadata}}, \code{\link{minmax}},
   \code{\link{plate_type}}, \code{\link{position}},
   \code{\link{select}}, \code{\link{seq}},
-  \code{\link{show}}, \code{\link{summary}},
+  \code{\link{subset}}, \code{\link{summary}},
   \code{\link{well}}, \code{\link{wells}}
 }
 \keyword{attribute}

@@ -1,0 +1,18 @@
+PLATE_MAP <-
+structure(c("Microbial Community Analysis", "Identification", 
+"Carbon and Energy Sources", "Carbon and Energy Sources / Nitrogen Sources", 
+"Carbon and Energy Sources / Nitrogen Sources", "Carbon and Energy Sources / Nitrogen Sources", 
+"Ions", "Hormones & Metabolic Effectors", "Hormones & Metabolic Effectors", 
+"Hormones & Metabolic Effectors", "Anti-Cancer Agents", "Anti-Cancer Agents", 
+"Anti-Cancer Agents", "Anti-Cancer Agents", "Carbon Sources", 
+"Carbon Sources", "Nitrogen Sources", "Phosphorus and Sulfur Sources", 
+"Nutrient Supplements", "Peptide Nitrogen Sources", "Peptide Nitrogen Sources", 
+"Peptide Nitrogen Sources", "Osmolytes", "pH", "Chemicals", "Chemicals", 
+"Chemicals", "Chemicals", "Chemicals", "Chemicals", "Chemicals", 
+"Chemicals", "Chemicals", "Chemicals", "Sporulating and Filamentous N2", 
+"Sporulating and Filamentous P2"), .Names = c("ECO", "Gen III", 
+"PM-M01", "PM-M02", "PM-M03", "PM-M04", "PM-M05", "PM-M06", "PM-M07", 
+"PM-M08", "PM-M11", "PM-M12", "PM-M13", "PM-M14", "PM01", "PM02", 
+"PM03", "PM04", "PM05", "PM06", "PM07", "PM08", "PM09", "PM10", 
+"PM11", "PM12", "PM13", "PM14", "PM15", "PM16", "PM17", "PM18", 
+"PM19", "PM20", "SF-N2", "SF-P2"))

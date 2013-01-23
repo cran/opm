@@ -1,6 +1,6 @@
 \name{select}
 \alias{select}
-\title{Select a subset of the plates (or time points)}
+\title{Select a subset of the plates (or time points) [deprecated]}
 \arguments{
   \item{object}{\code{\link{OPMS}} object.}
 
@@ -9,62 +9,13 @@
   class \sQuote{character}). If a logical or numeric
   vector, \code{query} is directly used as the first
   argument of \code{\link{[}}, and all following arguments,
-  if any, are ignored.  If a list or a character vector, it
+  if any, are ignored. If a list or a character vector, it
   is used for conducting a query based on one of the infix
   operators as described below. The data-frame method
   expects a character vector containing class names.}
 
-  \item{values}{Logical scalar. If \code{TRUE}, the values
-  of \code{query} are also considered (by using
-  \code{\link{infix.q}} or \code{\link{infix.largeq}}). If
-  \code{FALSE} only the keys are considered (by using
-  \code{\link{infix.k}}). That is, choose either the plates
-  for which certain metadata entries contain certain
-  values, or choose the plates for which these metadata
-  have been set at all (to some arbitrary value).  See the
-  mentioned functions for details, and note the special
-  behavior if \code{query} is a character vector and
-  \code{values} is \code{FALSE}.}
-
-  \item{invert}{Logical scalar. If \code{TRUE}, return the
-  plates for which the condition is not \code{TRUE}.}
-
-  \item{exact}{Logical scalar. If the values of
-  \code{query} are considered, should this be done using
-  \code{\link{infix.q}} (when \code{FALSE}) or
-  \code{\link{infix.largeq}} (when \code{TRUE})? See these
-  functions and \code{\link{contains}} for details.}
-
-  \item{time}{Logical scalar. If \code{TRUE}, all other
-  arguments are ignored and the object is reduced to the
-  common subset of time points (measurement hours and
-  minutes).}
-
-  \item{positive}{Character scalar. If \sQuote{ignore}, not
-  used, Otherwise all previous arguments except
-  \code{object} are ignored. If \sQuote{any}, wells are
-  selected that contain positive reactions in at least one
-  plate. If \sQuote{all}, wells are selected that contain
-  positive reactions in all plates. This works only if all
-  elements of \code{object} have discretized values. Using
-  \code{invert} means selecting all negative or weak
-  reactions.}
-
-  \item{negative}{Character scalar. Like \code{positive},
-  but returns the negative reactions. Using \code{invert}
-  means selecting all positive or weak reactions.}
-
-  \item{use}{Character scalar. An alternative way to
-  specify the settings. If \sQuote{i} or \sQuote{I},
-  ignored. If \sQuote{t} or \sQuote{T}, \code{time} is set
-  to \code{TRUE}. If \sQuote{p} or \sQuote{P},
-  \code{positive} is set to \sQuote{any} or \sQuote{all},
-  respectively.  If \sQuote{n} or \sQuote{N},
-  \code{non.negative} is set to \sQuote{any} or
-  \sQuote{all}, respectively.  Otherwise, \code{use} is
-  taken directly as the one-latter name of the infix
-  operators to use for plate selection, overriding
-  \code{values} and \code{exact}.}
+  \item{...}{Optional arguments passed to
+  \code{\link{subset}}.}
 }
 \value{
   \code{NULL} or \code{\link{OPM}} or \code{\link{OPMS}}
@@ -78,6 +29,10 @@
   Alternatively, select a common subset of time points from
   all plates. The data-frame method selects columns that
   belong to certain classes.
+}
+\note{
+  The use of this function is \strong{deprecated}. Please
+  use \code{\link{subset}} instead.
 }
 \examples{
 ## 'OPMS' method
@@ -142,7 +97,7 @@ mustbe(x, y)
   \code{\link{metadata}}, \code{\link{minmax}},
   \code{\link{plate_type}}, \code{\link{position}},
   \code{\link{seq}}, \code{\link{setup_time}},
-  \code{\link{show}}, \code{\link{summary}},
+  \code{\link{subset}}, \code{\link{summary}},
   \code{\link{well}}, \code{\link{wells}}
 }
 \keyword{manip}
@@ -152,11 +107,7 @@ mustbe(x, y)
 \alias{select,OPMS-method}
 \alias{select,data.frame-method}
 \usage{
-  \S4method{select}{OPMS}(object, query, values = TRUE,
-    invert = FALSE, exact = FALSE, time = FALSE,
-    positive = c("ignore", "any", "all"),
-    negative = c("ignore", "any", "all"),
-    use = c("i", "I", "k", "K", "n", "N", "p", "P", "q", "Q", "t", "T")) 
+  \S4method{select}{OPMS}(object, query, ...) 
 
   \S4method{select}{data.frame}(object, query) 
 

@@ -5,8 +5,8 @@
   \item{object}{Object of one of the classes belonging to
   \code{\link{YAML_VIA_LIST}}.}
 
-  \item{sep}{Logical scalar. Prepend YAML document
-  separator \verb{---}?}
+  \item{sep}{Logical scalar. Prepend \acronym{YAML}
+  document separator \verb{---}?}
 
   \item{line.sep}{Character scalar used as output line
   separator.}
@@ -15,17 +15,26 @@
   \code{as.yaml} from the \pkg{yaml} package.}
 }
 \value{
-  Character scalar (YAML string).
+  Character scalar (\acronym{YAML} string).
 }
 \description{
-  Convert some \R object to YAML. If the package \pkg{yaml}
-  is not installed, a call of this function will result in
-  an error.
+  Convert some \R object to \acronym{YAML}. If the package
+  \pkg{yaml} is not installed, a call of this function will
+  result in an error.
+}
+\details{
+  \acronym{YAML} is a useful data-serialization standard
+  that is understood by many programming languages. It is
+  particularly more human readable than \acronym{XML}, and
+  vector-like data structures (such as Phenotype MicroArray
+  measurements) can be much more compactly encoded.
 }
 \note{
-  Many PM datasets can be batch-converted into YAML format
-  using \code{\link{batch_opm_to_yaml}}. The output format
-  for the child classes is described in detail there.
+  Many PM datasets can be batch-converted into
+  \acronym{YAML} format using
+  \code{\link{batch_opm_to_yaml}}. The output format for
+  the child classes is described in detail there, as well
+  as other aspects relevant in practice.
 }
 \examples{
 \dontrun{

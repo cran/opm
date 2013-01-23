@@ -50,83 +50,94 @@
   \sQuote{maximum height} curve parameter (which is
   biologically reasonable though).
 }
+\note{
+  The discretized values can be queried for using
+  \code{\link{has_disc}} and received using
+  \code{\link{discretized}}.
+}
 \examples{
+mustbe <- function(a, b) stopifnot(identical(a, b))
+
 ## OPMA method
 data(vaas_1)
 
 # arbitrary threshold, no ambiguity
 summary(x <- do_disc(vaas_1, cutoff = 100))
-disc_settings(x)
 stopifnot(has_disc(x), dim(x) == dim(vaas_1), !is.na(discretized(x)))
-y <- list(program = "direct", options = list(cutoffs = 100, datasets = 1L))
-stopifnot(identical(disc_settings(x), y))
+# the settings used  have been stored in the resulting object
+(y <- disc_settings(x))
+mustbe(y$method, "direct")
+mustbe(y$options, list(cutoffs = 100, datasets = 1L))
 
 # arbitrary thresholds, allowing intermediate ('weak') reactions
 summary(x <- do_disc(vaas_1, cutoff = c(75, 125)))
-disc_settings(x)
 stopifnot(has_disc(x), dim(x) == dim(vaas_1), any(is.na(discretized(x))))
-y <- list(program = "direct", options = list(cutoffs = c(75, 125),
-  datasets = 1L))
-stopifnot(identical(disc_settings(x), y))
+(y <- disc_settings(x))
+mustbe(y$method, "direct")
+mustbe(y$options, list(cutoffs = c(75, 125), datasets = 1L))
 
 # using k-means, no ambiguity
 summary(x <- do_disc(vaas_1, cutoff = FALSE))
-disc_settings(x)
 stopifnot(has_disc(x), dim(x) == dim(vaas_1), !is.na(discretized(x)))
-stopifnot(disc_settings(x)$program == "kmeans")
-stopifnot(length(disc_settings(x)$options$cutoffs) == 1)
+(y <- disc_settings(x))
+mustbe(y$method, "kmeans")
+mustbe(length(y$options$cutoffs), 1L)
 
 # using k-means, allowing intermediate ('weak') reactions
 summary(x <- do_disc(vaas_1, cutoff = TRUE))
-disc_settings(x)
 stopifnot(has_disc(x), dim(x) == dim(vaas_1), any(discretized(x)))
-stopifnot(disc_settings(x)$program == "kmeans")
-stopifnot(length(disc_settings(x)$options$cutoffs) == 2)
+(y <- disc_settings(x))
+mustbe(y$method, "kmeans")
+mustbe(length(y$options$cutoffs), 2L) # now 2 cutoff values
 
 # OPMS method
 data(vaas_4)
 
 # arbitrary threshold, no ambiguity, no groups
 summary(x <- do_disc(vaas_4, cutoff = 100))
-disc_settings(x)
 stopifnot(has_disc(x), dim(x) == dim(vaas_4), !is.na(discretized(x)))
-y <- list(program = "direct", options = list(cutoffs = 100, datasets = 4L))
-stopifnot(identical(disc_settings(x)[[1]], y))
+# the settings used  have been stored in the resulting object
+(y <- disc_settings(x)[[1]])
+mustbe(y$method, "direct")
+mustbe(y$options, list(cutoffs = 100, datasets = 4L))
 
 # arbitrary threshold, no ambiguity, with groups, 1 plate per group
 summary(x <- do_disc(vaas_4, cutoff = 100, groups = TRUE))
-disc_settings(x)
 stopifnot(has_disc(x), dim(x) == dim(vaas_4), !is.na(discretized(x)))
-y <- list(program = "direct", options = list(cutoffs = 100, datasets = 1L))
-y$options$group <- "1" # the plate numbers yield the group names
-stopifnot(identical(disc_settings(x)[[1]], y))
+(y <- disc_settings(x)[[1]])
+mustbe(y$method, "direct")
+# here, the plate numbers yield the group names
+mustbe(y$options, list(cutoffs = 100, datasets = 1L, group = "1"))
 
 # arbitrary threshold, no ambiguity, with specified groups
-x <- do_disc(vaas_4, cutoff = 100, groups = "Species")
-summary(x)
-disc_settings(x)
+summary(x <- do_disc(vaas_4, cutoff = 100, groups = "Species"))
 stopifnot(has_disc(x), dim(x) == dim(vaas_4), !is.na(discretized(x)))
-y <- list(program = "direct", options = list(cutoffs = 100, datasets = 2L))
-y$options$group <- "Escherichia coli" # groups are from the metadata
-stopifnot(identical(disc_settings(x)[[1]], y))
+(y <- disc_settings(x)[[1]])
+mustbe(y$method, "direct")
+# now, groups are from the metadata (but played no role)
+mustbe(y$options,
+  list(cutoffs = 100, datasets = 2L, group = "Escherichia coli"))
 
 # using k-means, no ambiguity, with specified groups
-x <- do_disc(vaas_4, cutoff = TRUE, groups = "Species")
-summary(x)
-disc_settings(x)
+summary(x <- do_disc(vaas_4, cutoff = TRUE, groups = "Species"))
 stopifnot(has_disc(x), dim(x) == dim(vaas_4), any(is.na(discretized(x))))
-stopifnot(identical(disc_settings(x)[[1]]$program, "kmeans"))
-stopifnot(names(disc_settings(x)[[1]]$options) ==
-  c("cutoffs", "datasets", "group"))
+(y <- disc_settings(x)[[1]])
+mustbe(y$method, "kmeans")
+# grouping by species, discretized separately
+mustbe(y$options$group, "Escherichia coli")
+mustbe(y$options$datasets, 2L)
+mustbe(length(y$options$cutoffs), 2L)
 
 # using best_cutoff()
-x <- do_disc(vaas_4, cutoff = NULL, groups = "Species")
-summary(x)
-disc_settings(x)
+summary(x <- do_disc(vaas_4, cutoff = NULL, groups = "Species"))
 stopifnot(has_disc(x), dim(x) == dim(vaas_4), any(is.na(discretized(x))))
-stopifnot(identical(disc_settings(x)[[1]]$program, "best-cutoff"))
-stopifnot(names(disc_settings(x)[[1]]$options) ==
-  c("cutoffs", "score", "datasets", "group"))
+(y <- disc_settings(x)[[1]])
+mustbe(y$method, "best-cutoff")
+# groups as above
+mustbe(y$options$group, "Escherichia coli")
+mustbe(y$options$datasets, 2L)
+# ...but some additional entries:
+stopifnot(c("cutoffs", "score") \%in\% names(y$options))
 }
 \seealso{
   Other discretization-functions:

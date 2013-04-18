@@ -20,7 +20,7 @@
   only each n-th time point. A mainly experimental function
   that might be of use in testing.
 }
-\note{
+\details{
   Thinning the plates out is experimental insofar as it has
   \strong{not} been tested whether and how this could
   sensibly be applied before aggregating the data.

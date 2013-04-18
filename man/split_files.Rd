@@ -14,16 +14,18 @@
   \item{pattern}{Regular expression or shell globbing
   pattern for matching the separator lines if \code{invert}
   is \code{FALSE} (the default) or matching the
-  non-separator lines if otherwise. Conceptually each of
-  the sections into which a file is split comprises a
-  separator line followed by non-separator lines. That is,
-  separator lines followed by another separator line are
-  ignored. Non-separator lines not preceded by a separator
-  line are treated as a section of their own, however.}
+  non-separator lines if otherwise.
+
+  Conceptually each of the sections into which a file is
+  split comprises a separator line followed by
+  non-separator lines. That is, separator lines followed by
+  another separator line are ignored. Non-separator lines
+  not preceded by a separator line are treated as a section
+  of their own, however.}
 
   \item{outdir}{Character scalar determining the output
-  directory. If empty, each file's input directory is
-  used.}
+  directory. If empty, or containing empty strings, each
+  file's input directory is used.}
 
   \item{demo}{Logical scalar. Do not create files, just
   return the usual list containing all potentially created
@@ -50,11 +52,11 @@
 
   \item{format}{Character scalar determining the outfile
   name format. It is passed to \code{sprintf} and expects
-  three placeholders: (i) the basename of the file; (ii)
-  the index of the section; and (iii) the file extension.
-  Getting \code{format} wrong might result in non-unique
-  filenames and thus probably in overwritten files;
-  accordingly, it should be used with care.}
+  three placeholders: \itemize{ \item the basename of the
+  file; \item the index of the section; \item the file
+  extension.  } Getting \code{format} wrong might result in
+  non-unique filenames and thus probably in overwritten
+  files; accordingly, it should be used with care.}
 
   \item{compressed}{Logical scalar. Passed to
   \code{\link{file_pattern}}, but here only affects the way
@@ -77,6 +79,12 @@
   Sections are determined with patterns that match the
   start of a section.
 }
+\details{
+  This function is useful for splitting
+  OmniLog\eqn{\textsuperscript{\textregistered}}{(R)}
+  multi-plate CSV files before inputting them with
+  \code{\link{read_opm}}.  See \sQuote{Examples}.
+}
 \examples{
 # Splitting an old-style CSV file containing several plates
 (x <- grep("Multiple", opm_files("testdata"), value = TRUE, fixed = TRUE))
@@ -90,6 +98,8 @@ if (length(x) > 0) {
   result <- unlist(result)
   stopifnot(file.exists(result))
   unlink(result) # tidy up
+} else {
+  warning("opm example files not found")
 }
 ## One could split new-style CSV as follows (if x is a vector of filenames):
 # split_files(x, pattern = '^"Data File",')
@@ -101,8 +111,8 @@ if (length(x) > 0) {
 \seealso{
   base::split base::strsplit
 
-  Other IO-functions: \code{\link{batch_collect}},
-  \code{\link{batch_opm_to_yaml}},
+  Other io-functions: \code{\link{batch_collect}},
+  \code{\link{batch_opm}}, \code{\link{batch_opm_to_yaml}},
   \code{\link{batch_process}},
   \code{\link{clean_filenames}},
   \code{\link{collect_template}},

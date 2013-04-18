@@ -21,12 +21,12 @@
 \examples{
 # 'OPM' method
 data(vaas_1)
-(x <- disc_settings(vaas_1))
+(x <- disc_settings(vaas_1)) # => named list
 stopifnot(is.list(x), !is.null(names(x)))
 
 # 'OPMS' method
 data(vaas_4)
-summary(x <- disc_settings(vaas_4))
+summary(x <- disc_settings(vaas_4)) # => list of named lists, one per plate
 stopifnot(is.list(x), is.null(names(x)), length(x) == length(vaas_4))
 stopifnot(duplicated(x)[-1])
 }

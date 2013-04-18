@@ -33,17 +33,23 @@
   \item{strict}{Logical scalar also passed to
   \code{\link{metadata}}.}
 
+  \item{html}{Logical scalar. Convert to \acronym{HTML}?
+  This involves Greek letters and paragraph (\sQuote{div})
+  tags.}
+
   \item{...}{Optional arguments passed between the methods
   or to \code{\link{wells}}.}
 }
 \value{
-  Character vector or matrix. See the examples for details.
+  Character vector or matrix with additional class atribute
+  \sQuote{OPMD_Listing} or \sQuote{OPMS_Listing}. See the
+  examples for details.
 }
 \description{
   This creates a textual listing of the discretized values.
   This is useful to describe
   OmniLog\eqn{\textsuperscript{\textregistered}}{(R)}
-  phenotype microarray results in a manuscript.
+  phenotype microarray results in a scientific manuscript.
 }
 \note{
   See \code{\link{do_disc}} for generating discretized
@@ -55,24 +61,30 @@ data(vaas_1)
 
 # this yields one sentence for each kind of reaction:
 (x <- listing(vaas_1))
-stopifnot(is.character(x), length(x) == 3, !is.null(names(x)))
+stopifnot(inherits(x, "OPMD_Listing"), is.character(x), length(x) == 3,
+  !is.null(names(x)))
+
+# including HTML tags
+(y <- listing(vaas_1, html = TRUE))
+stopifnot(inherits(y, "OPMD_Listing"), is.character(x), nchar(y) > nchar(x),
+  !is.null(names(x)))
 
 # 'OPMS' method
 data(vaas_4)
 
-# no grouping, no names
-(y <- listing(vaas_4, as.groups = NULL))
-stopifnot(is.matrix(y), dim(y) == c(4, 3))
-stopifnot(is.null(rownames(y)), !is.null(colnames(y)))
+# no grouping, no names (numbering used instead for row names)
+(y <- listing(vaas_4[1:2], as.groups = NULL))
+stopifnot(inherits(y, "OPMS_Listing"), is.matrix(y), dim(y) == c(2, 3))
+stopifnot(!is.null(rownames(y)), !is.null(colnames(y)))
 
 # in effect no grouping, but names
-(y <- listing(vaas_4, as.groups = list("Species", "Strain")))
-stopifnot(is.matrix(y), dim(y) == c(4, 3))
+(y <- listing(vaas_4[1:2], as.groups = list("Species", "Strain")))
+stopifnot(inherits(y, "OPMS_Listing"), is.matrix(y), dim(y) == c(2, 3))
 stopifnot(!is.null(rownames(y)), !is.null(colnames(y)))
 
 # two groups
 (y <- listing(vaas_4, as.groups = list("Species")))
-stopifnot(is.matrix(y), dim(y) == c(2, 3))
+stopifnot(inherits(y, "OPMS_Listing"), is.matrix(y), dim(y) == c(2, 3))
 stopifnot(!is.null(rownames(y)), !is.null(colnames(y)))
 }
 \seealso{
@@ -90,10 +102,10 @@ stopifnot(!is.null(rownames(y)), !is.null(colnames(y)))
 \alias{listing,OPMS-method}
 \usage{
   \S4method{listing}{OPMD}(x, downcase = TRUE, full = TRUE,
-    in.parens = FALSE, ...) 
+    in.parens = FALSE, html = FALSE, ...) 
 
   \S4method{listing}{OPMS}(x, as.groups, cutoff = 0.5, sep = " ",
     exact = TRUE, strict = TRUE, downcase = TRUE, full = TRUE,
-    in.parens = FALSE, ...) 
+    in.parens = FALSE, html = FALSE, ...) 
 
 }

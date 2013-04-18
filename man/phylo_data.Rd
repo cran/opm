@@ -7,21 +7,27 @@
   \sQuote{integer}, \sQuote{logical}, \sQuote{double} and
   \sQuote{character} matrix content is supported. The
   data-frame and \sQuote{OPMS} methods first call
-  \code{\link{extract}} and then the matrix method.}
+  \code{\link{extract}} and then the matrix method. The
+  methods for \sQuote{OPMD_Listing} and
+  \sQuote{OPMS_Listing} objects can be applied to the
+  results of \code{\link{listing}}.}
 
-  \item{format}{Character scalar, either \sQuote{epf}
-  (Extended Phylip Format), \sQuote{nexus},
-  \sQuote{phylip}, \sQuote{hennig} or \sQuote{html}. If
-  \sQuote{nexus} or \sQuote{hennig} format are chosen, a
+  \item{format}{Character scalar determining the output
+  format, either \sQuote{epf} (Extended Phylip Format),
+  \sQuote{nexus}, \sQuote{phylip}, \sQuote{hennig} or
+  \sQuote{html}.
+
+  If \sQuote{nexus} or \sQuote{hennig} format are chosen, a
   non-empty \code{comment} attribute will be output
   together with the data (and appropriately escaped). In
   case of \sQuote{html} format, a non-empty \code{comment}
-  yields the title of the HTML document. The main
-  difference between \sQuote{epf} and \sQuote{phylip} is
-  that the former can use labels with more than ten
-  characters, but its labels must not contain whitespace.
-  (These adaptations are done automatically with
-  \code{\link{safe_labels}}.)}
+  yields the title of the HTML document.
+
+  The main difference between \sQuote{epf} and
+  \sQuote{phylip} is that the former can use labels with
+  more than ten characters, but its labels must not contain
+  whitespace. (These adaptations are done automatically
+  with \code{\link{safe_labels}}.)}
 
   \item{outfile}{Character scalar. If a non-empty character
   scalar, resulting lines are directly written to this
@@ -40,17 +46,17 @@
   values? Has no effect unless \sQuote{nexus} is selected
   as \sQuote{format}.}
 
-  \item{delete}{Character scalar. If \sQuote{uninf},
-  columns are removed which are either constant (in the
-  strict sense) or are columns in which some fields contain
-  polymorphisms, and no pairs of fields share no character
-  states. If \sQuote{ambig}, columns with ambiguities
-  (multiple states in at least one single field) are
-  removed. If \sQuote{constant}, columns which are constant
-  in the strict sense are removed. \code{delete} is
-  currently ignored for formats other than \sQuote{html},
-  and note that columns become rows in the final
-  \acronym{HTML} output.}
+  \item{delete}{Character scalar with one of the following
+  values: \describe{ \item{uninf}{Columns are removed which
+  are either constant (in the strict sense) or are columns
+  in which some fields contain polymorphisms, and no pairs
+  of fields share no character states.}
+  \item{ambig}{Columns with ambiguities (multiple states in
+  at least one single field) are removed.}
+  \item{constant}{Columns which are constant in the strict
+  sense are removed.} } \code{delete} is currently ignored
+  for formats other than \sQuote{html}, and note that
+  columns become rows in the final \acronym{HTML} output.}
 
   \item{join}{Logical scalar, vector or factor. Unless
   \code{FALSE}, rows of \code{object} are joined together,
@@ -127,18 +133,19 @@
   Create entire character matrix (include header and
   footer) in a file format suitable for exporting
   phylogenetic data. Return it or write it to a file. This
-  function can also produce \acronym{HTML} tables suitable
-  for displaying PM data in taxonomic journals such as
-  \acronym{IJSEM}.
+  function can also produce \acronym{HTML} tables and text
+  paragraphs suitable for displaying \acronym{PM} data in
+  taxonomic journals such as \acronym{IJSEM}.
 }
 \details{
-  \itemize{ \item Exporting PM data in such formats allows
-  one to either infer trees from the data under the
-  maximum-likelihood and/or the maximum-parsimony
-  criterion, or to reconstruct the evolution of PM
-  characters on given phylogenetic trees, or to nicely
-  display the data in \acronym{HTML} format.  \item For
-  exporting NEXUS format, the matrix should normally be
+  Exporting PM data in such formats allows one to either
+  infer trees from the data under the maximum-likelihood
+  and/or the maximum-parsimony criterion, or to reconstruct
+  the evolution of PM characters on given phylogenetic
+  trees, or to nicely display the data in \acronym{HTML}
+  format.
+
+  For exporting NEXUS format, the matrix should normally be
   converted beforehand by applying \code{\link{discrete}}.
   Exporting \acronym{HTML} is optimized for data
   discretized with \code{gap} set to \code{TRUE}. For other
@@ -146,34 +153,36 @@
   modified, see \code{\link{html_args}}. The
   \sQuote{hennig} (Hennig86) format is the one used by
   \acronym{TNT}; it allows continuous characters to be
-  analysed as such.  \item \sQuote{epf} or \sQuote{extended
-  PHYLIP} is sometimes called \sQuote{relaxed PHYLIP}.
-  \item The generated \acronym{HTML} is guaranteed to
-  produce neither errors nor warnings if checked using the
-  Tidy program. It deliberately contains no formatting
+  analysed as such.
+
+  The generated \acronym{HTML} is guaranteed to produce
+  neither errors nor warnings if checked using the Tidy
+  program. It deliberately contains no formatting
   instructions but a rich annotation with \sQuote{class}
   attributes which allows for \acronym{CSS}-based
   formatting. This annotation includes the naming of all
-  sections and all kinds of textual content. Whether the
+  sections and all kinds of textual content.  Whether the
   characters show differences between at least one organism
   and the others is also indicated. For the \acronym{CSS}
   files that come with the package, see the examples below
-  and \code{\link{opm_files}}. }
+  and \code{\link{opm_files}}.
 }
 \note{
-  Regarding the meaning of \sQuote{character} as used here,
-  see the \sQuote{details} section of
-  \code{\link{discrete}}.
+  \itemize{ \item Regarding the meaning of
+  \sQuote{character} as used here, see the \sQuote{Details}
+  section of \code{\link{discrete}}.  \item \sQuote{epf} or
+  \sQuote{extended PHYLIP} is sometimes called
+  \sQuote{relaxed PHYLIP}. }
 }
 \examples{
 # simple helper functions
-echo <- function(x) write(x, file = "")
+echo <- function(x) write(substring(x, 1, 250), file = "")
 is_html <- function(x) is.character(x) &&
   c("<html>", "<head>", "<body>", "</html>", "</head>", "</body>") \%in\% x
 longer <- function(x, y) any(nchar(x) > nchar(y)) &&
   !any(nchar(x) < nchar(y))
 
-# dummy data set
+## examples with a dummy data set
 x <- matrix(c(0:9, letters[1:22]), nrow = 2)
 colnames(x) <- LETTERS[1:16]
 rownames(x) <- c("Ahoernchen", "Behoernchen") # Chip and Dale in German
@@ -212,7 +221,7 @@ comment(x) <- NULL
 echo(y.hennig <- phylo_data(x, format = "hennig"))
 stopifnot(identical(length(y.hennig), hennig.len.1 - 1L))
 
-# examples with real data and HTML
+## examples with real data and HTML
 data(vaas_4)
 
 # setting the CSS file that comes with opm as default
@@ -286,6 +295,18 @@ echo(yy <- phylo_data(vaas_4, as.labels = "Species", format = "hennig",
   join = TRUE, extract.args = list(in.parens = FALSE), subset = "A",
   discrete.args = NULL))
 stopifnot(is.character(yy), length(yy) > 10)
+
+## 'OPMD_listing' method
+echo(x <- phylo_data(listing(vaas_1)))
+stopifnot(is.character(x), length(x) == 1)
+echo(x <- phylo_data(listing(vaas_1, html = TRUE)))
+stopifnot(is.character(x), length(x) > 1)
+
+## 'OPMS_listing' method
+echo(x <- phylo_data(listing(vaas_4, as.groups = "Species")))
+stopifnot(is.character(x), length(x) == 2, !is.null(names(x)))
+echo(x <- phylo_data(listing(vaas_4, as.groups = "Species", html = TRUE)))
+stopifnot(is.character(x), length(x) > 2, is.null(names(x)))
 }
 \references{
   Berger, S. A., Stamatakis, A. 2010 Accuracy of
@@ -342,6 +363,8 @@ stopifnot(is.character(yy), length(yy) > 10)
 \alias{phylo_data,matrix-method}
 \alias{phylo_data,data.frame-method}
 \alias{phylo_data,OPMS-method}
+\alias{phylo_data,OPMD_Listing-method}
+\alias{phylo_data,OPMS_Listing-method}
 \usage{
   \S4method{phylo_data}{matrix}(object,
     format = opm_opt("phylo.fmt"), outfile = "", enclose = TRUE, indent = 3L,
@@ -356,5 +379,11 @@ stopifnot(is.character(yy), length(yy) > 10)
   \S4method{phylo_data}{OPMS}(object, as.labels, subset = "disc",
     sep = " ", extract.args = list(), join = TRUE,
     discrete.args = list(range = TRUE, gap = TRUE), ...) 
+
+  \S4method{phylo_data}{OPMD_Listing}(object,
+    html.args = html_args(), run.tidy = FALSE) 
+
+  \S4method{phylo_data}{OPMS_Listing}(object,
+    html.args = html_args(), run.tidy = FALSE) 
 
 }

@@ -26,13 +26,12 @@
 \examples{
 # 'OPM' method
 data(vaas_1)
-# compare this to setup_time()
-(x <- csv_data(vaas_1, "Setup Time"))
+(x <- csv_data(vaas_1, "Setup Time")) # compare this to setup_time()
 stopifnot(identical(x, c(`Setup Time` = "8/30/2010 1:53:08 PM")))
 
 # 'OPMS' method
 data(vaas_4)
-(x <- csv_data(vaas_4, "Setup Time"))
+(x <- csv_data(vaas_4, "Setup Time")) # one setup time per plate
 stopifnot(is.character(x), length(x) == 4)
 }
 \seealso{

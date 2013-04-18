@@ -14,7 +14,7 @@
   \item{plain}{Logical scalar. Return the plain basenames
   only, ignoring \code{subset} and \code{ci}?}
 
-  \item{opm.fast}{Logical scalar. Produce the mapping gfor
+  \item{opm.fast}{Logical scalar. Produce the mapping for
   the \sQuote{opm-fast} method instead?}
 }
 \value{

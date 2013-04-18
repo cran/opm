@@ -31,9 +31,9 @@
 }
 \examples{
 data(vaas_4)
-x <- oapply(vaas_4, identity)
+summary(x <- oapply(vaas_4, identity)) # trivial
 stopifnot(identical(x, vaas_4))
-x <- oapply(vaas_4, identity, simplify = FALSE)
+summary(x <- oapply(vaas_4, identity, simplify = FALSE)) # => yields list
 stopifnot(is.list(x), length(x) == 4, sapply(x, class) == "OPMD")
 }
 \seealso{

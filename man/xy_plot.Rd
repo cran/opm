@@ -6,30 +6,34 @@
 
   \item{col}{For the \code{\link{OPM}} method, just a
   character scalar (colour name) determining the line
-  colour. For the \code{\link{OPMS}} method, either a
-  character vector with colour codes or one of the
-  arguments of \code{\link{select_colors}} (for picking one
-  of the predefined colour sets). It is an error if fewer
-  colours are chosen than the number of plate grouping
-  levels (see the \code{\dots} argument below). For
-  user-chosen colour sets, keep in mind that the sets are
-  not checked for duplicates, and see
-  \code{max_rgb_contrast} from the \pkg{pkgutils} package
-  as a method for optimally arranging user-defined
+  colour.
+
+  For the \code{\link{OPMS}} method, either a character
+  vector with colour codes or one of the arguments of
+  \code{\link{select_colors}} (for picking one of the
+  predefined colour sets).
+
+  It is an error if fewer colours are chosen than the
+  number of plate grouping levels (see the \code{\dots}
+  argument below). For user-chosen colour sets, keep in
+  mind that the sets are not checked for duplicates, and
+  see \code{max_rgb_contrast} from the \pkg{pkgutils}
+  package as a method for optimally arranging user-defined
   colours.}
 
   \item{lwd}{Numeric scalar determining the line width.}
 
   \item{neg.ctrl}{Determine the height of a horizontal
-  baseline drawn in each panel. If \code{NULL} or
-  \code{FALSE}, no baseline will be drawn. If \code{TRUE},
-  the baseline's height is the value of
-  \code{\link{minmax}}. If a character scalar,
+  baseline drawn in each panel. \itemize{ \item If
+  \code{NULL} or \code{FALSE}, no baseline will be drawn.
+  \item If \code{TRUE}, the baseline's height is the value
+  of \code{\link{minmax}}.  \item If a character scalar,
   \code{neg.ctrl} is interpreted as the name of the wells
   regarded as negative control, and the baseline's height
   becomes the value of \code{\link{minmax}} applied to
-  these wells only. Set \code{neg.ctrl} to a numeric value
-  for assigning the height directly (at your own risk).}
+  these wells only.  \item Set \code{neg.ctrl} to a numeric
+  value for assigning the height directly (at your own
+  risk).  }}
 
   \item{base.col}{Character scalar. Baseline colour
   (ignored if no baseline is drawn).}
@@ -129,20 +133,22 @@
 }
 \description{
   Customized plotting of a single or multiple PM plate(s),
-  using \code{xyplot} from the \pkg{lattice} package. The
-  optimal number of rows and columns is estimated from the
-  number of selected wells. An optimal font size of the
+  using \code{xyplot} from the \pkg{lattice} package.
+}
+\details{
+  The optimal number of rows and columns is estimated from
+  the number of selected wells. An optimal font size of the
   panel headers is also chosen automatically, but can also
   be adapted by the user, much like most aspects of the
-  resulting graphics output. In the case of the
-  \code{\link{OPMS}} method, if metadata are selected,
-  curve colours are determined according to the
-  combinations of these metadata entries, otherwise each
-  plate gets its own colour.
-}
-\note{
+  resulting graphics output.
+
+  In the case of the \code{\link{OPMS}} method, if metadata
+  are selected, curve colours are determined according to
+  the combinations of these metadata entries, otherwise
+  each plate gets its own colour.
+
   The data-frame method is not intended for phenotype
-  microarray data.  It is currently \strong{undocumented}
+  microarray data. It is currently \strong{undocumented}
   and potentially subject to frequent changes or even
   removal. Users interested in the method should contact
   the authors.
@@ -155,11 +161,11 @@ xy_plot(vaas_1) # note the default main title built from the plate type
 }
 
 x <- vaas_1[, 11:22]
-# Gives a warning message: we have deleted the default negative control:
+# Yields a warning message: we have deleted the default negative control.
 xy_plot(x)
 # Turn the baseline off => no warning:
 xy_plot(x, neg.ctrl = NULL)
-# Or guess a baseline
+# Or guess a baseline:
 xy_plot(x, neg.ctrl = 100)
 # Some like it ugly:
 xy_plot(x, neg.ctrl = 100, col = "pink", base.col = "yellow", main = "Ugly")

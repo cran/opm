@@ -11,15 +11,27 @@
 #'
 NULL
 
-#' @importFrom grofit grofit.control grofit
+#' @importFrom pkgutils mypdf
 #'
 NULL
 
-#' @importFrom stats aggregate optimize kmeans heatmap update
+#' @import grofit
 #'
 NULL
 
-#' @importFrom boot boot boot.ci
+#' @importFrom stats aggregate optimize kmeans heatmap update reshape var
+#'
+NULL
+
+#' @importFrom stats lm glm aov confint
+#'
+NULL
+
+#' @importFrom parallel mclapply
+#'
+NULL
+
+#' @importFrom boot boot boot.ci norm.ci
 #'
 NULL
 
@@ -35,16 +47,26 @@ NULL
 #'
 NULL
 
-#'@importFrom lattice levelplot
+#' @importFrom lattice levelplot
 #'
 NULL
 
-#'@importFrom plotrix radial.plot
+#' @importFrom plotrix radial.plot
 #'
 NULL
 
-#'@importFrom yaml as.yaml yaml.load yaml.load_file
+#' @importFrom yaml as.yaml yaml.load yaml.load_file
 #'
 NULL
 
+#' @importFrom rjson toJSON
+#'
+NULL
 
+#' @importFrom splines spline.des
+#'
+NULL
+
+#' @import mgcv
+#'
+NULL

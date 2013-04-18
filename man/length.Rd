@@ -14,7 +14,7 @@
 \examples{
 data(vaas_4)
 (x <- length(vaas_4))
-stopifnot(identical(x, 4L))
+stopifnot(identical(x, 4L)) # 4 plates contained
 }
 \seealso{
   base::length

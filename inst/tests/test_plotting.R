@@ -64,6 +64,7 @@ test_that("cex can be guessed", {
   expect_equal(Inf, guess_cex(0))
 })
 
+
 ## best_layout
 test_that("best layouts can be determined", {
   x <- 0:100
@@ -75,6 +76,7 @@ test_that("best layouts can be determined", {
   expect_true(all(sapply(got, function(a) a[1] >= a[2])))
   expect_error(best_layout(-1))
 })
+
 
 ## best_range
 test_that("optimal ranges can be determined", {
@@ -91,6 +93,7 @@ test_that("optimal ranges can be determined", {
   expect_equal(c(1, 10), best_range(x, target = NULL))
   expect_equal(c(0.5, 10.5), best_range(x, target = NULL, offset = 0.5))
 })
+
 
 ## best_range
 test_that("best ranges can be determined", {
@@ -114,6 +117,7 @@ test_that("best ranges can be determined", {
     expect_true(real.range[2L] < got.range[2L])
   }
 })
+
 
 ## improved_max
 test_that("the improved maximum can be calculated", {
@@ -167,7 +171,7 @@ test_that("predefined color sets can be obtained", {
 
 
 ## xy_plot
-test_that("the OPMS methpd xy_plot() works", {
+test_that("the OPMS method xy_plot() works", {
   opms.input <- OPMS.INPUT[, 1L:10L]
   expect_is(opms.input, "OPMS")
   got <- xy_plot(opms.input)
@@ -179,7 +183,7 @@ test_that("the OPMS methpd xy_plot() works", {
 
 
 ## level_plot
-test_that("the OPMS methpd level_plot() works", {
+test_that("the OPMS method level_plot() works", {
   opms.input <- OPMS.INPUT[, 1L:10L]
   expect_is(opms.input, "OPMS")
   got <- level_plot(opms.input)
@@ -189,7 +193,7 @@ test_that("the OPMS methpd level_plot() works", {
 
 ## ci_plot
 test_that("a tie-fighter (CI) plot can be drawn", {
-  legend <- ci_plot(THIN.AGG[, , 1:12], as.labels = list("organism", "run"),
+  legend <- ci_plot(THIN.AGG[, , 1:6], as.labels = list("organism", "run"),
     subset = "A", na.action = "ignore")
   expect_equal(c("1: Bacillus simplex 3", "2: Bacillus simplex 4"), legend)
   legend <- ci_plot(THIN.AGG[, , 1:6], as.labels = list("organism"),
@@ -254,5 +258,8 @@ test_that("a radial plot can be drawn", {
     names = c("Bacillus simplex 4", "Bacillus simplex 3"))
   expect_equal(got, expected)
 })
+
+
+################################################################################
 
 

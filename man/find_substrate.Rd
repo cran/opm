@@ -5,15 +5,15 @@
   \item{object}{Query character vector or factor.}
 
   \item{search}{Character scalar indicating the search
-  mode. If \sQuote{exact}, query names must exactly match
-  (parts of) the well annotations. If \sQuote{glob}, shell
-  globbing is used. If \sQuote{approx}, approximate
-  matching is used; the number or proportion of errors
-  allowed is set using \code{max.dev}, and neither globbing
-  or regular-expression matching is done in that case. If
-  \sQuote{regex}, regular-expression matching is used. If
-  \sQuote{pmatch}, uses \code{pmatch} from the \pkg{base}
-  package. All matching is case-insensitive except for
+  mode. \describe{ \item{exact}{Query names must exactly
+  match (parts of) the well annotations.} \item{glob}{Shell
+  globbing is used.} \item{approx}{Approximate matching is
+  used; the number or proportion of errors allowed is set
+  using \code{max.dev}, and neither globbing or
+  regular-expression matching is done in that case.}
+  \item{regex}{Regular-expression matching is used.}
+  \item{pmatch}{Uses \code{pmatch} from the \pkg{base}
+  package.} } All matching is case-insensitive except for
   \sQuote{exact} and \sQuote{pmatch} search modes.}
 
   \item{max.dev}{Numeric scalar indicating the maximum

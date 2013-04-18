@@ -1,8 +1,14 @@
 \name{prepare_class_names}
 \alias{prepare_class_names}
+\alias{prepare_class_names.character}
 \title{Prepare class names}
+\usage{
+  prepare_class_names(x)
+
+  \method{prepare_class_names}{character} (x)
+}
 \arguments{
-  \item{object}{Character vector.}
+  \item{x}{Character vector.}
 }
 \value{
   Character vector.
@@ -15,10 +21,3 @@
 }
 \keyword{internal}
 
-\docType{methods}
-\alias{prepare_class_names-methods}
-\alias{prepare_class_names,character-method}
-\usage{
-  \S4method{prepare_class_names}{character}(object) 
-
-}

@@ -1,5 +1,81 @@
 
 
+opm 0.9-0
+---------
+
+Bug fixes:
+
+- xy_plot() now works with missing negative-control wells (warning only)
+
+- aggregated() now returns the correct object for all argument combinations
+
+- do_disc() now allows best-cutoff approach with 'groups=FALSE'
+
+Significant user-visible changes:
+
+- batch_opm_to_yaml() is now deprecated in favour of batch_opm()
+
+- the extract() method for data frames now works differently
+
+- the '-a' argument of the 'run_opm.R' script now works differently
+
+- three additional package dependencies, and dependency on newer versions of the
+  grofit package and of R itself
+
+- it is now an error if more than a single core is requested but this is
+  impossible (as, e.g., under Windows).
+
+New features:
+
+- three novel spline-fitting methods for estimating curve parameters, all of
+  which optimized for PM data
+
+- novel opm_mcp() function for multiple comparisons of means applied directly
+  to OPMS objects
+
+- novel extract() method for data frames for calculating means and confidence
+  intervals from observation groups (for plotting with ci_plot())
+ 
+- listing() can now generate HTML-formatted text describing positive/negative
+  results
+
+- do_disc() could now discretize any of the four curve parameters
+
+- indexed assigned has been introduced for OPMS objects
+
+- indexing wells now works with formulas, too, allowing for sequences of well
+  coordinates
+
+- the infix operators can swap the arguments, and also work with formulas, just
+  as subset()
+
+- opms() now normalizes plate-type names if used as 'group' argument
+
+- in addition to YAML, JSON can be produced (a subset of YAML that is understood
+  by proper JSON parsers)
+
+- new expression methods for metadata mapping
+
+- new map_metadata(), to_metadata() and `metadata<-`() methods
+
+- new arguments and/or options for ci_plot(), radial_plot(), opm_opt(),
+  param_names(), file_pattern(), opm_files(), safe_labels(), plate_type(),
+  substrate_info()
+
+- batch_opm() replaces batch_opm_to_yaml() with more arguments and more output
+  options (JSON and graphics files)
+
+- support for three more plate types
+
+Other changes:
+
+- much extended vignette
+
+- improved documentation in the manual
+
+- new directory with example code
+
+
 opm 0.8-0
 ---------
 

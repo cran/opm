@@ -1,6 +1,13 @@
 \name{to_opm_list}
 \alias{to_opm_list}
+\alias{to_opm_list.list}
 \title{Convert to OPM list}
+\usage{
+  to_opm_list(object, ...)
+
+  \method{to_opm_list}{list} (object, precomputed = TRUE,
+    skip = FALSE, group = FALSE)
+}
 \arguments{
   \item{object}{List of objects that can be passed to
   \code{\link{opms}}}
@@ -22,10 +29,3 @@
 }
 \keyword{internal}
 
-\docType{methods}
-\alias{to_opm_list,list-method}
-\usage{
-  \S4method{to_opm_list}{list}(object, precomputed = TRUE,
-    skip = FALSE, group = FALSE) 
-
-}

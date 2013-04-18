@@ -10,7 +10,10 @@
 }
 \description{
   Display an \code{\link{OPM}} or \code{\link{OPMS}} object
-  on screen. Currently this is just a wrapper for the
+  on screen.
+}
+\details{
+  Currently this is just a wrapper for the
   \code{\link{summary}} method for these objects with an
   additional call to \code{\link{print}}.
 }
@@ -21,7 +24,7 @@ vaas_1
 
 # OPMS method
 data(vaas_4)
-vaas_4
+vaas_4[1:2]
 }
 \seealso{
   methods::show base::print

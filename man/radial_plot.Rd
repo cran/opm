@@ -21,8 +21,17 @@
 
   \item{line.col}{Character or numeric vector.}
 
-  \item{...}{Optional arguments passed to
-  \code{plotrix::radial.plot}.}
+  \item{point.symbols}{Passed to \code{radial.plot} from
+  the \pkg{plotrix} package. See there for details.
+  Explicitly provided here to silence some
+  \code{radial.plot} warnings occurring as of \R 3.0.0.}
+
+  \item{point.col}{Also passed to that function.}
+
+  \item{poly.col}{Also passed to that function.}
+
+  \item{...}{Optional other arguments passed to that
+  function.}
 
   \item{draw.legend}{Logical scalar. Whether to draw a
   legend. Ignored unless \code{object} has row names
@@ -66,26 +75,27 @@
   A wrapper for \code{radial.plot} from the \pkg{plotrix}
   package with some adaptations likely to be useful for
   OmniLog\eqn{\textsuperscript{\textregistered}}{(R)} data.
-  The data frame and \sQuote{OPMS} methods extract a
-  numeric matrix from a given data frame or \sQuote{OPMS}
-  object and pass the result to the matrix method.
 }
-\note{
+\details{
   The default positioning of the legend is not necessarily
   very useful, but suitable combinations of \code{margin},
   \code{x} and \code{y} can be found for given data sizes.
   Plotting entire plates usually makes not much sense (see
   the examples).
+
+  The data frame and \sQuote{OPMS} methods extract a
+  numeric matrix from a given data frame or \sQuote{OPMS}
+  object and pass the result to the matrix method.
 }
 \examples{
 data("vaas_4")
 
-# Matrix method
+# Matrix method (usually not needed)
 x <- extract(vaas_4, as.labels = list("Species", "Strain"))
 (y <- radial_plot(x[, 1:5]))
 stopifnot(is.character(y), names(y) == rownames(x))
 
-# 'OPMS' method
+# 'OPMS' method (more convenient)
 (yy <- radial_plot(vaas_4[, , 1:5], as.labels = list("Species", "Strain")))
 stopifnot(identical(y, yy)) # should also yield the same picture than above
 
@@ -113,7 +123,8 @@ stopifnot(is.character(y), names(y) == paste(x$Species, x$Strain))
   \S4method{radial_plot}{matrix}(object, rp.type = "p",
     radlab = FALSE, show.centroid = TRUE, show.grid.labels = 1, lwd = 3,
     mar = c(2, 2, 2, 2), line.col = opm_opt("colors"), draw.legend = TRUE,
-    x = "bottom", y = NULL, xpd = TRUE, pch = 15, legend.args = list(), ...) 
+    x = "bottom", y = NULL, xpd = TRUE, pch = 15, legend.args = list(),
+    point.symbols = NA, point.col = NA, poly.col = NA, ...) 
 
   \S4method{radial_plot}{data.frame}(object, as.labels, sep = " ",
     ...) 

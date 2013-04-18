@@ -19,38 +19,38 @@
   objects are incompatible.
 }
 \examples{
-data(vaas_1)
-data(vaas_4)
-# the examples do not show particularly useful additions, as the plates
-# are either entirely or partially identical
+data(vaas_1, vaas_4)
+# The examples do not show particularly useful additions, as the plates
+# are either entirely or partially identical. Note the changes in the
+# dimensions.
 
 # OPM+OPM method
-summary(x <- vaas_1 + vaas_1)
+dim(x <- vaas_1 + vaas_1)
 stopifnot(identical(dim(x), c(2L, dim(vaas_1))))
 
 # OPM+OPMS method
-summary(x <- vaas_1 + vaas_4)
+dim(x <- vaas_1 + vaas_4)
 stopifnot(identical(dim(x), c(5L, dim(vaas_1))))
 
 # OPM+list method
-summary(x <- vaas_1 + list(vaas_1, vaas_1))
+dim(x <- vaas_1 + list(vaas_1, vaas_1))
 stopifnot(identical(dim(x), c(3L, dim(vaas_1))))
 
 # OPMS+OPMS method
-summary(x <- vaas_4 + vaas_4)
+dim(x <- vaas_4 + vaas_4)
 stopifnot(identical(dim(x), c(8L, dim(vaas_4)[-1L])))
 
 # OPMS+OPM method
-summary(x <- vaas_4 + vaas_1)
+dim(x <- vaas_4 + vaas_1)
 stopifnot(identical(dim(x), c(5L, dim(vaas_1))))
 
 # OPMS+list method
-summary(x <- vaas_4 + list(vaas_1))
+dim(x <- vaas_4 + list(vaas_1))
 stopifnot(identical(dim(x), c(5L, dim(vaas_1))))
 }
 \seealso{
-  Other combination-functions: \code{\link{c}},
-  \code{\link{opms}}
+  Other combination-functions: \code{\link{[<-}},
+  \code{\link{c}}, \code{\link{opms}}
 }
 \keyword{manip}
 

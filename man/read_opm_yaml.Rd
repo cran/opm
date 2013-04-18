@@ -15,7 +15,10 @@
   such objects.
 }
 \description{
-  Read \pkg{opm} data from a single \acronym{YAML} file.
+  Read \pkg{opm} data from a single \acronym{YAML} (or
+  \acronym{JSON}) file.
+}
+\details{
   Arbitrary nesting levels are allowed, i.e. the
   \acronym{YAML} input results in either a list
   representing the slots of an \code{\link{OPM}} or
@@ -27,6 +30,8 @@
 }
 \references{
   \url{http://www.yaml.org/}
+
+  \url{http://www.json.org/}
 }
 \keyword{internal}
 

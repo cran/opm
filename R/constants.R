@@ -23,6 +23,7 @@ OPMS <- "OPMS"
 OPMX <- "OPMX"
 YAML_VIA_LIST <- "YAML_VIA_LIST"
 MOA <- "MOA"
+FOE <- "FOE"
 CMAT <- "CMAT"
 
 
@@ -56,6 +57,13 @@ HOUR <- "Hour"
 SPECIAL_PLATES <- c("Gen III", "ECO", "SF-N2", "SF-P2")
 names(SPECIAL_PLATES) <- c("gen.iii", "eco", "sf.n2", "sf.p2")
 
+# Pattern used for matching them
+#
+SP_PATTERN <- sub("^SF", "G", SPECIAL_PLATES, perl = TRUE, ignore.case = TRUE)
+SP_PATTERN <- unique(c(SP_PATTERN, SPECIAL_PLATES))
+SP_PATTERN <- toupper(gsub("\\W", "", SP_PATTERN, perl = TRUE))
+SP_PATTERN <- sprintf("^(%s)([A-Z]*)$", paste(SP_PATTERN, collapse = "|"))
+
 
 # Theoretically expected range of the OmniLog measurements (Bochner, pers.
 # comm.)
@@ -78,6 +86,13 @@ THEOR_RANGE <- c(0, 400)
 CURVE_PARAMS <- c("mu", "lambda", "A", "AUC")
 
 
+# Reserved metadata names (they CAN be used by in the metadata but might yield
+# problems).
+#
+RESERVED_NAMES <- c("Plate", "Well", "Time", "Value", "Parameter")
+names(RESERVED_NAMES) <- tolower(RESERVED_NAMES)
+
+
 # Names used in aggregation/discretization settings
 #
 SOFTWARE <- "software"
@@ -87,9 +102,19 @@ PROGRAM <- "program" # from the old style, synonym of METHOD in new style
 METHOD <- "method"
 OPTIONS <- "options"
 KNOWN_METHODS <- list(
-  aggregation = c("grofit", "opm-fast", "shortcut"),
+  aggregation = c("grofit", "opm-fast", "shortcut", "splines"),
   discretization = c("direct", "kmeans", "best-cutoff")
 )
+
+# Used by batch_opm()
+#
+GRAPHICS_FORMAT_MAP <- c(bitmap = "bmp", mypdf = "pdf", postscript = "ps",
+  cairo_pdf = "pdf", cairo_ps = "ps")
+
+# Used in the headers of HTML output
+#
+HTML_DOCTYPE <- paste('<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"',
+  '"http://www.w3.org/TR/html4/strict.dtd">', collapse = " ")
 
 
 ################################################################################
@@ -173,6 +198,10 @@ OPM_OPTIONS$split <- "/.-_"
 OPM_OPTIONS$digits <- 4L
 OPM_OPTIONS$file.encoding <- ""
 OPM_OPTIONS$curve.param <- "A"
+OPM_OPTIONS$key.join <- "."
+OPM_OPTIONS$disc.param <- "A"
+OPM_OPTIONS$heatmap.colors <- topo.colors(120L)
+OPM_OPTIONS$contrast.type <- "Tukey"
 
 
 ################################################################################
@@ -194,5 +223,10 @@ GREEK_LETTERS <- c("alpha", "beta", "gamma", "delta", "epsilon")
 names(GREEK_LETTERS) <- substring(GREEK_LETTERS, 1L, 1L)
 GREEK_LETTERS <- cbind(plain = GREEK_LETTERS,
   html = sprintf("&%s;", GREEK_LETTERS))
+GREEK_LETTERS <- rbind(GREEK_LETTERS, GREEK_LETTERS)
+rownames(GREEK_LETTERS)[seq.int(nrow(GREEK_LETTERS) / 2L)] <- GREEK_LETTERS[
+  seq.int(nrow(GREEK_LETTERS) / 2L), "plain"]
+
+
 
 

@@ -10,14 +10,14 @@
 #' Show OPM or OPMS objects
 #'
 #' Display an \code{\link{OPM}} or \code{\link{OPMS}} object on screen.
-#' Currently this is just a wrapper for the \code{\link{summary}} method for
-#' these objects with an additional call to \code{\link{print}}.
 #'
 #' @param object \code{\link{OPM}} or \code{\link{OPMS}} object.
 #' @export
 #' @return See \code{\link{summary}}.
 #' @family plotting-functions
 #' @keywords attribute
+#' @details Currently this is just a wrapper for the \code{\link{summary}}
+#'   method for these objects with an additional call to \code{\link{print}}.
 #' @seealso methods::show base::print
 #' @examples
 #'
@@ -27,7 +27,7 @@
 #'
 #' # OPMS method
 #' data(vaas_4)
-#' vaas_4
+#' vaas_4[1:2]
 #'
 setMethod("show", OPMX, function(object) {
   print(summary(object))
@@ -58,11 +58,33 @@ setMethod("show", CMAT, function(object) {
 NULL
 
 #' @rdname print
+#' @method print OPMD_Listing
+#' @export
+#'
+print.OPMD_Listing <- function(x, ...) {
+  cat(formatDL(x = x, ...), sep = "\n")
+  invisible(x)
+}
+
+#' @rdname print
+#' @method print OPMS_Listing
+#' @export
+#'
+print.OPMS_Listing <- function(x, ...) {
+  for (name in rownames(x)) {
+    cat(name, gsub(".", "-", name, perl = TRUE), sep = "\n")
+    cat(formatDL(x = x[name, ], ...), sep = "\n")
+    cat("\n")
+  }
+  invisible(x)
+}
+
+#' @rdname print
 #' @method print OPM_Summary
 #' @export
 #'
 print.OPM_Summary <- function(x, ...) {
-  lapply(formatDL(x = names(x), y = unlist(x), ...), FUN = message)
+  lapply(formatDL(x = names(x), y = unlist(x), ...), FUN = cat, sep = "\n")
   invisible(x)
 }
 
@@ -72,14 +94,15 @@ print.OPM_Summary <- function(x, ...) {
 #'
 print.OPMS_Summary <- function(x, ...) {
   for (i in seq_along(x)) {
-    message(i)
+    cat(i, sep = "\n")
     print(x[[i]])
+    cat("\n")
   }
-  tmpl <- "\n=> %s object with %i plates (%i aggregated, %i discretized)"
+  tmpl <- "=> %s object with %i plates (%i aggregated, %i discretized)"
   tmpl <- paste(tmpl, "of type '%s', %i well(s) and about %i time point(s).")
   y <- attr(x, "overall")
-  message(sprintf(tmpl, OPMS, y$dimensions[1L], y$aggregated, y$discretized,
-    y$plate.type, y$dimensions[3L], y$dimensions[2L]))
+  cat(sprintf(tmpl, OPMS, y$dimensions[1L], y$aggregated, y$discretized,
+    y$plate.type, y$dimensions[3L], y$dimensions[2L]), sep = "\n")
   invisible(x)
 }
 
@@ -417,7 +440,7 @@ setMethod("negative_control", OPMX, function(object, neg.ctrl) {
 #' @references \url{http://www.colorbrewer.org}
 #' @examples
 #' (x <- select_colors("nora"))
-#' (y <- select_colors("nora.i"))
+#' (y <- select_colors("nora.i")) # same in reverse order
 #' stopifnot(is.character(x), length(x) > 0L, identical(x, rev(y)))
 #'
 select_colors <- function(
@@ -502,21 +525,18 @@ default_color_regions <- function(colors, space, bias, n) {
 #' XY plot
 #'
 #' Customized plotting of a single or multiple PM plate(s), using \code{xyplot}
-#' from the \pkg{lattice} package. The optimal number of rows and columns is
-#' estimated  from the number of selected wells. An optimal font size of the
-#' panel headers is also chosen automatically, but can also be adapted by the
-#' user, much like most aspects of the resulting graphics output. In the case of
-#' the \code{\link{OPMS}} method, if metadata are selected, curve colours are
-#' determined according to the combinations of these metadata entries, otherwise
-#' each plate gets its own colour.
+#' from the \pkg{lattice} package.
 #'
 #' @param x \code{\link{OPM}} or \code{\link{OPMS}} object.
 #'
 #' @param col For the \code{\link{OPM}} method, just a character scalar (colour
-#'   name) determining the line colour. For the \code{\link{OPMS}} method,
-#'   either a character vector with colour codes or one of the arguments of
-#'   \code{\link{select_colors}} (for picking one of the predefined colour
-#'   sets). It is an error if fewer colours are chosen than the number of plate
+#'   name) determining the line colour.
+#'
+#'   For the \code{\link{OPMS}} method, either a character vector with colour
+#'   codes or one of the arguments of \code{\link{select_colors}} (for picking
+#'   one of the predefined colour sets).
+#'
+#'   It is an error if fewer colours are chosen than the number of plate
 #'   grouping levels (see the \code{\dots} argument below). For user-chosen
 #'   colour sets, keep in mind that the sets are not checked for duplicates, and
 #'   see \code{max_rgb_contrast} from the \pkg{pkgutils} package as a method for
@@ -524,12 +544,16 @@ default_color_regions <- function(colors, space, bias, n) {
 #' @param lwd Numeric scalar determining the line width.
 #'
 #' @param neg.ctrl Determine the height of a horizontal baseline drawn in each
-#'   panel. If \code{NULL} or \code{FALSE}, no baseline will be drawn. If
-#'   \code{TRUE}, the baseline's height is the value of \code{\link{minmax}}. If
-#'   a character scalar, \code{neg.ctrl} is interpreted as the name of the wells
-#'   regarded as negative control, and the baseline's height becomes the value
-#'   of \code{\link{minmax}} applied to these wells only. Set \code{neg.ctrl} to
-#'   a numeric value for assigning the height directly (at your own risk).
+#'   panel. \itemize{
+#'   \item If \code{NULL} or \code{FALSE}, no baseline will be drawn.
+#'   \item If \code{TRUE}, the baseline's height is the value of
+#'   \code{\link{minmax}}.
+#'   \item If a character scalar, \code{neg.ctrl} is interpreted as the name of
+#'   the wells regarded as negative control, and the baseline's height becomes
+#'   the value of \code{\link{minmax}} applied to these wells only.
+#'   \item Set \code{neg.ctrl} to a numeric value for assigning the height
+#'   directly (at your own risk).
+#'   }
 #' @param base.col Character scalar. Baseline colour (ignored if no baseline is
 #'   drawn).
 #' @param base.lwd Numeric scalar determining the width of the baseline (ignored
@@ -600,10 +624,18 @@ default_color_regions <- function(colors, space, bias, n) {
 #' @param f Formula (for the data-frame method).
 #' @param groups Character vector (for the data-frame method).
 #'
-#' @note The data-frame method is not intended for phenotype microarray data.
-#'   It is currently \strong{undocumented} and potentially subject to frequent
-#'   changes or even removal. Users interested in the method should contact the
-#'   authors.
+#' @details The optimal number of rows and columns is estimated  from the number
+#'   of selected wells. An optimal font size of the panel headers is also chosen
+#'   automatically, but can also be adapted by the user, much like most aspects
+#'   of the resulting graphics output.
+#'
+#'   In the case of the \code{\link{OPMS}} method, if metadata are selected,
+#'   curve colours are determined according to the combinations of these
+#'   metadata entries, otherwise each plate gets its own colour.
+#'
+#'   The data-frame method is not intended for phenotype microarray data. It is
+#'   currently \strong{undocumented} and potentially subject to frequent changes
+#'   or even removal. Users interested in the method should contact the authors.
 #'
 #' @export
 #' @family plotting-functions
@@ -626,11 +658,11 @@ default_color_regions <- function(colors, space, bias, n) {
 #' }
 #'
 #' x <- vaas_1[, 11:22]
-#' # Gives a warning message: we have deleted the default negative control:
+#' # Yields a warning message: we have deleted the default negative control.
 #' xy_plot(x)
 #' # Turn the baseline off => no warning:
 #' xy_plot(x, neg.ctrl = NULL)
-#' # Or guess a baseline
+#' # Or guess a baseline:
 #' xy_plot(x, neg.ctrl = 100)
 #' # Some like it ugly:
 #' xy_plot(x, neg.ctrl = 100, col = "pink", base.col = "yellow", main = "Ugly")
@@ -673,7 +705,9 @@ setMethod("xy_plot", OPM, function(x, col = "midnightblue", lwd = 1,
   # Plot
   xyplot(
     # Principally unchangeable arguments
-    Value ~ Time | Well, data = flatten(x, ...), type = "l", layout = layout,
+    create_formula("`%s` ~ `%s` | `%s`",
+      RESERVED_NAMES[c("value", "time", "well")]),
+    data = flatten(x, ...), type = "l", layout = layout,
     as.table = TRUE,
     # Curve colour and panel height
     col = col, ylim = c(0, y.max),
@@ -687,7 +721,7 @@ setMethod("xy_plot", OPM, function(x, col = "midnightblue", lwd = 1,
     panel = function(...) {
       if (draw.grid)
         panel.grid(h = -1, v = -1)
-      if (!is.null(neg.ctrl))
+      if (length(neg.ctrl))
         panel.abline(neg.ctrl, 0, col = base.col, lwd = base.lwd)
       panel.xyplot(..., lwd = lwd)
     })
@@ -735,11 +769,15 @@ setMethod("xy_plot", OPMS, function(x, col = opm_opt("colors"), lwd = 1,
   key.col <- col[seq_along(key.text)]
   col <- col[param]
 
+  names(data)[match(RESERVED_NAMES[["plate"]], names(data))] <- "_GROUPING"
+
   # Plot
   xyplot(
     # Principally unchangeable arguments
-    Value ~ Time | Well, data = data, type = "l", layout = layout,
-    as.table = TRUE, groups = Plate,
+    create_formula("`%s` ~ `%s` | `%s`",
+      RESERVED_NAMES[c("value", "time", "well")]),
+    data = data, type = "l", layout = layout,
+    as.table = TRUE, groups = `_GROUPING`,
     # Curve colours and panel height
     col = col, ylim = c(0, y.max),
     # Axis annotation
@@ -756,7 +794,7 @@ setMethod("xy_plot", OPMS, function(x, col = opm_opt("colors"), lwd = 1,
     panel = function(...) {
       if (draw.grid)
         panel.grid(h = -1, v = -1)
-      if (!is.null(neg.ctrl))
+      if (length(neg.ctrl))
         panel.abline(neg.ctrl, 0, col = base.col, lwd = base.lwd)
       panel.xyplot(..., lwd = lwd)
     }
@@ -791,12 +829,12 @@ setMethod("xy_plot", "data.frame", function(x, f, groups,
   pos <- match(groups, names(x))
   if (any(isna <- is.na(pos)))
     stop(sprintf("could not find '%s' in 'x'", groups[isna][1L]))
-  x$.GROUPING <- do.call(paste, c(x[, pos, drop = FALSE], sep = legend.sep))
-  x$.GROUPING <- as.factor(x$.GROUPING)
+  x$`_GROUPING` <- do.call(paste, c(x[, pos, drop = FALSE], sep = legend.sep))
+  x$`_GROUPING` <- as.factor(x$`_GROUPING`)
 
   # Assignment of colours
   col <- try_select_colors(col)
-  key.text <- levels(x$.GROUPING)
+  key.text <- levels(x$`_GROUPING`)
   if (length(key.text) > length(col))
     stop("number of colors must be at least as large as number of groups")
   key.col <- col[seq_along(key.text)]
@@ -813,7 +851,7 @@ setMethod("xy_plot", "data.frame", function(x, f, groups,
   xyplot(
     # Principally unchangeable arguments
     x = f, data = x, type = "l", layout = layout,
-    as.table = TRUE, groups = .GROUPING,
+    as.table = TRUE, groups = `_GROUPING`,
     # Curve colours (panel height is omitted)
     col = col,
     # Axis annotation
@@ -924,7 +962,9 @@ setMethod("level_plot", OPM, function(x, main = list(),
   if (is.null(cex))
     cex <- guess_cex(dim(x)[2L])
   main <- main_title(x, main)
-  levelplot(Value ~ Time * Well, data = flatten(x, ...), main = main,
+  levelplot(create_formula("`%s` ~ `%s` * `%s`",
+      RESERVED_NAMES[c("value", "time", "well")]),
+    data = flatten(x, ...), main = main,
     col.regions = default_color_regions(colors, space, bias, num.colors),
     scales = list(cex = cex, lineheight = 10))
 }, sealed = SEALED)
@@ -948,8 +988,9 @@ setMethod("level_plot", OPMS, function(x, main = list(),
       factor.levels = panel.headers)
     strip.fmt <- do.call(strip.custom, strip.fmt)
   }
-  levelplot(Value ~ Time * Well | Plate, data = data,
-    main = main_title(x, main),
+  levelplot(create_formula("`%s` ~ `%s` * `%s` | `%s`",
+      RESERVED_NAMES[c("value", "time", "well", "plate")]),
+    data = data, main = main_title(x, main),
     col.regions = default_color_regions(colors, space, bias, num.colors),
     strip = strip.fmt, as.table = TRUE, layout = c(dims[1L], 1L),
     par.strip.text = as.list(striptext.fmt),
@@ -962,22 +1003,29 @@ setMethod("level_plot", OPMS, function(x, main = list(),
 
 #' Plot point estimates with CIs
 #'
-#' Draw point estimates with their confidence intervals. The data frame method
-#' is not normally directly called by an \pkg{opm} user but via the
-#' \code{\link{OPMS}} method. This one is used for comparing aggregated values
-#' together with their confidence intervals between plates. This method can in
-#' most cases \strong{not} be applied to entire plates but to selected wells
-#' only.
+#' Draw point estimates with their confidence intervals.  Used for comparing
+#' aggregated values together with their confidence intervals between plates.
+#' This method can in most cases \strong{not} be applied to entire plates but to
+#' selected wells only.
 #'
-#' @param object Dataframe or \code{\link{OPMS}} object. If an
+#' @param object \code{\link{OPMS}} object or (seldomly) a data frame. If an
 #'   \code{\link{OPMS}} object, it is in most cases necessary to restrict the
 #'   plates to at most about one dozen wells. See \code{\link{[}} for how to
-#'   achieve this. The data frame should be as exported by \code{\link{extract}}
-#'   with \code{ci} set to \code{TRUE}. There must be a column named
-#'   \sQuote{Parameter} followed by columns with only numeric values. Columns
-#'   before the \sQuote{Parameter} column, if any, are used for grouping. The
-#'   rows must entirely comprise triplets representing (i) the point estimate,
-#'   (ii) the lower and (iii) the upper confidence interval.
+#'   achieve this.
+#'
+#'   The data frame method is not normally directly called by an \pkg{opm} user
+#'   but via the \code{\link{OPMS}} method, unless it is used after
+#'   \code{\link{extract}} was applied to a data frame for calculating point
+#'   estimates and confidence intervals from groups of oberservations. See
+#'   there for details.
+#'
+#'   Otherwise, the data frame should be as exported bythe \code{\link{OPMS}}
+#'   method of \code{\link{extract}} with \code{ci} set to \code{TRUE}. There
+#'   must be a column named \code{\link{param_names}("split.at")} followed by
+#'   columns with only numeric values. Columns before that split column, if any,
+#'   are used for grouping. The rows must entirely comprise triplets
+#'   representing (i) the point estimate, (ii) the lower and (iii) the upper
+#'   confidence interval.
 #'
 #' @param as.labels List. Metadata to be joined and used to draw a legend.
 #'   Ignored if \code{NULL}.
@@ -1013,14 +1061,12 @@ setMethod("level_plot", OPMS, function(x, main = list(),
 #' @param ... Optional other arguments passed to \code{legend}, or arguments
 #'   passed from the \code{\link{OPMS}} method to the data frame method.
 #'
+#' @param split.at Character vector. See \code{\link{extract}}.
 #'
-#' @note \itemize{
-#'   \item The default placement of the legend is currently not necessarily
-#'     very useful.
-#'   \item When plotting entire PM plates, the \sQuote{mar} parameter of
-#'     \code{par} most likely would need to be set to a lower value, but it
-#'     is recommended to plot only subsets of plates, i.e. selected wells.
-#'   }
+#' @details The default placement of the legend is currently not necessarily
+#'   very useful. When plotting entire PM plates, the \sQuote{mar} parameter of
+#'   \code{par} most likely would need to be set to a lower value, but it is
+#'   recommended to plot only subsets of plates, i.e. selected wells.
 #'
 #' @references Vaas LAI, Sikorski J, Michael V, Goeker M, Klenk H-P. 2012
 #'   Visualization and curve parameter estimation strategies for efficient
@@ -1043,12 +1089,14 @@ setMethod("level_plot", OPMS, function(x, main = list(),
 #' stopifnot(is.character(x), identical(length(x), 4L))
 #' # ... and that the return value contains the legend (even if it is not drawn)
 #'
+#' ## See also the examples for the data-frame method of extract().
+#'
 setGeneric("ci_plot", function(object, ...) standardGeneric("ci_plot"))
 
 setMethod("ci_plot", "data.frame", function(object, rowname.sep = " ",
     prop.offset = 0.04, align = "center", col = "blue", na.action = "warn",
     draw.legend = TRUE, legend.field = c(1, 1), x = "topleft", xpd = TRUE,
-    vline = 0, ...) {
+    vline = 0, split.at = param_names("split.at"), ...) {
 
   single_plot <- function(col.pos) {
     plot(x = NULL, y = NULL, xlim = ranges[, col.pos], ylim = ylim,
@@ -1064,19 +1112,15 @@ setMethod("ci_plot", "data.frame", function(object, rowname.sep = " ",
     }, numeric(4L))
   }
 
+  # Determine the position used for splitting the data frame
+  param.pos <- assert_splittable_matrix(object, split.at)
+
   # Check the triplet structure and determine all triplet start positions
   if (nrow(object) %% 3L != 0L)
     stop("need data frame with 3 * n rows")
   chunk.pos <- seq.int(nrow(object))
   chunk.pos <- chunk.pos[chunk.pos %% 3L == 1L]
   row.names <- as.character(seq_along(chunk.pos))
-
-  # Determine the 'Parameter' position, used for splitting the data frame
-  param.pos <- which(colnames(object) == "Parameter")
-  if (length(param.pos) != 1L)
-    stop("need data frame with one column called 'Parameter'")
-  if (param.pos == ncol(object))
-    stop("the data columns are missing")
 
   # Reorder the matrix and construct the legend if necessary
   if (param.pos > 1L) {
@@ -1120,7 +1164,7 @@ setMethod("ci_plot", "data.frame", function(object, rowname.sep = " ",
 setMethod("ci_plot", OPMS, function(object, as.labels,
     subset = opm_opt("curve.param"), ...) {
   ci_plot(extract(object, as.labels = as.labels, subset = subset,
-    dataframe = TRUE, ci = TRUE), ...)
+    dataframe = TRUE, ci = TRUE), split.at = param_names("split.at"), ...)
 }, sealed = SEALED)
 
 
@@ -1171,21 +1215,29 @@ setMethod("ci_plot", OPMS, function(object, as.labels,
 #'   \sQuote{column} should be used.
 #'
 #' @param r.groups Determines the plotting of a colour bar indicating row
-#'   groups. If \code{NULL}, ignored. If a function, applied to the row names of
+#'   groups.
+#'
+#'   If \code{NULL}, ignored. If a function, applied to the row names of
 #'   \code{object}; should then yield one group name for each row name. If a
 #'   character scalar, the name of an attribute of \code{object} that contains
 #'   the row group affiliations (ignored if this is not found). Otherwise,
-#'   coerced to \sQuote{character} mode. Finally the groups are converted to a
-#'   factor and used for selecting from \code{r.col}.
+#'   coerced to \sQuote{character} mode.
+#'
+#'   Finally the groups are converted to a factor and used for selecting from
+#'   \code{r.col}.
 #' @param r.col Character vector of colour names used by \code{r.groups}.
 #'   Ignored if that is \code{NULL}.
 #' @param c.groups Determines the plotting of a colour bar indicating column
-#'   groups. If \code{NULL}, ignored. If a function, applied to the column names
-#'   of \code{object}; should then yield one group name for each column name. If
-#'   a character scalar, the name of an attribute of \code{object} that contains
+#'   groups.
+#'
+#'   If \code{NULL}, ignored. If a function, applied to the column names of
+#'   \code{object}; should then yield one group name for each column name. If a
+#'   character scalar, the name of an attribute of \code{object} that contains
 #'   the column group affiliations (ignored if this is not found). Otherwise,
-#'   coerced to \sQuote{character} mode. Finally the groups are converted to a
-#'   factor and used for selecting from \code{c.col}.
+#'   coerced to \sQuote{character} mode.
+#'
+#'   Finally the groups are converted to a factor and used for selecting from
+#'   \code{c.col}.
 #' @param c.col Character vector of colour names used by \code{c.groups}.
 #'   Ignored if that is \code{NULL}.
 #'
@@ -1224,15 +1276,15 @@ setMethod("ci_plot", OPMS, function(object, as.labels,
 #'
 #' @examples
 #'
-#' data("vaas_4")
+#' data(vaas_4)
 #'
-#' # Matrix method
+#' # Matrix method (usually unnecessary, see below)
 #' x <- extract(vaas_4, as.labels = list("Strain"),
 #'   as.groups = list("Species"))
 #' hm <- heat_map(x)
 #' stopifnot(identical(metadata(vaas_4, "Species"), names(hm$rowColMap)))
 #'
-#' # 'OPMS' method
+#' # 'OPMS' method (more convenient)
 #' hm.2 <- heat_map(vaas_4, as.labels = "Strain", as.groups = "Species")
 #' stopifnot(identical(hm[-3], hm.2[-3]))
 #'
@@ -1255,7 +1307,7 @@ setMethod("heat_map", "matrix", function(object,
       borders[length(borders)] * cexRow * max(nchar(rownames(object))))
     else
       c(5, 5),
-    col = topo.colors(120L),
+    col = opm_opt("heatmap.colors"),
     ...,
     use.fun = c("gplots", "stats")) {
 
@@ -1329,8 +1381,8 @@ setMethod("heat_map", "matrix", function(object,
 
 setMethod("heat_map", "data.frame", function(object, as.labels,
     as.groups = NULL, sep = " ", ...) {
-  invisible(heat_map(extract(object, as.labels = as.labels,
-    as.groups = as.groups, sep = sep), ...))
+  invisible(heat_map(extract_columns(object, what = "numeric", direct = FALSE,
+    as.labels = as.labels, as.groups = as.groups, sep = sep), ...))
 }, sealed = SEALED)
 
 setMethod("heat_map", OPMS, function(object, as.labels,
@@ -1350,9 +1402,7 @@ setMethod("heat_map", OPMS, function(object, as.labels,
 #'
 #' A wrapper for \code{radial.plot} from the \pkg{plotrix} package with some
 #' adaptations likely to be useful for
-#' OmniLog\eqn{\textsuperscript{\textregistered}}{(R)} data. The data frame and
-#' \sQuote{OPMS} methods extract a numeric matrix from a given data frame or
-#' \sQuote{OPMS} object and pass the result to the matrix method.
+#' OmniLog\eqn{\textsuperscript{\textregistered}}{(R)} data.
 #'
 #' @param object Data frame, numeric matrix or \sQuote{OPMS} object (with
 #'   aggregated values) to be plotted.
@@ -1365,7 +1415,12 @@ setMethod("heat_map", OPMS, function(object, as.labels,
 #' @param lwd Numeric scalar.
 #' @param mar Numeric vector of length 4.
 #' @param line.col Character or numeric vector.
-#' @param ... Optional arguments passed to \code{plotrix::radial.plot}.
+#' @param point.symbols Passed to \code{radial.plot} from the \pkg{plotrix}
+#'   package. See there for details. Explicitly provided here to silence
+#'   some \code{radial.plot} warnings occurring as of \R 3.0.0.
+#' @param point.col Also passed to that function.
+#' @param poly.col Also passed to that function.
+#' @param ... Optional other arguments passed to that function.
 #'
 #' @param draw.legend Logical scalar. Whether to draw a legend. Ignored unless
 #'   \code{object} has row names (because these are used to generate the
@@ -1397,21 +1452,25 @@ setMethod("heat_map", OPMS, function(object, as.labels,
 #'   corresponding colours as values, equivalent to the legend; \code{NULL} if
 #'   no row names are present.
 #'
-#' @note The default positioning of the legend is not necessarily very useful,
-#'   but suitable combinations of \code{margin}, \code{x} and \code{y} can be
-#'   found for given data sizes. Plotting entire plates usually makes not much
-#'   sense (see the examples).
+#' @details The default positioning of the legend is not necessarily very
+#'   useful, but suitable combinations of \code{margin}, \code{x} and \code{y}
+#'   can be found for given data sizes. Plotting entire plates usually makes not
+#'   much sense (see the examples).
+#'
+#'   The data frame and \sQuote{OPMS} methods extract a numeric matrix from a
+#'   given data frame or \sQuote{OPMS} object and pass the result to the matrix
+#'   method.
 #'
 #' @examples
 #'
 #' data("vaas_4")
 #'
-#' # Matrix method
+#' # Matrix method (usually not needed)
 #' x <- extract(vaas_4, as.labels = list("Species", "Strain"))
 #' (y <- radial_plot(x[, 1:5]))
 #' stopifnot(is.character(y), names(y) == rownames(x))
 #'
-#' # 'OPMS' method
+#' # 'OPMS' method (more convenient)
 #' (yy <- radial_plot(vaas_4[, , 1:5], as.labels = list("Species", "Strain")))
 #' stopifnot(identical(y, yy)) # should also yield the same picture than above
 #'
@@ -1425,14 +1484,19 @@ setGeneric("radial_plot", function(object, ...) standardGeneric("radial_plot"))
 setMethod("radial_plot", "matrix", function(object, rp.type = "p",
     radlab = FALSE, show.centroid = TRUE, show.grid.labels = 1, lwd = 3,
     mar = c(2, 2, 2, 2), line.col = opm_opt("colors"), draw.legend = TRUE,
-    x = "bottom", y = NULL, xpd = TRUE, pch = 15, legend.args = list(), ...) {
+    x = "bottom", y = NULL, xpd = TRUE, pch = 15, legend.args = list(),
+    point.symbols = NA, point.col = NA, poly.col = NA, ...) {
   LL(radlab, show.centroid, show.grid.labels, draw.legend, xpd, pch)
   line.col <- try_select_colors(line.col)
-  on.exit(par(changed.par))
+  changed.par <- NULL
+  on.exit(if (!is.null(changed.par))
+    par(changed.par))
   changed.par <- radial.plot(lengths = object,
     labels = colnames(object), rp.type = rp.type, radlab = radlab,
     show.centroid = show.centroid, lwd = lwd, mar = mar,
-    show.grid.labels = show.grid.labels, line.col = line.col, ...)
+    show.grid.labels = show.grid.labels, line.col = line.col,
+    point.symbols = point.symbols, point.col = point.col, poly.col = poly.col,
+    ...)
   if (!is.null(rn <- rownames(object))) {
     if (draw.legend) {
       legend.args <- insert(as.list(legend.args), x = x, y = y, col = line.col,
@@ -1449,7 +1513,8 @@ setMethod("radial_plot", "matrix", function(object, rp.type = "p",
 
 setMethod("radial_plot", "data.frame", function(object, as.labels, sep = " ",
     ...) {
-  invisible(radial_plot(extract(object, as.labels = as.labels, sep = sep), ...))
+  invisible(radial_plot(extract_columns(object, what = "numeric",
+    direct = FALSE, as.labels = as.labels, sep = sep), ...))
 }, sealed = SEALED)
 
 setMethod("radial_plot", OPMS, function(object, as.labels,
@@ -1462,5 +1527,6 @@ setMethod("radial_plot", OPMS, function(object, as.labels,
 
 
 ################################################################################
+
 
 

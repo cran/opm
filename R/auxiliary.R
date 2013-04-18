@@ -63,6 +63,48 @@ last <- function(x, i = 1L) {
 ################################################################################
 
 
+#' Convert to metadata-like data frame
+#'
+#' A helper function for \code{\link{to_metadata}}.
+#'
+#' @param object Nested list.
+#' @param stringsAsFactors Logical scalar.
+#' @param optonal Logical scalar.
+#' @return Data frame.
+#' @keywords internal
+#'
+md_data_frame <- function(object, stringsAsFactors, optional, ...) {
+  data_frameable <- function(x) {
+    oneify <- function(x) {
+      x[vapply(x, length, integer(1L)) == 0L] <- NA
+      x[bad] <- lapply(x[bad <- vapply(x, length, integer(1L)) != 1L], list)
+      x
+    }
+    if (any(bad <- is.na(names(x)) | !nzchar(names(x)))) {
+      warning("skipping elements with invalid names")
+      x <- x[!bad]
+    }
+    oneify(x)
+  }
+  x <- lapply(object, data_frameable)
+  keys <- unique.default(unlist(lapply(x, names), recursive = FALSE))
+  result <- matrix(NA, length(x), length(keys), dimnames = list(NULL, keys))
+  result <- as.data.frame(x = result, stringsAsFactors = FALSE,
+    optional = TRUE, ...)
+  for (i in seq_along(x))
+    result[i, names(x[[i]])] <- x[[i]]
+  if (stringsAsFactors)
+    for (i in which(vapply(result, typeof, character(1L)) == "character"))
+      result[, i] <- as.factor(result[, i])
+  if (!optional)
+    names(result) <- make.names(names(result))
+  result
+}
+
+
+################################################################################
+
+
 ## NOTE: not an S4 method because applicable to any objects
 
 #' Reduce an object
@@ -141,7 +183,7 @@ setGeneric("is_constant", function(x, ...) standardGeneric("is_constant"))
 setMethod("is_constant", "vector", function(x, na.rm = TRUE) {
   if (na.rm)
     x <- x[!is.na(x)]
-  length(x) < 2L || all(duplicated(x)[-1L])
+  length(x) < 2L || all(duplicated.default(x)[-1L])
 }, sealed = SEALED)
 
 setMethod("is_constant", "list", function(x, na.rm = TRUE) {
@@ -149,7 +191,7 @@ setMethod("is_constant", "list", function(x, na.rm = TRUE) {
     return(TRUE)
   if (na.rm)
     x <- lapply(x, na.exclude)
-  all(duplicated(x)[-1L])
+  all(duplicated.default(x)[-1L])
 }, sealed = SEALED)
 
 setMethod("is_constant", MOA, function(x, margin = 1L, na.rm = TRUE) {
@@ -219,40 +261,6 @@ setMethod("is_constant", CMAT, function(x, strict, digits = opm_opt("digits"),
 ################################################################################
 
 
-#' Turn the head of a formula into a vector
-#'
-#' If a formula has length 3, the second element represents the left part (the
-#' first element is the tilde). Once extracted using \code{[[}, the left part
-#' can be a call, a name or a vector. These methods convert it to a vector,
-#' aiming at generating a valid key for indexing a list.
-#'
-#' @param object An object of class \sQuote{call}, \sQuote{name} or
-#'   \sQuote{vector} (S4-based).
-#' @return Vector.
-#' @keywords internal
-#'
-setGeneric("parse_formula_head",
-  function(object) standardGeneric("parse_formula_head"))
-
-setMethod("parse_formula_head", "vector", function(object) {
-  object
-}, sealed = SEALED)
-
-setMethod("parse_formula_head", "name", function(object) {
-  as.character(object)
-}, sealed = SEALED)
-
-setMethod("parse_formula_head", "call", function(object) {
-  if (identical(object[[1L]], as.name("$")))
-    all.names(object, functions = FALSE)
-  else
-    eval(object)
-}, sealed = SEALED)
-
-
-################################################################################
-
-
 #' Pick rows
 #'
 #' Pick rows from a data frame if selected columns are identical to keys.
@@ -278,10 +286,194 @@ setMethod("pick_from", "data.frame", function(object, selection) {
 
 
 ################################################################################
+
+
+#' Check presence of split column
+#'
+#' Check whether a certain column is present and not at the end of a data frame
+#' or matrix.
+#'
+#' @param x Data frame, matrix or array.
+#' @param split.at Names of columns at which \code{x} should be split.
+#' @return Integer scalar indicating the split position. An error is raised
+#'   if this is missing or non-unique.
+#' @keywords internal
+#'
+assert_splittable_matrix <- function(x, split.at) {
+  pos <- which(colnames(x) == split.at)
+  LL(pos, .msg = listing(sprintf("'%s'", split.at), style = "sentence",
+    prepend = FALSE, header = "need exactly one column name present among: ",
+    last.sep = "comma"))
+  if (pos == ncol(x))
+    stop("column given by 'split.at' must not be the last one")
+  pos
+}
+
+
+################################################################################
 ################################################################################
 #
 # String processing
 #
+
+
+#' Create formula
+#'
+#' Construct a formula from a template.
+#'
+#' @param fmt Character scalar. The format of the formula; omitting \sQuote{~}
+#'   yields an error.
+#' @param ... Passed to \code{sprintf} after joining. It is an error to not
+#'   pass enough arguments.
+#' @param env Passed to \code{formula} as \sQuote{env} argument.
+#' @return Formula.
+#' @keywords internal
+#'
+create_formula <- function(fmt, ..., .env = parent.frame()) {
+  x <- c(list(fmt = fmt), lapply(list(...), as.list))
+  formula(do.call(sprintf, unlist(x, recursive = FALSE)), .env)
+}
+
+
+################################################################################
+
+
+#' Create metadata key
+#'
+#' A helper function for \code{\link{metadata}} and the methods that are
+#' dependent on it.
+#'
+#' @param x List, formula, or atomic object.
+#' @param to.formula Logical scalar indicating whether conversion to a formula
+#'   should be conducted.
+#' @param remove Names of elements to be deleted after conversion to list.
+#' @param ops Character vector containing the operators to use when converting
+#'   a list to a formula. Recycled if necessary.
+#' @inheritParams print
+#' @param full.eval Logical scalar indicating whether to evaluate the result.
+#'   Usually makes no sense for formulas here.
+#' @param envir Passed to \code{eval}.
+#' @return List or character vector.
+#' @keywords internal
+#'
+metadata_key <- function(x, to.formula, ...) UseMethod("metadata_key")
+
+#' @rdname metadata_key
+#' @method metadata_key default
+#'
+metadata_key.default <- function(x, to.formula = FALSE, remove = NULL, ...) {
+  if (!is.atomic(x))
+    stop(NOT_YET)
+  if (length(x) == 1L && x %in% remove)
+    return(NULL)
+  if (to.formula) ## TODO check whether this makes sense
+    create_formula("~ c(%s)", paste(x, collapse = ", "))
+  else
+    x
+}
+
+#' @rdname metadata_key
+#' @method metadata_key factor
+#'
+metadata_key.factor <- function(x, to.formula = FALSE, remove = NULL, ...) {
+  metadata_key.character(as.character(x), to.formula, remove, ...)
+}
+
+#' @rdname metadata_key
+#' @method metadata_key character
+#'
+metadata_key.character <- function(x, to.formula = FALSE, remove = NULL, ...) {
+  if (length(x) == 1L && x %in% remove)
+    return(NULL)
+  if (to.formula)
+    return(create_formula("~ `%s`",
+      paste(x, collapse = get("key.join", OPM_OPTIONS))))
+  if (is.null(names(x)))
+    names(x) <- x
+  x
+}
+
+#' @rdname metadata_key
+#' @method metadata_key list
+#'
+metadata_key.list <- function(x, to.formula = FALSE, remove = NULL, ops = "+",
+    ...) {
+  join <- function(x) vapply(x, paste, character(1L),
+    collapse = get("key.join", OPM_OPTIONS))
+  if (is.null(names(x <- flatten(x))))
+    names(x) <- join(x)
+  else
+    names(x)[bad] <- join(x[bad <- !nzchar(names(x)) | is.na(names(x))])
+  x <- x[!names(x) %in% remove]
+  if (!to.formula)
+    return(x)
+  fmt <- case(length(x), stop("'x' must not be empty"), "",
+    paste(rep(ops, length.out = length(x) - 1L), "`%s`", collapse = " "))
+  create_formula(paste("~ `%s`", fmt), names(x))
+}
+
+#' @rdname metadata_key
+#' @method metadata_key formula
+#'
+metadata_key.formula <- function(x, to.formula = FALSE, ...,
+    full.eval = !to.formula, envir = parent.frame()) {
+  elem_type <- function(name) switch(as.character(name),
+    `::` =, `:::` =, `$` =, `@` = 1L, # operators with highest precedence
+    `I` = 2L, # protected formula elements
+    3L # anything else
+  )
+  apply_to_tail <- function(x, fun) {
+    for (i in seq_along(x)[-1L])
+      x[[i]] <- fun(x[[i]])
+    x
+  }
+  c.name <- as.name("c")
+  list.name <- as.name("list")
+  rec_listify <- function(x) case(length(x), NULL, if (is.call(x))
+      NULL
+    else if (is.name(x))
+      as.character(x)
+    else
+      x, switch(
+    elem_type(x[[1L]]),
+    {
+      x[[1L]] <- c.name # tight binding
+      apply_to_tail(x, rec_listify)
+    },
+    {
+      x[[1L]] <- c.name # tight binding, no changes
+      eval(x, envir)
+    },
+    {
+      x[[1L]] <- list.name
+      apply_to_tail(x, rec_listify)
+    }
+  ))
+  rec_replace <- function(x) case(length(x), x, if (is.character(x))
+      as.name(x)
+    else
+      x, switch(
+    elem_type(x[[1L]]),
+    as.name(paste(all.vars(apply_to_tail(x, rec_replace)),
+      collapse = get("key.join", OPM_OPTIONS))),
+    {
+      x[[1L]] <- c.name
+      as.name(paste(eval(x, envir), collapse = get("key.join", OPM_OPTIONS)))
+    },
+    apply_to_tail(x, rec_replace)
+  ))
+  result <- (if (to.formula)
+      rec_replace
+    else
+      rec_listify)(x[[length(x)]])
+  if (full.eval)
+    return(metadata_key(x = eval(result, envir), ...))
+  x[[length(x)]] <- result
+  x
+}
+
+
+################################################################################
 
 
 #' Parse time strings
@@ -330,19 +522,24 @@ setMethod("parse_time", c("character", "character"), function(object, format,
 #'
 #' @param object Character vector to be split, or data frame in which character
 #'   vectors (or factors) shall be attempted to be split, or factor.
-#' @param split Character vector or \code{TRUE}. If a character vector, used as
-#'   container of the splitting characters and converted to a vector containing
-#'   only non-duplicated single-character strings. For instance, the default
-#'   \code{split} argument \code{".-_"} yields \code{c(".", "-", "_")}. If a
-#'   vector of only empty strings or \code{TRUE}, strings with substrings
-#'   representing fixed-width fields are assumed, and splitting is done at
-#'   whitespace-only columns. Beforehand, equal-length strings are created by
-#'   padding with spaces at the right. After splitting in fixed-width mode,
-#'   whitespace characters are trimmed from both ends of the resulting strings.
+#' @param split Character vector or \code{TRUE}. \itemize{
+#'   \item If a character vector, used as container of the splitting characters
+#'   and converted to a vector containing only non-duplicated single-character
+#'   strings. For instance, the default \code{split} argument \code{".-_"}
+#'   yields \code{c(".", "-", "_")}.
+#'   \item If a vector of only empty strings or \code{TRUE}, strings with
+#'   substrings representing fixed-width fields are assumed, and splitting is
+#'   done at whitespace-only columns. Beforehand, equal-length strings are
+#'   created by padding with spaces at the right. After splitting in fixed-width
+#'   mode, whitespace characters are trimmed from both ends of the resulting
+#'   strings.
+#'   }
 #' @param simplify Logical scalar indicating whether a resulting matrix with one
 #'   column should be simplified to a vector (or such a data frame to a factor).
+#'   If so, at least one matrix column is kept, even if \code{keep.const} is
+#'   \code{FALSE}.
 #' @param keep.const Logical scalar indicating whether constant columns should
-#'   be kept or removed. Ignored if only a single column is present.
+#'   be kept or removed.
 #' @param coerce Logical scalar indicating whether factors should be coerced to
 #'   \sQuote{character} mode and then also be attempted to be split. The
 #'   resulting columns will be coerced back to factors.
@@ -352,7 +549,7 @@ setMethod("parse_time", c("character", "character"), function(object, format,
 #'   index, thus creating unique column names (if the original ones were
 #'   unique).
 #' @param list.wise Logical scalar. Ignored if \code{split} is \code{TRUE}.
-#'   Otherwise, \code{object} is assumed to contains word lists separated by
+#'   Otherwise, \code{object} is assumed to contain word lists separated by
 #'   \code{split}. The result is a logical matrix in which the columns represent
 #'   these words and the fields indicate whether or not a word was present in a
 #'   certain item contained in \code{object}.
@@ -362,6 +559,13 @@ setMethod("parse_time", c("character", "character"), function(object, format,
 #'   \code{TRUE}.
 #' @param ... Optional arguments passed between the methods.
 #' @export
+#' @details This function is useful if information coded in the elements of a
+#'   character vector is to be converted to a matrix or data frame. For
+#'   instance, file names created by a batch export conducted by a some software
+#'   are usually more or less regularly structured and contain content at
+#'   distinct possitions. In such situations, the correct splitting approach can
+#'   be recognized by yielding the same number of fields from each vector
+#'   element.
 #' @return Character matrix, its number of rows being equal to the length of
 #'   \code{object}, or data frame with the same number of rows as \code{object}
 #'   but potentially more columns. May be character vector of factor with
@@ -397,7 +601,7 @@ setMethod("parse_time", c("character", "character"), function(object, format,
 #' x <- data.frame(a = 1:2, b = c("a-b-cc", "a-ff-g"))
 #' (y <- separate(x, coerce = FALSE))
 #' stopifnot(identical(x, y))
-#' (y <- separate(x))
+#' (y <- separate(x)) # only character/factor columns are split
 #' stopifnot(is.data.frame(y), dim(y) == c(2, 4))
 #' stopifnot(sapply(y, class) == c("integer", "factor", "factor", "factor"))
 #' (y <- separate(x, keep.const = FALSE))
@@ -410,16 +614,15 @@ setMethod("separate", "character", function(object, split = opm_opt("split"),
     simplify = FALSE, keep.const = TRUE, list.wise = FALSE,
     strip.white = list.wise) {
 
-  strip_white <- function(x) {
-    for (pat in c("^\\s+", "\\s+$"))
-      x <- sub(pattern = pat, replacement = "", x = x, perl = TRUE)
-    x
-  }
+  strip_white <- function(x) sub("\\s+$", "", sub("^\\s+", "", x, perl = TRUE),
+    perl = TRUE)
 
-  simple_if <- function(x) {
+  p0 <- function(x) paste(x, collapse = "")
+
+  simple_if <- function(x, keep.const, simplify) {
     if (is.matrix(x)) {
-      if (!keep.const && ncol(x) > 1L) {
-        if (all(const <- is_constant(x, 2L)))
+      if (!keep.const) {
+        if (all(const <- is_constant(x, 2L)) && simplify)
           x <- x[, 1L, drop = FALSE]
         else
           x <- x[, !const, drop = FALSE]
@@ -433,21 +636,23 @@ setMethod("separate", "character", function(object, split = opm_opt("split"),
     else if (length(x))
       matrix(x)
     else
-      matrix(ncol = 0L, nrow = 0L, data = NA_character_)
+      matrix(NA_character_, 0L, 0L)
   }
 
-  p0 <- function(x) paste(x, collapse = "")
-
+  # create regexp for splitting
   char_group <- function(single, multiple) {
-    if (length(single)) {
+    if (length(single))
       if (length(multiple))
         sprintf("([%s]|[%s]+)", p0(single), p0(multiple))
       else
         sprintf("[%s]", p0(single))
-    } else
+    else if (length(multiple))
       sprintf("[%s]+", p0(multiple))
+    else
+      NA_character_ # does not split at all
   }
 
+  # splitting at positions that contain whitespace in all strings
   split_fixed <- function(x) {
     ws <- c(" ", "\t", "\v", "\r", "\n", "\b", "\a", "\f")
     x <- strsplit(x, split = "", fixed = TRUE)
@@ -455,68 +660,68 @@ setMethod("separate", "character", function(object, split = opm_opt("split"),
     x <- lapply(x, function(y) c(y, rep.int(" ", max.len - length(y))))
     x <- do.call(rbind, x)
     groups <- sections(apply(x, 2L, function(y) all(y %in% ws)))
-    x <- apply(x, 1L, split, f = groups)
+    x <- apply(x, 1L, split.default, groups)
     x <- lapply(x, function(y) strip_white(vapply(y, p0, character(1L))))
     do.call(rbind, x)
   }
 
-  yields_constant <- function(chars) {
-    splits_constant <- function(char, ...) {
-      is_constant(lapply(strsplit(object, char, ...), length))
-    }
-    vapply(chars, function(char) {
-      if (splits_constant(sprintf("[%s]+", char), perl = TRUE))
-        "multiple"
-      else if (splits_constant(char, fixed = TRUE))
-        "single"
-      else
-        "no"
-    }, character(1L))
+  yields_constant <- function(char, x) {
+    splits_constant <- function(char, x, ...)
+      is_constant(vapply(strsplit(x, char, ...), length, integer(1L)))
+    if (splits_constant(sprintf("[%s]+", char), x, perl = TRUE))
+      2L
+    else if (splits_constant(char, x, fixed = TRUE))
+      1L
+    else
+      0L
   }
 
-  lists_to_matrix <- function(x, split, strip.white) {
-    x <- strsplit(x, split = sprintf("[%s]", p0(split)), perl = TRUE)
+  # collect words after splitting and mark their occurrences
+  word_occurrences <- function(x, split, strip.white) {
+    x <- strsplit(x, sprintf("[%s]", p0(split)), perl = TRUE)
     if (strip.white)
       x <- lapply(x, strip_white)
-    chars <- unique(na.exclude(unlist(x)))
-    result <- matrix(nrow = length(x), ncol = length(chars), data = FALSE)
+    chars <- unlist(x, recursive = FALSE)
+    chars <- unique.default(chars[!is.na(chars)])
+    result <- matrix(FALSE, length(x), length(chars))
     colnames(result) <- sort.int(chars)
     rownames(result) <- names(x)
-    for (i in seq_along(x)) {
-      if (identical(entries <- x[[i]], NA_character_))
+    for (i in seq_along(x))
+      if (identical(x[[i]], NA_character_))
         result[i, ] <- NA
       else
-        result[i, entries] <- TRUE
-    }
+        result[i, x[[i]]] <- TRUE
     result
   }
 
   LL(list.wise, strip.white, simplify, keep.const)
 
   # Fixed-width splitting mode
-  if (isTRUE(split) || all(!nzchar(split <- na.exclude(as.character(split)))))
-    return(simple_if(split_fixed(object)))
+  if (identical(TRUE, split <- c(split)))
+    return(simple_if(split_fixed(object), keep.const, simplify))
+  split <- as.character(split)
+  if (all(!nzchar(split <- split[!is.na(split)])))
+    return(simple_if(split_fixed(object), keep.const, simplify))
 
   # Prepare split characters
-  split <- unique(unlist(strsplit(x = split, split = "", fixed = TRUE)))
-  if (length(split) == 0L)
-    return(simple_if(object))
+  split <- strsplit(split, "", fixed = TRUE)
+  split <- unique.default(unlist(split, recursive = FALSE))
+  if (!length(split))
+    return(simple_if(object, keep.const, simplify))
   split <- c(setdiff(split, "-"), intersect(split, "-"))
 
   # List-wise splitting
   if (list.wise)
-    return(simple_if(lists_to_matrix(object, split, strip.white)))
+    return(simple_if(word_occurrences(object, split, strip.white),
+      keep.const, simplify))
 
   # Check and apply split characters
-  yields.constant <- vapply(split, yields_constant, character(1L))
-  if (all(yields.constant == "no"))
-    return(simple_if(object))
-  split <- char_group(split[yields.constant == "single"],
-    split[yields.constant == "multiple"])
+  yields.const <- vapply(split, yields_constant, integer(1L), object)
+  split <- char_group(split[yields.const == 1L], split[yields.const == 2L])
   object <- do.call(rbind, strsplit(object, split, perl = TRUE))
   if (strip.white)
-    object <- strip_white(object)
-  simple_if(object)
+    object[] <- strip_white(object)
+  simple_if(object, keep.const, simplify)
 
 }, sealed = SEALED)
 
@@ -527,27 +732,32 @@ setMethod("separate", "factor", function(object, split = opm_opt("split"),
   if (L(simplify) && ncol(result) == 1L)
     as.factor(result[, 1L])
   else
-    as.data.frame(result, stringsAsFactors = TRUE)
+    as.data.frame(result, stringsAsFactors = TRUE, optional = TRUE)
 }, sealed = SEALED)
 
 setMethod("separate", "data.frame", function(object, split = opm_opt("split"),
-    keep.const = TRUE, coerce = TRUE, name.sep = ".", ...) {
-  LL(coerce, name.sep)
-  do.call(cbind, mapply(function(x, name) {
+    simplify = FALSE, keep.const = TRUE, coerce = TRUE, name.sep = ".", ...) {
+  LL(coerce, name.sep, simplify)
+  object <- do.call(cbind, mapply(function(x, name) {
     result <- if (is.character(x))
       as.data.frame(separate(x, split = split, keep.const = keep.const,
-        simplify = FALSE, ...), stringsAsFactors = FALSE)
+        simplify = FALSE, ...), stringsAsFactors = FALSE, optional = TRUE)
     else if (coerce && is.factor(x))
       separate(x, split = split, keep.const = keep.const,
         simplify = FALSE, ...)
     else
-      as.data.frame(x)
-    names(result) <- if ((nc <- ncol(result)) == 1L)
-      name
-    else
-      paste(name, seq_len(nc), sep = name.sep)
+      as.data.frame(x, stringsAsFactors = FALSE, optional = TRUE)
+    case(ncol(result),
+      if (keep.const)
+        result[, name] <- x,
+      names(result) <- name,
+      names(result) <- paste(name, seq_len(ncol(result)), sep = name.sep)
+    )
     result
   }, object, names(object), SIMPLIFY = FALSE, USE.NAMES = FALSE))
+  if (ncol(object) == 1L && simplify)
+    object <- object[, 1L]
+  object
 }, sealed = SEALED)
 
 
@@ -566,14 +776,16 @@ setMethod("separate", "data.frame", function(object, split = opm_opt("split"),
 #' @family auxiliary-functions
 #' @keywords character
 #' @seealso utils::glob2rx base::regex
-#' @note This is not normally directly called by an \pkg{opm} user because
+#' @details This is not normally directly called by an \pkg{opm} user because
 #'   particularly \code{\link{explode_dir}} and the IO functions calling that
-#'   function internally use \code{glob_to_regex} anyway.
-#' @details The here used globbing search patterns contain only two special
-#'   characters, \sQuote{?} and \sQuote{*}, and are thus more easy to master
-#'   than regular expressions. \sQuote{?} matches a single arbitrary character,
-#'   whereas \sQuote{*} matches zero to an arbitrary number of arbitrary
-#'   characters. Some examples:
+#'   function internally use \code{glob_to_regex} anyway. But some hints when
+#'   using globbing patterns are given in the following.
+#'
+#'   The here used globbing search patterns contain only two special characters,
+#'   \sQuote{?} and \sQuote{*}, and are thus more easy to master than regular
+#'   expressions. \sQuote{?} matches a single arbitrary character, whereas
+#'   \sQuote{*} matches zero to an arbitrary number of arbitrary characters.
+#'   Some examples:
 #'   \describe{
 #'     \item{a?c}{Matches \sQuote{abc}, \sQuote{axc}, \sQuote{a c} etc. but not
 #'       \sQuote{abbc}, \sQuote{abbbc}, \sQuote{ac} etc.}
@@ -599,7 +811,8 @@ setGeneric("glob_to_regex",
   function(object, ...) standardGeneric("glob_to_regex"))
 
 setMethod("glob_to_regex", "character", function(object) {
-  x <- glob2rx(gsub("[+^$]", "\\\\1", object, perl = TRUE))
+  # TODO: one should perhaps also check for '|'
+  x <- glob2rx(gsub("([+^$])", "\\\\\\1", object, perl = TRUE))
   attributes(x) <- attributes(object)
   x
 }, sealed = SEALED)
@@ -697,6 +910,113 @@ add_in_parens <- function(str.1, str.2, max = 1000L, append = ".",
 ################################################################################
 
 
+#' Convert recursively to HTML
+#'
+#' This is the helper function used by \code{\link{format}} for converting
+#' user-defined additions to \acronym{HTML}.
+#'
+#' @param x List or other vector.
+#' @param level Integer scalar defining the starting level for indentation and
+#'   naming of unnamed sections.
+#' @param fmt Character scalar used for transforming \code{level} into section
+#'   \sQuote{class} and \sQuote{title} attributes.
+#' @param fac Integer scalar for inferring the number of spaces used for
+#'   indentation from the current \code{level} (recursively incremented).
+#' @return Character scalar.
+#' @details  If applied to lists, this functions works recursively, generating
+#'   \sQuote{div} elements from each list. Names are used as \sQuote{class} and
+#'   \sQuote{title} attributes. Where names are missing, \code{level} is used in
+#'   conjunction with \code{fmt}. Non-list vectors are converted using
+#'   \sQuote{span} tags if names are present, simply joined otherwise.
+#' @keywords internal
+#'
+list2html <- function(x, level = 1L, fmt = opm_opt("html.class"), fac = 2L) {
+  indent <- paste(rep.int(" ", fac * (level - 1L)), collapse = "")
+  if (is.list(x)) {
+    if (is.null(n <- names(x)))
+      n <- sprintf(fmt, level)
+    else
+      n[!nzchar(n)] <- sprintf(fmt, level)
+    n <- ifelse(nzchar(n), safe_labels(n, "html"), NA_character_)
+    x <- vapply(x, list2html, character(1L), level = level + 1L, fmt = fmt)
+    x <- paste(x, indent, sep = "")
+    x <- hmakeTag("div", x, class = n, title = n, newline = TRUE)
+    paste(indent, x, sep = "", collapse = "")
+  } else {
+    if (is.character(x) && !inherits(x, "AsIs"))
+      x <- safe_labels(x, "html")
+    if (!is.null(n <- names(x))) {
+      n <- ifelse(nzchar(n), safe_labels(n, "html"), NA_character_)
+      x <- hmakeTag("span", x, class = n, title = n)
+    }
+    paste(indent, paste(x, collapse = " "), "\n", sep = "")
+  }
+}
+
+
+################################################################################
+
+
+#' Create HTML head
+#'
+#' This is the helper function used by \code{\link{format}} and other functions
+#' to create the \sQuote{head} antry of an \acronym{HTML} strings.
+#'
+#' @param title Character scalar defining the title of the \acronym{HTML}
+#'   document. Must contain an attribute called as returned by
+#'   \code{\link{opm_string}}.
+#' @param css Character vector containing the names of \acronym{CSS} files to
+#'   link.
+#' @param meta Character vector defining additional meta tags.
+#' @return Character vector.
+#' @keywords internal
+#'
+html_head <- function(title, css, meta) {
+  single_tag <- function(x, ...) {
+    listing(list(...), c("<", x), ">", style = " %s=\"%s\"", collapse = "")
+  }
+  html_comment <- function(x) {
+    safe_labels(x, "html", comment = TRUE, enclose = FALSE)
+  }
+  if (length(title)) {
+    from.opm <- attr(title, opm_string())
+    # Tidy accepts only a single title entry
+    title <- hmakeTag("title", data = safe_labels(title[1L], format = "html"))
+    if (!from.opm)
+      title <- c(html_comment("user-defined title"), title)
+  } else
+    title <- NULL
+  if (length(css <- css[nzchar(css)])) {
+    is.abs.path <- grepl("^(/|[a-zA-Z]:)", css, perl = TRUE)
+    css[is.abs.path] <- sprintf("file://%s", css[is.abs.path])
+    css <- vapply(css, function(y) {
+      single_tag("link", rel = "stylesheet", type = "text/css", href = y)
+    }, character(1L))
+    css <- c(html_comment("user-defined CSS file(s)"), unname(css))
+  } else
+    css <- NULL
+  generator <- single_tag("meta", name = "generator",
+    content = paste(opm_string(version = TRUE), collapse = " version "))
+  # see http://www.w3.org/TR/NOTE-datetime
+  # but %s appears to be affected by a bug in R 2.15.2
+  time <- format(Sys.time(), "%Y-%M-%dT%H:%M:%S%z")
+  time <- single_tag("meta", name = "date", content = time)
+  if (length(meta)) {
+    meta <- vapply(meta, function(y) {
+      if (is.null(names(y)))
+        stop("HTML meta entry without names")
+      do.call(single_tag, c(list(x = "meta"), as.list(y)))
+    }, character(1L))
+    meta <- c(html_comment("user-defined metadata"), unname(meta))
+  } else
+    meta <- NULL
+  c("<head>", title, generator, time, meta, css, "</head>")
+}
+
+
+################################################################################
+
+
 #' Check HTML using the Tidy program
 #'
 #' Run the Tidy program for check or converting \acronym{HTML} character
@@ -715,7 +1035,7 @@ add_in_parens <- function(str.1, str.2, max = 1000L, append = ".",
 #'   \code{NULL} if it cannot be found.
 #' @keywords internal
 #'
-setGeneric("tidy",  function(object, ...) standardGeneric("tidy"))
+setGeneric("tidy", function(object, ...) standardGeneric("tidy"))
 
 setMethod("tidy", "missing", function() {
   if (nzchar(result <- Sys.which("tidy")))
@@ -814,20 +1134,22 @@ setAs(from = "ANY", to = "ordered", function(from) as.ordered(from))
 #' \sQuote{character}. Reduce it to \sQuote{ANY} if \sQuote{ANY} is contained.
 #' See \code{\link{map_values}} for a use.
 #'
-#' @param object Character vector.
+#' @param x Character vector.
 #' @return Character vector.
 #' @keywords internal
 #'
-setGeneric("prepare_class_names",
-  function(object) standardGeneric("prepare_class_names"))
+prepare_class_names <- function(x) UseMethod("prepare_class_names")
 
-setMethod("prepare_class_names", "character", function(object) {
-  object <- unique(c("character", object))
-  if ("ANY" %in% object)
+#' @rdname prepare_class_names
+#' @method prepare_class_names character
+#'
+prepare_class_names.character <- function(x) {
+  x <- unique.default(c("character", x))
+  if ("ANY" %in% x)
     "ANY"
   else
-    object
-}, sealed = SEALED)
+    x
+}
 
 
 ################################################################################
@@ -835,45 +1157,57 @@ setMethod("prepare_class_names", "character", function(object) {
 
 #' Map values
 #'
-#' Map \sQuote{character} data using another \sQuote{character} vector, or
-#' recursively apply a mapping function to all \sQuote{character} values within
-#' a list, or non-recursively to a data frame. Optionally coerce other data
-#' types to \sQuote{character}; return remaining ones unchanged. It is also
-#' possible to map between classes using coercion functions. For convenience in
-#' programming, methods for the \sQuote{NULL} class are also available.
+#' Map values using a character vector, a function or a formula. This is not
+#' normally directly called by an \pkg{opm} user because
+#' \code{\link{map_metadata}} is available.
 #'
 #' @param object List (may be nested), data frame or character vector. If it has
 #'   names, they are preserved. \code{NULL} can also be given and yields
 #'   \code{NULL} or an empty named character vector (if \code{mapping} is
 #'   missing). \code{object} may also belong to the virtual class
 #'   \code{\link{MOA}}, comprising matrices and arrays.
-#' @param mapping Character vector, function, formula, or missing. If a
-#'   character vector used as a mapping from its names to its values. Values
-#'   from \code{object} are searched for in the \code{names} attribute of
+#' @param mapping Character vector, function, formula, expression, \code{NULL}
+#'   or missing.
+#'   \itemize{
+#'   \item If a character vector used as a mapping from its names to its values.
+#'   Values from \code{object} are searched for in the \code{names} attribute of
 #'   \code{mapping}; those found are replaced by the corresponding values of
-#'   \code{mapping}. If \code{mapping} is missing, a character vector is
-#'   returned (sorted and with duplicates removed) whose names are identical to
-#'   the values. This eases the construction of mapping vectors specific for
-#'   \code{object}. If \code{mapping} is missing, the \code{coerce} argument
-#'   must be named. \code{mapping} changes its usage if \code{coerce} is
-#'   \code{TRUE}. For \code{\link{MOA}} objects, if \code{mapping} was a
-#'   function, it would be applied to \code{object} after conversion with
-#'   \code{as.vector}, and it would be attempted to add the original attributes
-#'   (particularly important are \sQuote{dim} and \sQuote{dimnames} back to the
-#'   result. For \code{\link{MOA}} objects, if \code{mapping} is the usual
+#'   \code{mapping}.
+#'   \item If \code{mapping} is missing, a character vector is returned (sorted
+#'   and with duplicates removed) whose names are identical to the values. This
+#'   eases the construction of mapping vectors specific for \code{object}. If
+#'   \code{mapping} is missing, the \code{coerce} argument must be named.
+#'   \code{mapping} changes its usage if \code{coerce} is \code{TRUE}.
+#'   \item For \code{\link{MOA}} objects, if \code{mapping} was a function, it
+#'   would be applied to \code{object} after conversion with \code{as.vector},
+#'   and it would be attempted to add the original attributes (particularly
+#'   important are \sQuote{dim} and \sQuote{dimnames} back to the result.
+#'   \item For \code{\link{MOA}} objects, if \code{mapping} is the usual
 #'   character vector, it then is used for mapping the \code{storage.mode}, not
-#'   the \code{class} of \code{object}. \code{mapping} can also be a formula, it
-#'   is then used to compute on lists. The see examples below.
-#' @param coerce Character vector with the names of classes that are coerced to
+#'   the \code{class} of \code{object}.
+#'   \item \code{mapping} can also be a formula, it is then used to compute on
+#'   lists. The see examples below.
+#'   \item If \code{mapping} is an expression, all sub-expressions will be
+#'   evualated in \code{object} represented as an environment, which after
+#'   conversion back to a list, is returned.
+#'   \item If \code{mapping} is \code{NULL} and \code{object} is a list, all
+#'   contained objects of zero length are removed recursively.
+#' }
+#' @param coerce The usage of this argument depends on \code{object}.
+#'   \itemize{
+#'   \item A character vector with the names of classes that are coerced to
 #'   \sQuote{character} to allow the mapping. Other classes are returned
 #'   unchanged. Note that the coerced data are \strong{not} converted back to
 #'   their original data type. \sQuote{ANY} can be used to indicate that all
-#'   classes will be considered. Alternatively, \code{coerce} can be
-#'   \code{TRUE}. \code{mapping} is then interpreted as a mapping between the
-#'   names of classes, and \code{as} from the \pkg{methods} package is used for
-#'   conducting the requested coercions. Attempting an undefined coercion will
-#'   result in an error.
-#' @param ... Optional further arguments to \code{mapping} (if it is a
+#'   classes will be considered.
+#'   \item Alternatively, \code{coerce} can be \code{TRUE}. \code{mapping} is
+#'   then interpreted as a mapping between the names of classes, and \code{as}
+#'   from the \pkg{methods} package is used for conducting the requested
+#'   coercions. Attempting an undefined coercion will result in an error.
+#'   \item For the formula method, an enclosing environment to look up objects
+#'   that are not found in \code{mapping}.
+#'   }
+#' @param ... Optional further arguments to \code{mapping} (\strong{if} it is a
 #'   function).
 #' @export
 #' @return List, data frame, character vector or \code{NULL}.
@@ -881,8 +1215,14 @@ setMethod("prepare_class_names", "character", function(object) {
 #'   base::storage.mode base::as.vector
 #' @family auxiliary-functions
 #' @keywords manip list
-#' @note This function is not normally directly called by an \pkg{opm} user
-#'   because \code{\link{map_metadata}} is available.
+#' @details Mapping of \sQuote{character} data using another \sQuote{character}
+#'   vector is possible, as well as recursively applying a mapping function to
+#'   all \sQuote{character} values within a list, or non-recursively to a data
+#'   frame. Optionally other data types are coerced to \sQuote{character}; the
+#'   remaining ones are returned unchanged. It is also possible to map between
+#'   classes using coercion functions. For convenience in programming, methods
+#'   for the \sQuote{NULL} class are also available.
+#'
 #' @examples
 #'
 #' # Character/character method
@@ -945,6 +1285,9 @@ setMethod("prepare_class_names", "character", function(object) {
 #' stopifnot(is.data.frame(y), dim(y) == c(5, 3))
 #' (z <- map_values(x, ~ a + b))
 #' stopifnot(identical(z, y$c))
+#' # same effect with an expression
+#' (z <- map_values(x, expression(c <- a + b)))
+#' stopifnot(identical(z, y))
 #'
 #' # Data frame/character method
 #' x <- data.frame(a = 1:3, b = letters[1:3])
@@ -1039,7 +1382,21 @@ setMethod("map_values", c("list", "function"), function(object, mapping,
     how = "replace", ...)
 }, sealed = SEALED)
 
-setMethod("map_values", c("list", "missing"), function(object,
+setMethod("map_values", c("list", "NULL"), function(object, mapping,
+    coerce = character()) {
+  clean_recursively <- function(x) {
+    if (!is.list(x))
+      return(x)
+    x <- lapply(x, clean_recursively)
+    x[vapply(x, length, integer(1L)) > 0L]
+  }
+  if (length(coerce))
+    object <- rapply(object, as.character, prepare_class_names(coerce), NULL,
+      "replace")
+  clean_recursively(object)
+}, sealed = SEALED)
+
+setMethod("map_values", c("list", "missing"), function(object, mapping,
     coerce = character()) {
   if (isTRUE(coerce)) {
     classes <- "ANY"
@@ -1051,13 +1408,33 @@ setMethod("map_values", c("list", "missing"), function(object,
   map_values(rapply(object, mapfun, classes = classes))
 }, sealed = SEALED)
 
-setMethod("map_values", c("list", "formula"), function(object, mapping) {
+setMethod("map_values", c("list", "formula"), function(object, mapping,
+    coerce = parent.frame()) {
   if (length(mapping) > 2L) {
-    object[[parse_formula_head(mapping[[2L]])]] <- eval(expr = mapping[[3L]],
-      envir = object)
+    right <- eval(mapping[[3L]], object, coerce)
+    left <- metadata_key.formula(mapping[-3L], FALSE, envir = coerce)
+    if (is.list(left)) {
+      right <- rep(right, length.out = length(left))
+      for (i in seq_along(left))
+        object[[left[[i]]]] <- right[[i]]
+    } else
+      object[[left]] <- right
     object
   } else
-    eval(expr = mapping[[2L]], envir = object)
+    eval(mapping[[2L]], object, coerce)
+}, sealed = SEALED)
+
+setMethod("map_values", c("list", "expression"), function(object, mapping,
+    coerce = parent.frame()) {
+  e <- list2env(object, NULL, coerce)
+  for (subexpr in mapping)
+    eval(subexpr, e)
+  e <- as.list(e) # return 'e' if the order of list elements doesn't matter
+  novel <- setdiff(names(e), names(object))
+  for (name in setdiff(names(object), names(e)))
+    object[[name]] <- NULL
+  object[novel] <- e[novel]
+  object
 }, sealed = SEALED)
 
 #-------------------------------------------------------------------------------
@@ -1066,8 +1443,7 @@ setMethod("map_values", c("data.frame", "function"), function(object, mapping,
     coerce = character(), ...) {
   if (identical("ANY", coerce <- prepare_class_names(coerce)))
     coerce <- unique(unlist((lapply(object, class))))
-  for (i in which(vapply(object, function(x) any(class(x) %in% coerce),
-      logical(1L))))
+  for (i in which(vapply(object, inherits, logical(1L), coerce)))
     object[[i]] <- mapping(object[[i]], ...)
   object
 }, sealed = SEALED)
@@ -1083,17 +1459,24 @@ setMethod("map_values", c("data.frame", "character"), function(object, mapping,
   map_values(object, mapping = mapfun, coerce = coerce)
 }, sealed = SEALED)
 
+setMethod("map_values", c("data.frame", "NULL"), function(object, mapping,
+    coerce = character(), ...) {
+  if (identical("ANY", coerce <- prepare_class_names(coerce)))
+    coerce <- unique(unlist((lapply(object, class))))
+  for (i in which(vapply(object, inherits, logical(1L), coerce)))
+    object[[i]] <- as.character(object[[i]])
+  object
+}, sealed = SEALED)
+
 setMethod("map_values", c("data.frame", "missing"), function(object,
     coerce = character()) {
   if (isTRUE(coerce))
     result <- unlist(lapply(object, class))
   else {
     coerce <- prepare_class_names(coerce)
-    if (!"ANY" %in% coerce) {
-      wanted <- vapply(object, function(x) any(class(x) %in% coerce),
-        logical(1L))
-      object <- object[, wanted, drop = FALSE]
-    }
+    if (!"ANY" %in% coerce)
+      object <- object[, vapply(object, inherits, logical(1L), coerce),
+        drop = FALSE]
     result <- unlist(lapply(object, as.character))
   }
   map_values(result)
@@ -1150,7 +1533,7 @@ setMethod("map_values", c("character", "character"), function(object, mapping) {
 }, sealed = SEALED)
 
 setMethod("map_values", c("character", "missing"), function(object) {
-  object <- sort.int(unique(object))
+  object <- sort.int(unique.default(object))
   structure(.Data = object, .Names = object)
 }, sealed = SEALED)
 
@@ -1193,15 +1576,8 @@ setMethod("map_values", c("NULL", "missing"), function(object, mapping) {
 #'
 #' Use a character vector or a function for recursively mapping list names, or
 #' mapping the \sQuote{colnames} and \sQuote{rownames} attributes of a data
-#' frame. In the case of lists, the function is not applied to list elements
-#' which are not themselves lists, even if they have a \sQuote{names} attribute.
-#' Such elements and their names, if any, are returned unchanged. If a
-#' \sQuote{names}, \sQuote{colnames} or \sQuote{rownames} attribute is
-#' \code{NULL}, it is ignored. Alternatively, instead of mapping the names,
-#' collect them and return them as a single character vector, sorted and with
-#' duplicates removed. The collected names are added as their own \code{names}
-#' attribute; this might be useful if the result is later on used for some
-#' mapping (using this function or \code{\link{map_values}}).
+#' frame. This function is not normally directly called by an \pkg{opm} user
+#' because \code{\link{map_metadata}} is available.
 #'
 #' @param object Any \R object. The default method applies the mapping to the
 #'   \sQuote{names} attribute. The behaviour is special for lists, which are
@@ -1221,8 +1597,17 @@ setMethod("map_values", c("NULL", "missing"), function(object, mapping) {
 #' @family auxiliary-functions
 #' @seealso base::rapply base::list base::as.list
 #' @keywords manip list
-#' @note This function is not normally directly called by an \pkg{opm} user
-#'   because \code{\link{map_metadata}} is available.
+#' @details In the case of lists, the function is not applied to list elements
+#'   which are not themselves lists, even if they have a \sQuote{names}
+#'   attribute. Such elements and their names, if any, are returned unchanged.
+#'   If a \sQuote{names}, \sQuote{colnames} or \sQuote{rownames} attribute is
+#'   \code{NULL}, it is ignored.
+#'
+#'   Alternatively, instead of mapping the names, collect them and return them
+#'   as a single character vector, sorted and with duplicates removed. The
+#'   collected names are added as their own \code{names} attribute; this might
+#'   be useful if the result is later on used for some mapping (using this
+#'   function or \code{\link{map_values}}).
 #' @examples
 #'
 #' # List/function method
@@ -1414,41 +1799,6 @@ setMethod("repair_na_strings", "list", function(object,
 #
 
 
-#' Traverse a list with a function
-#'
-#' Apply a function to all list elements in turn, optionally in parallel using
-#' the \pkg{multicore} package.
-#'
-#' @param object List.
-#' @param func Function to apply to each element of the list.
-#' @param cores Integer scalar. Number of cores to use. If more than one, a
-#'   warning is issued if the \pkg{multicore} package is not available, and the
-#'   number of cores is set back to 1.
-#' @param ... Optional arguments to \code{lapply} or \code{mclapply} (can be
-#'   arguments passed to \code{func}).
-#' @return List.
-#' @keywords internal
-#'
-setGeneric("traverse",
-  function(object, func, ...) standardGeneric("traverse"))
-
-setMethod("traverse", c("list", "function"), function(object, func, cores,
-    ...) {
-  if (L(cores) > 1L && !suppressWarnings(require(
-      multicore, quietly = TRUE, warn.conflicts = FALSE))) {
-    warning("'multicore' not available -- switching back to 1 core")
-    cores <- 1L
-  }
-  if (cores > 1L)
-    multicore::mclapply(X = object, FUN = func, mc.cores = cores, ...)
-  else
-    lapply(X = object, FUN = func, ...)
-}, sealed = SEALED)
-
-
-################################################################################
-
-
 #' Insert a list in a list
 #'
 #' Insert all values from another list in a list, either by overwriting the
@@ -1507,14 +1857,7 @@ setMethod("insert", "list", function(object, other, ..., .force = FALSE,
 #'
 #' Test whether all names of a query list occur as names in a data list and
 #' optionally also whether they point to the same elements; apply this principle
-#' recursively to all sublists. Non-list elements are ignored if \code{values}
-#' is \code{FALSE}. Otherwise the comparison is done using \code{identical} if
-#' \code{exact} is \code{TRUE}. If \code{exact} is \code{FALSE}, the value(s) in
-#' the data list can be any of the values at the corresponding position in the
-#' query list, and the comparison is done by coercion to character vectors. An
-#' empty query list results in \code{TRUE}. Missing names in a non-empty query
-#' list result in \code{FALSE}. There is also an \code{\link{OPMS}} method,
-#' which tests whether an \code{\link{OPM}} object is contained.
+#' recursively to all sublists.
 #'
 #' @param object List containing the data, or \code{\link{OPMS}} object.
 #' @param other For the list method, a list used as query; for the
@@ -1523,15 +1866,27 @@ setMethod("insert", "list", function(object, other, ..., .force = FALSE,
 #'   \code{FALSE}, \code{exact} is ignored.
 #' @param exact Logical scalar. If \code{FALSE}, the data value(s) might by any
 #'   of the query value(s), and some coercion is done before comparing (see
-#'   \code{match} for details. If \code{TRUE}, the data value(s) must exactly
-#'   correspond to the query value(s), and no coercion is done (see
-#'   \code{identical}) for details). This might be too strict for most
-#'   applications.
+#'   \code{match} for details.
+#'
+#'   If \code{TRUE}, the data value(s) must exactly correspond to the query
+#'   value(s), and no coercion is done (see \code{identical}) for details). This
+#'   might be too strict for most applications.
 #' @param ... Optional arguments passed to \code{identical} from the \pkg{base}
 #'   package, allowing for fine-control of identity. Has no effect unless
 #'   \code{exact} is \code{TRUE}.
 #' @export
 #' @return Logical scalar.
+#' @details  Non-list elements are ignored if \code{values} is \code{FALSE}.
+#'   Otherwise the comparison is done using \code{identical} if \code{exact} is
+#'   \code{TRUE}. If \code{exact} is \code{FALSE}, the value(s) in the data list
+#'   can be any of the values at the corresponding position in the query list,
+#'   and the comparison is done by coercion to character vectors. An empty query
+#'   list results in \code{TRUE}. Missing names in a non-empty query list result
+#'   in \code{FALSE}.
+#'
+#'   There are also \code{\link{OPMS}} and \code{\link{OPM}} methods, which
+#'   test, for instance, whether an \code{\link{OPM}} object is contained in an
+#'   \code{\link{OPMS}} object.
 #' @family auxiliary-functions
 #' @seealso base::list base::as.list base::`[` base::`[[` base::match
 #' @seealso base::identity
@@ -1551,7 +1906,11 @@ setMethod("insert", "list", function(object, other, ..., .force = FALSE,
 #'
 #' # OPMS/OPM method
 #' data(vaas_4)
-#' stopifnot(contains(vaas_4, vaas_4[3]))
+#' stopifnot(contains(vaas_4, vaas_4[3])) # single one contained
+#' stopifnot(contains(vaas_4, vaas_4)) # all contained
+#' stopifnot(!contains(vaas_4[3], vaas_4)) # OPMS cannot be contained in OPM
+#' stopifnot(contains(vaas_4[3], vaas_4[3])) # identical OPM objects
+#' stopifnot(!contains(vaas_4[3], vaas_4[2])) # non-identical OPM objects
 #'
 setGeneric("contains",
   function(object, other, ...) standardGeneric("contains"))
@@ -1595,6 +1954,24 @@ setMethod("contains", c(OPMS, OPM), function(object, other, ...) {
   FALSE
 }, sealed = SEALED)
 
+setMethod("contains", c(OPMS, OPMS), function(object, other, ...) {
+  single_contained <- function(x) {
+    for (plate in object@plates)
+      if (identical(x = plate, y = x, ...))
+        return(TRUE)
+    FALSE
+  }
+  vapply(other@plates, single_contained, logical(1L))
+}, sealed = SEALED)
+
+setMethod("contains", c(OPM, OPMS), function(object, other, ...) {
+  FALSE
+}, sealed = SEALED)
+
+setMethod("contains", c(OPM, OPM), function(object, other, ...) {
+  identical(x = object, y = other, ...)
+}, sealed = SEALED)
+
 
 ################################################################################
 ################################################################################
@@ -1627,6 +2004,8 @@ setMethod("contains", c(OPMS, OPM), function(object, other, ...) {
 #'     \item{color.borders}{Character vector with default color borders between
 #'       which \code{\link{level_plot}} interpolates to obtain a colour
 #'       palette.}
+#'     \item{contrast.type}{Character scalar indicating the default type of
+#'       contrast used by \code{\link{opm_mcp}}.}
 #'     \item{css.file}{Character scalar. Default \acronym{CSS} file linked by
 #'       \code{\link{phylo_data}} when producing \acronym{HTML} output. Ignored
 #'       if empty.}
@@ -1638,6 +2017,8 @@ setMethod("contains", c(OPMS, OPM), function(object, other, ...) {
 #'       extracted by \code{\link{collect_template}}.}
 #'     \item{curve.param}{Character scalar. Default \sQuote{subset} argument of
 #'       \code{\link{extract}} and the plotting functions.}
+#'     \item{disc.param}{Character scalar. Default \sQuote{subset} argument of
+#'       \code{\link{do_disc}}. It is usually not advisable to  change it.}
 #'     \item{digits}{Integer scalar. Number of digits used by some functions
 #'       generating output text.}
 #'     \item{file.encoding}{Character scalar. Character encoding in input files
@@ -1645,11 +2026,15 @@ setMethod("contains", c(OPMS, OPM), function(object, other, ...) {
 #'     \item{gen.iii}{Character scalar indicating whether \code{\link{read_opm}}
 #'       and other IO functions based on it automatically convert to this plate
 #'       type. If empty, nothing is changed.}
+#'     \item{heatmap.colors}{Colour palette used by \code{\link{heat_map}}}.
 #'     \item{html.attr}{Used by \code{\link{phylo_data}} for automatically
 #'       creating \acronym{HTML} \sQuote{title} and \sQuote{class} attributes.}
+#'     \item{key.join}{Used by \code{\link{metadata}} and some other functions
+#'       that must be in sync with it for joining metadata keys used in nested
+#'       queries (because the resulting object is \sQuote{flat}).}
 #'     \item{phylo.fmt}{Character scalar indicating the default output format
 #'       used by \code{\link{phylo_data}}.}
-#'     \item{split}{Character scalar indicating the default spliiting characters
+#'     \item{split}{Character scalar indicating the default splitting characters
 #'       used by \code{\link{separate}}.}
 #'     \item{time.zone}{Character scalar indicating the time zone to be used
 #'       when parsing \code{\link{setup_time}} entries. This is relevant for
@@ -1691,10 +2076,11 @@ setMethod("contains", c(OPMS, OPM), function(object, other, ...) {
 setGeneric("opm_opt", function(x, ...) standardGeneric("opm_opt"))
 
 setMethod("opm_opt", "list", function(x) {
-  old <- mget(keys <- names(x), envir = OPM_OPTIONS)
+  old <- mget(names(x), envir = OPM_OPTIONS)
   for (i in seq_along(x))
-    if (!all(inherits(x[[i]], class(old[[i]]))))
-      stop("new and old value have conflicting class(es) for key ", keys[[i]])
+    if (!all(inherits(x[[i]], class(old[[i]]), which = TRUE)))
+      stop(sprintf("new and old value have conflicting class(es) for key '%s'",
+        names(x)[i]))
   list2env(x, envir = OPM_OPTIONS)
   invisible(old)
 }, sealed = SEALED)

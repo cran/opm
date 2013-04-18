@@ -7,25 +7,30 @@
   first calls \code{\link{extract}}, restricting the
   columns to the numeric ones.}
 
-  \item{range}{In non-\code{gap} mode (see next argument)
-  the assumed real range of the data; must contain all
-  elements of \code{x}, but can be much wider. In
-  \code{gap} mode, it must, in contrast, lie within the
-  range of \code{x}. If \code{range} is set to \code{TRUE},
-  the empirical range of \code{x} is used in non-\code{gap}
-  mode. In \code{gap} mode, the range is determined using
+  \item{range}{If a numeric vector, in non-\code{gap} mode
+  (see next argument) the assumed real range of the data;
+  must contain all elements of \code{x}, but can be much
+  wider. In \code{gap} mode, it must, in contrast, lie
+  within the range of \code{x}.
+
+  If \code{range} is set to \code{TRUE}, the empirical
+  range of \code{x} is used in non-\code{gap} mode. In
+  \code{gap} mode, the range is determined using
   \code{\link{run_kmeans}} with the number of clusters set
   to \code{3} and then applying \code{\link{borders}} to
-  the result. The number of clusters is set to \code{2} if
-  \code{range} is \code{FALSE} in \code{gap} mode.}
+  the result.
+
+  The number of clusters is set to \code{2} if \code{range}
+  is \code{FALSE} in \code{gap} mode.}
 
   \item{gap}{Logical scalar. If \code{TRUE}, always convert
   to binary or ternary characters, ignoring \code{states}.
   \code{range} then indicates a subrange of \code{x} within
   which character conversion is ambiguous and has to be
   treated as either missing information or intermediate
-  character state, depending on \code{middle.na}. If
-  \code{FALSE} (the default), apply an
+  character state, depending on \code{middle.na}.
+
+  If \code{FALSE} (the default), apply an
   equal-width-intervals discretization with the widths
   determined from the number of requested \code{states} and
   \code{range}.}
@@ -38,23 +43,26 @@
   values for both \sQuote{gap} and \sQuote{middle.na}.}
 
   \item{middle.na}{Logical scalar. Only relevant in
-  \code{gap} mode: if \code{TRUE}, the middle value yields
-  \code{NA} (uncertain whether negative or positive). If
-  \code{FALSE}, the middle value lies between the left and
-  the right one (i.e., a third character state meaning
+  \code{gap} mode. In that case, if \code{TRUE}, the middle
+  value yields \code{NA} (uncertain whether negative or
+  positive).
+
+  If \code{FALSE}, the middle value lies between the left
+  and the right one (i.e., a third character state meaning
   \sQuote{weak}). This is simply coded as 0-1-2 and thus
   cannot be combined with \sQuote{logical} as \code{output}
   setting.}
 
   \item{states}{Integer or character vector. Ignored in
   \code{gap} mode and if \code{output} is not
-  \sQuote{character}. Otherwise, (i) a single-element
-  character vector, which is split into its elements, (ii)
-  a multi-element character vector which is used directly,
-  or (iii) an integer vector indicating the elements to
-  pick from the default character states. In the latter
-  case, a single integer is interpreted as the upper bound
-  of an integer vector starting at 1.}
+  \sQuote{character}. Otherwise, the possible values are
+  \itemize{ \item a single-element character vector, which
+  is split into its elements; \item a multi-element
+  character vector which is used directly; \item an integer
+  vector indicating the elements to pick from the default
+  character states.  } In the latter case, a single integer
+  is interpreted as the upper bound of an integer vector
+  starting at 1.}
 
   \item{as.labels}{Vector of data-frame indices. See
   \code{\link{extract}}.}
@@ -74,17 +82,21 @@
 }
 \description{
   Convert a vector of continuous characters to discrete
-  ones. One of the uses of this functions is to create
-  character data suitable for phylogenetic studies with
-  programs such as \acronym{PAUP*} and \acronym{RAxML}.
-  These accept only discrete characters with at most 32
-  states, coded as 0 to 9 followed by A to V. For the full
-  export one additionally needs \code{\link{phylo_data}}.
+  ones.
+}
+\details{
+  One of the uses of this functions is to create character
+  data suitable for phylogenetic studies with programs such
+  as \acronym{PAUP*} and \acronym{RAxML}. These accept only
+  discrete characters with at most 32 states, coded as 0 to
+  9 followed by A to V. For the full export one
+  additionally needs \code{\link{phylo_data}}.
+
   The matrix method is just a wrapper that takes care of
   the matrix dimensions, and the data-frame method is a
   wrapper for that method.
 }
-\details{
+\note{
   The term \sQuote{character} as used here has nothing to
   do \emph{per se} with the eponymous mode or class of \R.
   Rather, the term is borrowed from taxonomic
@@ -125,7 +137,7 @@ stopifnot(y == yy)
 data(vaas_4)
 x <- extract(vaas_4, as.labels = list("Species", "Strain"),
   in.parens = FALSE)
-head(y <- discrete(x, range = TRUE, gap = TRUE))
+(y <- discrete(x, range = TRUE, gap = TRUE))[, 1:3]
 stopifnot(c("0", "?", "1") \%in\% y)
 }
 \references{

@@ -41,7 +41,7 @@ stopifnot(identical(x, 384L))
 
 # 'OPMS' method
 data(vaas_4)
-(x <- hours(vaas_4))
+(x <- hours(vaas_4)) # all with the same overall running time
 stopifnot(length(x) == 4, x == 95.75)
 }
 \seealso{

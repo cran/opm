@@ -7,7 +7,8 @@
   \item{i}{Character or numeric vector with name(s) or
   position(s) of well(s).  Wells are originally named
   \sQuote{A01} to \sQuote{H12} but might have been subset
-  beforehand.}
+  beforehand. \code{i} can also be a formula, allowing for
+  sequences of well coordinates. See the examples.}
 
   \item{drop}{Logical scalar. If only a single well was
   selected, simplify it to a vector?}
@@ -31,15 +32,22 @@
 \examples{
 # 'OPM' method
 data(vaas_1)
-(x <- well(vaas_1, "B04"))
-stopifnot(is.numeric(x), length(x) == 384L)
-(x <- well(vaas_1, c("B08", "C07")))
-stopifnot(is.matrix(x), identical(dim(x), c(384L, 2L)))
+head(x <- well(vaas_1, "B04")) # => numeric vector
+stopifnot(is.numeric(x), length(x) == 384)
+head(x <- well(vaas_1, c("B08", "C07"))) # => numeric matrix
+stopifnot(is.matrix(x), dim(x) == c(384, 2))
+# selecting adjacent wells is easer if using a formula
+head(x <- well(vaas_1, c("B12", "C01", "C02")))
+stopifnot(is.matrix(x), dim(x) == c(384, 3))
+head(y <- well(vaas_1, ~ B12:C02)) # => same result
+stopifnot(identical(x, y))
 
 # 'OPMS' method
 data(vaas_4)
-(x <- well(vaas_4, "B04"))
+head(x <- well(vaas_4, "B04"))[, 1:5] # => numeric matrix
 stopifnot(is.matrix(x), dim(x) == c(4, 384))
+head(y <- well(vaas_4, ~ B04))[, 1:5] # using a formula
+stopifnot(identical(x, y)) # => same result
 }
 \seealso{
   Other getter-functions: \code{\link{aggr_settings}},

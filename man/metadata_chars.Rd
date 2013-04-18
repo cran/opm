@@ -29,18 +29,21 @@
 \description{
   Collect all \sQuote{character} entries from the
   meta-information stored together with the measurements.
-  Optionally coerce data of other types. The result can be
-  used to create a mapping for \code{\link{map_metadata}}.
-  The \code{\link{OPMS}} method just applies the
-  \code{\link{WMD}} method to all contained plates in turn.
+  Optionally coerce data of other types.
+}
+\details{
+  The result can be used to create a mapping for
+  \code{\link{map_metadata}}. The \code{\link{OPMS}} method
+  just applies the \code{\link{WMD}} method to all
+  contained plates in turn.
 }
 \examples{
 # WMD method
 data(vaas_1)
 (x <- metadata_chars(vaas_1, values = FALSE))
-stopifnot(names(x) == x)
+stopifnot(names(x) == x) # mapping metadata keys to themselves
 (x <- metadata_chars(vaas_1, values = TRUE))
-stopifnot(names(x) == x)
+stopifnot(names(x) == x) # mapping metadata values to themselves
 # See map_metadata() for a potential usage of the metadata_chars() result
 
 # OPMS method
@@ -52,7 +55,7 @@ stopifnot(length(x) > length(y))
 \seealso{
   Other metadata-functions: \code{\link{include_metadata}},
   \code{\link{map_metadata}}, \code{\link{metadata.set}},
-              }
+                      }
 \keyword{attribute}
 
 \docType{methods}

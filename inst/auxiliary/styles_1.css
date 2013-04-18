@@ -156,7 +156,7 @@ div {
 }
 
 /*
-  ...and so on. If state-2 is intermediary (ambiguous) state, highlighting
+  ...and so on. If state-2 is an intermediary (ambiguous) state, highlighting
   might make sense. One could also highlight only those states within a
   uninformative or informative character.
 */

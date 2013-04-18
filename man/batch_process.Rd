@@ -5,7 +5,8 @@
   batch_process(names, out.ext, io.fun, fun.args = list(),
     proc = 1L, outdir = NULL,
     overwrite = c("yes", "older", "no"), in.ext = "any",
-    compressed = TRUE, literally = FALSE, ...,
+    compressed = TRUE,
+    literally = inherits(in.ext, "AsIs"), ...,
     verbose = TRUE, demo = FALSE)
 }
 \arguments{
@@ -13,7 +14,9 @@
   outfile names (without the dot).}
 
   \item{proc}{Integer scalar. The number of processes to
-  spawn.}
+  spawn. Cannot be set to more than 1 core if running under
+  Windows. See the \code{cores} argument of
+  \code{\link{do_aggr}} for details.}
 
   \item{outdir}{Character vector. Directories in which to
   place the outfiles.  If \code{NULL} or only containing
@@ -75,24 +78,26 @@
 \description{
   Batch-convert data from infiles to data in outfiles. This
   is not normally directly called by an \pkg{opm} user
-  because \code{\link{batch_opm_to_yaml}} is available.
+  because \code{\link{batch_opm}} is available.
 }
 \examples{
 # Read the first line from each of the OPM test dataset files and store it
 # in temporary files
 pf <- function(infile, outfile) write(readLines(infile, n = 1), outfile)
 infiles <- opm_files("testdata")
-if (length(infiles) > 0) {
+if (length(infiles) > 0) { # if the files are found
   x <- batch_process(infiles, out.ext = "tmp", io.fun = pf,
     outdir = tempdir())
   stopifnot(is.matrix(x), identical(x[, 1], infiles))
   stopifnot(file.exists(x[, 2]))
   unlink(x[, 2])
+} else {
+  warning("test files not found")
 }
 }
 \seealso{
-  Other IO-functions: \code{\link{batch_collect}},
-  \code{\link{batch_opm_to_yaml}},
+  Other io-functions: \code{\link{batch_collect}},
+  \code{\link{batch_opm}}, \code{\link{batch_opm_to_yaml}},
   \code{\link{clean_filenames}},
   \code{\link{collect_template}},
   \code{\link{explode_dir}}, \code{\link{file_pattern}},

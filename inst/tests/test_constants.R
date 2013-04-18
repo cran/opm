@@ -43,6 +43,9 @@ expect_length <- function(actual, expected) {
 ## YAML_VIA_LIST
 ## UNTESTED
 
+## FOE
+## UNTESTED
+
 ## MOA
 ## UNTESTED
 
@@ -74,6 +77,10 @@ test_that("the so-called special plates are known plates", {
 })
 
 
+## SP_PATTERN
+## UNTESTED (see plate_type())
+
+
 ## THEOR_RANGE
 test_that("the theoretical range is OK", {
   expect_length(THEOR_RANGE, 2L)
@@ -90,6 +97,15 @@ test_that("the internally used parameter names are OK", {
   # this strange test is intended to ensure that one thinks twice before
   # changing the constant
   expect_equal(CURVE_PARAMS, c("mu", "lambda", "A", "AUC"))
+})
+
+
+## RESERVED_NAMES
+test_that("the internally used reserved metadata names are OK", {
+  # this strange test is intended to ensure that one thinks twice before
+  # changing the constant
+  wanted <- c("plate", "well", "time", "value", "parameter")
+  expect_equal(names(RESERVED_NAMES), wanted)
 })
 
 
@@ -124,6 +140,14 @@ test_that("the known method names are OK", {
   expect_true("aggregation" %in% names(KNOWN_METHODS))
   expect_true("discretization" %in% names(KNOWN_METHODS))
 })
+
+
+## GRAPHICS_FORMAT_MAP
+## UNTESTED
+
+
+## HTML_DOCTYPE
+## UNTESTED
 
 
 ## W3C_COLORS

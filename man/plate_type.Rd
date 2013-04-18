@@ -27,6 +27,9 @@
 
   \item{downcase}{Logical scalar.}
 
+  \item{normalize}{Logical scalar. Attempt to normalize the
+  plate-type string before interpreting it?}
+
   \item{subtype}{Logical scalar. Keep the plate subtype
   indicator, if any? Only relevant for the character or
   factor method.}
@@ -43,15 +46,22 @@
 \description{
   Get the type of the
   OmniLog\eqn{\textsuperscript{\textregistered}}{(R)} plate
-  used in the measuring. This is a convenience function for
-  one of the more important entries of
-  \code{\link{csv_data}} with additional options useful for
-  creating plot titles. The character method normalizes the
-  names of
+  used in the measuring.
+}
+\details{
+  The \code{\link{OPM}} and \code{\link{OPMS}} methods are
+  convenience methods for one of the more important entries
+  of \code{\link{csv_data}} with additional options useful
+  for creating plot titles.
+
+  The character method normalizes the names of
   OmniLog\eqn{\textsuperscript{\textregistered}}{(R)} PM
   plates to the internally used naming scheme. Unrecognized
   names are returned unchanged. This needs not normally be
   called by the \pkg{opm} user but might be of interest.
+
+  Factors are treated by passing their levels through the
+  character method.
 }
 \examples{
 ## 'OPM' method
@@ -59,6 +69,7 @@ data(vaas_1)
 (x <- plate_type(vaas_1, full = FALSE))
 (y <- plate_type(vaas_1, full = TRUE))
 (z <- plate_type(vaas_1, full = TRUE, in.parens = FALSE))
+# strings lengths differ depending on the selection
 stopifnot(nchar(x) < nchar(y), nchar(z) < nchar(y))
 
 \dontrun{
@@ -71,21 +82,22 @@ x <- split(x), sapply(x, plate_type))
 ## 'OPMS' method
 data(vaas_4)
 (xx <- plate_type(vaas_4, full = FALSE))
+# plate type is guaranteed to be uniform within an OPMS object
 stopifnot(identical(x, xx))
 
 ## Character method
 
 # Entirely unrecognized strings are returned as-is
-x <- plate_type(letters)
+(x <- plate_type(letters))
 stopifnot(identical(x, letters))
 
 # Something more realistic
-(x <- plate_type(y <- c("PM1", "PM-11C", "PMM04-a"), TRUE))
+(x <- plate_type(y <- c("PM1", "PM-11C", "PMM04-a"), subtype = TRUE))
 stopifnot(x != y)
 
 # Factor method
-(z <- plate_type(as.factor(y), TRUE))
-stopifnot(is.factor(z), z == x)
+(z <- plate_type(as.factor(y), subtype = TRUE))
+stopifnot(is.factor(z), z == x) # same result after conversion
 }
 \seealso{
   base::strtrim base::abbreviate base::gsub
@@ -115,13 +127,14 @@ stopifnot(is.factor(z), z == x)
 \alias{plate_type,factor-method}
 \alias{plate_type,OPMS-method}
 \usage{
-  \S4method{plate_type}{OPM}(object, full = FALSE, in.parens = TRUE,
-    max = 100L, clean = TRUE, brackets = FALSE, word.wise = FALSE,
-    paren.sep = " ", downcase = FALSE) 
+  \S4method{plate_type}{OPM}(object, ...) 
 
-  \S4method{plate_type}{character}(object, subtype = FALSE) 
+  \S4method{plate_type}{character}(object, full = FALSE,
+    in.parens = TRUE, max = 100L, clean = TRUE, brackets = FALSE,
+    word.wise = FALSE, paren.sep = " ", downcase = FALSE,
+    normalize = TRUE, subtype = FALSE) 
 
-  \S4method{plate_type}{factor}(object, subtype = FALSE) 
+  \S4method{plate_type}{factor}(object, ...) 
 
   \S4method{plate_type}{OPMS}(object, ...) 
 

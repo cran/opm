@@ -20,7 +20,9 @@
   \code{\link{setup_time}} via \code{strptime} before
   ordering? Has only an effect if \code{by} is
   \sQuote{setup_time}. It is an error if the time format is
-  not recognized.}
+  not recognized.  See \code{\link{opm_opt}}, arguments
+  \sQuote{time.fmt} and \sQuote{time.zone}, for modifying
+  the parsing of setup-time entries.}
 
   \item{exact}{Logical scalar. Passed to
   \code{\link{metadata}}. Affects only metadata querying,
@@ -64,9 +66,9 @@ stopifnot(is(x, "OPMS"), is.unsorted(metadata(x, "Strain")))
 
 # Non-existing keys
 x <- try(sort(vaas_4, by = list("Not there", "Missing"), strict = TRUE))
-stopifnot(inherits(x, "try-error"))
+stopifnot(inherits(x, "try-error")) # yields error
 x <- try(sort(vaas_4, by = list("Not there", "Missing"), strict = FALSE))
-stopifnot(identical(x, vaas_4))
+stopifnot(identical(x, vaas_4)) # no error, but no new order
 
 # CSV-data based
 copy <- sort(vaas_4) # default: by setup time

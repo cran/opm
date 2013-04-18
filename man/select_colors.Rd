@@ -24,7 +24,7 @@
 }
 \examples{
 (x <- select_colors("nora"))
-(y <- select_colors("nora.i"))
+(y <- select_colors("nora.i")) # same in reverse order
 stopifnot(is.character(x), length(x) > 0L, identical(x, rev(y)))
 }
 \references{

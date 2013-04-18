@@ -25,12 +25,13 @@
 # OPM method
 data(vaas_1)
 (x <- summary(vaas_1))
-stopifnot(is.list(x))
+stopifnot(is.list(x), is.object(x))
 
 # OPMS method
 data(vaas_4)
 (x <- summary(vaas_4))
-stopifnot(is.list(x), length(x) == 4L, all(sapply(x, is.list)))
+stopifnot(is.list(x), length(x) == 4L, all(sapply(x, is.list)),
+  is.object(x))
 }
 \seealso{
   base::summary base::formatDL

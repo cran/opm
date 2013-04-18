@@ -16,7 +16,8 @@
   \item{parse}{Logical scalar. Ignored unless
   \code{sort.first} is \code{TRUE}.  For sorting, parse the
   setup times using \code{strptime} from the \pkg{base}
-  package? It is an error if this does not work.}
+  package? It is an error if this does not work, but see
+  \sQuote{Details}.}
 }
 \value{
   \code{\link{OPM}} object. The \code{\link{metadata}} and
@@ -30,18 +31,40 @@
   the same experimental plate. Adjust the times
   accordingly.
 }
-\note{
-  This function is intended for dealing with slowly growing
-  or reacting organisms that need to be analyzed with
-  subsequent runs of the same plate in PM mode. Results
-  obtained with \emph{Geodermatophilus} strains and
-  Generation-III plates indicate that this works well in
-  practice.
+\details{
+  This \code{\link{OPMS}} method is intended for dealing
+  with slowly growing or reacting organisms that need to be
+  analyzed with subsequent runs of the same plate in PM
+  mode. Results obtained with \emph{Geodermatophilus}
+  strains and Generation-III plates indicate that this
+  works well in practice. See the references.
+
+  See the arguments \sQuote{time.fmt} and
+  \sQuote{time.zone} of \code{\link{opm_opt}} for modifying
+  the parsing of setup-time entries. If it does not work,
+  additional time-string templates must be stored.
+
+  The \code{CMAT} method is only for internal use.
 }
 \examples{
 data(vaas_4) # merge() is biologically unreasonable for these data!
 summary(x <- merge(vaas_4))
 stopifnot(is(x, "OPM"), dim(x) == c(sum(hours(vaas_4, "size")), 96))
+}
+\references{
+  Montero-Calasanz, M. d. C., Goeker, M., Poetter, G.,
+  Rohde, M., Sproeer, C., Schumann, P., Gorbushina, A. A.,
+  Klenk, H.-P. 2012 \emph{Geodermatophilus arenarius} sp.
+  nov., a xerophilic actinomycete isolated from Saharan
+  desert sand in Chad. \emph{Extremophiles} \strong{16},
+  903--909.
+
+  Montero-Calasanz, M. d. C., Goeker, M., Rohde, M.,
+  Schumann, P., Poetter, G., Sproeer, C., Gorbushina, A.
+  A., Klenk, H.-P. 2013 \emph{Geodermatophilus siccatus}
+  sp. nov., isolated from arid sand of the Saharan desert
+  in Chad. \emph{Antonie van Leeuwenhoek} \strong{103},
+  449--456.
 }
 \seealso{
   Other conversion-functions: \code{\link{extract}},

@@ -59,20 +59,22 @@ setMethod("to_grofit_data", OPM, function(object) {
 
 ## NOTE: Not an S4 method because 'grofit' is an S3 class
 
-#' Grofit extraction
+#' Parameter extraction
 #'
 #' Extract and rename estimated curve parameters.
 #'
-#' @param x Object of class \sQuote{grofit}.
+#' @param x Object of class \sQuote{grofit} or \sQuote{opm_model}.
+#' @param all Logic. Should [TODO]
+#' @param ... Additional arguments.
 #' @return Matrix.
 #' @keywords internal
 #'
-extract_curve_params <- function(x) UseMethod("extract_curve_params")
+extract_curve_params <- function(x, ...) UseMethod("extract_curve_params")
 
 #' @rdname extract_curve_params
 #' @method extract_curve_params grofit
 #'
-extract_curve_params.grofit <- function(x) {
+extract_curve_params.grofit <- function(x, ...) {
   settings <- c(x$control)
   x <- summary(x$gcFit)
   map <- map_grofit_names()
@@ -80,6 +82,80 @@ extract_curve_params.grofit <- function(x) {
     dimnames = list(map, x[, "TestId"]), settings = settings)
 }
 
+#' @rdname extract_curve_params
+#' @method extract_curve_params opm_model
+#'
+extract_curve_params.opm_model <- function(x, all = FALSE, ...) {
+  pred <- fitted(x)
+  x <- get_data(x)[, 1]
+  ## quick and dirty
+  deriv <- diff(pred) / diff(x)
+  slope <- max(deriv)
+  ## index of max. slope
+  idx <- which.max(deriv):(which.max(deriv) + 1)
+  ## x-value of max. slope
+  x_ms <- mean(x[idx])
+  ## y-value of max. slope
+  y_ms <- mean(pred[idx])
+  ## intercept
+  intercept <- y_ms - slope * x_ms
+  ## lag
+  lag <- - (intercept / slope)
+  ## maximum
+  maximum <- max(pred)
+  ## AUC
+  AUC <- AUC(x, pred)
+  if (all)
+      return(list(mu = slope, lambda = lag, A = maximum, AUC = AUC,
+        derivative = deriv, intercept = intercept))
+  return(data.frame(mu = slope, lambda = lag, A = maximum, AUC = AUC))
+}
+
+################################################################################
+
+## NOTE: Not an S4 method
+
+#' Summary method for bootstraped splines
+#'
+#' Function for internal use; Creates confidence intervals based on bootstrap
+#' replicates.
+#'
+#' @param object An object of class \code{splines_bootstrap}.
+#' @param ... Further arguments. Currently not used.
+#' @return vector of bootstrap confidence intervals
+#' @author Benjamin Hofner
+#' @keywords internal
+#'
+summary.splines_bootstrap <- function (object, ...) {
+
+    # TODO: should rather rely on map_grofit_names()
+    cnames <- c("mu", "lambda", "A", "AUC",
+      "mu CI95 low", "lambda CI95 low", "A CI95 low", "AUC CI95 low",
+      "mu CI95 high", "lambda CI95 high", "A CI95 high", "AUC CI95 high")
+
+    res <- data.frame(t(sapply(object, extract_curve_params.opm_model)))
+    res$mu <- unlist(res$mu)
+    res$lambda <- unlist(res$lambda)
+    res$A <- unlist(res$A)
+    res$AUC <- unlist(res$AUC)
+
+    mu <- mean(res$mu, na.rm = TRUE)
+    lambda <- mean(res$lambda, na.rm = TRUE)
+    A <- mean(res$A, na.rm = TRUE)
+    AUC <- mean(res$AUC, na.rm = TRUE)
+    mu.sd <- sd(res$mu, na.rm = TRUE)
+    lambda.sd <- sd(res$lambda, na.rm = TRUE)
+    A.sd <- sd(res$A, na.rm = TRUE)
+    AUC.sd <- sd(res$AUC, na.rm = TRUE)
+    table <- c(mu, lambda, A, AUC,
+      mu - qnorm(0.975) * mu.sd, mu + qnorm(0.975) * mu.sd,
+      lambda - qnorm(0.975) * lambda.sd, lambda + qnorm(0.975) * lambda.sd,
+      A - qnorm(0.975) * A.sd, A + qnorm(0.975) * A.sd,
+      AUC - qnorm(0.975) * AUC.sd, AUC + qnorm(0.975) * AUC.sd)
+    table <- data.frame(t(table))
+    colnames(table) <- cnames
+    return(table)
+}
 
 ################################################################################
 
@@ -89,18 +165,34 @@ extract_curve_params.grofit <- function(x) {
 #' Names of curve parameters
 #'
 #' Yield the names of the estimated curve parameters used internally and in the
-#' output.
+#' output. Alternatively, yield names that should not be used in metadata
+#' entries because they are used as predefined column names by functions such
+#' as \code{\link{flatten}}.
 #'
+#' @param what Character scalar. Which kind of names to obtain.
 #' @return Character vector.
+#' @details In addition to the results of
+#'   \code{param_names("reserved.md.names")}, it should be avoided to use
+#'   metadata keys that start with a dot, as such keys might also be created
+#'   intermediarily by methods that have to compile metadata together with
+#'   other information.
 #' @export
 #' @family aggregation-functions
 #' @keywords utilities
 #' @examples
 #' (x <- param_names())
-#' stopifnot(is.character(x), length(x) == 4L, identical(unique(x), x))
+#' stopifnot(is.character(x), length(x) > 1, identical(unique(x), x))
+#' (x <- param_names("reserved"))
+#' stopifnot(is.character(x), length(x) > 1, identical(unique(x), x))
+#' stopifnot(param_names("split.at") %in% x)
 #'
-param_names <- function() {
-  CURVE_PARAMS
+param_names <- function(
+    what = c("param.names", "reserved.md.names", "split.at")) {
+  case(match.arg(what),
+    param.names = CURVE_PARAMS,
+    reserved.md.names = unname(RESERVED_NAMES),
+    split.at = RESERVED_NAMES[["parameter"]]
+  )
 }
 
 
@@ -122,25 +214,33 @@ param_names <- function() {
 #'   to omit bootstrapping, resulting in \code{NA} entries for the CIs.
 #' @param verbose Logical scalar. Print progress messages?
 #' @param cores Integer scalar. Number of cores to use. Setting this to a value
-#'   > 1 requires the \pkg{multicore} package. Has no effect if
-#'   \sQuote{opm-fast} is chosen (see below).
+#'   > 1 requires that \code{mclapply} from the \pkg{parallel} package can be
+#'   run with more than 1 core, which is impossible under Windows. The
+#'   \code{cores} argument has no effect if \sQuote{opm-fast} is chosen (see
+#'   below).
 #' @param options List. For its use in \sQuote{grofit} mode, see
 #'   \code{grofit.control} in the \pkg{grofit} package. The \code{boot} and
 #'   \code{verbose} settings, as the most important ones, are added separately
 #'   (see above). The verbose mode is not very useful in parallel processing.
 #'   For its use in \sQuote{opm-fast} mode, see \code{\link{fast_estimate}}.
+#'   With \code{method} \dQuote{spline.fit}, options can be specified using the
+#'   function \code{\link{set_spline_options}}.
 #' @param method Character scalar. The aggregation method to use. Currently
 #'   only the following methods are supported:
 #'   \describe{
+#'     \item{splines}{Fit various splines (smoothing splines and P-splines from
+#'     \pkg{mgcv} and smoothing splines via \code{smooth.spline}) to opm data.
+#'     Recommended.}
 #'     \item{grofit}{The \code{grofit} function in the eponymous package, with
 #'     spline fitting as default.}
 #'     \item{opm-fast}{The native, faster parameter estimation. This will only
 #'     yield two of the four parameters, the area under the curve and the
 #'     maximum height. The area under the curve is estimated as the sum of the
 #'     areas given by the trapezoids defined by each pair of adjacent time
-#'     points. The maximum height is just the result of \code{max}. By default,
-#'     however, the median bootstrap value is preferred as point estimate over
-#'     the real point estimate.}
+#'     points. The maximum height is just the result of \code{max}. By default
+#'     the median of the bootstrap values is used as point estimate. For details
+#'     see the argument \code{as.pe} of the function
+#'     \code{\link{fast_estimate}}.}
 #'   }
 #' @param program Deprecated. Use \sQuote{method} instead. If provided,
 #'   \sQuote{program} has precedence over \sQuote{method}, but \sQuote{program}
@@ -178,18 +278,18 @@ param_names <- function() {
 #'   estimate is simply regarded as \sQuote{A} parameter (maximum height) and
 #'   all other parameters are set to \code{NA}.
 #'
-#' @note \itemize{
-#'   \item The aggregated values can be queried for using \code{\link{has_aggr}}
-#'     and received using \code{\link{aggregated}}.
-#'   \item The \sQuote{OPMS} method just applies the \sQuote{OPM} method to
-#'     each contained plate in turn; there are not inter-dependencies.
-#'   \item Examples with \code{plain = TRUE} are not given, as only the return
-#'     value is different: Let \code{x} be the normal result of
-#'     \code{do_aggr()}. The matrix returned if \code{plain} is \code{TRUE}
-#'     could then be received using \code{aggregated(x)}, whereas the
-#'     \sQuote{method} and the \sQuote{settings} attributes could be obtained
-#'     as components of the list returned by \code{aggr_settings(x)}.
-#' }
+#'   The \sQuote{OPMS} method just applies the \sQuote{OPM} method to each
+#'   contained plate in turn; there are no inter-dependencies.
+#'
+#'   Examples with \code{plain = TRUE} are not given, as only the return value
+#'   is different: Let \code{x} be the normal result of \code{do_aggr()}. The
+#'   matrix returned if \code{plain} is \code{TRUE} could then be received using
+#'   \code{aggregated(x)}, whereas the \sQuote{method} and the \sQuote{settings}
+#'   attributes could be obtained as components of the list returned by
+#'   \code{aggr_settings(x)}.
+#'
+#' @note The aggregated values can be queried for using \code{\link{has_aggr}}
+#'   and received using \code{\link{aggregated}}.
 #'
 #' @references Brisbin, I. L., Collins, C. T., White, G. C., McCallum, D. A.
 #'   1986 A new paradigm for the analysis and interpretation of growth data:
@@ -228,14 +328,13 @@ param_names <- function() {
 #' plot(auc.grofit, auc.fast)
 #' stopifnot(cor.test(auc.fast, auc.grofit)$estimate > 0.999)
 #'
-#' \dontrun{
-#'
-#'   # Without confidence interval (CI) estimation
+#' \dontrun{ # Without confidence interval (CI) estimation
 #'   x <- do_aggr(vaas_1, boot = 0, verbose = TRUE)
 #'   aggr_settings(x)
 #'   aggregated(x)
 #'
 #'   # Calculate CIs with 100 bootstrap (BS) replicates, using 4 cores
+#'   # (do not try to use > 1 core on Windows)
 #'   x <- do_aggr(vaas_1, boot = 100, verbose = TRUE, cores = 4)
 #'   aggr_settings(x)
 #'   aggregated(x)
@@ -282,6 +381,23 @@ setMethod("do_aggr", OPM, function(object, boot = 100L, verbose = FALSE,
       ec50 = FALSE, control = control))
   }
 
+  run_mgcv <- function(x, y, data, options, boot) {
+    mod <- fit_spline(y = y, x = x, data = data, options = options)
+    if (boot > 0) {
+      ## draw bootstrap sample
+      folds <- rmultinom(boot, nrow(data), rep(1 / nrow(data), nrow(data)))
+      res <- lapply(1:boot,
+        function(i) {
+          fit_spline(y = y, x = x, data = data, options = options,
+            weights = folds[, i])
+      })
+      class(res) <- "splines_bootstrap"
+      params <- as.vector(summary(res))
+      return(list(params = params, model = mod))
+    }
+    list(params = extract_curve_params(mod), model = mod)
+  }
+
   copy_A_param <- function(x) {
     map <- unlist(map_grofit_names(opm.fast = TRUE))
     result <- matrix(data = NA_real_, nrow = length(map), ncol = length(x),
@@ -305,13 +421,13 @@ setMethod("do_aggr", OPM, function(object, boot = 100L, verbose = FALSE,
         control <- make_grofit_control(verbose, boot, add = options)
         grofit.time <- to_grofit_time(object)
         grofit.data <- to_grofit_data(object)
-        result <- traverse(as.list(seq.int(nrow(grofit.data))),
-          fun = function(row) {
+        result <- mclapply(X = as.list(seq.int(nrow(grofit.data))),
+          FUN = function(row) {
             run_grofit(grofit.time[row, , drop = FALSE],
               grofit.data[row, , drop = FALSE], control)
-          }, cores = cores)
-          result <- do.call(cbind, result)
-          attr(result, OPTIONS) <- unclass(control)
+          }, mc.cores = cores)
+        result <- do.call(cbind, result)
+        attr(result, OPTIONS) <- unclass(control)
       },
       `opm-fast` = {
         options <- insert(as.list(options), boot = boot, .force = FALSE)
@@ -329,6 +445,44 @@ setMethod("do_aggr", OPM, function(object, boot = 100L, verbose = FALSE,
         result <- result[names(map), , drop = FALSE]
         rownames(result) <- as.character(map)
         attr(result, OPTIONS) <- options
+      },
+      splines = {
+        ## extract data
+        data <- as.data.frame(measurements(object))
+        ## get well names
+        wells <- wells(object)
+        indx <- as.list(seq.int(length(wells)))
+        result <- mclapply(X = indx,
+          FUN = function(i) {
+            run_mgcv(x = HOUR, y = wells[i], data = data, options = options,
+              boot = boot)
+          }, mc.cores = cores)
+        options <- insert(as.list(options), boot = boot)
+
+        if (options$save.models) {
+            opm_models <- lapply(result, function(x) x$model)
+            names(opm_models) <- wells
+            if (is.null(options$filename))
+              options$filename <- paste("opm_models_",
+                format(Sys.time(), "%Y-%m-%d_%H:%M:%S"), ".RData", sep = "")
+            save("opm_models", file = options$filename)
+            cat("Models saved as 'opm_models' on disk in file\n  ",
+              getwd(), "/", options$filename, "\n\n", sep = "")
+        }
+        result <- sapply(result, function(x) x$params)
+        rn <- rownames(result)
+        result <- matrix(unlist(result),
+          ncol = ncol(result), nrow = nrow(result))
+        rownames(result) <- rn
+        ## attach bootstrap CIs if necessary
+        if (boot <= 0)
+          result <- rbind(result,
+            matrix(NA, nrow = 8L, ncol = ncol(result)))
+        ## dirty hack:
+        map <- map_grofit_names(opm.fast = TRUE)
+        rownames(result) <- as.character(map)
+        colnames(result) <- wells
+        attr(result, OPTIONS) <- unclass(options)
       }
     )
     attr(result, METHOD) <- method
@@ -428,7 +582,7 @@ pe_and_ci.boot <- function(x, ci = 0.95, as.pe = c("median", "mean", "pe"),
 #' Fast curve-parameter estimation
 #'
 #' Quickly estimate the curve parameters AUC (area under the curve) or A
-#' (maximum height). This is not normally directly called by an \pkg{opm} user
+#' (maximum height). This is normally not directly called by an \pkg{opm} user
 #' but via \code{\link{do_aggr}}.
 #'
 #' @param x Matrix as output by \code{\link{measurements}}, i.e. with the time
@@ -445,8 +599,9 @@ pe_and_ci.boot <- function(x, ci = 0.95, as.pe = c("median", "mean", "pe"),
 #' @param as.pe Character scalar determining what to output as the point
 #'   estimate. Either \sQuote{median}, \sQuote{mean} or \sQuote{pe}; the first
 #'   two calculate the point estimate from the bootstrapping replicates, the
-#'   third one use the real point estimate. If \code{boot} is 0, \code{as.pe} is
-#'   reset to \sQuote{pe}, if necessary, and a warning is issued.
+#'   third one use the point estimate from the raw data. If \code{boot} is 0,
+#'   \code{as.pe} is reset to \sQuote{pe}, if necessary, and a warning is
+#'   issued.
 #' @param ci.type Character scalar determining the way the confidence intervals
 #'   are calculated. Either \sQuote{norm}, \sQuote{basic} or \sQuote{perc}; see
 #'   \code{boot.ci} from the \pkg{boot} package for details.
@@ -469,7 +624,7 @@ pe_and_ci.boot <- function(x, ci = 0.95, as.pe = c("median", "mean", "pe"),
 #'
 #' @examples
 #' data(vaas_1)
-#' summary(x <- fast_estimate(measurements(vaas_1)))
+#' (x <- fast_estimate(measurements(vaas_1)))[, 1:3]
 #' stopifnot(identical(dim(x), c(3L, 96L)))
 #'
 setGeneric("fast_estimate", function(x, ...) standardGeneric("fast_estimate"))
@@ -483,13 +638,14 @@ setMethod("fast_estimate", "matrix", function(x, what = c("AUC", "A"),
   y <- x[, time.pos]
   x <- x[, -time.pos, drop = FALSE]
   x.colnames <- colnames(x)
+  ## i arguments are required by boot
   case(what <- match.arg(what),
-    A = boot_fun <- function(x, w) apply(x[w, ], 2L, max),
+    A = boot_fun <- function(x, i) apply(x[i, ], 2L, max),
     AUC = {
       n.obs <- nrow(x)
       y <- y[-1L] - y[-n.obs]
       x <- 0.5 * (x[-1L, , drop = FALSE] + x[-n.obs, , drop = FALSE])
-      boot_fun <- function(x, w) colSums(x[w, , drop = FALSE] * y[w])
+      boot_fun <- function(x, i) colSums(x[i, , drop = FALSE] * y[i])
     }
   )
   result <- boot(data = x, statistic = boot_fun, R = boot, ...)

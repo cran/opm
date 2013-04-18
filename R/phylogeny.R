@@ -13,15 +13,22 @@
 #'
 #' Convert strings to safe phylogenetic taxon labels: replace disallowed
 #' characters or include all labels in single quotes, and double pre-existing
-#' single quotes, if any. This is not normally called directly by an \pkg{opm}
-#' user but by \code{\link{phylo_data}}; see there for further details.
+#' single quotes, if any.
 #'
 #' @param x Character vector or convertible to such.
 #' @param format Character scalar. See \code{\link{phylo_data}}.
-#' @param enclose Logical scalar. See \code{\link{phylo_data}}.
+#' @param enclose Logical scalar. See \code{\link{phylo_data}} and the
+#'   description of \code{comment}.
 #' @param pad Logical scalar. Bring labels to the same number of characters by
 #'   appending spaces? Has no effect for \sQuote{phylip} and \sQuote{html}
 #'   output format.
+#' @param comment Logical scalar. If \code{TRUE}, comments as used in the
+#'   respective format will be produced. \sQuote{phylip} and \sQuote{epf} do
+#'   not accept comments and will yield an error. If \code{enclose} is
+#'   \code{TRUE}, the comment-enclosing characters are appended
+#'   prepended to the vector, otherwise to each string seperately.
+#' @details This is not normally called directly by an \pkg{opm} user but by
+#'   \code{\link{phylo_data}}; see there for further details.
 #' @export
 #' @return Character vector.
 #' @family phylogeny-functions
@@ -32,17 +39,18 @@
 #' x <- c("Elephas maximus", "Loxodonta africana", "Giraffa camelopardalis")
 #'
 #' (y <- safe_labels(x, "phylip"))
-#' stopifnot(nchar(y) == 10L)
+#' stopifnot(nchar(y) == 10L) # truncation
 #'
 #' (y <- safe_labels(x, "epf"))
-#' stopifnot(nchar(y) == nchar(x))
+#' stopifnot(nchar(y) == nchar(x)) # changes in length unnecessary
 #' (y <- safe_labels(x, "epf", pad = TRUE))
-#' stopifnot(nchar(y) == 22)
+#' stopifnot(nchar(y) == 22) # padded to uniform length
 #'
 #' (y <- safe_labels(x, "nexus", enclose = TRUE))
-#' stopifnot(grepl("^'.*'$", y))
+#' stopifnot(grepl("^'.*'$", y)) # all strings enclosed in sinqle quotes
 #'
-safe_labels <- function(x, format, enclose = TRUE, pad = FALSE) {
+safe_labels <- function(x, format, enclose = TRUE, pad = FALSE,
+    comment = FALSE) {
   do_pad <- function(x, pad) {
     if (pad)
       sprintf(sprintf("%%-%is", max(nchar(x))), x)
@@ -61,67 +69,38 @@ safe_labels <- function(x, format, enclose = TRUE, pad = FALSE) {
     x <- sub(sprintf("%s$", pat), "", x, perl = TRUE)
     gsub(pat, "_", x, perl = TRUE)
   }
-  LL(enclose, pad)
-  not.newick <- "\\s,:;()" # spaces and Newick-format special characters
-  not.nexus <- "\\s()\\[\\]{}/\\,;:=*'\"`+<>-" # see PAUP* manual
-  # see http://tnt.insectmuseum.org/index.php/Basic_format (16/04/2012)
-  not.hennig <- "\\s;/+-"
-  case(match.arg(format, PHYLO_FORMATS),
-    html = clean_html(x),
-    phylip = sprintf("%-10s", substr(clean_from(x, not.newick), 1L, 10L)),
-    hennig = do_pad(clean_from(x, not.hennig), pad),
-    epf = do_pad(clean_from(x, not.newick), pad),
-    nexus = do_pad(if (enclose)
-      nexus_quote(x)
+  surround <- function(x, start, end, enclose) {
+    if (enclose)
+      c(start, x, end)
     else
-      clean_from(x, not.nexus), pad)
-  )
-}
-
-
-################################################################################
-
-
-#' Convert recursively to HTML
-#'
-#' This is the helper function used by \code{\link{format}} for converting
-#' user-defined additions to \acronym{HTML}.
-#'
-#' @param x List or other vector.
-#' @param level Integer scalar defining the starting level for indentation and
-#'   naming of unnamed sections.
-#' @param fmt Character scalar used for transforming \code{level} into section
-#'   \sQuote{class} and \sQuote{title} attributes.
-#' @param fac Integer scalar for inferring the number of spaces used for
-#'   indentation from the current \code{level} (recursively incremented).
-#' @return Character scalar.
-#' @details  If applied to lists, this functions works recursively, generating
-#'   \sQuote{div} elements from each list. Names are used as \sQuote{class} and
-#'   \sQuote{title} attributes. Where names are missing, \code{level} is used in
-#'   conjunction with \code{fmt}. Non-list vectors are converted using
-#'   \sQuote{span} tags if names are present, simply joined otherwise.
-#' @keywords internal
-#'
-list2html <- function(x, level = 1L, fmt = opm_opt("html.class"), fac = 2L) {
-  indent <- paste(rep.int(" ", fac * (level - 1L)), collapse = "")
-  if (is.list(x)) {
-    if (is.null(n <- names(x)))
-      n <- sprintf(fmt, level)
-    else
-      n[!nzchar(n)] <- sprintf(fmt, level)
-    n <- ifelse(nzchar(n), safe_labels(n, "html"), NA_character_)
-    x <- vapply(x, list2html, character(1L), level = level + 1L, fmt = fmt)
-    x <- paste(x, indent, sep = "")
-    x <- hmakeTag("div", x, class = n, title = n, newline = TRUE)
-    paste(indent, x, sep = "", collapse = "")
+      sprintf("%s%s%s", start, x, end)
+  }
+  LL(enclose, pad, comment)
+  format <- match.arg(format, PHYLO_FORMATS)
+  if (comment) {
+    case(format,
+      html = surround( # the replacement used is the one favoured by HTML Tidy
+        gsub("--", "==", x, fixed = TRUE), "<!-- ", " -->", enclose),
+      hennig = surround(chartr("'", '"', x), "'", "'", enclose),
+      nexus = surround(chartr("[]", "{}", x), "[", "]", enclose),
+      epf =,
+      phylip = stop("comments are not defined for format ", format)
+    )
   } else {
-    if (is.character(x) && !inherits(x, "AsIs"))
-      x <- safe_labels(x, "html")
-    if (!is.null(n <- names(x))) {
-      n <- ifelse(nzchar(n), safe_labels(n, "html"), NA_character_)
-      x <- hmakeTag("span", x, class = n, title = n)
-    }
-    paste(indent, paste(x, collapse = " "), "\n", sep = "")
+    not.newick <- "\\s,:;()" # spaces and Newick-format special characters
+    not.nexus <- "\\s()\\[\\]{}/\\,;:=*'\"`+<>-" # see PAUP* manual
+    # see http://tnt.insectmuseum.org/index.php/Basic_format (16/04/2012)
+    not.hennig <- "\\s;/+-"
+    case(format,
+      html = clean_html(x),
+      phylip = sprintf("%-10s", substr(clean_from(x, not.newick), 1L, 10L)),
+      hennig = do_pad(clean_from(x, not.hennig), pad),
+      epf = do_pad(clean_from(x, not.newick), pad),
+      nexus = do_pad(if (enclose)
+        nexus_quote(x)
+      else
+        clean_from(x, not.nexus), pad)
+    )
   }
 }
 
@@ -161,11 +140,8 @@ setMethod("format", CMAT, function(x, how, enclose, digits, indent,
   div_class <- function(x, klass, title = klass) {
     hmakeTag("div", x, class = klass, title = title)
   }
-  single_tag <- function(x, ...) {
-    listing(list(...), c("<", x), ">", style = " %s=\"%s\"", collapse = "")
-  }
   html_comment <- function(x) {
-    sprintf("<!-- %s -->", gsub("--", "==", x, fixed = TRUE))
+    safe_labels(x, "html", comment = TRUE, enclose = FALSE)
   }
 
   # Header for all formats except HTML.
@@ -179,11 +155,11 @@ setMethod("format", CMAT, function(x, how, enclose, digits, indent,
         }, continuous = nstates <- "cont")
       nstates <- sprintf("nstates %s;", nstates)
       datatype <- sprintf("&[%s]", datatype)
-      comments <- chartr("'", '"', comments)
+      comments <- safe_labels(comments, "hennig", comment = TRUE)
       if (dims[1L] < 4L)
         warning("TNT will not accept less than 4 organisms")
       dims <- paste(rev(dims), collapse = " ")
-      c(nstates, "xread", "'", comments, "'", dims, datatype)
+      c(nstates, "xread", comments, dims, datatype)
     }
     nexus_header <- function(dims, datatype, comments, labels, enclose,
         indent) {
@@ -203,12 +179,11 @@ setMethod("format", CMAT, function(x, how, enclose, digits, indent,
         labels <- sprintf("%scharlabels %s;", indent, labels)
       } else
         warning("character labels not found")
-      comments <- chartr("[]", "{}", comments)
       dims <- sprintf("%sdimensions ntax = %i nchar = %i;", indent, dims[1L],
         dims[2L])
       datatype <- sprintf("%sformat datatype = %s missing = ?;", indent,
         datatype)
-      c("#NEXUS", "", "[", comments, "]", "",
+      c("#NEXUS", "", safe_labels(comments, "nexus", comment = TRUE), "",
         "begin data;", dims, datatype, symbols, labels,
         sprintf("%smatrix", indent))
     }
@@ -400,47 +375,6 @@ setMethod("format", CMAT, function(x, how, enclose, digits, indent,
   #
   make_html <- function(x, title, html.args, ...) {
 
-    convert_greek <- function(x) {
-      x <- strsplit(x, sep <- "-", fixed = TRUE)
-      x <- map_values(x, GREEK_LETTERS[, "html"])
-      vapply(x, paste, character(1L), collapse = sep)
-    }
-
-    html_head <- function(title, css, meta) {
-      if (length(title)) { # Tidy accepts only a single title entry
-        from.opm <- attr(title, opm_string())
-        title <- hmakeTag("title", data = unhtml(title[1L]))
-        if (!from.opm)
-          title <- c(html_comment("user-defined title"), title)
-      } else
-        title <- NULL
-      if (length(css <- css[nzchar(css)])) {
-        is.abs.path <- grepl("^(/|[a-zA-Z]:)", css, perl = TRUE)
-        css[is.abs.path] <- sprintf("file://%s", css[is.abs.path])
-        css <- vapply(css, function(y) {
-          single_tag("link", rel = "stylesheet", type = "text/css", href = y)
-        }, character(1L))
-        css <- c(html_comment("user-defined CSS file(s)"), css)
-      } else
-        css <- NULL
-      generator <- single_tag("meta", name = "generator",
-        content = paste(opm_string(version = TRUE), collapse = " version "))
-      # see http://www.w3.org/TR/NOTE-datetime
-      # but %s appears to by affected by a bug in R 2.15.2
-      time <- format(Sys.time(), "%Y-%M-%dT%H:%M:%S%z")
-      time <- single_tag("meta", name = "date", content = time)
-      if (length(meta)) {
-        meta <- vapply(meta, function(y) {
-          if (is.null(names(y)))
-            stop("HTML meta entry without names")
-          do.call(single_tag, c(list(x = "meta"), as.list(y)))
-        }, character(1L))
-        meta <- c(html_comment("user-defined metadata"), unname(meta))
-      } else
-        meta <- NULL
-      c("<head>", title, generator, time, meta, css, "</head>")
-    }
-
     headline <- function(headline, title) {
       headline <- unlist(headline)
       if (length(headline <- headline[nzchar(headline)]))
@@ -504,7 +438,7 @@ setMethod("format", CMAT, function(x, how, enclose, digits, indent,
         stop(BUG_MSG)
       colnames(x) <- unhtml(colnames(x))
       if (L(html.args$greek.letters))
-        colnames(x) <- convert_greek(colnames(x))
+        colnames(x) <- substrate_info(colnames(x), "html")
       colnames(x) <- div_class(colnames(x), variability)
       colnames(x) <- div_class(colnames(x), "character-name")
       x[] <- t(apply(x, 1L, div_class, variability))
@@ -515,8 +449,7 @@ setMethod("format", CMAT, function(x, how, enclose, digits, indent,
     }
 
     c(
-      paste('<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"',
-        '"http://www.w3.org/TR/html4/strict.dtd">', collapse = " "),
+      HTML_DOCTYPE,
       "<html>",
       html_head(title, html.args$css.file,
         html.args[names(html.args) == "meta"]),
@@ -596,13 +529,15 @@ setMethod("format", CMAT, function(x, how, enclose, digits, indent,
 #' @param table.summary Character scalar inserted as \sQuote{summary} attribute
 #'   of the resulting \code{HTML} table.
 #' @param greek.letters Logical scalar indicating whether or not letters between
-#'   \sQuote{a} and \sQuote{a} within substrate names should be converted to the
+#'   \sQuote{a} and \sQuote{e} within substrate names should be converted to the
 #'   corresponding Greek letters.
 #' @param css.file Character vector indicating the name of one to several
-#'   \acronym{CSS} files to link. Emptry strings and empty vectors are ignored.
+#'   \acronym{CSS} files to link. Empty strings and empty vectors are ignored.
 #'   It is no error if the file does not exist, but the page will then probably
-#'   not be displayed as intended. Under Windows it is recommended to convert a
-#'   filename \code{f} beforehand using \code{normalizePath(f, winslash = "/")}.
+#'   not be displayed as intended.
+#'
+#'   Under Windows it is recommended to convert a filename \code{f} beforehand
+#'   using \code{normalizePath(f, winslash = "/")}.
 #' @param ... Optional other arguments available for inserting user-defined
 #'   \acronym{HTML} content. Currently the following ones (in their order of
 #'   insertion) are not ignored, and can even be provided several times:
@@ -622,9 +557,12 @@ setMethod("format", CMAT, function(x, how, enclose, digits, indent,
 #'     \item{insert}{As above, but inserted between the legend and the table.}
 #'     \item{append}{As above, but inserted after the table.}
 #'   }
+#' @note The \code{\link{phylo_data}} methods for \sQuote{OPMD_Listing} and
+#'   \sQuote{OPMS_Listing} objects do not support all \acronym{HTML} formatting
+#'   options.
 #' @return List.
 #' @keywords character cluster IO
-#' @seealso base::normalizePath
+#' @seealso base::normalizePath base::I
 #' @export
 #' @family phylogeny-functions
 #' @examples
@@ -651,23 +589,30 @@ html_args <- function(
 #'
 #' Create entire character matrix (include header and footer) in a file format
 #' suitable for exporting phylogenetic data. Return it or write it to a file.
-#' This function can also produce \acronym{HTML} tables suitable for displaying
-#' PM data in taxonomic journals such as \acronym{IJSEM}.
+#' This function can also produce \acronym{HTML} tables and text paragraphs
+#' suitable for displaying \acronym{PM} data in taxonomic journals such as
+#' \acronym{IJSEM}.
 #'
 #' @param object Data frame, numeric matrix or \sQuote{OPMS} object (with
 #'   aggregated values). Currently only \sQuote{integer}, \sQuote{logical},
 #'   \sQuote{double} and \sQuote{character} matrix content is supported. The
 #'   data-frame and \sQuote{OPMS} methods first call \code{\link{extract}} and
-#'   then the matrix method.
-#' @param format Character scalar, either \sQuote{epf} (Extended Phylip Format),
-#'   \sQuote{nexus}, \sQuote{phylip}, \sQuote{hennig} or \sQuote{html}. If
-#'   \sQuote{nexus} or \sQuote{hennig} format are chosen, a non-empty
+#'   then the matrix method. The methods for \sQuote{OPMD_Listing} and
+#'   \sQuote{OPMS_Listing} objects can be applied to the results of
+#'   \code{\link{listing}}.
+#' @param format Character scalar determining the output format, either
+#'   \sQuote{epf} (Extended Phylip Format), \sQuote{nexus}, \sQuote{phylip},
+#'   \sQuote{hennig} or \sQuote{html}.
+#'
+#'   If \sQuote{nexus} or \sQuote{hennig} format are chosen, a non-empty
 #'   \code{comment} attribute will be output together with the data (and
 #'   appropriately escaped). In case of \sQuote{html} format, a non-empty
-#'   \code{comment} yields the title of the HTML document. The main difference
-#'   between \sQuote{epf} and \sQuote{phylip} is that the former can use labels
-#'   with more than ten characters, but its labels must not contain whitespace.
-#'   (These adaptations are done automatically with \code{\link{safe_labels}}.)
+#'   \code{comment} yields the title of the HTML document.
+#'
+#'   The main difference between \sQuote{epf} and \sQuote{phylip} is that the
+#'   former can use labels with more than ten characters, but its labels must
+#'   not contain whitespace. (These adaptations are done automatically with
+#'   \code{\link{safe_labels}}.)
 #' @param outfile Character scalar. If a non-empty character scalar, resulting
 #'   lines are directly written to this file. Otherwise, they are returned.
 #' @param enclose Logical scalar. Shall labels be enclosed in single quotes?
@@ -678,14 +623,18 @@ html_args <- function(
 #' @param paup.block Logical scalar. Append a \acronym{PAUP*} block with
 #'   selected (recommended) default values? Has no effect unless \sQuote{nexus}
 #'   is selected as \sQuote{format}.
-#' @param delete Character scalar. If \sQuote{uninf}, columns are removed which
-#'   are either constant (in the strict sense) or are columns in which some
-#'   fields contain polymorphisms, and no pairs of fields share no character
-#'   states. If \sQuote{ambig}, columns with ambiguities (multiple states in at
-#'   least one single field) are removed. If \sQuote{constant}, columns which
-#'   are constant in the strict sense are removed. \code{delete} is currently
-#'   ignored for formats other than \sQuote{html}, and note that columns become
-#'   rows in the final \acronym{HTML} output.
+#' @param delete Character scalar with one of the following values:
+#'   \describe{
+#'   \item{uninf}{Columns are removed which are either constant (in the strict
+#'   sense) or are columns in which some fields contain polymorphisms, and no
+#'   pairs of fields share no character states.}
+#'   \item{ambig}{Columns with ambiguities (multiple states in at least one
+#'   single field) are removed.}
+#'   \item{constant}{Columns which are constant in the strict sense are
+#'   removed.}
+#'   }
+#'   \code{delete} is currently ignored for formats other than \sQuote{html},
+#'   and note that columns become rows in the final \acronym{HTML} output.
 #'
 #' @param join Logical scalar, vector or factor. Unless \code{FALSE}, rows of
 #'   \code{object} are joined together, either according to the row names (if
@@ -735,33 +684,34 @@ html_args <- function(
 #'   output file, returned invisibly if \code{outfile} is given.
 #' @family phylogeny-functions
 #' @seealso base::comment base::write hwriter::hwrite
-#' @details \itemize{
-#'   \item Exporting PM data in such formats allows one to either infer trees
-#'     from the data under the maximum-likelihood and/or the maximum-parsimony
-#'     criterion, or to reconstruct the evolution of PM characters on given
-#'     phylogenetic trees, or to nicely display the data in \acronym{HTML}
-#'     format.
-#'   \item For exporting NEXUS format, the matrix should normally be converted
-#'     beforehand by applying \code{\link{discrete}}. Exporting \acronym{HTML}
-#'     is optimized for data discretized with \code{gap} set to \code{TRUE}. For
-#'     other data, the \code{character.states} argument should be modified, see
-#'     \code{\link{html_args}}. The \sQuote{hennig} (Hennig86) format is
-#'     the one used by \acronym{TNT}; it allows continuous characters to be
-#'     analysed as such.
+#' @details Exporting PM data in such formats allows one to either infer trees
+#'   from the data under the maximum-likelihood and/or the maximum-parsimony
+#'   criterion, or to reconstruct the evolution of PM characters on given
+#'   phylogenetic trees, or to nicely display the data in \acronym{HTML} format.
+#'
+#'   For exporting NEXUS format, the matrix should normally be converted
+#'   beforehand by applying \code{\link{discrete}}. Exporting \acronym{HTML} is
+#'   optimized for data discretized with \code{gap} set to \code{TRUE}. For
+#'   other data, the \code{character.states} argument should be modified, see
+#'   \code{\link{html_args}}. The \sQuote{hennig} (Hennig86) format is the one
+#'   used by \acronym{TNT}; it allows continuous characters to be analysed as
+#'   such.
+#'
+#'   The generated \acronym{HTML} is guaranteed to produce neither errors nor
+#'   warnings if checked using the Tidy program. It deliberately contains no
+#'   formatting instructions but a rich annotation with \sQuote{class}
+#'   attributes which allows for \acronym{CSS}-based formatting. This annotation
+#'   includes the naming of all sections and all kinds of textual content.
+#'   Whether the characters show differences between at least one organism and
+#'   the others is also indicated. For the \acronym{CSS} files that come with
+#'   the package, see the examples below and \code{\link{opm_files}}.
+#'
+#' @note \itemize{
+#'   \item Regarding the meaning of \sQuote{character} as used here, see the
+#'   \sQuote{Details} section of \code{\link{discrete}}.
 #'   \item \sQuote{epf} or \sQuote{extended PHYLIP} is sometimes called
 #'     \sQuote{relaxed PHYLIP}.
-#'   \item The generated \acronym{HTML} is guaranteed to produce neither errors
-#'     nor warnings if checked using the Tidy program. It deliberately contains
-#'     no formatting instructions but a rich annotation with \sQuote{class}
-#'     attributes which allows for \acronym{CSS}-based formatting. This
-#'     annotation includes the naming of all sections and all kinds of textual
-#'     content. Whether the characters show differences between at least one
-#'     organism and the others is also indicated. For the \acronym{CSS} files
-#'     that come with the package, see the examples below and
-#'     \code{\link{opm_files}}.
 #' }
-#' @note Regarding the meaning of \sQuote{character} as used here, see the
-#'   \sQuote{details} section of \code{\link{discrete}}.
 #'
 #' @keywords character cluster IO
 #'
@@ -792,13 +742,13 @@ html_args <- function(
 #' @examples
 #'
 #' # simple helper functions
-#' echo <- function(x) write(x, file = "")
+#' echo <- function(x) write(substring(x, 1, 250), file = "")
 #' is_html <- function(x) is.character(x) &&
 #'   c("<html>", "<head>", "<body>", "</html>", "</head>", "</body>") %in% x
 #' longer <- function(x, y) any(nchar(x) > nchar(y)) &&
 #'   !any(nchar(x) < nchar(y))
 #'
-#' # dummy data set
+#' ## examples with a dummy data set
 #' x <- matrix(c(0:9, letters[1:22]), nrow = 2)
 #' colnames(x) <- LETTERS[1:16]
 #' rownames(x) <- c("Ahoernchen", "Behoernchen") # Chip and Dale in German
@@ -837,7 +787,7 @@ html_args <- function(
 #' echo(y.hennig <- phylo_data(x, format = "hennig"))
 #' stopifnot(identical(length(y.hennig), hennig.len.1 - 1L))
 #'
-#' # examples with real data and HTML
+#' ## examples with real data and HTML
 #' data(vaas_4)
 #'
 #' # setting the CSS file that comes with opm as default
@@ -912,6 +862,18 @@ html_args <- function(
 #'   discrete.args = NULL))
 #' stopifnot(is.character(yy), length(yy) > 10)
 #'
+#' ## 'OPMD_listing' method
+#' echo(x <- phylo_data(listing(vaas_1)))
+#' stopifnot(is.character(x), length(x) == 1)
+#' echo(x <- phylo_data(listing(vaas_1, html = TRUE)))
+#' stopifnot(is.character(x), length(x) > 1)
+#'
+#' ## 'OPMS_listing' method
+#' echo(x <- phylo_data(listing(vaas_4, as.groups = "Species")))
+#' stopifnot(is.character(x), length(x) == 2, !is.null(names(x)))
+#' echo(x <- phylo_data(listing(vaas_4, as.groups = "Species", html = TRUE)))
+#' stopifnot(is.character(x), length(x) > 2, is.null(names(x)))
+#'
 setGeneric("phylo_data", function(object, ...) standardGeneric("phylo_data"))
 
 setMethod("phylo_data", "matrix", function(object,
@@ -945,7 +907,8 @@ setMethod("phylo_data", "matrix", function(object,
 
 setMethod("phylo_data", "data.frame", function(object, as.labels = NULL,
     what = "numeric", sep = " ", ...) {
-  object <- extract(object, as.labels = as.labels, what = what, sep = sep)
+  object <- extract_columns(object, as.labels = as.labels, what = what,
+    direct = FALSE, sep = sep)
   phylo_data(object, ...)
 }, sealed = SEALED)
 
@@ -967,9 +930,50 @@ setMethod("phylo_data", OPMS, function(object, as.labels, subset = "disc",
   phylo_data(object = object, join = join, ...)
 }, sealed = SEALED)
 
+setOldClass("OPMD_Listing")
+
+setMethod("phylo_data", "OPMD_Listing", function(object,
+    html.args = html_args(), run.tidy = FALSE) {
+  if (!attr(object, "html"))
+    return(paste(object, collapse = " "))
+  head <- sprintf("Character listing exported by %s",
+    paste(opm_string(version = TRUE), collapse = " version "))
+  attr(head, opm_string()) <- TRUE
+  head <- html_head(head, html.args$css.file,
+    html.args[names(html.args) == "meta"])
+  x <- c(HTML_DOCTYPE, "<html>", head, "<body>", unname(object),
+    "</body>", "</html>")
+  if (L(run.tidy))
+    x <- tidy(x, check = FALSE)
+  x
+}, sealed = SEALED)
+
+setOldClass("OPMS_Listing")
+
+setMethod("phylo_data", "OPMS_Listing", function(object,
+    html.args = html_args(), run.tidy = FALSE) {
+  prepare_headlines <- function(x) {
+    x <- safe_labels(x, format = "html")
+    x <- hmakeTag("span", data = x, class = "organism-name",
+      title = "organism-name")
+    hmakeTag("div", data = x, class = "headline", title = "headline")
+  }
+  if (!attr(object, "html"))
+    return(apply(object, 1L, paste, collapse = " "))
+  head <- sprintf("Character listings exported by %s",
+    paste(opm_string(version = TRUE), collapse = " version "))
+  attr(head, opm_string()) <- TRUE
+  head <- html_head(head, html.args$css.file,
+    html.args[names(html.args) == "meta"])
+  x <- apply(object, 1L, paste, collapse = "\n")
+  x <- as.vector(rbind(prepare_headlines(names(x)), x))
+  x <- c(HTML_DOCTYPE, "<html>", head, "<body>", x, "</body>", "</html>")
+  if (L(run.tidy))
+    x <- tidy(x, check = FALSE)
+  x
+}, sealed = SEALED)
+
 
 ################################################################################
-
-
 
 

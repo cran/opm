@@ -50,22 +50,22 @@ setMethod("update_settings_list", "list", function(x) {
 #' is used by its child classes such as \code{\link{OPM}}, but it is not
 #' directly applied by an \pkg{opm} user.
 #'
-#' @details \itemize{
-#'   \item \acronym{WMD} is an acronym for \sQuote{with metadata}.
-#'   \item Conceptually, this class treats metadata as arbitrarily nested lists
-#'     with arbitrary content. Containers of objects that inherit from this
-#'     class are not forced to contain the same metadata entries. Problems might
-#'     arise if such data are queried and attempted to be converted to, e.g.,
-#'     data frames because some values might be missing. But metadata can be
-#'     queried beforehand for the keys as well as the values they contain, and
-#'     other methods support setting, modifying and deleting metadata.
-#'   \item For \code{\link{OPM}} and the other \pkg{opm} classes that use it,
-#'     \sQuote{metadata} refers to information that, in contrast to, e.g.,
-#'     \code{\link{csv_data}} must be added by the user \strong{after} reading
-#'     OmniLog\eqn{\textsuperscript{\textregistered}}{(R)} \acronym{CSV} files.
-#'     Metadata might already be present in \acronym{YAML} files created by the
-#'     \pkg{opm} package, however.
-#' }
+#' @note \acronym{WMD} is an acronym for \sQuote{with metadata}.
+#'
+#' @details Conceptually, this class treats metadata as arbitrarily nested lists
+#'   with arbitrary content. Containers of objects that inherit from this class
+#'   are not forced to contain the same metadata entries. Problems might arise
+#'   if such data are queried and attempted to be converted to, e.g., data
+#'   frames because some values might be missing. But metadata can be queried
+#'   beforehand for the keys as well as the values they contain, and other
+#'   methods support setting, modifying and deleting metadata.
+#'
+#'   For \code{\link{OPM}} and the other \pkg{opm} classes that use it,
+#'   \sQuote{metadata} refers to information that, in contrast to, e.g.,
+#'   \code{\link{csv_data}} must be added by the user \strong{after} reading
+#'   OmniLog\eqn{\textsuperscript{\textregistered}}{(R)} \acronym{CSV} files.
+#'   Metadata might already be present in \acronym{YAML} files created by the
+#'   \pkg{opm} package, however.
 #'
 #' @docType class
 #' @export
@@ -90,26 +90,27 @@ setClass(WMD,
 #' OmniLog\eqn{\textsuperscript{\textregistered}}{(R)} phenotype microarray data
 #' without aggregated values, but with information read from the original input
 #' \acronym{CSV} files as well as an additional arbitrary amount of arbitrarily
-#' organised metadata. \acronym{OPM} is an acronym for
-#' \sQuote{OmniLog\eqn{\textsuperscript{\textregistered}}{(R)} Phenotype
-#' Microarray}.
+#' organised metadata.
+#'
+#' @note \acronym{OPM} is an acronym for
+#'   \sQuote{OmniLog\eqn{\textsuperscript{\textregistered}}{(R)} Phenotype
+#'   Microarray}.
 #'
 #' @details Objects of this class are usually created by inputting files with
 #'   \code{\link{read_single_opm}} or \code{\link{read_opm}}.
 #'
-#' @note Regarding the coercion of this class to other classes (see the
-#'   \code{coerce} methods listed above and \code{as} from the \pkg{methods}
-#'   package), consider the following:
+#'   Regarding the coercion of this class to other classes (see the \code{as}
+#'   from the \pkg{methods} package), consider the following:
 #'   \itemize{
 #'     \item The coercion of this class (and its child classes) to a list (and
-#'       vice versa) relies on a mapping between slot names and keys in the
-#'       list, i.e. the list must be appropriately named. For instance, this is
-#'       the mechanism when reading from and writing to \acronym{YAML}, see
-#'       \code{\link{to_yaml}}.
+#'     vice versa) relies on a mapping between slot names and keys in the list,
+#'     i.e. the list must be appropriately named. For instance, this is the
+#'     mechanism when reading from and writing to \acronym{YAML}, see
+#'     \code{\link{to_yaml}}.
 #'     \item Coercions to other data frames and matrices first coerce the
-#'       \code{\link{measurements}} and then add the other slots as attributes.
-#'     \item Methods such as \code{\link{flatten}} might be more appropriate for
-#'       converting \code{\link{OPM}} objects.
+#'     \code{\link{measurements}} and then add the other slots as attributes.
+#'     \item Methods such as \code{\link{flatten}} and \code{\link{extract}}
+#'     might be way more appropriate for converting \code{\link{OPM}} objects.
 #'   }
 #'
 #' @docType class
@@ -247,14 +248,16 @@ setAs(from = "list", to = OPM, function(from) {
 #'
 #' Class for holding single-plate
 #' OmniLog\eqn{\textsuperscript{\textregistered}}{(R)} phenotype microarray data
-#' together with aggregated values. For further details see its parent class,
-#' \code{\link{OPM}}. \acronym{OPMA} is an acronym for \sQuote{acronym{OPM},
-#' aggregated}.
+#' together with aggregated values.
+#'
+#' @note \acronym{OPMA} is an acronym for \sQuote{acronym{OPM}, aggregated}.
 #'
 #' @details Objects of this class are usually created by calling
 #'   \code{\link{do_aggr}} on an \code{\link{OPM}} object, or by inputting files
 #'   with \code{\link{read_single_opm}} or \code{\link{read_opm}} if these files
 #'   already contain aggregated data.
+#'
+#'   For further details see the parent class, \code{\link{OPM}}.
 #'
 #' @docType class
 #' @export
@@ -396,14 +399,16 @@ setAs(from = "list", to = OPMA, function(from) {
 #'
 #' Class for holding single-plate
 #' OmniLog\eqn{\textsuperscript{\textregistered}}{(R)} phenotype microarray data
-#' together with aggregated and discretized values. For further details see its
-#' parent class, \code{\link{OPMA}}. \acronym{OPMD} is an acronym for
-#' \sQuote{\acronym{OPM}, discretized}.
+#' together with aggregated \strong{and} discretized values.
+#'
+#' @note \acronym{OPMD} is an acronym for \sQuote{\acronym{OPM}, discretized}.
 #'
 #' @details Objects of this class are usually created by calling
 #'   \code{\link{do_disc}} on an \code{\link{OPMA}} object, or by inputting
 #'   files with \code{\link{read_single_opm}} or \code{\link{read_opm}} if these
 #'   files already contain discretized data.
+#'
+#'   For further details see the parent class, \code{\link{OPMA}}.
 #'
 #' @docType class
 #' @export
@@ -509,10 +514,9 @@ setAs(from = "list", to = OPMD, function(from) {
 #'
 #' Class for holding multi-plate
 #' OmniLog\eqn{\textsuperscript{\textregistered}}{(R)} phenotype microarray data
-#' with or without aggregated values. The data may have been obtained from
-#' distinct organisms and/or replicates, but \strong{must} correspond to the
-#' same plate type and \strong{must} contain the same wells. Regarding the name:
-#' \acronym{OPMS} is just the plural of \acronym{OPM}.
+#' with or without aggregated or discretized values.
+#'
+#' @note Regarding the name: \acronym{OPMS} is just the plural of \acronym{OPM}.
 #'
 #' @details Objects of this class are usually created by calling
 #'   \code{\link{opms}} or other combination functions on \code{\link{OPM}} or
@@ -520,9 +524,13 @@ setAs(from = "list", to = OPMD, function(from) {
 #'   \code{\link{read_opm}} if these files altogether contain more than a single
 #'   plate.
 #'
-#' @note As a rule, OPMS has the same methods as the \code{\link{OPM}} class,
-#'   but adapted to a collection of more than one \code{\link{OPM}} object.
-#'   Also, OPMS can hold \code{\link{OPMD}} and \code{\link{OPMA}} as well as
+#'   The data may have been obtained from distinct organisms and/or replicates,
+#'   but \strong{must} correspond to the same plate type and \strong{must}
+#'   contain the same wells.
+#'
+#'   As a rule, OPMS has the same methods as the \code{\link{OPM}} class, but
+#'   adapted to a collection of more than one \code{\link{OPM}} object. Also,
+#'   OPMS can hold \code{\link{OPMD}} and \code{\link{OPMA}} as well as
 #'   \code{\link{OPM}} objects, even though this is not indicated for all its
 #'   methods in this manual.
 #'
@@ -644,6 +652,35 @@ setAs(from = "matrix", to = CMAT, function(from) {
 ################################################################################
 
 
+#' FOE class
+#'
+#' This is a virtual class facilitating the implementation of functionality for
+#' both formulas and expressions. Methods defined for objects from the class can
+#' be applied to either kind of object, but this class is not directly dealt
+#' with by an \pkg{opm} user.
+#'
+#' @note \sQuote{FOE} is an acronym for \sQuote{formula or expression}.
+#'
+#' @details See \code{\link{metadata.set}} and \code{\link{map_metadata}} for
+#'   usage examples.
+#'
+#' @name FOE
+#'
+#' @docType class
+#' @export
+#' @aliases FOE-class
+#' @seealso methods::Methods base::expression stats::formula
+#' @family classes
+#' @keywords methods classes
+#'
+NULL
+
+setClassUnion(FOE, c("formula", "expression"))
+
+
+################################################################################
+
+
 #' MOA class
 #'
 #' This is a virtual class facilitating the implementation of functionality for
@@ -651,7 +688,10 @@ setAs(from = "matrix", to = CMAT, function(from) {
 #' applied to either kind of object, but this class is not directly dealt with
 #' by an \pkg{opm} user.
 #'
-#' @details \sQuote{MOA} is an acronym for \sQuote{matrix or array}.
+#' @note \sQuote{MOA} is an acronym for \sQuote{matrix or array}.
+#'
+#' @details See \code{\link{map_values}} and \code{\link{map_names}} for
+#'   usage examples.
 #'
 #' @name MOA
 #'
@@ -672,10 +712,14 @@ setClassUnion(MOA, c("matrix", "array"))
 
 #' OPMX class
 #'
-#' This is a virtual class containing helper methods for plotting
+#' This is a virtual class containing helper methods mainly for plotting
 #' \code{\link{OPM}} and \code{\link{OPMS}} objects. It is not directly applied
-#' by an \pkg{opm} user. Regarding the name: \acronym{OPMX} stands for
-#' \sQuote{\acronym{OPM} or \acronym{OPMS}}.
+#' by an \pkg{opm} user.
+#'
+#' @note Regarding the name: \acronym{OPMX} stands for \sQuote{\acronym{OPM} or
+#'   \acronym{OPMS}}.
+#'
+#' @details See \code{\link{show}} and \code{\link{sort}} for usage examples.
 #'
 #' @name OPMX
 #'
@@ -699,11 +743,14 @@ setClassUnion(OPMX, c(OPM, OPMS))
 
 #' YAML_VIA_LIST class
 #'
-#' This is a virtual class facilitating the conversion to \acronym{YAML} format.
-#' It can currently be used by any class that can be coerced to a list, but it
-#' is not directly applied by an \pkg{opm} user.
+#' This is a virtual class facilitating the conversion to \acronym{YAML} format
+#' (or its subset, \acronym{JSON}). It can currently be used by any class that
+#' can be coerced to a list, but it is not directly applied by an \pkg{opm}
+#' user.
 #'
 #' @name YAML_VIA_LIST
+#'
+#' @details See \code{\link{to_yaml}} for a usage example.
 #'
 #' @docType class
 #' @export

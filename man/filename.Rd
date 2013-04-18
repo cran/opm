@@ -18,12 +18,12 @@
 \examples{
 # 'OPM' method
 data(vaas_1)
-(x <- filename(vaas_1))
+(x <- filename(vaas_1)) # one file name (of course)
 stopifnot(is.character(x), length(x) == 1L)
 
 # 'OPMS' method
 data(vaas_4)
-(x <- filename(vaas_4))
+(x <- filename(vaas_4))  # one file name per plate
 stopifnot(is.character(x), length(x) == 4L)
 }
 \seealso{

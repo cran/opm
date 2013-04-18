@@ -23,6 +23,10 @@ test_that("an objects last elements can be accessed", {
 })
 
 
+## md_data_frame
+## UNTESTED
+
+
 ## reduce_to_mode
 ## UNTESTED
 
@@ -56,37 +60,6 @@ test_that("constantness can be checked", {
   expect_equal(is_constant(x, 2), c(FALSE, TRUE))
   expect_equal(is_constant(x, 0), FALSE)
   expect_error(is_constant(x, 3))
-
-})
-
-
-## parse_formula_head
-test_that("formula heads can be parsed", {
-
-  # name
-  x <- a ~ paste(b$d, c)
-  got <- parse_formula_head(x[[2L]])
-  expect_equal(got, "a")
-
-  # call
-  x <- c("a", "b") ~ paste(b$d, c)
-  got <- parse_formula_head(x[[2L]])
-  expect_equal(got, c("a", "b"))
-
-  # Character
-  x <- "a" ~ paste(b$d, c)
-  got <- parse_formula_head(x[[2L]])
-  expect_equal(got, "a")
-
-  # Numeric
-  x <- 1 ~ paste(b$d, c)
-  got <- parse_formula_head(x[[2L]])
-  expect_equal(got, 1)
-
-  # Call with $-operator
-  x <- a$b$`c d`$e ~ paste(b$d, c)
-  got <- parse_formula_head(x[[2L]])
-  expect_equal(got, c("a", "b", "c d", "e"))
 
 })
 
@@ -126,11 +99,75 @@ test_that("rows can be picked", {
 })
 
 
+## assert_splittable_matrix
+## UNTESTED
+
+
 ################################################################################
 ################################################################################
 #
 # String processing
 #
+
+
+## create_formula
+## UNTESTED
+
+
+## metadata_key
+test_that("we can convert formulas for use as metadata keys", {
+
+  var <- c("A", "B")
+  f <- ~ a $ b $ c + I(var) * ("d" + e) + c("f", "g", "h") | i$"j"
+  got <- metadata_key(f, TRUE)
+  expect_equal(got, ~ a.b.c + A.B * (d + e) + c(f, g, h) | i.j)
+  got <- metadata_key(f, FALSE)
+  expect_equal(got, list(a.b.c = c("a", "b", "c"), A.B = c("A", "B"),
+    d = "d", e = "e", f = "f", g = "g", h = "h", i.j = c("i", "j")))
+  got <- metadata_key(f, FALSE, remove = c("A.B", "i.j"))
+  expect_equal(got, list(a.b.c = c("a", "b", "c"),
+    d = "d", e = "e", f = "f", g = "g", h = "h"))
+
+  f <- Value ~ Well
+  got <- metadata_key(f, FALSE)
+  expect_equal(got, c(Well = "Well"))
+  got <- metadata_key(f, FALSE, remove = RESERVED_NAMES)
+  expect_equal(got, NULL)
+
+})
+
+
+## metadata_key
+test_that("we can convert lists for use as formulas", {
+
+  x <- list(c("a", "b"), list(K = "t", I = c("D", "E")))
+  got <- metadata_key(x, TRUE)
+  expect_equal(got, ~ a.b + K + I)
+  got <- metadata_key(x, TRUE, ops = c("+", "|"))
+  expect_equal(got, ~ a.b + K | I)
+  got <- metadata_key(x, TRUE, remove = "K")
+  expect_equal(got, ~ a.b + I)
+
+  x <- list("run")
+  got <- metadata_key(x, TRUE)
+  expect_equal(got, ~ run)
+
+})
+
+
+## metadata_key
+test_that("some edge cases are correctly handled", {
+  x <- character()
+  names(x) <- character()
+  expect_error(metadata_key(x, TRUE))
+  expect_equal(x, metadata_key(x, FALSE))
+  expect_equal(NULL, metadata_key(NULL, FALSE))
+  x <- numeric()
+  got <- metadata_key(x, TRUE)
+  expect_equal(metadata_key(got, TRUE), got)
+  x <- ~ list(list(), list())
+  expect_equal(x, metadata_key(x, TRUE))
+})
 
 
 ## parse_time
@@ -204,7 +241,7 @@ test_that("character vectors can be split regularly even if constant", {
   expect_identical(got, "x")
   got <- separate(x, keep.const = FALSE, split = " ", simplify = FALSE)
   expect_is(got, "matrix")
-  expect_equal(dim(got), c(1L, 1L))
+  expect_equal(dim(got), c(1L, 0L))
 
 })
 
@@ -234,6 +271,11 @@ test_that("character vectors can be split regularly in list-wise mode", {
   expect_equal(dim(got), c(4, 3))
   expect_equal(colnames(got), c("b", "c", "d"))
   expect_true(all(is.na(got[3L, ])))
+  expect_is(got, "matrix")
+  got <- separate(x, keep.const = TRUE, split = ",", simplify = TRUE,
+    list.wise = TRUE)
+  expect_equal(dim(got), c(4, 4))
+  expect_equal(colnames(got), c("a", "b", "c", "d"))
 })
 
 ## separate
@@ -262,7 +304,18 @@ test_that("factors can be split regularly", {
 
 
 ## glob_to_regex
-## UNTESTED
+test_that("wildcards can be converted to regular expressions", {
+  # from http://docstore.mik.ua/orelly/perl/cookbook/ch06_10.htm
+  # with some adaptations and
+  x <- c("list.?", "project.*", "*old", "type*.[ch]", "*.*", "*")
+  wanted <- c("^list\\..$", "^project\\.", "^.*old$", "^type.*\\.\\[ch]$",
+    "^.*\\.", "^")
+  got <- glob_to_regex(x)
+  expect_equal(wanted, got)
+  x <- c("^anc-+k", "+us$hs+")
+  got <- glob_to_regex(x)
+  expect_equal(c("^\\^anc-\\+k$", "^\\+us\\$hs\\+$"), got)
+})
 
 
 ## trim_string
@@ -316,6 +369,22 @@ test_that("annotations can be added with word-wise abbreviation", {
   expect_equal("A07 (.)", got[1L])
   expect_equal("B11 (.)", got[2L])
 })
+
+
+## list2html
+test_that("HTML can be recursively generated", {
+  x <- list(a = 63, c = list(b = letters, structure(LETTERS, .Names = letters)))
+  got <- list2html(x)
+  expect_is(got, "character")
+  expect_equal(length(got), 1L)
+  got <- strsplit(got, "\\s*<[^>]+>\\s*", perl = TRUE)[[1]]
+  expect_true(setequal(got[nzchar(got)],
+    c(63, LETTERS, paste(letters, collapse = " "))))
+})
+
+
+## html_head
+## UNTESTED
 
 
 ## tidy
@@ -387,6 +456,41 @@ test_that("values in lists can be mapped using character vectors", {
   expect_equal(got[[2L]], as.character(1:10))
   expect_equal(names(got), names(xy))
 
+})
+
+
+## map_values
+test_that("values in lists can be mapped by cleaning", {
+  x <- list(A = 13, B = list(B1 = NULL, B2 = -5), C = "z", character(),
+    D = list(D1 = NULL, D2 = list()))
+  got <- map_values(x, NULL)
+  expect_equal(got, list(A = 13, B = list(B2 = -5), C = "z"))
+  got <- map_values(x, NULL, "numeric")
+  expect_equal(got, list(A = "13", B = list(B2 = "-5"), C = "z"))
+})
+
+
+## map_values
+test_that("values in lists can be mapped using expressions", {
+  x <- list(a = 1:5, b = letters[1:3], K = list(K1 = 3, 89))
+  assign("z", 7.5, 1)
+  # 1
+  got <- map_values(x, expression(a <- a, u <- a + z))
+  expect_equal(got, c(x, list(u = x$a + z)))
+  # 2
+  expect_error(map_values(x, expression(u <- a + z), baseenv()))
+  # 3
+  got <- map_values(x, expression(u <- a + z, v <- u))
+  expect_equivalent(got, c(x, list(u = x$a + z, v = x$a + z)))
+  # 4
+  b <- 4
+  got <- map_values(x, expression(rm(b)))
+  x$b <- NULL
+  expect_equal(got, x)
+  expect_equal(b, 4)
+  # 5
+  got <- map_values(x, expression(b <- NULL))
+  expect_equal(got, c(x, list(b = NULL)))
 })
 
 
@@ -469,17 +573,6 @@ test_that("NAs in a list can be repaired", {
 #
 # Lists
 #
-
-
-## traverse
-test_that("a list can be traversed", {
-  x <- list(a = 9, b = 17, k = 88)
-  func <- function(x, y) x + y
-  got <- traverse(object = x, func = func, cores = 1L, y = 3)
-  expect_equal(got, list(a = 12, b = 20, k = 91))
-  got <- traverse(object = x, func = func, cores = 2L, y = 3)
-  expect_equal(got, list(a = 12, b = 20, k = 91))
-})
 
 
 ## insert
@@ -703,7 +796,5 @@ test_that("character-matrix objects can be updated by deletion", {
   expect_equal(dim(got), c(2, 1))
 
 })
-
-
 
 

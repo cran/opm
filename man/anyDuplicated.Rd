@@ -25,16 +25,18 @@
 # 'OPM' method
 data(vaas_1)
 (x <- anyDuplicated(vaas_1))
-stopifnot(identical(x, 0L))
+stopifnot(identical(x, 0L)) # no complete plate duplicated
 (x <- anyDuplicated(vaas_1, what = list("Strain", "Species")))
-stopifnot(identical(x, 0L))
+stopifnot(identical(x, 0L)) # no organisms duplicated
 
 # 'OPMS' method
 data(vaas_4)
 stopifnot(identical(anyDuplicated(vaas_4), 0L))
 stopifnot(identical(anyDuplicated(vaas_4, what = list("Strain")), 0L))
+# => no strains duplicated
 stopifnot(identical(anyDuplicated(vaas_4, what = list("Species")), 2L))
-x <- vaas_4[c(1, 1)]
+# => species duplicated
+x <- vaas_4[c(1, 1)] # complete plate duplicated
 stopifnot(identical(anyDuplicated(x), 2L))
 }
 \seealso{

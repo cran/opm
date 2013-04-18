@@ -22,13 +22,13 @@
 # 'OPMS' method
 data(vaas_4)
 (x <- seq(vaas_4))
-stopifnot(identical(x, 1:4))
+stopifnot(identical(x, 1:4)) # indexes for 4 plates
 (y <- seq(vaas_4, letters, LETTERS)) # other arguments are ignored
 stopifnot(identical(x, y))
 
 # 'OPM' method
 data(vaas_1)
-(x <- try(seq(vaas_1), silent = TRUE))
+(x <- try(seq(vaas_1), silent = TRUE)) # deliberately yields an error
 stopifnot(inherits(x, "try-error"))
 }
 \seealso{

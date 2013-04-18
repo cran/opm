@@ -1,9 +1,15 @@
 \name{print}
 \alias{print}
+\alias{print.OPMD_Listing}
+\alias{print.OPMS_Listing}
 \alias{print.OPMS_Summary}
 \alias{print.OPM_Summary}
 \title{Print}
 \usage{
+  \method{print}{OPMD_Listing} (x, ...)
+
+  \method{print}{OPMS_Listing} (x, ...)
+
   \method{print}{OPM_Summary} (x, ...)
 
   \method{print}{OPMS_Summary} (x, ...)

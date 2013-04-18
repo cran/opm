@@ -146,11 +146,8 @@ plot.kmeanss <- function(x, xlab = "Number of clusters",
 
 #' Cluster borders
 #'
-#' Determine the borders between clusters of one-dimensional data. They are
-#' calculated as the mean of the maximum of the cluster with the lower values
-#' and the minimum of the neighboring cluster with the higher values. The
-#' \code{hist} method plots a histogram of one-dimensional data subjected to
-#' k-means partitioning in which these borders can be drawn.
+#' Determine the borders between clusters of one-dimensional data or create a
+#' histogram in which these borders are plotted.
 #'
 #' @param x Object of class \sQuote{kmeans}, \sQuote{Ckmeans.1d.dp} or
 #'   \sQuote{kmeanss}.
@@ -173,7 +170,12 @@ plot.kmeanss <- function(x, xlab = "Number of clusters",
 #'   like \code{hist.default}; see there for details.
 #' @keywords cluster hplot
 #' @family kmeans-functions
-#' @note \code{y} must also be in the order it has been when subjected to
+#' @details The borders are calculated as the mean of the maximum of the cluster
+#'   with the lower values and the minimum of the neighboring cluster with the
+#'   higher values. The \code{hist} method plots a histogram of one-dimensional
+#'   data subjected to k-means partitioning in which these borders can be drawn.
+#'
+#'   \code{y} must also be in the order it has been when subjected to
 #'   clustering, but this is not checked. Using \sQuote{kmeanss} objects thus
 #'   might preferable in most cases because they contain a copy of the input
 #'   data.
@@ -185,7 +187,7 @@ plot.kmeanss <- function(x, xlab = "Number of clusters",
 #' x.km <- run_kmeans(x, k = 1:10)
 #'
 #' # borders() method
-#' (x.b <- borders(x.km))
+#' (x.b <- borders(x.km)) # => list of numeric vectors
 #' stopifnot(is.list(x.b), length(x.b) == 10, sapply(x, is.numeric))
 #' stopifnot(sapply(x.b, length) == as.numeric(names(x.b)) - 1)
 #'
@@ -235,7 +237,8 @@ hist.kmeans <- function(x, y, col = "black", lwd = 1L, lty = 1L, main = NULL,
     xlab = "Clustered values", ...) {
   b <- borders(x, y)
   result <- hist(y, main = main, xlab = xlab, ...)
-  lapply(b, function(num) abline(v = num, col = col, lwd = lwd, lty = lty))
+  mapply(abline, v = b, col = col, lwd = lwd, lty = lty, SIMPLIFY = FALSE,
+    USE.NAMES = FALSE)
   invisible(result)
 }
 
@@ -258,14 +261,11 @@ hist.kmeanss <- function(x, k = NULL, col = "black", lwd = 1L, lty = 1L,
     case(length(y), integer(), min(y))
   }
   result <- hist(y <- attr(x, "input"), main = main, xlab = xlab, ...)
-  if (length(k) == 0L && length(k <- smallest_k(x)) == 0L)
+  if (!length(k) && !length(k <- smallest_k(x)))
     return(invisible(result))
-  mapply(function(k.val, col.val, lwd.val, lty.val) {
-    b <- borders(x[[as.character(k.val)]], y)
-    lapply(b, function(num) {
-      abline(v = num, col = col.val, lwd = lwd.val, lty = lty.val)
-    })
-  }, k, col, lwd, lty, SIMPLIFY = FALSE, USE.NAMES = FALSE)
+  b <- lapply(as.character(k), function(key) borders(x[[key]], y))
+  mapply(abline, v = b, col = col, lwd = lwd, lty = lty, SIMPLIFY = FALSE,
+    USE.NAMES = FALSE)
   invisible(result)
 }
 
@@ -322,7 +322,7 @@ prepare_k <- function(k) {
 #' @examples
 #' data(vaas_4)
 #' x <- as.vector(extract(vaas_4, as.labels = NULL, subset = "A"))
-#' summary(x.km <- run_kmeans(x, k = 1:10))
+#' summary(x.km <- run_kmeans(x, k = 1:10)) # => 'kmeanss' object
 #' stopifnot(inherits(x.km, "kmeanss"), length(x.km) == 10)
 #' stopifnot(sapply(x.km, class) == "kmeans", names(x.km) == 1:10)
 #'
@@ -342,7 +342,7 @@ setMethod("run_kmeans", c("matrix", "numeric"), function(object, k,
     run_kmeans(as.vector(object), k)
   else
     structure(sapply(prepare_k(k), function(centers) {
-      kmeans(x = x, centers = centers, nstart = nstart, ...)
+      kmeans(x = object, centers = centers, nstart = nstart, ...)
     }, simplify = FALSE), class = "kmeanss")
   attr(result, "input") <- object
   result

@@ -15,9 +15,11 @@
   \item{verbose}{Logical scalar. Print progress messages?}
 
   \item{cores}{Integer scalar. Number of cores to use.
-  Setting this to a value > 1 requires the \pkg{multicore}
-  package. Has no effect if \sQuote{opm-fast} is chosen
-  (see below).}
+  Setting this to a value > 1 requires that \code{mclapply}
+  from the \pkg{parallel} package can be run with more than
+  1 core, which is impossible under Windows. The
+  \code{cores} argument has no effect if \sQuote{opm-fast}
+  is chosen (see below).}
 
   \item{options}{List. For its use in \sQuote{grofit} mode,
   see \code{grofit.control} in the \pkg{grofit} package.
@@ -25,11 +27,16 @@
   important ones, are added separately (see above). The
   verbose mode is not very useful in parallel processing.
   For its use in \sQuote{opm-fast} mode, see
-  \code{\link{fast_estimate}}.}
+  \code{\link{fast_estimate}}.  With \code{method}
+  \dQuote{spline.fit}, options can be specified using the
+  function \code{\link{set_spline_options}}.}
 
   \item{method}{Character scalar. The aggregation method to
   use. Currently only the following methods are supported:
-  \describe{ \item{grofit}{The \code{grofit} function in
+  \describe{ \item{splines}{Fit various splines (smoothing
+  splines and P-splines from \pkg{mgcv} and smoothing
+  splines via \code{smooth.spline}) to opm data.
+  Recommended.} \item{grofit}{The \code{grofit} function in
   the eponymous package, with spline fitting as default.}
   \item{opm-fast}{The native, faster parameter estimation.
   This will only yield two of the four parameters, the area
@@ -37,9 +44,10 @@
   the curve is estimated as the sum of the areas given by
   the trapezoids defined by each pair of adjacent time
   points. The maximum height is just the result of
-  \code{max}. By default, however, the median bootstrap
-  value is preferred as point estimate over the real point
-  estimate.} }}
+  \code{max}. By default the median of the bootstrap values
+  is used as point estimate. For details see the argument
+  \code{as.pe} of the function
+  \code{\link{fast_estimate}}.} }}
 
   \item{program}{Deprecated. Use \sQuote{method} instead.
   If provided, \sQuote{program} has precedence over
@@ -97,13 +105,11 @@
   the point estimate is simply regarded as \sQuote{A}
   parameter (maximum height) and all other parameters are
   set to \code{NA}.
-}
-\note{
-  \itemize{ \item The aggregated values can be queried for
-  using \code{\link{has_aggr}} and received using
-  \code{\link{aggregated}}.  \item The \sQuote{OPMS} method
-  just applies the \sQuote{OPM} method to each contained
-  plate in turn; there are not inter-dependencies.  \item
+
+  The \sQuote{OPMS} method just applies the \sQuote{OPM}
+  method to each contained plate in turn; there are no
+  inter-dependencies.
+
   Examples with \code{plain = TRUE} are not given, as only
   the return value is different: Let \code{x} be the normal
   result of \code{do_aggr()}. The matrix returned if
@@ -111,7 +117,12 @@
   \code{aggregated(x)}, whereas the \sQuote{method} and the
   \sQuote{settings} attributes could be obtained as
   components of the list returned by
-  \code{aggr_settings(x)}. }
+  \code{aggr_settings(x)}.
+}
+\note{
+  The aggregated values can be queried for using
+  \code{\link{has_aggr}} and received using
+  \code{\link{aggregated}}.
 }
 \examples{
 # OPM method
@@ -136,14 +147,13 @@ auc.fast <- aggregated(copy, "AUC", ci = FALSE)
 plot(auc.grofit, auc.fast)
 stopifnot(cor.test(auc.fast, auc.grofit)$estimate > 0.999)
 
-\dontrun{
-
-  # Without confidence interval (CI) estimation
+\dontrun{ # Without confidence interval (CI) estimation
   x <- do_aggr(vaas_1, boot = 0, verbose = TRUE)
   aggr_settings(x)
   aggregated(x)
 
   # Calculate CIs with 100 bootstrap (BS) replicates, using 4 cores
+  # (do not try to use > 1 core on Windows)
   x <- do_aggr(vaas_1, boot = 100, verbose = TRUE, cores = 4)
   aggr_settings(x)
   aggregated(x)

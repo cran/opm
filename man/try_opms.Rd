@@ -1,6 +1,13 @@
 \name{try_opms}
 \alias{try_opms}
+\alias{try_opms.list}
 \title{Convert list to OPMS}
+\usage{
+  try_opms(object, ...)
+
+  \method{try_opms}{list} (object, precomputed = TRUE,
+    skip = FALSE)
+}
 \arguments{
   \item{object}{List.}
 
@@ -20,11 +27,3 @@
 }
 \keyword{internal}
 
-\docType{methods}
-\alias{try_opms-methods}
-\alias{try_opms,list-method}
-\usage{
-  \S4method{try_opms}{list}(object, precomputed = TRUE,
-    skip = FALSE) 
-
-}

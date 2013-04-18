@@ -20,19 +20,19 @@
 \examples{
 ## 'OPMS' method
 data(vaas_4)
-summary(x <- rep(vaas_4))
+dim(x <- rep(vaas_4))
 stopifnot(identical(x, vaas_4))
-summary(x <- rep(vaas_4, times = 2))
+dim(x <- rep(vaas_4, times = 2))
 stopifnot(length(x) == length(vaas_4) * 2)
-summary(y <- rep(vaas_4, each = 2))
+dim(y <- rep(vaas_4, each = 2))
 stopifnot(length(y) == length(vaas_4) * 2, !identical(x, y))
 stopifnot(is.null(rep(vaas_4, 0)))
 
 ## 'OPM' method
 data(vaas_1)
-summary(x <- rep(vaas_1, 1))
+dim(x <- rep(vaas_1, 1))
 stopifnot(identical(x, vaas_1))
-summary(x <- rep(vaas_1, 2))
+dim(x <- rep(vaas_1, 2)) # conversion to OPMS if > 1 element
 stopifnot(length(x) == 2, is(x, "OPMS"))
 stopifnot(is.null(rep(vaas_4, 0)))
 }

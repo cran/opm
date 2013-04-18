@@ -9,26 +9,27 @@
 }
 \arguments{
   \item{names}{Character vector with names of files in one
-  of three formats accepted by \code{\link{read_opm}}, or
-  names of directories containing such files, or both; or
-  convertible to such a vector. See the \code{include}
+  of the formats accepted by \code{\link{read_single_opm}},
+  or names of directories containing such files, or both;
+  or convertible to such a vector. See the \code{include}
   argument of \code{\link{read_opm}} and
   \code{\link{explode_dir}} for how to select subsets from
   the input files or directories.}
 
-  \item{convert}{Character scalar. If \sQuote{no}, always
-  return a list. If \sQuote{yes}, convert to \code{NULL},
-  \code{\link{OPM}} object, or \code{\link{OPMS}} object,
-  depending on the number of files read (0, 1, or more).
-  \sQuote{try} behaves like \sQuote{yes} but does not
-  result in an error message if conversion to OPMS is
-  impossible; a list is returned in that case. \sQuote{sep}
-  returns a nested list, each sublist containing
-  \code{\link{OPM}} objects of the same plate type.
-  \sQuote{grp} also splits into such sublists but converts
-  them to \code{\link{OPMS}} objects if more than one plate
-  is encountered. An error is raised if this is impossible
-  (in contrast to \sQuote{try}).}
+  \item{convert}{Character scalar with one of the following
+  values: \describe{ \item{no}{Always return a list (of
+  \code{\link{OPM}} objects).} \item{yes}{Convert to
+  \code{NULL}, \code{\link{OPM}} object, or
+  \code{\link{OPMS}} object, depending on the number of
+  files read (0, 1, or more).} \item{try}{Behave like
+  \sQuote{yes} but do not result in an error message if
+  conversion to OPMS is impossible; return a list in that
+  case.} \item{sep}{Return a nested list, each sublist
+  containing \code{\link{OPM}} objects of the same plate
+  type.} \item{grp}{Also split into such sublists but
+  convert them to \code{\link{OPMS}} objects if more than
+  one plate is encountered. An error is raised if this is
+  impossible (in contrast to \sQuote{try}).} }}
 
   \item{gen.iii}{Logical or character scalar. If
   \code{TRUE}, invoke \code{\link{gen_iii}} on each plate.
@@ -69,17 +70,20 @@
   may be excluded using \code{include} and/or
   \code{exclude}).
 }
-\note{
+\details{
   Regarding the \acronym{CSV} format, see the remark to
-  \code{\link{read_single_opm}}. For splitting lists of
-  \code{\link{OPM}} objects according to the plate type,
-  see \code{\link{plate_type}}, and consider the plate-type
-  selection options of \code{\link{opms}}.
+  \code{\link{read_single_opm}}. The \acronym{YAML} format
+  is described in detail under \code{\link{batch_opm}}.
+
+  or splitting lists of \code{\link{OPM}} objects according
+  to the plate type, see \code{\link{plate_type}}, and
+  consider the plate-type selection options of
+  \code{\link{opms}}.
 }
 \examples{
 test.files <- grep("Multiple|Ecoplate", opm_files("testdata"), invert = TRUE,
   value = TRUE, perl = TRUE)
-if (length(test.files) > 0L) { # if the folder is found
+if (length(test.files) > 0) { # if the folder is found
   x <- read_opm(test.files, demo = TRUE) # check first what you would get
   stopifnot(identical(test.files, x))
   x <- read_opm(test.files[1:2]) # these two have the same plate type
@@ -87,6 +91,8 @@ if (length(test.files) > 0L) { # if the folder is found
   dim(x)
   summary(x)
   stopifnot(is(x, "OPMS"), identical(dim(x), c(2L, 384L, 96L)))
+} else {
+  warning("test files not found")
 }
 # This can be repeated for the other input test files. Instead of a several
 # file names one can also provide a single one, one to several directory
@@ -103,13 +109,15 @@ x <- read_opm(".")
 \references{
   \url{http://www.yaml.org/}
 
+  \url{http://www.json.org/}
+
   \url{http://www.biolog.com/}
 }
 \seealso{
   utils::read.csv yaml::yaml.load_file
 
-  Other IO-functions: \code{\link{batch_collect}},
-  \code{\link{batch_opm_to_yaml}},
+  Other io-functions: \code{\link{batch_collect}},
+  \code{\link{batch_opm}}, \code{\link{batch_opm_to_yaml}},
   \code{\link{batch_process}},
   \code{\link{clean_filenames}},
   \code{\link{collect_template}},

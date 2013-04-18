@@ -24,15 +24,13 @@
 \examples{
 # OPM method
 data(vaas_1)
-(x <- max(vaas_1))
-(y <- minmax(vaas_1))
-stopifnot(x > y)
+(x <- minmax(vaas_1))
+stopifnot(max(vaas_1) > x) # obviously
 
 # OPMS method
 data(vaas_4)
-(x <- max(vaas_4))
-(y <- minmax(vaas_4))
-stopifnot(x > y)
+(x <- minmax(vaas_4))
+stopifnot(max(vaas_4) > x) # obviously
 }
 \seealso{
   base::min base::max

@@ -18,6 +18,10 @@ if (!exists("TEST.DIR"))
 ## UNTESTED
 
 
+## [<-
+## UNTESTED
+
+
 ## +
 test_that("`+`() can be used to put plates together", {
   x <- OPM.1 + OPM.2

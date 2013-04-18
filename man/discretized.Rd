@@ -22,13 +22,13 @@
 \examples{
 # 'OPM' method
 data(vaas_1)
-(x <- discretized(vaas_1))
+(x <- discretized(vaas_1))[1:3] # => logical vector
 stopifnot(is.logical(x), !is.matrix(x), length(x) == dim(x)[2L])
 stopifnot(names(x) == colnames(aggregated(vaas_1)))
 
 # 'OPMS' method
 data(vaas_4)
-(x <- discretized(vaas_4))
+(x <- discretized(vaas_4))[, 1:3] # => logical matrix
 stopifnot(is.logical(x), is.matrix(x), ncol(x) == dim(x)[2L])
 stopifnot(colnames(x) == colnames(aggregated(vaas_1)))
 }

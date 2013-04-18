@@ -19,12 +19,12 @@
 \examples{
 # 'OPM' method
 data(vaas_1)
-(x <- position(vaas_1))
+(x <- position(vaas_1)) # single position (of course)
 stopifnot(identical(x, " 7-B"))
 
 # 'OPMS' method
 data(vaas_4)
-(x <- position(vaas_4))
+(x <- position(vaas_4)) # one position per plate
 stopifnot(is.character(x), length(x) == length(vaas_4))
 }
 \seealso{

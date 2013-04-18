@@ -28,7 +28,7 @@ stopifnot(identical(x, c(384L, 96L)))
 
 # OPMS method
 data(vaas_4)
-(x <- dim(vaas_4))
+(x <- dim(vaas_4)) # 2nd value needs not be correct for all plates
 stopifnot(identical(x, c(4L, 384L, 96L)))
 }
 \seealso{

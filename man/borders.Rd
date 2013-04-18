@@ -63,14 +63,17 @@
 }
 \description{
   Determine the borders between clusters of one-dimensional
-  data. They are calculated as the mean of the maximum of
+  data or create a histogram in which these borders are
+  plotted.
+}
+\details{
+  The borders are calculated as the mean of the maximum of
   the cluster with the lower values and the minimum of the
   neighboring cluster with the higher values. The
   \code{hist} method plots a histogram of one-dimensional
   data subjected to k-means partitioning in which these
   borders can be drawn.
-}
-\note{
+
   \code{y} must also be in the order it has been when
   subjected to clustering, but this is not checked. Using
   \sQuote{kmeanss} objects thus might preferable in most
@@ -82,7 +85,7 @@ x <- as.vector(extract(vaas_4, as.labels = NULL, subset = "A"))
 x.km <- run_kmeans(x, k = 1:10)
 
 # borders() method
-(x.b <- borders(x.km))
+(x.b <- borders(x.km)) # => list of numeric vectors
 stopifnot(is.list(x.b), length(x.b) == 10, sapply(x, is.numeric))
 stopifnot(sapply(x.b, length) == as.numeric(names(x.b)) - 1)
 

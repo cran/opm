@@ -50,7 +50,7 @@ testfile_dir <- function(files = NULL) {
     # if source_location() works, the result ends in '/opm/R/testing.R'
     append_subdirs(dirname(dirname(source_location())))
   }
-  from_working_dir <- function(x) {
+  from_working_dir <- function() {
     # getwd() called from the tests should return path ending in 'opm/tests'
     append_subdirs(dirname(getwd()))
   }

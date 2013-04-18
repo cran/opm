@@ -9,6 +9,7 @@ test_that("substrate names are ok", {
   expect_false(any(grepl("\\sacid$", WELL_MAP, perl = TRUE)))
   expect_false(any(grepl(" - ", WELL_MAP, perl = TRUE)))
   expect_false(any(grepl("[^',()A-Za-z0-9 %./+-]", WELL_MAP, perl = TRUE)))
+  expect_false(is.unsorted(rownames(WELL_MAP))) # wells should be sorted
 })
 
 

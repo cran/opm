@@ -19,12 +19,12 @@
 \examples{
 # 'OPM' method
 data(vaas_1)
-(x <- aggr_settings(vaas_1))
+(x <- aggr_settings(vaas_1)) # yields named list
 stopifnot(is.list(x), !is.null(names(x)))
 
 # 'OPMS' method
 data(vaas_4)
-summary(x <- aggr_settings(vaas_4))
+summary(x <- aggr_settings(vaas_4)) # list of named lists, one per plate
 stopifnot(is.list(x), length(x) == length(vaas_4), sapply(x, is.list))
 }
 \seealso{

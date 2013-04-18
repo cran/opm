@@ -20,13 +20,13 @@
 \examples{
 ## 'OPMS' method
 data(vaas_4)
-summary(x <- rev(vaas_4))
+dim(x <- rev(vaas_4))
 stopifnot(dim(x) == dim(vaas_4), !identical(x, vaas_4))
 stopifnot(identical(rev(x), vaas_4))
 
 ## 'OPMS' method
 data(vaas_1)
-summary(x <- rev(vaas_1))
+dim(x <- rev(vaas_1)) # trivial
 stopifnot(identical(x, vaas_1))
 }
 \seealso{

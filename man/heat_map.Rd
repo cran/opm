@@ -47,27 +47,33 @@
   used.}
 
   \item{r.groups}{Determines the plotting of a colour bar
-  indicating row groups. If \code{NULL}, ignored. If a
-  function, applied to the row names of \code{object};
-  should then yield one group name for each row name. If a
-  character scalar, the name of an attribute of
-  \code{object} that contains the row group affiliations
-  (ignored if this is not found). Otherwise, coerced to
-  \sQuote{character} mode. Finally the groups are converted
-  to a factor and used for selecting from \code{r.col}.}
+  indicating row groups.
+
+  If \code{NULL}, ignored. If a function, applied to the
+  row names of \code{object}; should then yield one group
+  name for each row name. If a character scalar, the name
+  of an attribute of \code{object} that contains the row
+  group affiliations (ignored if this is not found).
+  Otherwise, coerced to \sQuote{character} mode.
+
+  Finally the groups are converted to a factor and used for
+  selecting from \code{r.col}.}
 
   \item{r.col}{Character vector of colour names used by
   \code{r.groups}.  Ignored if that is \code{NULL}.}
 
   \item{c.groups}{Determines the plotting of a colour bar
-  indicating column groups. If \code{NULL}, ignored. If a
-  function, applied to the column names of \code{object};
-  should then yield one group name for each column name. If
-  a character scalar, the name of an attribute of
-  \code{object} that contains the column group affiliations
-  (ignored if this is not found). Otherwise, coerced to
-  \sQuote{character} mode. Finally the groups are converted
-  to a factor and used for selecting from \code{c.col}.}
+  indicating column groups.
+
+  If \code{NULL}, ignored. If a function, applied to the
+  column names of \code{object}; should then yield one
+  group name for each column name. If a character scalar,
+  the name of an attribute of \code{object} that contains
+  the column group affiliations (ignored if this is not
+  found). Otherwise, coerced to \sQuote{character} mode.
+
+  Finally the groups are converted to a factor and used for
+  selecting from \code{c.col}.}
 
   \item{c.col}{Character vector of colour names used by
   \code{c.groups}.  Ignored if that is \code{NULL}.}
@@ -121,15 +127,15 @@
   object and pass the result to the matrix method.
 }
 \examples{
-data("vaas_4")
+data(vaas_4)
 
-# Matrix method
+# Matrix method (usually unnecessary, see below)
 x <- extract(vaas_4, as.labels = list("Strain"),
   as.groups = list("Species"))
 hm <- heat_map(x)
 stopifnot(identical(metadata(vaas_4, "Species"), names(hm$rowColMap)))
 
-# 'OPMS' method
+# 'OPMS' method (more convenient)
 hm.2 <- heat_map(vaas_4, as.labels = "Strain", as.groups = "Species")
 stopifnot(identical(hm[-3], hm.2[-3]))
 
@@ -166,7 +172,7 @@ stopifnot(identical(metadata(vaas_4, "Species"), names(hm$rowColMap)))
       borders[length(borders)] * cexRow * max(nchar(rownames(object))))
     else
       c(5, 5),
-    col = topo.colors(120L),
+    col = opm_opt("heatmap.colors"),
     ...,
     use.fun = c("gplots", "stats")) 
 

@@ -26,13 +26,13 @@
 data(vaas_1)
 (x <- max(vaas_1))
 (y <- max(vaas_1, 1)) # this is the negative control
-stopifnot(x > y)
+stopifnot(x > y) # i.e., some stronger reactions present
 
 # OPMS method
 data(vaas_4)
 (x <- max(vaas_4))
 (y <- max(vaas_4, 1)) # this is the negative control
-stopifnot(x > y)
+stopifnot(x > y) # i.e., some stronger reactions present
 }
 \seealso{
   base::max

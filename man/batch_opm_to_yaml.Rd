@@ -1,6 +1,6 @@
 \name{batch_opm_to_yaml}
 \alias{batch_opm_to_yaml}
-\title{Batch-convert to YAML}
+\title{Batch-convert to YAML (deprecated)}
 \usage{
   batch_opm_to_yaml(names, md.args = NULL,
     aggr.args = NULL, force.aggr = FALSE, disc.args = NULL,
@@ -8,6 +8,14 @@
     verbose = TRUE, demo = FALSE)
 }
 \arguments{
+  \item{names}{Character vector with names of files in one
+  of the formats accepted by \code{\link{read_single_opm}},
+  or names of directories containing such files, or both;
+  or convertible to such a vector. See the \code{include}
+  argument of \code{\link{read_opm}} and
+  \code{\link{explode_dir}} for how to select subsets from
+  the input files or directories.}
+
   \item{md.args}{If not \code{NULL} but a list, passed as
   arguments to \code{\link{include_metadata}} with the data
   read from each individual file as additional argument
@@ -37,19 +45,6 @@
   discretize already discretized data (which can be present
   in \acronym{YAML} input).}
 
-  \item{...}{Optional arguments passed to
-  \code{\link{batch_process}} in addition to \code{verbose}
-  and \code{demo}. Note that \code{out.ext}, \code{fun} and
-  \code{fun.args} are set automatically.}
-
-  \item{names}{Character vector with names of files in one
-  of three formats accepted by \code{\link{read_opm}}, or
-  names of directories containing such files, or both; or
-  convertible to such a vector. See the \code{include}
-  argument of \code{\link{read_opm}} and
-  \code{\link{explode_dir}} for how to select subsets from
-  the input files or directories.}
-
   \item{gen.iii}{Logical or character scalar. If
   \code{TRUE}, invoke \code{\link{gen_iii}} on each plate.
   This is automatically done with \acronym{CSV} input if
@@ -59,12 +54,17 @@
   \code{\link{gen_iii}} to set other plate types unless it
   is empty.}
 
-  \item{demo}{Logical scalar. Do not read files, but print
-  a vector with the names of the files that would be
-  (attempted to) read, and return them invisibly?}
+  \item{...}{Optional arguments passed to
+  \code{\link{batch_process}} in addition to \code{verbose}
+  and \code{demo}. Note that \code{out.ext}, \code{fun} and
+  \code{fun.args} are set automatically.}
 
   \item{verbose}{Logical scalar. Print conversion and
   success/failure information?}
+
+  \item{demo}{Logical scalar. Do not read files, but print
+  a vector with the names of the files that would be
+  (attempted to) read, and return them invisibly?}
 }
 \value{
   The function invisibly returns a matrix which describes
@@ -72,91 +72,24 @@
   \code{\link{batch_process}} for details.
 }
 \description{
-  Batch-convert from
+  \strong{Deprecated} function to batch-convert from
   OmniLog\eqn{\textsuperscript{\textregistered}}{(R)}
   \acronym{CSV} (or previous \pkg{opm} \acronym{YAML}) to
-  \pkg{opm} \acronym{YAML}. It is possible to add metadata
-  to each set of raw data and to aggregate the curves;
-  these additional data will then be included in the
-  \acronym{YAML} output file.
+  \pkg{opm} \acronym{YAML}. Use \code{\link{batch_opm}}
+  instead.
 }
 \details{
-  A \acronym{YAML} document can comprise \emph{scalars}
-  (single values of some type), \emph{sequences} (ordered
-  collections of some values, without names) and
-  \emph{mappings} (collections assigning a name to each
-  value), in a variety of combinations (e.g., mappings of
-  sequences). The output of \code{batch_opm_to_yaml} is one
-  \acronym{YAML} document \emph{per plate} which represents
-  a mapping with the following components (key-value
-  pairs): \describe{ \item{metadata}{Arbitrarily nested
-  mapping of arbitrary metadata entries. Empty if no
-  metadata have been added.} \item{csv_data}{Non-nested
-  mapping containing the
-  OmniLog\eqn{\textsuperscript{\textregistered}}{(R)} run
-  information read from the input \acronym{CSV} file
-  (character scalars) together with the measurements. The
-  most important entry is most likely the plate type.}
-  \item{measurements}{A mapping whose values are sequences
-  of floating-point numbers of the same length and in the
-  appropriate order.  The keys are \sQuote{hours}, which
-  refers to the time points, and the well coordinates,
-  ranging between \sQuote{A01} and \sQuote{H12}.}
-  \item{aggregated}{A mapping, only present if curve
-  parameters have been estimated. Its keys correspond to
-  those of \sQuote{measurements} with the exception of
-  \sQuote{hours}. The values are themselves mappings, whose
-  keys indicate the respective curve parameter and whether
-  this is the point estimate or the upper or lower
-  confidence interval. The values of these secondary
-  mappings are floating-point numbers.}
-  \item{aggr_settings}{A mapping, only present if curve
-  parameters have been estimated. Its keys are
-  \sQuote{program} and \sQuote{options}. The value of the
-  former is a character scalar. The value of the latter is
-  an arbitrarily nested mapping with arbitrary content.} }
-  Details of the contents should be obvious from the
-  documentation of the classes of the objects from which
-  the \acronym{YAML} output is generated.  In the case of
-  \acronym{YAML} input with several plates per file,
-  \code{batch_opm_to_yaml} generates \acronym{YAML} output
-  files containing a sequence of mappings as described
-  above, one per plate, to keep a 1:1 relationship between
-  input and output files.
+  This function is \strong{deprecated}; use
+  \code{\link{batch_opm}} instead.
 }
 \note{
-  \itemize{ \item Regarding the \acronym{CSV} format, see
-  the remark to \code{\link{read_single_opm}}.  \item This
-  function is for batch-converting many files; for writing
-  a single object to a \acronym{YAML} file (or string), see
-  \code{\link{to_yaml}}.  \item When inputting
-  \acronym{YAML} files generated with the help of the
-  \pkg{yaml} package (on which the \pkg{opm} implementation
-  is based) using other programming languages, a potential
-  problem is that they, and \acronym{YAML} in general, lack
-  a native representation of \code{NA} values. Such entries
-  are likely to be misunderstood as \sQuote{NA} character
-  scalars.  \item Attempting to generate \acronym{YAML}
-  from input data with a wrong character encoding might
-  cause \R to crash or hang. This problem was observed with
-  \acronym{CSV} files that were generated on a distinct
-  operating system and contained special characters such as
-  German umlauts.  It is then necessary to explicitely (and
-  correctly) specify the encoding used in these files; see
-  the \sQuote{file.encoding} option of
-  \code{\link{opm_opt}} for how to do this. }
+  This \strong{deprecated} function is for batch-converting
+  many files; for writing a single object to a
+  \acronym{YAML} file (or string), see
+  \code{\link{to_yaml}}.
 }
 \examples{
-test.files <- grep("Multiple", opm_files("testdata"), invert = TRUE,
-  value = TRUE, fixed = TRUE)
-if (length(test.files) > 0) {
-  num.files <- length(list.files(outdir <- tempdir()))
-  x <- batch_opm_to_yaml(test.files[1], outdir = outdir)
-  stopifnot(length(list.files(outdir)) == num.files + 1, is.matrix(x))
-  stopifnot(file.exists(x[, "outfile"]))
-  stopifnot(test.files[1] == x[, "infile"])
-  unlink(x[, "outfile"])
-}
+# see batch_opm()
 }
 \references{
   \url{http://www.yaml.org/}
@@ -166,8 +99,8 @@ if (length(test.files) > 0) {
 \seealso{
   utils::read.csv yaml::yaml.load_file
 
-  Other IO-functions: \code{\link{batch_collect}},
-  \code{\link{batch_process}},
+  Other io-functions: \code{\link{batch_collect}},
+  \code{\link{batch_opm}}, \code{\link{batch_process}},
   \code{\link{clean_filenames}},
   \code{\link{collect_template}},
   \code{\link{explode_dir}}, \code{\link{file_pattern}},

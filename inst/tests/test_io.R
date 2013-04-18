@@ -40,7 +40,7 @@ expect_path_equivalent <- function(actual, expected) {
 # in the path separators (Windows vs. UNIX style).
 #
 expect_path_equal <- function(actual, expected) {
-  clean <- function(x) chartr("\\", "/", x)
+  clean <- function(x) chartr("\\", '/', x)
   expect_equal(clean(actual), clean(expected))
 }
 
@@ -52,7 +52,7 @@ expect_path_equal <- function(actual, expected) {
 
 ## file_pattern
 test_that("file patterns can be constructed", {
-  default.pat <- "\\.(csv|ya?ml)(\\.(bz2|gz|lzma|xz))?$"
+  default.pat <- "\\.(csv|ya?ml|json)(\\.(bz2|gz|lzma|xz))?$"
   expect_equal(default.pat, file_pattern())
   expect_equal("\\.csv$", file_pattern(type = "csv", compressed = FALSE))
 })
@@ -60,7 +60,7 @@ test_that("file patterns can be constructed", {
 
 ##  extended_file_pattern
 test_that("extended file patterns can be constructed", {
-  default.pat <- "\\.(csv|ya?ml)(\\.(bz2|gz|lzma|xz))?$"
+  default.pat <- "\\.(csv|ya?ml|json)(\\.(bz2|gz|lzma|xz))?$"
   expect_equal(NULL, extended_file_pattern(NULL))
   expect_equal(default.pat, extended_file_pattern(list()))
   expect_error(extended_file_pattern("*.csv"))
@@ -292,6 +292,28 @@ test_that("to_metadata converts objects in the right way", {
   expect_equivalent(c("factor", "factor"), sapply(x, class))
 })
 
+## to_metadata
+test_that("to_metadata converts OPMS objects in the right way", {
+  # 1
+  got <- to_metadata(OPMS.INPUT)
+  expect_is(got, "data.frame")
+  expect_equal(nrow(got), length(OPMS.INPUT))
+  expect_true(setequal(sapply(got, class), c("character", "integer")))
+  got <- to_metadata(OPMS.INPUT, stringsAsFactors = TRUE)
+  expect_true(setequal(sapply(got, class), c("factor", "integer")))
+  # 2 (nested metadata)
+  x <- OPM.1
+  metadata(x) <- list(A = 1:3, B = 7L, C = list('c1', 1:3))
+  y <- OPM.1
+  metadata(y) <- list(A = 1:3, 11, B = -1L, D = "?")
+  x <- c(x, y)
+  rm(y)
+  expect_warning(got <- to_metadata(x))
+  expect_equal(nrow(got), length(x))
+  expect_true(setequal(names(got), LETTERS[1:4]))
+  expect_true(setequal(sapply(got, class), c("list", "integer", "character")))
+})
+
 
 ################################################################################
 #
@@ -493,11 +515,10 @@ test_that("batch conversion works", {
 # Batch IO with OPM objects
 #
 
-## batch_opm_to_yaml
+## batch_opm
 test_that("batch conversion to yaml works", {
   infiles <- INFILES.2
-  expect_warning(got <- batch_opm_to_yaml(infiles, missing.error = FALSE,
-    demo = TRUE))
+  expect_warning(got <- batch_opm(infiles, missing.error = FALSE, demo = TRUE))
   infiles <- infiles[-4L]
   expect_is(got, "matrix")
   expect_equal(got[, 1L], infiles)
@@ -506,11 +527,13 @@ test_that("batch conversion to yaml works", {
   outdir <- tempdir()
   exp.outfile <- file.path(outdir, "Example_1.yml")
   expect_false(file.exists(exp.outfile))
-  got <- batch_opm_to_yaml(infiles, outdir = tempdir(), verbose = TRUE)
+  got <- batch_opm(infiles, outdir = tempdir(), verbose = TRUE)
   expect_true(file.exists(exp.outfile))
   unlink(exp.outfile)
 })
 
+## batch_opm_to_yaml
+## UNTESTED
 
 ################################################################################
 #
@@ -562,11 +585,13 @@ test_that("files can be split", {
 ## clean_filenames
 test_that("file names can be cleaned", {
   x <- c("a b/c/x-y-z.txt", "d--z/z?-z. .csv", "/xxx/y y/?_?-abcd*+.txt",
-    "", "sapif89asdh_&#-*_asdfhu.---", "!$%&+()=?`")
+    "sapif89asdh_&#-*_asdfhu.---", "!$%&+()=?`")
   expect_that(got <- clean_filenames(x, demo = TRUE), shows_message())
   expect_equal(names(got), x[-1L])
   expect_equivalent(got, c("d--z/z-z.csv", "/xxx/y y/abcd.txt",
-    "./__EMPTY__00001__", "./sapif89asdh-asdfhu", "./__EMPTY__00002__"))
+    "sapif89asdh-asdfhu", "__EMPTY__00001__"))
+  expect_warning(got <- clean_filenames(c("", "a", "?"), demo = TRUE))
+  expect_equal(names(got), "?")
 })
 
 

@@ -30,6 +30,8 @@
   \item{color.borders}{Character vector with default color
   borders between which \code{\link{level_plot}}
   interpolates to obtain a colour palette.}
+  \item{contrast.type}{Character scalar indicating the
+  default type of contrast used by \code{\link{opm_mcp}}.}
   \item{css.file}{Character scalar. Default \acronym{CSS}
   file linked by \code{\link{phylo_data}} when producing
   \acronym{HTML} output. Ignored if empty.}
@@ -43,20 +45,28 @@
   \code{\link{collect_template}}.}
   \item{curve.param}{Character scalar. Default
   \sQuote{subset} argument of \code{\link{extract}} and the
-  plotting functions.} \item{digits}{Integer scalar. Number
-  of digits used by some functions generating output text.}
+  plotting functions.} \item{disc.param}{Character scalar.
+  Default \sQuote{subset} argument of
+  \code{\link{do_disc}}. It is usually not advisable to
+  change it.} \item{digits}{Integer scalar. Number of
+  digits used by some functions generating output text.}
   \item{file.encoding}{Character scalar. Character encoding
   in input files as assumed by \code{\link{read_opm}}.}
   \item{gen.iii}{Character scalar indicating whether
   \code{\link{read_opm}} and other IO functions based on it
   automatically convert to this plate type. If empty,
-  nothing is changed.} \item{html.attr}{Used by
-  \code{\link{phylo_data}} for automatically creating
+  nothing is changed.} \item{heatmap.colors}{Colour palette
+  used by \code{\link{heat_map}}}.  \item{html.attr}{Used
+  by \code{\link{phylo_data}} for automatically creating
   \acronym{HTML} \sQuote{title} and \sQuote{class}
-  attributes.} \item{phylo.fmt}{Character scalar indicating
-  the default output format used by
+  attributes.} \item{key.join}{Used by
+  \code{\link{metadata}} and some other functions that must
+  be in sync with it for joining metadata keys used in
+  nested queries (because the resulting object is
+  \sQuote{flat}).} \item{phylo.fmt}{Character scalar
+  indicating the default output format used by
   \code{\link{phylo_data}}.} \item{split}{Character scalar
-  indicating the default spliiting characters used by
+  indicating the default splitting characters used by
   \code{\link{separate}}.} \item{time.zone}{Character
   scalar indicating the time zone to be used when parsing
   \code{\link{setup_time}} entries. This is relevant for

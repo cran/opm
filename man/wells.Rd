@@ -58,14 +58,16 @@
 \examples{
 # 'OPM' method
 data(vaas_1)
-(x <- wells(vaas_1, full = FALSE))
-(y <- wells(vaas_1, full = TRUE))
-(z <- wells(vaas_1, full = TRUE, in.parens = FALSE))
+(x <- wells(vaas_1, full = FALSE))[1:10]
+(y <- wells(vaas_1, full = TRUE))[1:10]
+(z <- wells(vaas_1, full = TRUE, in.parens = FALSE))[1:10]
+# string lengths differ depending on selection
 stopifnot(nchar(x) < nchar(y), nchar(z) < nchar(y))
 
 # 'OPM' method
 data(vaas_4)
-(xx <- wells(vaas_4, full = FALSE))
+(xx <- wells(vaas_4, full = FALSE))[1:10]
+# wells are guaranteed to be uniform within OPMS objects
 stopifnot(identical(x, xx))
 }
 \seealso{

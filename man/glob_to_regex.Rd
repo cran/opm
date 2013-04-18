@@ -15,12 +15,18 @@
   future.
 }
 \details{
+  This is not normally directly called by an \pkg{opm} user
+  because particularly \code{\link{explode_dir}} and the IO
+  functions calling that function internally use
+  \code{glob_to_regex} anyway. But some hints when using
+  globbing patterns are given in the following.
+
   The here used globbing search patterns contain only two
   special characters, \sQuote{?} and \sQuote{*}, and are
   thus more easy to master than regular expressions.
   \sQuote{?} matches a single arbitrary character, whereas
   \sQuote{*} matches zero to an arbitrary number of
-  arbitrary characters. Some examples: \describe{
+  arbitrary characters.  Some examples: \describe{
   \item{a?c}{Matches \sQuote{abc}, \sQuote{axc}, \sQuote{a
   c} etc. but not \sQuote{abbc}, \sQuote{abbbc},
   \sQuote{ac} etc.} \item{a*c}{Matches \sQuote{abc},
@@ -31,12 +37,6 @@
   bc} etc. but not \sQuote{aabc}, \sQuote{abbc},
   \sQuote{bc} etc.} } Despite their simplicity, globbing
   patterns are often sufficient for selecting filenames.
-}
-\note{
-  This is not normally directly called by an \pkg{opm} user
-  because particularly \code{\link{explode_dir}} and the IO
-  functions calling that function internally use
-  \code{glob_to_regex} anyway.
 }
 \examples{
 x <- "*what glob2rx() can't handle because a '+' is included*"

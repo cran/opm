@@ -19,14 +19,14 @@
 \examples{
 # 'OPM' method
 data(vaas_1)
-(x <- setup_time(vaas_1))
+(x <- setup_time(vaas_1)) # single setup time (of course)
 # WARNING: It is unlikely that all OmniLog output has this setup time format
 (parsed <- strptime(x, format = "\%m/\%d/\%Y \%I:\%M:\%S \%p"))
 stopifnot(inherits(parsed, "POSIXlt"), length(parsed) == 1)
 
 # 'OPMS' method
 data(vaas_4)
-(x <- setup_time(vaas_4))
+(x <- setup_time(vaas_4)) # one setup time per plate
 (parsed <- strptime(x, format = "\%m/\%d/\%Y \%I:\%M:\%S \%p"))
 stopifnot(inherits(parsed, "POSIXlt"), length(parsed) == 4)
 }

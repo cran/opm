@@ -58,34 +58,35 @@
 \examples{
 ## Testing distinct OPM/OPMS combinations -- all should work
 data(vaas_1, vaas_4)
+# Note the number of contained plates in the generated objects.
 
 (x <- opms())
 stopifnot(is.null(x))
 
-summary((x <- opms(vaas_1)))
+dim(x <- opms(vaas_1))
 stopifnot(identical(x, vaas_1))
 
-summary((x <- opms(vaas_4, group = plate_type(vaas_4))))
+dim(x <- opms(vaas_4, group = plate_type(vaas_4)))
 stopifnot(identical(x, vaas_4))
 
-summary((x <- opms(vaas_4, group = "PM01")))
-stopifnot(is.null(x))
+dim(x <- opms(vaas_4, group = "PM01"))
+stopifnot(is.null(x)) # no such plate type => empty object!
 
-summary(x <- opms(vaas_1, vaas_1))
+dim(x <- opms(vaas_1, vaas_1))
 stopifnot(is(x, "OPMS"), length(x) == 2L)
 
-summary(x <- opms(vaas_4, vaas_1))
+dim(x <- opms(vaas_4, vaas_1))
 stopifnot(is(x, "OPMS"), length(x) == 5L)
 
-summary(x <- opms(vaas_1, vaas_4))
+dim(x <- opms(vaas_1, vaas_4))
 stopifnot(is(x, "OPMS"), length(x) == 5L)
 
-summary(x <- opms(vaas_4, vaas_4))
+dim(x <- opms(vaas_4, vaas_4))
 stopifnot(is(x, "OPMS"), length(x) == 8L)
 }
 \seealso{
-  Other combination-functions: \code{\link{c}},
-  \code{\link{plus}}
+  Other combination-functions: \code{\link{[<-}},
+  \code{\link{c}}, \code{\link{plus}}
 }
 \keyword{manip}
 

@@ -11,15 +11,19 @@
   dealt with by an \pkg{opm} user.
 }
 \details{
+  See \code{\link{map_values}} and \code{\link{map_names}}
+  for usage examples.
+}
+\note{
   \sQuote{MOA} is an acronym for \sQuote{matrix or array}.
 }
 \seealso{
   methods::Methods base::matrix base::array
 
-  Other classes: \code{\link{OPM}}, \code{\link{OPMA}},
-  \code{\link{OPMD}}, \code{\link{OPMS}},
-  \code{\link{OPMX}}, \code{\link{WMD}},
-  \code{\link{YAML_VIA_LIST}}
+  Other classes: \code{\link{FOE}}, \code{\link{OPM}},
+  \code{\link{OPMA}}, \code{\link{OPMD}},
+  \code{\link{OPMS}}, \code{\link{OPMX}},
+  \code{\link{WMD}}, \code{\link{YAML_VIA_LIST}}
 }
 \keyword{classes}
 \keyword{methods}

@@ -23,9 +23,9 @@
   as the point estimate. Either \sQuote{median},
   \sQuote{mean} or \sQuote{pe}; the first two calculate the
   point estimate from the bootstrapping replicates, the
-  third one use the real point estimate. If \code{boot} is
-  0, \code{as.pe} is reset to \sQuote{pe}, if necessary,
-  and a warning is issued.}
+  third one use the point estimate from the raw data. If
+  \code{boot} is 0, \code{as.pe} is reset to \sQuote{pe},
+  if necessary, and a warning is issued.}
 
   \item{ci.type}{Character scalar determining the way the
   confidence intervals are calculated. Either
@@ -55,13 +55,13 @@
 }
 \description{
   Quickly estimate the curve parameters AUC (area under the
-  curve) or A (maximum height). This is not normally
+  curve) or A (maximum height). This is normally not
   directly called by an \pkg{opm} user but via
   \code{\link{do_aggr}}.
 }
 \examples{
 data(vaas_1)
-summary(x <- fast_estimate(measurements(vaas_1)))
+(x <- fast_estimate(measurements(vaas_1)))[, 1:3]
 stopifnot(identical(dim(x), c(3L, 96L)))
 }
 \seealso{

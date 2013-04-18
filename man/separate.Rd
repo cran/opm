@@ -6,27 +6,28 @@
   in which character vectors (or factors) shall be
   attempted to be split, or factor.}
 
-  \item{split}{Character vector or \code{TRUE}. If a
-  character vector, used as container of the splitting
-  characters and converted to a vector containing only
-  non-duplicated single-character strings. For instance,
-  the default \code{split} argument \code{".-_"} yields
-  \code{c(".", "-", "_")}. If a vector of only empty
-  strings or \code{TRUE}, strings with substrings
-  representing fixed-width fields are assumed, and
-  splitting is done at whitespace-only columns. Beforehand,
-  equal-length strings are created by padding with spaces
-  at the right. After splitting in fixed-width mode,
-  whitespace characters are trimmed from both ends of the
-  resulting strings.}
+  \item{split}{Character vector or \code{TRUE}. \itemize{
+  \item If a character vector, used as container of the
+  splitting characters and converted to a vector containing
+  only non-duplicated single-character strings. For
+  instance, the default \code{split} argument \code{".-_"}
+  yields \code{c(".", "-", "_")}.  \item If a vector of
+  only empty strings or \code{TRUE}, strings with
+  substrings representing fixed-width fields are assumed,
+  and splitting is done at whitespace-only columns.
+  Beforehand, equal-length strings are created by padding
+  with spaces at the right. After splitting in fixed-width
+  mode, whitespace characters are trimmed from both ends of
+  the resulting strings.  }}
 
   \item{simplify}{Logical scalar indicating whether a
   resulting matrix with one column should be simplified to
-  a vector (or such a data frame to a factor).}
+  a vector (or such a data frame to a factor).  If so, at
+  least one matrix column is kept, even if
+  \code{keep.const} is \code{FALSE}.}
 
   \item{keep.const}{Logical scalar indicating whether
-  constant columns should be kept or removed. Ignored if
-  only a single column is present.}
+  constant columns should be kept or removed.}
 
   \item{coerce}{Logical scalar indicating whether factors
   should be coerced to \sQuote{character} mode and then
@@ -42,7 +43,7 @@
 
   \item{list.wise}{Logical scalar. Ignored if \code{split}
   is \code{TRUE}.  Otherwise, \code{object} is assumed to
-  contains word lists separated by \code{split}. The result
+  contain word lists separated by \code{split}. The result
   is a logical matrix in which the columns represent these
   words and the fields indicate whether or not a word was
   present in a certain item contained in \code{object}.}
@@ -71,6 +72,16 @@
   data frame method applies this to all character vectors
   (and optionally also all factors) within a data frame.
 }
+\details{
+  This function is useful if information coded in the
+  elements of a character vector is to be converted to a
+  matrix or data frame. For instance, file names created by
+  a batch export conducted by a some software are usually
+  more or less regularly structured and contain content at
+  distinct possitions. In such situations, the correct
+  splitting approach can be recognized by yielding the same
+  number of fields from each vector element.
+}
 \examples{
 # Splitting by characters
 x <- c("a-b-cc", "d-ff-g")
@@ -98,7 +109,7 @@ stopifnot(is.matrix(y), dim(y) == c(3, 3), is.logical(y))
 x <- data.frame(a = 1:2, b = c("a-b-cc", "a-ff-g"))
 (y <- separate(x, coerce = FALSE))
 stopifnot(identical(x, y))
-(y <- separate(x))
+(y <- separate(x)) # only character/factor columns are split
 stopifnot(is.data.frame(y), dim(y) == c(2, 4))
 stopifnot(sapply(y, class) == c("integer", "factor", "factor", "factor"))
 (y <- separate(x, keep.const = FALSE))
@@ -130,6 +141,6 @@ stopifnot(sapply(y, class) == c("integer", "factor", "factor"))
     simplify = FALSE, keep.const = TRUE, ...) 
 
   \S4method{separate}{data.frame}(object, split = opm_opt("split"),
-    keep.const = TRUE, coerce = TRUE, name.sep = ".", ...) 
+    simplify = FALSE, keep.const = TRUE, coerce = TRUE, name.sep = ".", ...) 
 
 }

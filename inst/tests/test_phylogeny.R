@@ -43,19 +43,6 @@ test_that("cleaning names correctly converts string starts and ends", {
 })
 
 
-
-## list2html
-test_that("HTML can be recursively generated", {
-  x <- list(a = 63, c = list(b = letters, structure(LETTERS, .Names = letters)))
-  got <- list2html(x)
-  expect_is(got, "character")
-  expect_equal(length(got), 1L)
-  got <- strsplit(got, "\\s*<[^>]+>\\s*", perl = TRUE)[[1]]
-  expect_true(setequal(got[nzchar(got)],
-    c(63, LETTERS, paste(letters, collapse = " "))))
-})
-
-
 ## format
 ## UNTESTED
 
@@ -180,14 +167,15 @@ test_that("HTML tables can be generated after joining", {
   y <- phylo_data(x, "html")
 
   yy <- phylo_data(x, "html", join = TRUE)
-  expect_equal(y, yy)
+  expect_equal(length(y), length(yy))
+  expect_true(length(setdiff(yy, y)) %in% 0L:1L) # times could differ
   yy <- phylo_data(x, "html", join = FALSE)
-  expect_equal(y, yy)
+  expect_equal(length(y), length(yy))
+  expect_true(length(setdiff(yy, y)) %in% 0L:1L) # times could differ
 
   yy <- phylo_data(x, "html", join = SIMPLE.GROUPS)
   expect_equal(length(y), length(yy))
   expect_true(length(setdiff(yy, y)) %in% 2L:3L) # times could differ
-  ##cat(yy, sep = "\n")
 
 })
 
@@ -199,7 +187,6 @@ test_that("floating-point HTML tables can be created", {
   yy <- phylo_data(x, "html", join = SIMPLE.GROUPS)
   expect_equal(length(y), length(yy))
   expect_true(length(setdiff(yy, y)) %in% 2L:3L) # times could differ
-  ##cat(yy, sep = "\n")
   expect_false(any(grepl("&plusmn;", y, fixed = TRUE)))
   expect_true(any(grepl("&plusmn;", yy, fixed = TRUE)))
 })

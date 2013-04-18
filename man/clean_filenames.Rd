@@ -38,24 +38,29 @@
   directory parts within the file names, if any, are not
   affected.
 }
+\details{
+  This function might be useful for manageing
+  OmniLog\eqn{\textsuperscript{\textregistered}}{(R)} CSV
+  files, which can contain a lot of special characters.
+}
 \examples{
 # Check the example files: they should be ok
 (x <- clean_filenames(opm_files("testdata"), demo = TRUE))
 stopifnot(length(x) == 0)
 
 # Example with temporary files
-(x <- tempfile(pattern = "cb& ahi+ si--"))
+(x <- tempfile(pattern = "cb& ahi+ si--")) # bad file name
 write("test", x)
 stopifnot(file.exists(x))
-(y <- clean_filenames(x))
+(y <- clean_filenames(x)) # file renamed
 stopifnot(!file.exists(x), file.exists(y))
 unlink(y) # tidy up
 }
 \seealso{
   base::file.rename
 
-  Other IO-functions: \code{\link{batch_collect}},
-  \code{\link{batch_opm_to_yaml}},
+  Other io-functions: \code{\link{batch_collect}},
+  \code{\link{batch_opm}}, \code{\link{batch_opm_to_yaml}},
   \code{\link{batch_process}},
   \code{\link{collect_template}},
   \code{\link{explode_dir}}, \code{\link{file_pattern}},

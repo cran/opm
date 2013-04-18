@@ -3,6 +3,83 @@
 ################################################################################
 
 
+2013-04-XX (the 9th release on CRAN)
+
+- fixed bug in helper xy_plot() that caused a missing negative-control well to
+  not only yield a warning but also an uninformative plot
+- fixed bug in aggregated() (wrong object returned)
+- fixed bug in argument treatment of do_disc() (best-cutoff discretization now
+  possible with 'groups' set to FALSE)
+
+- batch_opm_to_yaml() is deprecated, use batch_opm() instead
+- extract() function for data frames changes its behaviour (see below)
+- the '-a' argument of the 'run_opm.R' changes its behaviour (see below), and
+  '-l' is removed, whereas '-r' gets more options
+- additional dependencies on packages parallel, splines and mgcv
+- grofit >= 1.1 is now necessary because it is imported (its older versions do
+  not contain a namespace)
+- it is now an error if do_aggr() and batch_opm()/batch_opm_to_yaml() are run
+  with > 1 core but this is impossible (as, e.g., under Windows)
+- a newer version of R is required
+
+- do_aggr() has a new option for the 'method' argument ('splines', which is 
+  recommended) and an according new helper function set_spline_options();
+  the 'run_opm.R' script is expanded accordingly
+- novel opm_mcp() function for multiple comparisons of means tests directly
+  applicable to OPMS objects, and according 'contrast.type' entry of opm_opt()
+- novel extract() method for data frames (for calculating means and confidence
+  intervals); the old one has been integrated into extract_columns(), which gets
+  new arguments accordingly
+- listing() methods get a 'html' argument and return S3 objects with adapted 
+  print() and phylo_data() methods, i.e. it is possible to generate
+  HTML-formatted text
+- do_disc() gets a 'subset' argument (for setting the curve parameter),
+  disc_settings() is accordingly expanded, and opm_opt() gets a 'disc.param'
+  entry
+
+- indexed assignment '[<-'() introduced for OPMS objects
+- in `[`(), wells(), measurements() and well_to_substrate(), wells can now be 
+  indexed using formulas, thus allowing for sequences of well coordinates and 
+  less code
+- the infix operators now work with query formulas, and the two arguments can
+  be swapped; likewise, subset() works with query formulas
+- novel expression methods for map_metadata() and `metadata<-`()
+- to_metadata() gets methods for WMD and OPMS objects
+- novel `metadata<-`() methods with OPMS or WMD objects as 'value' arguments
+- novel map_metadata() method for missing 'mapping' arguments that conducts
+  metadata cleaning 
+
+- the character method of plate_type() gets all arguments of the OPMX method
+- batch_opm(), the former batch_opm_to_yaml(), gets 'output' and other novel
+  arguments
+- ci_plot() gets a 'split.at' argument
+- opm_opt() gets new entries 'hm.colors' and 'key.join', and better error
+  messages
+- param_names() gets a 'what' argument
+- file_pattern() now deals with input file names if 'literally' is TRUE and
+  considers the 'json' file extension
+- the 'what' argument of opm_files() gets more options
+- safe_labels() gets a 'comment' argument
+- substrate_info() gets new 'greek' and 'html' arguments
+- opms() now normalizes the 'group' argument (if a character string)
+- to_yaml() can produce JSON, too
+
+- improved print() methods for OPM(S)_Summary objects
+- the data-frame method of separate() now deals with columns with only empty
+  strings
+- warning messages from radial_plot() occurring as of R 3.0.0 are now silenced
+
+- added support (substrate name and other information) for plates PM21 to PM25
+  and plate PM-M TOX01, and adapted plate_type() accordingly
+
+- much expanded and refreshed vignette and help pages
+- documentation of the YAML/JSON format was improved
+- new example-code directory
+
+
+################################################################################
+
+
 2013-01-22 (the 8th release on CRAN)
 
 - flatten() now correctly uses its 'strict' argument

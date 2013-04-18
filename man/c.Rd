@@ -23,24 +23,24 @@
 data(vaas_1, vaas_4)
 
 # Adding nothing
-summary(x <- c(vaas_1))
+dim(x <- c(vaas_1))
 stopifnot(identical(x, vaas_1))
-summary(x <- c(vaas_4))
+dim(x <- c(vaas_4))
 stopifnot(identical(x, vaas_4))
 
 # Not particularly useful: adding identical plates!
-summary(x <- c(vaas_1, vaas_1)) # yields a two-plate OPMS object
+dim(x <- c(vaas_1, vaas_1)) # yields a two-plate OPMS object
 stopifnot(identical(dim(x), c(2L, dim(vaas_1))))
 
 # Also not particularly useful: adding partially identical plates!
-summary(x <- c(vaas_4, vaas_1))
+dim(x <- c(vaas_4, vaas_1))
 stopifnot(identical(dim(x), c(5L, dim(vaas_1))))
 }
 \seealso{
   base::c
 
-  Other combination-functions: \code{\link{opms}},
-  \code{\link{plus}}
+  Other combination-functions: \code{\link{[<-}},
+  \code{\link{opms}}, \code{\link{plus}}
 }
 \keyword{manip}
 

@@ -24,20 +24,20 @@
 \examples{
 ## 'OPMS' method
 data(vaas_4)
-(x <- unique(vaas_4))
+dim(x <- unique(vaas_4))
 stopifnot(identical(x, vaas_4))
-(x <- unique(c(vaas_4, vaas_4)))
+dim(x <- unique(c(vaas_4, vaas_4)))
 stopifnot(identical(x, vaas_4))
-(x <- unique(vaas_4, what = "Species"))
+dim(x <- unique(vaas_4, what = "Species")) # species are not unique
 stopifnot(dim(x)[1L] < dim(vaas_4)[1L])
-(x <- unique(vaas_4, what = list("Species", "Strain")))
-stopifnot(identical(x, vaas_4))
+dim(x <- unique(vaas_4, what = list("Species", "Strain")))
+stopifnot(identical(x, vaas_4)) # organisms are unique
 
 ## 'OPM' method
 data(vaas_1)
-(x <- unique(vaas_1))
+dim(x <- unique(vaas_1)) # trivial
 stopifnot(identical(x, vaas_1))
-(x <- unique(vaas_1, what = list("Species", "Strain")))
+dim(x <- unique(vaas_1, what = list("Species", "Strain")))
 stopifnot(identical(x, vaas_1))
 }
 \seealso{

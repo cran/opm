@@ -2,17 +2,27 @@
 \alias{ci_plot}
 \title{Plot point estimates with CIs}
 \arguments{
-  \item{object}{Dataframe or \code{\link{OPMS}} object. If
-  an \code{\link{OPMS}} object, it is in most cases
-  necessary to restrict the plates to at most about one
-  dozen wells. See \code{\link{[}} for how to achieve this.
-  The data frame should be as exported by
-  \code{\link{extract}} with \code{ci} set to \code{TRUE}.
-  There must be a column named \sQuote{Parameter} followed
-  by columns with only numeric values. Columns before the
-  \sQuote{Parameter} column, if any, are used for grouping.
-  The rows must entirely comprise triplets representing (i)
-  the point estimate, (ii) the lower and (iii) the upper
+  \item{object}{\code{\link{OPMS}} object or (seldomly) a
+  data frame. If an \code{\link{OPMS}} object, it is in
+  most cases necessary to restrict the plates to at most
+  about one dozen wells. See \code{\link{[}} for how to
+  achieve this.
+
+  The data frame method is not normally directly called by
+  an \pkg{opm} user but via the \code{\link{OPMS}} method,
+  unless it is used after \code{\link{extract}} was applied
+  to a data frame for calculating point estimates and
+  confidence intervals from groups of oberservations. See
+  there for details.
+
+  Otherwise, the data frame should be as exported bythe
+  \code{\link{OPMS}} method of \code{\link{extract}} with
+  \code{ci} set to \code{TRUE}. There must be a column
+  named \code{\link{param_names}("split.at")} followed by
+  columns with only numeric values. Columns before that
+  split column, if any, are used for grouping. The rows
+  must entirely comprise triplets representing (i) the
+  point estimate, (ii) the lower and (iii) the upper
   confidence interval.}
 
   \item{as.labels}{List. Metadata to be joined and used to
@@ -63,27 +73,28 @@
   \item{...}{Optional other arguments passed to
   \code{legend}, or arguments passed from the
   \code{\link{OPMS}} method to the data frame method.}
+
+  \item{split.at}{Character vector. See
+  \code{\link{extract}}.}
 }
 \value{
   Character vector describing the plot's legend, returned
   invisibly.
 }
 \description{
-  Draw point estimates with their confidence intervals. The
-  data frame method is not normally directly called by an
-  \pkg{opm} user but via the \code{\link{OPMS}} method.
-  This one is used for comparing aggregated values together
-  with their confidence intervals between plates. This
-  method can in most cases \strong{not} be applied to
-  entire plates but to selected wells only.
+  Draw point estimates with their confidence intervals.
+  Used for comparing aggregated values together with their
+  confidence intervals between plates. This method can in
+  most cases \strong{not} be applied to entire plates but
+  to selected wells only.
 }
-\note{
-  \itemize{ \item The default placement of the legend is
-  currently not necessarily very useful.  \item When
-  plotting entire PM plates, the \sQuote{mar} parameter of
-  \code{par} most likely would need to be set to a lower
-  value, but it is recommended to plot only subsets of
-  plates, i.e. selected wells.  }
+\details{
+  The default placement of the legend is currently not
+  necessarily very useful. When plotting entire PM plates,
+  the \sQuote{mar} parameter of \code{par} most likely
+  would need to be set to a lower value, but it is
+  recommended to plot only subsets of plates, i.e. selected
+  wells.
 }
 \examples{
 data(vaas_4)
@@ -94,6 +105,8 @@ x <- ci_plot(vaas_4[, , 1:3], as.labels = list("Species", "Strain"),
 x
 stopifnot(is.character(x), identical(length(x), 4L))
 # ... and that the return value contains the legend (even if it is not drawn)
+
+## See also the examples for the data-frame method of extract().
 }
 \references{
   Vaas LAI, Sikorski J, Michael V, Goeker M, Klenk H-P.
@@ -119,7 +132,7 @@ stopifnot(is.character(x), identical(length(x), 4L))
   \S4method{ci_plot}{data.frame}(object, rowname.sep = " ",
     prop.offset = 0.04, align = "center", col = "blue", na.action = "warn",
     draw.legend = TRUE, legend.field = c(1, 1), x = "topleft", xpd = TRUE,
-    vline = 0, ...) 
+    vline = 0, split.at = param_names("split.at"), ...) 
 
   \S4method{ci_plot}{OPMS}(object, as.labels,
     subset = opm_opt("curve.param"), ...) 

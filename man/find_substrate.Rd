@@ -28,7 +28,8 @@
   methods.}
 }
 \value{
-  List of character vectors (empty if nothing was found),
+  An S3 object of class \sQuote{substrate_match}; basically
+  a list of character vectors (empty if nothing was found),
   with duplicates removed and the rest sorted. The names of
   the list correspond to \code{names}.
 }
@@ -44,22 +45,23 @@
 }
 \examples{
 # Note that 'exact' search matches parts of the names, whereas globbing
-# matches entire strings if there are no wildcards
-(x <- find_substrate("a-D-Glucose", search = "exact"))
-(y <- find_substrate("a-D-Glucose", search = "glob"))
+# matches entire strings if there are no wildcards (which wouldn't make much
+# sense)
+(x <- find_substrate("D-Glucose", search = "exact"))
+(y <- find_substrate("D-Glucose", search = "glob"))
 stopifnot(length(x[[1]]) > length(y[[1]]))
 
 # 'pmatch' matching matches partially at the beginning and returns at most
 # one match (the first one)
-(y <- find_substrate("a-D-Glucose", search = "pmatch"))
+(y <- find_substrate("D-Glucose", search = "pmatch"))
 stopifnot(length(x[[1]]) > length(y[[1]]))
 
 # Now allowing mismatches
-(z <- find_substrate("a-D-Glucose", search = "approx"))
+(z <- find_substrate("D-Glucose", search = "approx"))
 stopifnot(length(z[[1]]) > length(x[[1]]))
 
 # Factor method
-(zz <- find_substrate(as.factor("a-D-Glucose"), search = "approx"))
+(zz <- find_substrate(as.factor("D-Glucose"), search = "approx"))
 stopifnot(identical(z, zz))
 }
 \seealso{

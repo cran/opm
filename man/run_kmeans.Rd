@@ -10,6 +10,9 @@
   \sQuote{Ckmeans.1d.dp} is called.  Otherwise passed to
   \sQuote{kmeans} from the \pkg{stats} package.}
 
+  \item{cores}{Numeric scalar indicating the number of
+  cores to use.}
+
   \item{...}{List of optional arguments passed to
   \sQuote{kmeans} from the \pkg{stats} package.}
 }
@@ -51,9 +54,10 @@ stopifnot(sapply(x.km, class) == "kmeans", names(x.km) == 1:10)
 \alias{run_kmeans,numeric,numeric-method}
 \alias{run_kmeans,matrix,numeric-method}
 \usage{
-  \S4method{run_kmeans}{numeric,numeric}(object, k) 
+  \S4method{run_kmeans}{numeric,numeric}(object, k,
+    cores = 1L) 
 
   \S4method{run_kmeans}{matrix,numeric}(object, k,
-    nstart = 10L, ...) 
+    cores = 1L, nstart = 10L, ...) 
 
 }

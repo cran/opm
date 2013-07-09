@@ -27,7 +27,7 @@ NULL
 #'
 NULL
 
-#' @importFrom parallel mclapply
+#' @importFrom parallel mclapply mcmapply
 #'
 NULL
 

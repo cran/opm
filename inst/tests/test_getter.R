@@ -165,6 +165,34 @@ test_that("information on the contained wells can be received", {
 })
 
 
+## wells
+test_that("substrate names can be translated", {
+
+  plate.1 <- "PM01"
+  exp.1 <- c(A01 = "Negative Control", A02 = "L-Arabinose")
+  got <- wells(c("A01", "A02"), plate = plate.1, full = TRUE)
+
+  plates.2 <- c(plate.1, "PM02")
+  exp.2 <- c(A01 = "Negative Control", A02 = "Chondroitin Sulfate C")
+  exp.2 <- cbind(exp.1, exp.2)
+  colnames(exp.2) <- plates.2
+  got <- wells(c("A01", "A02"), plate = plates.2, full = TRUE)
+  expect_equal(got, exp.2)
+
+  # Partial matching is allowed
+  plates.2 <- c(plate.1, "PM02")
+  exp.2 <- c(A01 = "Negative Control", A02 = "Chondroitin Sulfate C")
+  exp.2 <- cbind(exp.1, exp.2)
+  colnames(exp.2) <- c(plates.2[1L], "PM02")
+  got <- wells(c("A01", "A02"), plate = plates.2, full = TRUE)
+  expect_equal(got, exp.2)
+
+})
+
+
+################################################################################
+
+
 ## csv_data
 test_that("CSV data can be accessed", {
   expect_equal(length(csv_data(OPM.1)), 10L)
@@ -217,7 +245,7 @@ test_that("plate names can be normalized", {
   standard.names <- names(PLATE_MAP)
   expect_equal(plate_type(standard.names), standard.names)
   appended <- paste(standard.names, letters)
-  cat(appended[plate_type(appended) != standard.names])
+  #cat(appended[plate_type(appended) != standard.names])
   expect_equal(plate_type(appended), standard.names)
   expect_equal(names(PLATE_MAP), colnames(WELL_MAP))
 })
@@ -379,10 +407,6 @@ test_that("the OPMS metadata can be queried", {
 
 
 ################################################################################
-
-
-## select
-## UNTESTED
 
 
 ## subset

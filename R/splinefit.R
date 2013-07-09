@@ -71,20 +71,18 @@ fit_spline <- function (y, x = "Hour", data, options = set_spline_options(),
   ## set up model formulae
   if (type == "p.spline" || type == "tp.spline") {
       if (is.null(options$s.par)) {
-          fm <- paste(y, " ~ s(", x, ", bs = '", class, "', k = ", knots, ")",
-                      sep = "")
+          fm <- paste0(y, " ~ s(", x, ", bs = '", class, "', k = ", knots, ")")
       } else {
-          fm <- paste(y, " ~ s(", x, ", bs = '", class, "', k = ", knots, ",",
-                      options$s.par, ")", sep = "")
+          fm <- paste0(y, " ~ s(", x, ", bs = '", class, "', k = ", knots, ",",
+                      options$s.par, ")")
       }
       fm <- as.formula(fm)
   } else {
       ## REMOVED ", ..." after knots.
       ## Reintroduce possibility to "..." via options
-      fm <- paste("list(x = data$", x, ", y = data$", y,
+      fm <- paste0("list(x = data$", x, ", y = data$", y,
                   ", penalty = ", options$gamma, ", nknots = ", knots,
-                  ", w = weights)",
-                  sep = "")
+                  ", w = weights)")
   }
   if (type == "p.spline" || type == "tp.spline") {
       ## REMOVED ... from gam.
@@ -97,7 +95,7 @@ fit_spline <- function (y, x = "Hour", data, options = set_spline_options(),
       mod$call <- call
       mod$names <- c(x, y)
   }
-  class(mod) <- c("opm_model", paste(class, "_model", sep = ""), class(mod))
+  class(mod) <- c("opm_model", paste0(class, "_model"), class(mod))
   return(mod)
 }
 

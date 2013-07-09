@@ -18,7 +18,7 @@ is_ci_plottable <- function(x) {
     !(length(x) %% length(y)) && all(x == y)
   }
   data_columns_ok <- function(x) {
-    rest <- seq.int(nrow(x)) %% 3L
+    rest <- seq_len(nrow(x)) %% 3L
     all(x[rest == 1L, , drop = FALSE] >= x[rest == 2L, , drop = FALSE]) &&
       all(x[rest == 1L, , drop = FALSE] <= x[rest == 0L, , drop = FALSE])
   }
@@ -72,10 +72,10 @@ test_that("character-matrix objects can be merged", {
   got <- merge(data, FALSE)
   expect_equal(got, data)
 
-  got <- merge(data, seq.int(nrow(data)))
+  got <- merge(data, seq_len(nrow(data)))
   expect_equal(got, data)
 
-  expect_error(got <- merge(data, seq.int(nrow(data))[-1L]))
+  expect_error(got <- merge(data, seq_len(nrow(data))[-1L]))
 
   got <- merge(data, c(1, 2, 1, 2, 1))
   expect_equal(dim(got), c(2L, ncol(data)))
@@ -304,6 +304,53 @@ test_that("extract_columns() gets metadata right if a formula is used", {
 })
 
 
+## extract_columns
+test_that("extract_columns() works if a formula is used with joining", {
+
+  # 1
+  got <- extract_columns(NESTED.MD, ~ J(A$C) + K)
+  expect_equal(names(got), c("A.C", "K"))
+
+  # 2
+  got <- extract_columns(NESTED.MD, ~ A$C + J(K))
+  expect_equal(names(got), c("A.C", "K"))
+
+  # 3
+  got <- extract_columns(NESTED.MD, ~ J(A$C, K))
+  expect_equal(names(got), c("A.C", "K", "A.C.K"))
+
+  # 3
+  got <- extract_columns(NESTED.MD, ~ J(A$C + K))
+  expect_equal(names(got), c("A.C", "K", "A.C.K"))
+
+  # 4
+  old <- opm_opt(key.join = "~", comb.key.join = "!")
+  on.exit(opm_opt(old))
+  got <- extract_columns(NESTED.MD, ~ J(A$C + K))
+  expect_equal(names(got), c("A~C", "K", "A~C!K"))
+
+})
+
+
+## extract_columns
+test_that("extract_columns can be applied to a data frame", {
+  x <- data.frame(A = letters[1:5], B = 1:5)
+  got <- extract_columns(x, list(C = c("A", "B")), direct = TRUE)
+  expect_is(got, "data.frame")
+  expect_equal(dim(got), c(5, 3))
+  expect_equal(names(got), c("A", "B", "C"))
+  expect_equal(rownames(got), rownames(x))
+  expect_is(got$C, "factor")
+  got <- extract_columns(x, list(C = c("A", "B")), direct = TRUE,
+    as.labels = "A")
+  expect_is(got, "data.frame")
+  expect_equal(dim(got), c(5, 3))
+  expect_equal(names(got), c("A", "B", "C"))
+  expect_equal(rownames(got), as.character(got$A))
+  expect_is(got$C, "factor")
+})
+
+
 ## sort
 ## UNTESTED
 
@@ -345,6 +392,16 @@ test_that("aggregated parameters can be extracted as matrix", {
   expect_equal(colnames(mat), wells(THIN.AGG, full = TRUE))
   expect_equal(as.factor(gn), attr(mat, "row.groups"))
   expect_equal(rn, rownames(mat))
+
+  mat2 <- extract(THIN.AGG, as.labels = list("organism", "run"),
+    subset = "lambda", as.groups = TRUE, sep = "||")
+  expect_equivalent(mat, mat2)
+  expect_equal(as.factor(rep(1L, length(THIN.AGG))), attr(mat2, "row.groups"))
+
+  mat2 <- extract(THIN.AGG, as.labels = list("organism", "run"),
+    subset = "lambda", as.groups = FALSE, sep = "||")
+  expect_equivalent(mat, mat2)
+  expect_equal(as.factor(seq(length(THIN.AGG))), attr(mat2, "row.groups"))
 
 })
 
@@ -435,9 +492,18 @@ test_that("aggregated parameters can be extracted as dataframe with CIs", {
     c(T, F, F, T, F, F))
   expect_true(all(grepl("lambda", as.character(mat[, 3L]), fixed = TRUE)))
 
+  mat2 <- extract(THIN.AGG, as.labels = ~ organism + run,
+    subset = "lambda", dataframe = TRUE, sep = "***", ci = TRUE)
+  expect_equal(mat, mat2)
+
+  mat2 <- extract(THIN.AGG, as.labels = ~ J(organism + run),
+    subset = "lambda", dataframe = TRUE, sep = "***", ci = TRUE)
+  expect_equal(dim(mat2), c(6L, 100L))
+  expect_equal(mat, mat2[, -match("organism.run", colnames(mat2))])
+
   mat <- extract(THIN.AGG, as.labels = list("organism", "run"),
     subset = "lambda", dataframe = TRUE, sep = "***", ci = TRUE,
-    as.groups = list("run", "organism"))
+    as.groups = ~ run - organism)
   expect_is(mat, "data.frame")
   expect_equal(dim(mat), c(6L, 101L))
   expect_equal(colnames(mat), c("organism", "run",
@@ -453,6 +519,12 @@ test_that("aggregated parameters can be extracted as dataframe with CIs", {
   expect_true(all(grepl("lambda", as.character(mat[, 3L]), fixed = TRUE)))
   expect_equal(mat[, 1L], mat[, 101L])
   expect_equal(mat[, 2L], mat[, 100L])
+
+  mat2 <- extract(THIN.AGG, as.labels = list("organism", "run"),
+    subset = "lambda", dataframe = TRUE, sep = "***", ci = TRUE,
+    as.groups = ~ J(run - organism))
+  expect_equal(dim(mat2), c(6L, 102L))
+  expect_equivalent(mat, mat2[, -102L]) # TODO: unclear why different
 
 })
 
@@ -564,6 +636,13 @@ test_that("extract() deals with duplicate column names", {
   expect_equal(got, c("1: Bacillus simplex 3 Bacillus simplex",
     "2: Bacillus simplex 4 Bacillus simplex")) # duplication of names
 })
+
+
+################################################################################
+
+
+## as.data.frame
+## UNTESTED
 
 
 ################################################################################

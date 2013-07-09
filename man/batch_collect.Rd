@@ -2,8 +2,8 @@
 \alias{batch_collect}
 \title{Collect information from files}
 \usage{
-  batch_collect(names, fun, fun.args = list(), ...,
-    use.names = TRUE, simplify = FALSE, demo = FALSE)
+  batch_collect(names, fun, fun.args = list(), proc = 1L,
+    ..., use.names = TRUE, simplify = FALSE, demo = FALSE)
 }
 \arguments{
   \item{names}{Character vector with file or directory
@@ -18,6 +18,11 @@
 
   \item{...}{Optional further arguments passed to
   \code{\link{explode_dir}}.}
+
+  \item{proc}{Integer scalar. The number of processes to
+  spawn. Cannot be set to more than 1 core if running under
+  Windows. See the \code{cores} argument of
+  \code{\link{do_aggr}} for details.}
 
   \item{simplify}{Logical scalar. Should the resulting list
   be simplified to a vector or matrix if possible?}

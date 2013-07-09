@@ -2,6 +2,38 @@
 citEntry(
   entry = "Article",
   title = paste(
+    "opm: An R package for analysing OmniLog\\textregistered Phenotype",
+    "MicroArray Data"
+  ),
+  author = personList(
+    as.person("Lea A. I. Vaas"), 
+    as.person("Johannes Sikorski"),
+    as.person("Benjamin Hofner"),
+    as.person("Nora Buddruhs"),
+    as.person("Anne Fiebig"),
+    as.person("Hans-Peter Klenk"),
+    as.person("Markus G\\\"{o}ker")
+  ),
+  journal = "Bioinformatics",
+  year = "2013",
+  note = "in press",
+  doi = "10.1093/bioinformatics/btt291",
+  url = paste0("http://bioinformatics.oxfordjournals.org/content/early/2013/",
+    "06/05/bioinformatics.btt291.full.pdf+html"),
+  header = "To cite package opm in publications use:",
+  textVersion = paste(
+    "Lea A.I. Vaas, J. Sikorski, B. Hofner, N. Buddruhs, A. Fiebig,",
+    "H.-P. Klenk and M. G\"oker.",
+    "opm: An R package for analysing OmniLog(R) Phenotype",
+    "MicroArray Data. Bioinformatics, in press",
+    "(doi:10.1093/bioinformatics/btt291)."
+  )
+)
+
+
+citEntry(
+  entry = "Article",
+  title = paste(
     "Visualization and curve-parameter estimation strategies for efficient",
     "exploration of phenotype microarray kinetics"
   ),
@@ -19,12 +51,16 @@ citEntry(
   pages = "e34846",
   doi = "10.1371/journal.pone.0034846",
   url = "http://dx.plos.org/10.1371/journal.pone.0034846",
-  header = "To cite package opm in publications use:",
+  header = paste(
+    "To cite the main parameter comparison and visualization functionality",
+    "please use:"
+  ),
   textVersion = paste(
     "Lea A.I. Vaas, J. Sikorski, V. Michael, M. G\"oker and H.-P. Klenk.",
     "Visualization and curve-parameter estimation strategies for efficient",
     "exploration of phenotype microarray kinetics.",
-    "PLoS ONE 7(4): e34846, 2012."
+    "PLoS ONE 7(4): e34846, 2012 (doi:10.1371/journal.pone.0034846)."
   )
 )
+
 

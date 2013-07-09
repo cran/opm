@@ -1,12 +1,20 @@
 \name{reduce_to_mode}
 \alias{reduce_to_mode}
+\alias{reduce_to_mode.default}
+\alias{reduce_to_mode.matrix}
 \title{Reduce an object}
 \usage{
-  reduce_to_mode(x, cutoff, use.na = TRUE)
+  reduce_to_mode(x, cutoff, use.na)
+
+  \method{reduce_to_mode}{default} (x, cutoff,
+    use.na = TRUE)
+
+  \method{reduce_to_mode}{matrix} (x, cutoff,
+    use.na = TRUE)
 }
 \arguments{
   \item{x}{An \R object to which \code{table} can be
-  applied.}
+  applied. The matrix method reduces the columns.}
 
   \item{cutoff}{Numeric scalar. Relative frequency below
   which elements are discarded.}

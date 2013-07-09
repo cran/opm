@@ -1,6 +1,49 @@
+opm 0.10-0
+----------
+
+Bug fixes:
+
+- fixed two bugs in batch_opm()
+
+- fixed bug in reading of old-style CSV with certain headers
+
+- fixed bug causing YAML maps to be order-dependent in some cases
+
+- to_kmeans() is now compatible with R > 3.0.1
+
+- NA values in YAML are now compatible with yaml >= 2.1.7
+
+- method dispatch of `metadata<-`() is now unambiguous
+
+Significant user-visible changes:
+
+- removed deprecated select() function
+
+- well_to_substrate() is now deprecated
+
+- changes in the arguments treatment of listing()
+
+New features:
+
+- novel as.data.frame() methods, novel substrate_info() and find_position()
+  methods for OPM and OPMS classes
+
+- novel arguments for extract(), extract_columns(), opm_mcp(), do_disc(),
+  batch_collect(), batch_opm(), run_kmeans(), substrate_info(), to_yaml() and
+  listing()
+
+- many additions and some corrections in the stored substrate information, as
+  well as nicer and richer display of find_substrate() and substrate_info()
+  results
+
+- automated cleaning of character-string well names used for indexing
+
+- more opm_opt() entries
+
+- more more command-line options for 'run_opm.R'
 
 
-opm 0.9-0
+opm 0.9-1
 ---------
 
 Bug fixes:

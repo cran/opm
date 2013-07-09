@@ -151,30 +151,31 @@ setMethod("repair_oth", "matrix", function(x) {
 #'
 read_old_opm <- function(filename) {
 
-  fold_comments <- function(x) {
-    dlen <- length(data <- x[c(FALSE, TRUE)])
-    llen <- length(labels <- x[c(TRUE, FALSE)])
-    if (dlen != llen)
-      warning("odd number of comment fields -- you might experience problems")
-    pos <- seq.int(1L, min(dlen, llen))
-    structure(.Data = data[pos], names = labels[pos])
+  strip <- function(x) sub("\\s+$", "", sub("^\\s+", "", x, perl = TRUE),
+    perl = TRUE)
+
+  prepare_comments <- function(x, filename) {
+    ok <- nzchar(n <- strip(vapply(x, `[[`, "", 1L)))
+    n[n == "Set up Time"] <- CSV_NAMES[["SETUP"]]
+    x <- strip(vapply(lapply(x, `[`, -1L), paste0, "", collapse = ","))
+    structure(c(filename, x[ok]), names = c(CSV_NAMES[["FILE"]], n[ok]))
   }
 
-  # Read data and determine HOUR field in proper CSV header
-  data <- scan(file = filename, sep = ",", what = "character", quiet = TRUE,
-    comment.char = "#", strip.white = TRUE,
-    fileEncoding = opm_opt("file.encoding"))
-  pos <- which(data == HOUR)
+  con <- file(description = filename, encoding = opm_opt("file.encoding"))
+  data <- readLines(con = con, warn = FALSE)
+  close(con)
+  data <- strsplit(data, ",", fixed = TRUE)
+  data <- data[vapply(data, length, 0L) > 0L]
+
+  # determine position of first field of data header, then split lines into
+  # comments and data fields accordingly
+  pos <- which(strip(vapply(data, `[[`, "", 1L)) == HOUR)
   if (length(pos) != 1L)
     stop("uninterpretable header (maybe because there is not 1 plate per file)")
   pos <- seq_len(pos - 1L)
+  comments <- prepare_comments(data[pos], filename)
 
-  # Process comments
-  comments <- fold_comments(c(CSV_NAMES[["FILE"]], filename, data[pos]))
-  names(comments)[names(comments) == "Set up Time"] <- CSV_NAMES[["SETUP"]]
-
-  # Process data
-  data <- data[-pos]
+  data <- strip(unlist(data[-pos]))
   data <- data[nzchar(data)]
   ncol <- 97L
   if (length(data) %% ncol != 0L)
@@ -182,7 +183,7 @@ read_old_opm <- function(filename) {
   data <- matrix(as.numeric(data[-seq(ncol)]), ncol = ncol, byrow = TRUE,
     dimnames = list(NULL, data[seq(ncol)]))
 
-  # Repair OTH
+  # Repair OTH (this affects both data and comments)
   if (comments[CSV_NAMES[["PLATE_TYPE"]]] == "OTH") {
     comments[CSV_NAMES[["PLATE_TYPE"]]] <- SPECIAL_PLATES[["gen.iii"]]
     data <- repair_oth(data)
@@ -283,10 +284,6 @@ read_opm_yaml <- function(filename) {
 #' @keywords internal
 #'
 read_microstation_opm <- function(filename) {
-  norm_coords <- function(x) {
-    x <- do.call(rbind, strsplit(x, "\\s+", perl = TRUE))
-    sprintf("%s%02i", x[, 1L], must(as.integer(x[, 2L])))
-  }
   x <- read.table(filename, sep = ",", comment.char = "", header = TRUE,
     check.names = FALSE, stringsAsFactors = FALSE, quote = "",
     fileEncoding = opm_opt("file.encoding"))
@@ -300,9 +297,9 @@ read_microstation_opm <- function(filename) {
   x <- x[, wanted, drop = FALSE]
   x <- cbind(filename, x, stringsAsFactors = FALSE)
   names(x) <- c(CSV_NAMES[c("FILE", "PLATE_TYPE", "SETUP", "POS")], HOUR,
-    norm_coords(sub(pat, "", wells, perl = TRUE)))
-  pos <- seq.int(4L)
-  x <- to_opm_list.list(lapply(seq.int(nrow(x)), function(i) {
+    clean_coords(sub(pat, "", wells, perl = TRUE)))
+  pos <- seq_len(4L)
+  x <- to_opm_list.list(lapply(seq_len(nrow(x)), function(i) {
     list(csv_data = as.list(x[i, pos, drop = FALSE]),
       metadata = y[i, , drop = TRUE],
       measurements = as.list(x[i, -pos, drop = FALSE]))
@@ -448,7 +445,7 @@ read_single_opm <- function(filename) {
 #'   normal running mode.
 #'
 #' @export
-#' @seealso base::list.files base::Sys.glob
+#' @seealso base::list.files base::Sys.glo
 #' @family io-functions
 #' @keywords IO character
 #' @examples
@@ -664,7 +661,7 @@ opm_files <- function(
 #'
 read_opm <- function(names, convert = c("try", "no", "yes", "sep", "grp"),
     gen.iii = opm_opt("gen.iii"), include = list(), ..., demo = FALSE) {
-  do_split <- function(x) split(x, vapply(x, plate_type, character(1L)))
+  do_split <- function(x) split(x, vapply(x, plate_type, ""))
   do_opms <- function(x) case(length(x), , x[[1L]], new(OPMS, plates = x))
   convert <- match.arg(convert)
   LL(gen.iii, demo)
@@ -824,6 +821,9 @@ setMethod("to_metadata", OPMS, function(object, stringsAsFactors = FALSE,
 #' @param fun Collecting function. Should use the filename as first argument.
 #' @param fun.args Optional list of arguments to \code{fun}.
 #' @param ... Optional further arguments passed to \code{\link{explode_dir}}.
+#' @param proc Integer scalar. The number of processes to spawn. Cannot be set
+#'   to more than 1 core if running under Windows. See the \code{cores}
+#'   argument of \code{\link{do_aggr}} for details.
 #' @param simplify Logical scalar. Should the resulting list be simplified to a
 #'   vector or matrix if possible?
 #' @param use.names Logical scalar. Should \code{names} be used for naming the
@@ -846,7 +846,7 @@ setMethod("to_metadata", OPMS, function(object, stringsAsFactors = FALSE,
 #'   warning("test files not found")
 #' }
 #'
-batch_collect <- function(names, fun, fun.args = list(), ...,
+batch_collect <- function(names, fun, fun.args = list(), proc = 1L, ...,
     use.names = TRUE, simplify = FALSE, demo = FALSE) {
   names <- explode_dir(names, ...)
   if (demo) {
@@ -854,8 +854,8 @@ batch_collect <- function(names, fun, fun.args = list(), ...,
     return(invisible(names))
   }
   fun.args <- as.list(fun.args)
-  sapply(names, FUN = function(infile) do.call(fun, c(infile, fun.args)),
-    USE.NAMES = use.names, simplify = simplify)
+  mcmapply(FUN = fun, names, MoreArgs = as.list(fun.args), SIMPLIFY = simplify,
+    USE.NAMES = use.names, mc.cores = proc)
 }
 
 
@@ -1136,9 +1136,6 @@ process_io <- function(files, io.fun, fun.args = list(),
 #' @inheritParams batch_collect
 #' @param out.ext Character scalar. The extension of the outfile names (without
 #'   the dot).
-#' @param proc Integer scalar. The number of processes to spawn. Cannot be set
-#'   to more than 1 core if running under Windows. See the \code{cores}
-#'   argument of \code{\link{do_aggr}} for details.
 #' @param outdir Character vector. Directories in which to place the outfiles.
 #'   If \code{NULL} or only containing empty strings, each infile's directory is
 #'   used.
@@ -1252,17 +1249,38 @@ batch_process <- function(names, out.ext, io.fun, fun.args = list(), proc = 1L,
 #' @param dev.args List. Passed as additional arguments to \code{device}.
 #' @param plot.args List. Passed as additional arguments to the plotting
 #'   function used.
+#' @param csv.args If not \code{NULL} but a list, used for specifying ways to
+#'   use \code{\link{csv_data}} entries directly as \code{\link{metadata}}. The
+#'   list can contain character vectors used for selecting and optionally
+#'   renaming \acronym{CSV} entries or functions that can be applied to an
+#'   entire data frame containing all \acronym{CSV} entries. Note that this
+#'   argument has nothing to do with \sQuote{csv} output.
+#' @param table.args Passed to \code{write.table} from the \pkg{utils} package
+#'   if \code{output} is set to \sQuote{csv}. Do not confuse this with
+#'   \code{csv.args}.
 #' @param ... Optional arguments passed to \code{\link{batch_process}} in
 #'   addition to \code{verbose} and \code{demo}. Note that \code{out.ext},
-#'   \code{fun} and \code{fun.args} are set automatically.
+#'   \code{fun} and \code{fun.args} are set automatically. Alternatively,
+#'   these are parameters passed to \code{\link{batch_collect}}.
 #' @param output Character scalar determining the main output mode. \describe{
-#'   \item{json}{Create \acronym{JSON} files, one per input file.}
-#'   \item{levelplot}{Create graphics files, one per input file, containing the
-#'   output of \code{\link{level_plot}}.}
-#'   \item{yaml}{Create \acronym{YAML} files, one per input file.}
-#'   \item{xyplot}{Create graphics files, one per input file, containing the
-#'   output of \code{\link{xy_plot}}.}
+#'   \item{clean}{Apply \code{\link{clean_filenames}}.}
+#'   \item{csv}{Create \acronym{CSV} files, by default one per input file.}
+#'   \item{json}{Create \acronym{JSON} files, by default one per input file.}
+#'   \item{levelplot}{Create graphics files, by default one per input file,
+#'     containing the output of \code{\link{level_plot}}.}
+#'   \item{split}{Split multi-plate new style or old style \acronym{CSV} files
+#'     with \code{\link{split_files}}.}
+#'   \item{yaml}{Create \acronym{YAML} files, by default one per input file.}
+#'   \item{xyplot}{Create graphics files, by default one per input file,
+#'     containing the output of \code{\link{xy_plot}}.}
 #'   }
+#' @param combine.into Empty or character scalar modifying the output mode
+#'   unless it is \sQuote{clean} or \sQuote{split}. If non-empty, causes the
+#'   creation of a single output file named per plate type encountered in the
+#'   input, instead of one per input file (the default). Thus
+#'   \code{combine.into} should be given as a template string for \code{sprintf}
+#'   from the \pkg{base} package with one placeholder for the plate-type, and
+#'   without a file extension.
 #' @export
 #' @note This function is for batch-converting many files; for writing a single
 #'   object to a \acronym{YAML} file (or string), see \code{\link{to_yaml}}.
@@ -1342,7 +1360,15 @@ batch_process <- function(names, out.ext, io.fun, fun.args = list(), proc = 1L,
 #'   using other programming languages, a potential problem is that they, and
 #'   \acronym{YAML} in general, lack a native representation of \code{NA}
 #'   values. Such entries are likely to be misunderstood as \sQuote{NA}
-#'   character scalars.
+#'   character scalars (if the \pkg{json} package or the \pkg{yaml} package
+#'   prior to version 2.1.7 are used) or as \sQuote{.na}, \sQuote{.na.real},
+#'   \sQuote{.na.logical} or \sQuote{.na.character} character scalars (if more
+#'   recent versions of the \pkg{yaml} package are used). Input functions in
+#'   other programming languages should conduct according conversions. \pkg{opm}
+#'   translates these values when converting a list to a \code{\link{OPM}}
+#'   object.
+#'
+#'   See \code{\link{as.data.frame}} regarding the generated \acronym{CSV}.
 #'
 #' @examples
 #' test.files <- grep("Multiple", opm_files("testdata"), invert = TRUE,
@@ -1361,8 +1387,34 @@ batch_process <- function(names, out.ext, io.fun, fun.args = list(), proc = 1L,
 batch_opm <- function(names, md.args = NULL, aggr.args = NULL,
     force.aggr = FALSE, disc.args = NULL, force.disc = FALSE,
     gen.iii = opm_opt("gen.iii"), device = "mypdf", dev.args = NULL,
-    plot.args = NULL, ..., output = c("yaml", "json", "xyplot", "levelplot"),
-    verbose = TRUE, demo = FALSE) {
+    plot.args = NULL, csv.args = NULL,
+    table.args = list(sep = "\t", row.names = FALSE),
+    ..., proc = 1L, outdir = "", overwrite = "no",
+    output = c("yaml", "json", "csv", "xyplot", "levelplot", "split", "clean"),
+    combine.into = NULL, verbose = TRUE, demo = FALSE) {
+
+  csv2md <- function(x, spec) {
+    if (!is.matrix(x)) # OPM objects yield only a character vector
+      x <- t(as.matrix(x))
+    x <- to_metadata(x)
+    spec <- flatten(list(spec))
+    spec <- rapply(spec, as.character, "factor", NULL, "replace")
+    if (any(!vapply(spec, inherits, NA, c("character", "function"))))
+      stop("can only apply character vector, factor or function to CSV data")
+    for (approach in spec)
+      if (is.character(approach)) {
+        for (name in approach[!approach %in% colnames(x)])
+          x[, name] <- seq_len(nrow(x))
+        x <- x[, approach, drop = FALSE]
+        if (!is.null(names(approach)))
+          colnames(x) <- names(approach)
+      } else {
+        x <- approach(x)
+        if (!is.data.frame(x)) # wrong no. of rows should yield error later on
+          stop("function applied to CSV data must yield data frame")
+      }
+    x
+  }
 
   convert_dataset <- function(data) {
     switch(mode(gen.iii),
@@ -1376,8 +1428,13 @@ batch_opm <- function(names, md.args = NULL, aggr.args = NULL,
           message(sprintf("conversion: changing to '%s'...", gen.iii))
         data <- gen_iii(data, to = gen.iii)
       },
-      stop("'gen.iii' must either be logical or character scalar")
+      stop("'gen.iii' must either be a logical or a character scalar")
     )
+    if (length(csv.args)) {
+      if (verbose)
+        message("conversion: using CSV data as metadata...")
+      metadata(data, 1L) <- csv2md(csv_data(data), csv.args)
+    }
     if (length(md.args)) {
       if (verbose)
         message("conversion: including metadata...")
@@ -1407,29 +1464,66 @@ batch_opm <- function(names, md.args = NULL, aggr.args = NULL,
   read_file <- function(infile) {
     data <- read_single_opm(infile)
     if (is.list(data)) # YAML input can result in lists of several OPM objects
-      lapply(lapply(data, FUN = convert_dataset), FUN = as, Class = "list")
+      lapply(data, convert_dataset)
     else
       convert_dataset(data)
   }
 
+  create_yaml <- function(x, outfile) {
+    if (is.list(x)) # would be more elegant if to_yaml() could handle that
+      x <- lapply(x, as, "list")
+    write(to_yaml(x, json = json), outfile)
+  }
   convert_to_yaml <- function(infile, outfile) {
-    write(to_yaml(read_file(infile), json = json), outfile)
+    create_yaml(read_file(infile), outfile)
   }
 
-  create_plot <- function(infile, outfile) {
+  create_csv <- function(x, outfile) {
+    if (is.list(x))
+      x <- do.call(rbind, lapply(x, as.data.frame))
+    else
+      x <- as.data.frame(x)
+    do.call(write.table, c(list(x = x, file = outfile), as.list(table.args)))
+  }
+  convert_to_csv <- function(infile, outfile) {
+    create_csv(read_file(infile), outfile)
+  }
+
+  create_plot <- function(x, outfile) {
+    do.call(device, c(list(file = outfile), dev.args))
+    print(do.call(plot.type, c(list(x = x), plot.args)))
+    dev.off()
+  }
+  create_plot_from_file <- function(infile, outfile) {
     data <- read_file(infile)
     if (is.list(data))
       data <- do.call(c, data)
-    do.call(device, c(list(file = outfile), dev.args))
-    do.call(plot.type, c(list(x = data), plot.args))
-    dev.off()
+    create_plot(data, outfile)
   }
 
-  LL(force.aggr, force.disc, gen.iii, device)
+  convert_to_single_file <- function(names, outfile.template, out.ext, demo,
+      verbose, ..., proc) {
+    x <- read_opm(names = names, convert = "grp", ..., demo = demo)
+    if (demo) {
+      if (verbose)
+        message(paste0(x, collapse = "\n"))
+      return(invisible(x))
+    }
+    out.names <- gsub(" ", "-", names(x), fixed = TRUE)
+    out.names <- paste(sprintf(outfile.template, out.names), out.ext, sep = ".")
+    x <- mclapply(x, convert_dataset, mc.cores = proc)
+    mcmapply(create_single_file, x, out.names, mc.cores = proc)
+    names(out.names) <- names(x)
+    if (verbose)
+      message(listing(out.names))
+    out.names
+  }
+
+  LL(force.aggr, force.disc, gen.iii, device, overwrite)
 
   # If a metadata filename is given, read it into data frame right now to
   # avoid opening the file each time in the batch_process() loop
-  if (length(md.args) > 0L && is.character(md.args$md)) {
+  if (length(md.args) && is.character(md.args$md)) {
     tmp <- md.args
     names(tmp)[names(tmp) == "md"] <- "object"
     tmp$replace <- NULL
@@ -1438,33 +1532,73 @@ batch_opm <- function(names, md.args = NULL, aggr.args = NULL,
 
   case(output <- match.arg(output),
     yaml = {
+      collect <- FALSE
       io.fun <- convert_to_yaml
+      create_single_file <- create_yaml
       json <- FALSE
+      in.ext <- "both"
       out.ext <- "yml"
     },
     json = {
+      collect <- FALSE
       io.fun <- convert_to_yaml
+      create_single_file <- create_yaml
       json <- TRUE
+      in.ext <- "both"
       out.ext <- "json"
     },
+    csv = {
+      collect <- FALSE
+      io.fun <- convert_to_csv
+      create_single_file <- create_csv
+      json <- NULL
+      in.ext <- "both"
+      out.ext <- "tab"
+    },
     levelplot = {
+      collect <- FALSE
+      io.fun <- create_plot_from_file
+      create_single_file <- create_plot
       json <- disc.args <- aggr.args <- NULL
+      in.ext <- "both"
       out.ext <- map_values(device, GRAPHICS_FORMAT_MAP)
-      io.fun <- create_plot
       plot.type <- level_plot
     },
     xyplot = {
+      collect <- FALSE
+      io.fun <- create_plot_from_file
+      create_single_file <- create_plot
       json <- disc.args <- aggr.args <- NULL
+      in.ext <- "both"
       out.ext <- map_values(device, GRAPHICS_FORMAT_MAP)
-      io.fun <- create_plot
       plot.type <- xy_plot
+    },
+    split = {
+      collect <- TRUE
+      io.fun <- split_files
+      in.ext <- "csv"
+      fun.args <- list(pattern = '^("Data File",|Data File)', outdir = outdir,
+        demo = demo)
+    },
+    clean = {
+      collect <- TRUE
+      io.fun <- clean_filenames
+      in.ext <- "both"
+      fun.args <- list(demo = demo, overwrite = overwrite == "yes")
     }
   )
 
-  batch_process(names = names, out.ext = out.ext, io.fun = io.fun,
-    in.ext = "both", compressed = TRUE, literally = FALSE, ...,
-    verbose = verbose, demo = demo)
-
+  if (collect) # the functions have their own 'demo' argument
+    invisible(batch_collect(names = names, fun = io.fun, fun.args = fun.args,
+      proc = proc, ..., demo = FALSE))
+  else if (length(combine.into))
+    invisible(convert_to_single_file(names = names, out.ext = out.ext, ...,
+      outfile.template = combine.into, demo = demo, verbose = verbose,
+      proc = proc))
+  else
+    batch_process(names = names, out.ext = out.ext, io.fun = io.fun,
+      in.ext = in.ext, compressed = TRUE, literally = FALSE, ..., proc = proc,
+      overwrite = overwrite, outdir = outdir, verbose = verbose, demo = demo)
 }
 
 
@@ -1566,7 +1700,7 @@ batch_opm_to_yaml <- function(names, md.args = NULL, aggr.args = NULL,
 #'   have according file extensions).
 #'
 #' @param ... Optional arguments passed to \code{grepl}, which is used for
-#'   matching the seperator lines. See also \code{invert} listed above.
+#'   matching the separator lines. See also \code{invert} listed above.
 #'
 #' @export
 #' @return List of character vectors, each vector containing the names of the
@@ -1575,8 +1709,8 @@ batch_opm_to_yaml <- function(names, md.args = NULL, aggr.args = NULL,
 #'
 #' @details This function is useful for splitting
 #'   OmniLog\eqn{\textsuperscript{\textregistered}}{(R)} multi-plate CSV files
-#'   before inputting them with \code{\link{read_opm}}.
-#'   See \sQuote{Examples}.
+#'   before inputting them with \code{\link{read_opm}}. It is used by
+#'   \code{\link{batch_opm}} for this purpose. See also the \sQuote{Examples}.
 #'
 #' @family io-functions
 #' @seealso base::split base::strsplit
@@ -1602,11 +1736,11 @@ batch_opm_to_yaml <- function(names, md.args = NULL, aggr.args = NULL,
 #' ## note the correct setting of the quotes
 #' ## A pattern that covers both old and new-style CSV is:
 #' # split_files(x, pattern = '^("Data File",|Data File)')
-#' ## This is used by the run_opm.R script
+#' ## This is used by batch_opm() in 'split' mode any by the 'run_opm.R' script
 #'
 split_files <- function(files, pattern, outdir = "", demo = FALSE,
     single = TRUE, wildcard = FALSE, invert = FALSE, include = TRUE,
-    format = "%s-%05i.%s", compressed = TRUE, ...) {
+    format = opm_opt("file.split.tmpl"), compressed = TRUE, ...) {
 
   create_outnames <- function(files, compressed, outdir) {
     file.pat <- file_pattern("any", compressed = compressed, literally = FALSE)
@@ -1628,7 +1762,7 @@ split_files <- function(files, pattern, outdir = "", demo = FALSE,
 
   invisible(mapply(function(infile, out.base, out.ext) {
     con <- file(description = infile, encoding = opm_opt("file.encoding"))
-    data <- readLines(con = con)
+    data <- readLines(con = con, warn = FALSE)
     close(con)
     data <- sections(x = data, pattern = pattern, invert = invert,
       include = include, ...)

@@ -4,7 +4,7 @@
 \usage{
   split_files(files, pattern, outdir = "", demo = FALSE,
     single = TRUE, wildcard = FALSE, invert = FALSE,
-    include = TRUE, format = "\%s-\%05i.\%s",
+    include = TRUE, format = opm_opt("file.split.tmpl"),
     compressed = TRUE, ...)
 }
 \arguments{
@@ -65,7 +65,7 @@
   compressed (and have according file extensions).}
 
   \item{...}{Optional arguments passed to \code{grepl},
-  which is used for matching the seperator lines. See also
+  which is used for matching the separator lines. See also
   \code{invert} listed above.}
 }
 \value{
@@ -83,7 +83,9 @@
   This function is useful for splitting
   OmniLog\eqn{\textsuperscript{\textregistered}}{(R)}
   multi-plate CSV files before inputting them with
-  \code{\link{read_opm}}.  See \sQuote{Examples}.
+  \code{\link{read_opm}}. It is used by
+  \code{\link{batch_opm}} for this purpose. See also the
+  \sQuote{Examples}.
 }
 \examples{
 # Splitting an old-style CSV file containing several plates
@@ -106,7 +108,7 @@ if (length(x) > 0) {
 ## note the correct setting of the quotes
 ## A pattern that covers both old and new-style CSV is:
 # split_files(x, pattern = '^("Data File",|Data File)')
-## This is used by the run_opm.R script
+## This is used by batch_opm() in 'split' mode any by the 'run_opm.R' script
 }
 \seealso{
   base::split base::strsplit

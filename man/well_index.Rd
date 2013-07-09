@@ -17,7 +17,8 @@
   converted to a mapping from elements to indexes.
 }
 \description{
-  Translate well coordinates to numeric indexes
+  Translate well coordinates to numeric indexes, or clean
+  well indexes given as character vector.
 }
 \keyword{internal}
 

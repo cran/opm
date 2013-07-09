@@ -6,7 +6,7 @@
 }
 \value{
   \code{\link{OPMS}} object with the reversed order of
-  plates, or or \code{\link{OPM}} object.
+  plates, or \code{\link{OPM}} object.
 }
 \description{
   Revert the order of plates within an \code{\link{OPMS}}
@@ -32,13 +32,13 @@ stopifnot(identical(x, vaas_1))
 \seealso{
   base::rev
 
-  Other conversion-functions: \code{\link{extract}},
-  \code{\link{extract_columns}}, \code{\link{flatten}},
-  \code{\link{gen_iii}}, \code{\link{merge}},
-  \code{\link{oapply}}, \code{\link{plates}},
-  \code{\link{rep}}, \code{\link{sort}},
-  \code{\link{thin_out}}, \code{\link{to_yaml}},
-  \code{\link{unique}}
+  Other conversion-functions: \code{\link{as.data.frame}},
+  \code{\link{extract}}, \code{\link{extract_columns}},
+  \code{\link{flatten}}, \code{\link{gen_iii}},
+  \code{\link{merge}}, \code{\link{oapply}},
+  \code{\link{plates}}, \code{\link{rep}},
+  \code{\link{sort}}, \code{\link{thin_out}},
+  \code{\link{to_yaml}}, \code{\link{unique}}
 }
 \keyword{manip}
 

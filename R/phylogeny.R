@@ -33,7 +33,7 @@
 #' @return Character vector.
 #' @family phylogeny-functions
 #' @keywords character
-#' @seealso base::gsub
+#' @seealso base::gsu
 #' @examples
 #' # Some animals you might know
 #' x <- c("Elephas maximus", "Loxodonta africana", "Giraffa camelopardalis")
@@ -355,7 +355,7 @@ setMethod("format", CMAT, function(x, how, enclose, digits, indent,
   phylo_footer <- function(how, indent, paup.block) {
     nexus_footer <- function(indent, paup.block) {
       if (paup.block) {
-        block <- paste(indent, paup_cmds(), sep = "")
+        block <- paste0(indent, paup_cmds())
         block <- c("begin paup;", block, "end;", "")
       } else
         block <- NULL
@@ -426,7 +426,7 @@ setMethod("format", CMAT, function(x, how, enclose, digits, indent,
           warning("character states not indicated")
 
       if (L(html.args$legend.dot))
-        legend <- paste(legend, ".", sep = "")
+        legend <- paste0(legend, ".")
 
       div_class(legend, "table-legend")
     }
@@ -443,7 +443,7 @@ setMethod("format", CMAT, function(x, how, enclose, digits, indent,
       colnames(x) <- div_class(colnames(x), "character-name")
       x[] <- t(apply(x, 1L, div_class, variability))
       x[] <- div_class(x, "measured-character-states")
-      rownames(x) <- span_class(seq.int(nrow(x)), "organism-index")
+      rownames(x) <- span_class(seq_len(nrow(x)), "organism-index")
       c("<div class=\"main-table\">", hwrite(x = t(x), page = NULL,
         table.summary = html.args$table.summary, div = FALSE, ...), "</div>")
     }
@@ -862,13 +862,13 @@ html_args <- function(
 #'   discrete.args = NULL))
 #' stopifnot(is.character(yy), length(yy) > 10)
 #'
-#' ## 'OPMD_listing' method
-#' echo(x <- phylo_data(listing(vaas_1)))
+#' ## 'OPMD_Listing' method
+#' echo(x <- phylo_data(listing(vaas_1, NULL)))
 #' stopifnot(is.character(x), length(x) == 1)
-#' echo(x <- phylo_data(listing(vaas_1, html = TRUE)))
+#' echo(x <- phylo_data(listing(vaas_1, NULL, html = TRUE)))
 #' stopifnot(is.character(x), length(x) > 1)
 #'
-#' ## 'OPMS_listing' method
+#' ## 'OPMS_Listing' method
 #' echo(x <- phylo_data(listing(vaas_4, as.groups = "Species")))
 #' stopifnot(is.character(x), length(x) == 2, !is.null(names(x)))
 #' echo(x <- phylo_data(listing(vaas_4, as.groups = "Species", html = TRUE)))
@@ -890,7 +890,7 @@ setMethod("phylo_data", "matrix", function(object,
     object <- update(object, how = "NA2int")
   object <- merge(x = object, y = join)
   if (is.list(object) && L(cutoff) > 0)
-    object[] <- lapply(object, reduce_to_mode, cutoff = cutoff, use.na = FALSE)
+    object[] <- lapply(object, reduce_to_mode.default, cutoff, FALSE)
   switch(delete, none = NULL,
     object <- update(object, how = sprintf("delete.%s", delete)))
   result <- format(x = object, how = format, enclose = enclose, digits = digits,

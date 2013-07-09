@@ -39,13 +39,13 @@ stopifnot(is.null(rep(vaas_4, 0)))
 \seealso{
   base::rep
 
-  Other conversion-functions: \code{\link{extract}},
-  \code{\link{extract_columns}}, \code{\link{flatten}},
-  \code{\link{gen_iii}}, \code{\link{merge}},
-  \code{\link{oapply}}, \code{\link{plates}},
-  \code{\link{rev}}, \code{\link{sort}},
-  \code{\link{thin_out}}, \code{\link{to_yaml}},
-  \code{\link{unique}}
+  Other conversion-functions: \code{\link{as.data.frame}},
+  \code{\link{extract}}, \code{\link{extract_columns}},
+  \code{\link{flatten}}, \code{\link{gen_iii}},
+  \code{\link{merge}}, \code{\link{oapply}},
+  \code{\link{plates}}, \code{\link{rev}},
+  \code{\link{sort}}, \code{\link{thin_out}},
+  \code{\link{to_yaml}}, \code{\link{unique}}
 }
 \keyword{manip}
 

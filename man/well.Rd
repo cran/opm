@@ -60,9 +60,9 @@ stopifnot(identical(x, y)) # => same result
   \code{\link{max}}, \code{\link{measurements}},
   \code{\link{metadata}}, \code{\link{minmax}},
   \code{\link{plate_type}}, \code{\link{position}},
-  \code{\link{select}}, \code{\link{seq}},
-  \code{\link{setup_time}}, \code{\link{subset}},
-  \code{\link{summary}}, \code{\link{wells}}
+  \code{\link{seq}}, \code{\link{setup_time}},
+  \code{\link{subset}}, \code{\link{summary}},
+  \code{\link{wells}}
 }
 \keyword{attribute}
 

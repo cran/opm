@@ -10,7 +10,7 @@
   of keys. Return value would be the list of corresponding
   metadata values. Here, character vectors of length > 1
   can be used to query nested metadata lists.  \item If
-  neither empty nor a list nior a formula (i.e. usually a
+  neither empty nor a list nor a formula (i.e. usually a
   character or numeric vector), \code{key} is treated as a
   single list key. Factors are converted to
   \sQuote{character} mode.  \item Formulas can also be used
@@ -47,11 +47,12 @@
 
   Even though it is not technically impossible per se, it
   is usually a bad idea to select metadata entries using
-  numeric (positional) keys. The problem is that, in
-  contrast to, e.g., data frames, their is no guarantee
-  that metadata entries with the same name occur in the
-  same position, even if they belong to \code{\link{OPM}}
-  objects within a single \code{\link{OPMS}} object.
+  numeric (positional) or logical keys.  The problem is
+  that, in contrast to, e.g., data frames, their is no
+  guarantee that metadata entries with the same name occur
+  in the same position, even if they belong to
+  \code{\link{OPM}} objects within a single
+  \code{\link{OPMS}} object.
 
   Formulas passed as \code{key} argument are treated by
   ignoring the left side (if any) and converting the right
@@ -93,10 +94,10 @@ stopifnot(identical(x, y))
   \code{\link{hours}}, \code{\link{length}},
   \code{\link{max}}, \code{\link{measurements}},
   \code{\link{minmax}}, \code{\link{plate_type}},
-  \code{\link{position}}, \code{\link{select}},
-  \code{\link{seq}}, \code{\link{setup_time}},
-  \code{\link{subset}}, \code{\link{summary}},
-  \code{\link{well}}, \code{\link{wells}}
+  \code{\link{position}}, \code{\link{seq}},
+  \code{\link{setup_time}}, \code{\link{subset}},
+  \code{\link{summary}}, \code{\link{well}},
+  \code{\link{wells}}
 }
 \keyword{attribute}
 

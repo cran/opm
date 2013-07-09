@@ -71,7 +71,7 @@ test_that("HTML tables can be created", {
   expect_equal(length(table), 1L)
   table <- unlist(strsplit(table, "\\s*<[^>]+>\\s*", perl = TRUE))
   table <- table[nzchar(table)]
-  values <- c(seq.int(nrow(x)), colnames(x), "-", "w", "+")
+  values <- c(seq_len(nrow(x)), colnames(x), "-", "w", "+")
   expect_true(setequal(table, values))
 
   if (length(tidy())) {
@@ -313,7 +313,7 @@ test_that("nexus matrices can be created", {
 
   z <- phylo_data(x, "nexus", join = TRUE)
   expect_equal(y, z)
-  z <- phylo_data(x, "nexus", join = seq.int(nrow(x)))
+  z <- phylo_data(x, "nexus", join = seq_len(nrow(x)))
   expect_equal(y, z)
 
   z <- phylo_data(x, "nexus", join = SIMPLE.GROUPS)
@@ -335,7 +335,7 @@ test_that("floating-point nexus matrices can be created", {
 
   expect_warning(z <- phylo_data(x, "nexus", join = TRUE))
   expect_equal(y, z)
-  expect_warning(z <- phylo_data(x, "nexus", join = seq.int(nrow(x))))
+  expect_warning(z <- phylo_data(x, "nexus", join = seq_len(nrow(x))))
   expect_equal(y, z)
 
   # ... but not if they contain ambiguities

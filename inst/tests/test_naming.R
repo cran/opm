@@ -19,11 +19,22 @@ test_that("curve parameter names can be mapped", {
 })
 
 
+## clean_coords
+test_that("well names can be cleaned", {
+  x <- c("  Z07\t", "D\n11\r", " A06  ", " B7")
+  got <- clean_coords(x)
+  expect_equal(got, c("Z07", "D11", "A06", "B07"))
+})
+
+
 ## well_index
 test_that("well indices given as formula can be mapped", {
   expect_equal(well_index(1:10), 1:10)
   expect_equal(well_index(), TRUE)
-  expect_equal(well_index(letters), letters)
+  got <- well_index(letters)
+  expect_is(got, "character")
+  expect_equal(length(got), 26L)
+  expect_equal(toupper(got), got)
   expect_error(well_index(NULL ~ a:c))
   expect_equal(well_index(NULL ~ a:c, letters), 1:3)
   expect_equal(well_index(NULL ~ c(b, e:f), letters), c(2, 5, 6))
@@ -48,44 +59,20 @@ test_that("well indices given as formula can be mapped", {
 
 
 ## well_to_substrate
-test_that("substrate names can be translated", {
-
-  plate.1 <- "PM01"
-  exp.1 <- c(A01 = "Negative Control", A02 = "L-Arabinose")
-  got <- well_to_substrate(plate.1, c("A01", "A02"))
-
-  plates.2 <- c(plate.1, "PM02")
-  exp.2 <- c(A01 = "Negative Control", A02 = "Chondroitin Sulfate C")
-  exp.2 <- cbind(exp.1, exp.2)
-  colnames(exp.2) <- plates.2
-  got <- well_to_substrate(plates.2, c("A01", "A02"))
-  expect_equal(got, exp.2)
-
-  # Partial matching is allowed
-  plates.2 <- c(plate.1, "PM02")
-  exp.2 <- c(A01 = "Negative Control", A02 = "Chondroitin Sulfate C")
-  exp.2 <- cbind(exp.1, exp.2)
-  colnames(exp.2) <- c(plates.2[1L], "PM02")
-  got <- well_to_substrate(plates.2, c("A01", "A02"))
-  expect_equal(got, exp.2)
-
-})
-
-
-################################################################################
+## UNTESTED
 
 
 ## find_substrate
 test_that("substrate names can be searched", {
 
-  found <- find_substrate("Fructose", search = "exact")
-  expect_is(found, "list")
+  found <- find_substrate(c(wanted = "Fructose"), search = "exact")
+  expect_is(found, "substrate_match")
   expect_equal(1L, length(found))
   expect_equal("Fructose", names(found))
   expect_equal(c("D-Fructose", "D-Fructose-6-Phosphate"), found[[1L]])
 
-  found <- find_substrate("Fructose", search = "approx")
-  expect_is(found, "list")
+  found <- find_substrate(c(wanted = "Fructose"), search = "approx")
+  expect_is(found, "substrate_match")
   expect_equal(1L, length(found))
   expect_equal("Fructose", names(found))
   expect_equal(c("D-Fructose", "D-Fructose-6-Phosphate", "D-Fucose",
@@ -97,18 +84,18 @@ test_that("substrate names can be searched", {
 ## find_substrate
 test_that("substrate names can be searched with patterns", {
 
-  glob.pat <- c("ampic*", "penic*", "random*")
+  glob.pat <- c(A = "ampic*", B = "penic*", C = "random*")
   found <- find_substrate(glob.pat, search = "glob")
-  expect_is(found, "list")
+  expect_is(found, "substrate_match")
   expect_equal(3L, length(found))
-  expect_equal(glob.pat, names(found))
+  expect_equivalent(glob.pat, names(found))
   expect_equal("Ampicillin", found[[1L]])
   expect_equal("Penicillin G", found[[2L]])
   expect_equal(character(), found[[3L]])
 
-  reg.pat <- c("^ampic.*", "^penic.*", "^random.*")
+  reg.pat <- c(A = "^ampic.*", B = "^penic.*", C = "^random.*")
   found.2 <- find_substrate(reg.pat, search = "regex")
-  expect_equal(reg.pat, names(found.2))
+  expect_equivalent(reg.pat, names(found.2))
   names(found.2) <- glob.pat
   expect_equal(found, found.2)
 

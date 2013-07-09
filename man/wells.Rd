@@ -2,7 +2,10 @@
 \alias{wells}
 \title{Available well names}
 \arguments{
-  \item{object}{\code{\link{OPM}} object.}
+  \item{object}{\code{\link{OPM}} object,
+  \code{\link{OPMS}} object or well name or index. If
+  missing, defaults to the selection of all possible
+  wells.}
 
   \item{full}{Logical scalar. Return the full names of the
   wells (if available) or just their coordinates on the
@@ -40,6 +43,12 @@
   uses \code{\link{substrate_info}} in \sQuote{downcase}
   mode; see there for details.}
 
+  \item{plate}{Name of the plate type. Several ones can be
+  given unless \code{object} is of class \code{\link{OPM}}
+  or \code{\link{OPMS}}.  \code{\link{plate_type}} is
+  applied before searching for the substrate names, and
+  partial matching is allowed.}
+
   \item{...}{Optional arguments passed between the
   methods.}
 }
@@ -51,6 +60,17 @@
   \code{\link{OPM}} object. Optionally the full substrate
   names can be added in parentheses or brackets or used
   instead of the coordinate, and trimmed to a given length.
+}
+\details{
+  The purpose of the \code{\link{OPM}} and
+  \code{\link{OPMS}} methods should be obvious. The default
+  method is intended for providing a quick overview of the
+  substrates contained in one to several plates if
+  \code{full} is \code{TRUE}. If \code{full} is
+  \code{FALSE}, it can be used to study the effect of the
+  well-index translation and well-name normalization
+  approaches as used by \pkg{opm}, particularly by the
+  subsetitting methods (see \code{\link{[}}).
 }
 \note{
   Do not confuse this with \code{\link{well}}.
@@ -69,6 +89,18 @@ data(vaas_4)
 (xx <- wells(vaas_4, full = FALSE))[1:10]
 # wells are guaranteed to be uniform within OPMS objects
 stopifnot(identical(x, xx))
+
+# default method
+x <- c("A01", "B10")
+(y <- wells(x, plate = "PM1"))
+stopifnot(nchar(y) > nchar(x))
+(z <- wells(x, plate = "PM1", in.parens = TRUE))
+stopifnot(nchar(z) > nchar(y))
+# formula yields same result (except for row names)
+stopifnot(y == wells(~ c(A01, B10), plate = "PM1"))
+# using a sequence of well coordinates
+stopifnot(nrow(wells(~ C02:C06)) == 5) # well sequence
+stopifnot(nrow(wells(plate = "PM1")) == 96) # all wells by default
 }
 \seealso{
   base::strtrim base::abbreviate
@@ -83,20 +115,28 @@ stopifnot(identical(x, xx))
   \code{\link{max}}, \code{\link{measurements}},
   \code{\link{metadata}}, \code{\link{minmax}},
   \code{\link{plate_type}}, \code{\link{position}},
-  \code{\link{select}}, \code{\link{seq}},
-  \code{\link{setup_time}}, \code{\link{subset}},
-  \code{\link{summary}}, \code{\link{well}}
+  \code{\link{seq}}, \code{\link{setup_time}},
+  \code{\link{subset}}, \code{\link{summary}},
+  \code{\link{well}}
 }
 \keyword{attribute}
 
 \docType{methods}
 \alias{wells-methods}
 \alias{wells,OPM-method}
+\alias{wells,ANY-method}
+\alias{wells,missing-method}
 \alias{wells,OPMS-method}
 \usage{
   \S4method{wells}{OPM}(object, full = FALSE, in.parens = TRUE,
     max = 100L, brackets = FALSE, clean = TRUE, word.wise = FALSE,
-    paren.sep = " ", downcase = FALSE) 
+    paren.sep = " ", downcase = FALSE, plate = plate_type(object)) 
+
+  \S4method{wells}{ANY}(object, full = TRUE, in.parens = FALSE,
+    max = 100L, brackets = FALSE, clean = TRUE, word.wise = FALSE,
+    paren.sep = " ", downcase = FALSE, plate = "PM01") 
+
+  \S4method{wells}{missing}(object, ...) 
 
   \S4method{wells}{OPMS}(object, ...) 
 

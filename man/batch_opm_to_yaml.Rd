@@ -57,7 +57,9 @@
   \item{...}{Optional arguments passed to
   \code{\link{batch_process}} in addition to \code{verbose}
   and \code{demo}. Note that \code{out.ext}, \code{fun} and
-  \code{fun.args} are set automatically.}
+  \code{fun.args} are set automatically. Alternatively,
+  these are parameters passed to
+  \code{\link{batch_collect}}.}
 
   \item{verbose}{Logical scalar. Print conversion and
   success/failure information?}

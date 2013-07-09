@@ -2,7 +2,8 @@
 \alias{html_args}
 \title{Default HTML formatting arguments}
 \usage{
-  html_args(character.states = c(`negative reaction` = "-", `weak reaction` = "w", `positive reaction` = "+"),
+  html_args(character.states = c(`negative reaction` = "-", `weak reaction` = "w",
+    `positive reaction` = "+"),
     multiple.sep = "/", organisms.start = "Organisms: ",
     states.start = "Symbols: ", legend.dot = TRUE,
     legend.sep.1 = ", ", legend.sep.2 = "; ",

@@ -369,28 +369,35 @@ vaas.mu <- extract(vaas_et_al, dataframe = TRUE,
 
 
 ###################################################
-### code chunk number 49: xy.plot
+### code chunk number 49: extract.with.joining
+###################################################
+vaas.mu <- extract(vaas_et_al, dataframe = TRUE,
+  as.labels = ~ J(Species, Strain), subset = "mu")
+
+
+###################################################
+### code chunk number 50: xy.plot
 ###################################################
 xy_plot(vaas.1.6, main = "E. coli vs. P. aeruginosa",
   include = list("Species", "Strain"))
 
 
 ###################################################
-### code chunk number 50: opm.Rnw:1185-1187
+### code chunk number 51: opm.Rnw:1201-1203
 ###################################################
 print(xy_plot(vaas.1.6, main = "E. coli vs. P. aeruginosa",
   include = list("Species", "Strain")))
 
 
 ###################################################
-### code chunk number 51: xy.plot.II
+### code chunk number 52: xy.plot.II
 ###################################################
 xy_plot(vaas.1.6[, , c("A01", "G11", "H11")],
   main = "E. coli vs. P. aeruginosa", include = list("Species", "Strain"))
 
 
 ###################################################
-### code chunk number 52: opm.Rnw:1219-1222
+### code chunk number 53: opm.Rnw:1235-1238
 ###################################################
 print(xy_plot(vaas.1.6[, , c("A01", "G11", "H11")],
   main = "E. coli vs. P. aeruginosa",
@@ -398,48 +405,48 @@ print(xy_plot(vaas.1.6[, , c("A01", "G11", "H11")],
 
 
 ###################################################
-### code chunk number 53: level.plot.I
+### code chunk number 54: level.plot.I
 ###################################################
 level_plot(vaas.1.6, main = "E. coli vs. P. aeruginosa",
   include = list("Species", "Strain"))
 
 
 ###################################################
-### code chunk number 54: opm.Rnw:1243-1245
+### code chunk number 55: opm.Rnw:1259-1261
 ###################################################
 print(level_plot(vaas.1.6, main = "E. coli vs. P. aeruginosa",
   include = list("Species", "Strain")))
 
 
 ###################################################
-### code chunk number 55: heat.map.I
+### code chunk number 56: heat.map.I
 ###################################################
 vaas.1.6.A <- heat_map(vaas.1.6, as.labels = "Strain",
   as.groups = "Species")
 
 
 ###################################################
-### code chunk number 56: opm.Rnw:1278-1279
+### code chunk number 57: opm.Rnw:1294-1295
 ###################################################
 heat_map(vaas.1.6, as.labels = "Strain", as.groups = "Species")
 
 
 ###################################################
-### code chunk number 57: radial.plot.I
+### code chunk number 58: radial.plot.I
 ###################################################
 radial_plot(vaas_4[, , c(1:5, 10)], as.labels = list("Species", "Strain"),
   x = 150, y = 200)
 
 
 ###################################################
-### code chunk number 58: opm.Rnw:1309-1311
+### code chunk number 59: opm.Rnw:1325-1327
 ###################################################
 radial_plot(vaas_4[, , c(1:5, 10)], as.labels = list("Species", "Strain"),
   x = 150, y = 200)
 
 
 ###################################################
-### code chunk number 59: ci.plot.I
+### code chunk number 60: ci.plot.I
 ###################################################
 ci_plot.legend <- ci_plot(vaas.1.6[, , c("A01", "A02", "A03")],
   as.labels = list("Species", "Strain"), subset = "A",
@@ -447,20 +454,20 @@ ci_plot.legend <- ci_plot(vaas.1.6[, , c("A01", "A02", "A03")],
 
 
 ###################################################
-### code chunk number 60: opm.Rnw:1337-1338
+### code chunk number 61: opm.Rnw:1353-1354
 ###################################################
 ci_plot(vaas.1.6[, , c("A01", "A02", "A03")], as.labels = list("Species", "Strain"), subset = "A", legend.field = NULL, x = 170, y = 3)
 
 
 ###################################################
-### code chunk number 61: extract.dataframe
+### code chunk number 62: extract.dataframe
 ###################################################
 x <- extract(vaas_et_al, as.labels = list("Species", "Strain"),
   dataframe = TRUE)
 
 
 ###################################################
-### code chunk number 62: ci.plot.II
+### code chunk number 63: ci.plot.II
 ###################################################
 # without normalisation
 y <- extract(x, as.groups = TRUE,  norm.per = "none")
@@ -468,13 +475,13 @@ ci_plot(y[, c(1:7, 13)], legend.field = NULL, x = 350, y = 0)
 
 
 ###################################################
-### code chunk number 63: opm.Rnw:1375-1376
+### code chunk number 64: opm.Rnw:1391-1392
 ###################################################
 ci_plot(y[, c(1:7, 13)], legend.field = NULL, x = 350, y = 0)
 
 
 ###################################################
-### code chunk number 64: normalisation
+### code chunk number 65: normalisation
 ###################################################
 # normalisation by plate means (figure not shown)
 y <- extract(x, as.groups = TRUE,  norm.per = "row")
@@ -486,7 +493,7 @@ ci_plot(y[, c(1:7, 13)], legend.field = NULL, x = 150, y = 0)
 
 
 ###################################################
-### code chunk number 65: norm.well.A10
+### code chunk number 66: norm.well.A10
 ###################################################
 # normalisation by subtraction of the well means of well A10 only
 y <- extract(x, as.groups = TRUE,  norm.per = "row", norm.by = 10,
@@ -495,48 +502,48 @@ ci_plot(y[, c(1:7, 13)], legend.field = NULL, x = 0, y = 0)
 
 
 ###################################################
-### code chunk number 66: opm.Rnw:1420-1421
+### code chunk number 67: opm.Rnw:1436-1437
 ###################################################
 ci_plot(y[, c(1:7, 13)], legend.field = NULL, x = 0, y = 0)
 
 
 ###################################################
-### code chunk number 67: data.vaas.subset
+### code chunk number 68: data.vaas.subset
 ###################################################
 vaas.subset <- subset(vaas_et_al[, , "G06"], 
   list(Experiment = "First replicate"))
 
 
 ###################################################
-### code chunk number 68: plot.vaas.subset
+### code chunk number 69: plot.vaas.subset
 ###################################################
 xy_plot(vaas.subset, include = ~ Strain, neg.ctrl = FALSE,
   space = "right")
 
 
 ###################################################
-### code chunk number 69: opm.Rnw:1458-1460
+### code chunk number 70: opm.Rnw:1474-1476
 ###################################################
 xy_plot(vaas.subset, include = ~ Strain, neg.ctrl = FALSE, 
   space = "right")
 
 
 ###################################################
-### code chunk number 70: opm.mcp.principle
+### code chunk number 71: opm.mcp.principle
 ###################################################
 vaas.subset.mcp <- opm_mcp(vaas.subset, model = ~ Strain, m.type = "aov",
   linfct = c(Tukey = 1))
 
 
 ###################################################
-### code chunk number 71: opm.mcp.linfct
+### code chunk number 72: opm.mcp.linfct
 ###################################################
 opm_mcp(vaas.subset, model = ~ Strain, m.type = "aov",
   linfct = c(Tukey = 1), output = "linfct")
 
 
 ###################################################
-### code chunk number 72: plot.opm.mcp.linfct
+### code chunk number 73: plot.opm.mcp.linfct
 ###################################################
 library(multcomp) # now needed
 old.mar <- par(mar = c(3, 15, 3, 2)) # adapt margins in the plot
@@ -545,7 +552,7 @@ par(old.mar) # reset to default plotting settings
 
 
 ###################################################
-### code chunk number 73: opm.Rnw:1514-1518
+### code chunk number 74: opm.Rnw:1530-1534
 ###################################################
 library(multcomp)
 old.mar <- par(mar = c(3, 15, 3, 2))
@@ -554,7 +561,7 @@ par(old.mar)
 
 
 ###################################################
-### code chunk number 74: summary.opm.mcp
+### code chunk number 75: summary.opm.mcp
 ###################################################
 mcp.summary <- summary(vaas.subset.mcp)
 mcp.summary$model$call <- NULL # avoid some unnecessary output
@@ -562,7 +569,7 @@ mcp.summary
 
 
 ###################################################
-### code chunk number 75: contrMat
+### code chunk number 76: contrMat
 ###################################################
 n <- c(10, 20, 30, 40)
 names(n) <- paste("group", 1:4, sep = "")
@@ -570,13 +577,13 @@ contrMat(n, type = "Tukey")
 
 
 ###################################################
-### code chunk number 76: mcp.summary.linfct
+### code chunk number 77: mcp.summary.linfct
 ###################################################
 mcp.summary$linfct
 
 
 ###################################################
-### code chunk number 77: contrast.matrix.I
+### code chunk number 78: contrast.matrix.I
 ###################################################
 contr <- opm_mcp(vaas_4[, , 1:4], model = ~ Well, linfct = c(Tukey = 1),
   output = "contrast")
@@ -584,20 +591,20 @@ contr
 
 
 ###################################################
-### code chunk number 78: mcp.wells
+### code chunk number 79: mcp.wells
 ###################################################
 vaas4.mcp <- opm_mcp(vaas_4[, , 1:4], model = ~ Well, m.type = "lm",
   linfct = contr$Well[c(1:3, 6), ])
 
 
 ###################################################
-### code chunk number 79: summary.mcp.wells
+### code chunk number 80: summary.mcp.wells
 ###################################################
 summary(vaas4.mcp)$linfct
 
 
 ###################################################
-### code chunk number 80: opm.Rnw:1617-1620
+### code chunk number 81: opm.Rnw:1633-1636
 ###################################################
 old.mar <- par(mar = c(3, 20, 3, 2)) # adapt plotting settings
 plot(vaas4.mcp)
@@ -605,14 +612,14 @@ par(old.mar) # reset plotting settings
 
 
 ###################################################
-### code chunk number 81: model.mcp
+### code chunk number 82: model.mcp
 ###################################################
 vaas4.mcp <- opm_mcp(vaas_4, model = ~ Species, m.type = "lm",
   linfct = mcp(Species = "Dunnett"))
 
 
 ###################################################
-### code chunk number 82: mcp.output.data
+### code chunk number 83: mcp.output.data
 ###################################################
 vaas4.mcp <- opm_mcp(vaas_4, model = ~ Species + Strain,
   output = "data")
@@ -620,7 +627,7 @@ head(vaas4.mcp)
 
 
 ###################################################
-### code chunk number 83: data.G06
+### code chunk number 84: data.G06
 ###################################################
 vaas.G06 <- vaas_et_al[, , "G06"]
 metadata(vaas.G06)[114]
@@ -629,14 +636,14 @@ metadata(vaas.G06)[114]
 
 
 ###################################################
-### code chunk number 84: mcp.G06
+### code chunk number 85: mcp.G06
 ###################################################
 vaas.G06.mcp <- opm_mcp(vaas.G06, model = ~ Str.Exp, 
   linfct = c(Dunnett = 1))
 
 
 ###################################################
-### code chunk number 85: opm.Rnw:1672-1675
+### code chunk number 86: opm.Rnw:1688-1691
 ###################################################
 old.mar <- par(mar = c(3, 22, 3, 1)) # adapt plotting settings
 plot(vaas.G06.mcp)
@@ -644,7 +651,7 @@ par(old.mar) # reset plotting settings
 
 
 ###################################################
-### code chunk number 86: mcp.G06.output.contrast
+### code chunk number 87: mcp.G06.output.contrast
 ###################################################
 contr <- opm_mcp(vaas.G06, model = ~ Str.Exp,
   linfct = c(Dunnett = 1), output = "contrast")$Str.Exp
@@ -652,7 +659,7 @@ colnames(contr)
 
 
 ###################################################
-### code chunk number 87: mcp.G06.user.def.contrasts
+### code chunk number 88: mcp.G06.user.def.contrasts
 ###################################################
 contr <- contr[1:3, ] # keeps the column names
 rownames(contr) <- c(
@@ -669,7 +676,7 @@ vaas6.mcp <- opm_mcp(vaas.G06, model = ~ Str.Exp, m.type = "lm",
 
 
 ###################################################
-### code chunk number 88: opm.Rnw:1721-1724
+### code chunk number 89: opm.Rnw:1737-1740
 ###################################################
 old.mar <- par(mar = c(3, 12, 3, 2)) # adapt plotting settings
 plot(vaas6.mcp)
@@ -677,7 +684,7 @@ par(old.mar) # reset plotting settings
 
 
 ###################################################
-### code chunk number 89: discretize
+### code chunk number 90: discretize
 ###################################################
 vaas.repl <- subset(vaas_et_al,
   query = list(Experiment = c("First replicate", "Second replicate")))
@@ -685,41 +692,41 @@ vaas.repl <- do_disc(vaas.repl)
 
 
 ###################################################
-### code chunk number 90: list.discretize
+### code chunk number 91: list.discretize
 ###################################################
 listing(vaas.repl, as.groups = NULL)
 listing(vaas.repl, as.groups = list("Species"))
 
 
 ###################################################
-### code chunk number 91: phylo.data.I
+### code chunk number 92: phylo.data.I
 ###################################################
 phylo_data(listing(vaas.repl, as.groups = NULL))
 phylo_data(listing(vaas.repl, as.groups = list("Species")))
 
 
 ###################################################
-### code chunk number 92: phylo.data.II
+### code chunk number 93: phylo.data.II
 ###################################################
 phylo_data(listing(vaas.repl, as.groups = NULL, html = TRUE))
 phylo_data(listing(vaas.repl, as.groups = list("Species"), html = TRUE))
 
 
 ###################################################
-### code chunk number 93: opm.css.file
+### code chunk number 94: opm.css.file
 ###################################################
 opm_opt(css.file = grep("[.]css$", opm_files("auxiliary"), value = TRUE))
 
 
 ###################################################
-### code chunk number 94: opm.html.file
+### code chunk number 95: opm.html.file
 ###################################################
 vaas.html <- phylo_data(vaas.repl, format = "html",
   as.labels = list("Species", "Strain"), outfile = "vaas.html")
 
 
 ###################################################
-### code chunk number 95: wd.css.file
+### code chunk number 96: wd.css.file
 ###################################################
 file.copy(grep("[.]css$", opm_files("auxiliary"), value = TRUE),
   "opm_styles.css", overwrite = TRUE)
@@ -727,7 +734,7 @@ opm_opt(css.file = "opm_styles.css")
 
 
 ###################################################
-### code chunk number 96: prep.disc.data
+### code chunk number 97: prep.disc.data
 ###################################################
 vaas.repl <- subset(vaas_et_al,
   query = list(Experiment = c("First replicate", "Second replicate")))
@@ -736,62 +743,69 @@ vaas.repl <- extract(vaas.repl,
 
 
 ###################################################
-### code chunk number 97: disc.data.I
+### code chunk number 98: disc.data.I
 ###################################################
 vaas.repl.disc <- discrete(vaas.repl, range = c(0, 400))
 
 
 ###################################################
-### code chunk number 98: phylo.data.III
+### code chunk number 99: phylo.data.III
 ###################################################
 phylo_data(vaas.repl.disc, outfile = "example_replicates.epf")
 
 
 ###################################################
-### code chunk number 99: disc.data.II
+### code chunk number 100: disc.data.II
 ###################################################
 vaas.repl.disc <- discrete(vaas.repl, range = c(120.2, 236.6), gap = TRUE)
 
 
 ###################################################
-### code chunk number 100: disc.data.III
+### code chunk number 101: disc.data.III
 ###################################################
 vaas.repl.disc <- discrete(vaas.repl, range = c(120.2, 236.6),
   gap = TRUE, middle.na = FALSE)
 
 
 ###################################################
-### code chunk number 101: find.substrate.I
+### code chunk number 102: find.substrate.I
 ###################################################
-names <- find_substrate(c("Glutamine", "Glutamic acid"))
-names
+substrates <- find_substrate(c("Glutamine", "Glutamic acid"))
+substrates
 
 
 ###################################################
-### code chunk number 102: find.substrate.II
+### code chunk number 103: find.substrate.II
 ###################################################
-names <- find_substrate(c("L-Glutamine", "L-Glutamic acid"), "glob")
-names
+substrates <- find_substrate(c("L-Glutamine", "L-Glutamic acid"), "glob")
+substrates
 
 
 ###################################################
-### code chunk number 103: find.substrat.III
+### code chunk number 104: find.substrat.III
 ###################################################
-names <- find_substrate(c("*L-Glutamine", "*L-Glutamic acid"), "glob")
-names
+substrates <- find_substrate(c("*L-Glutamine", "*L-Glutamic acid"), "glob")
+substrates
 
 
 ###################################################
-### code chunk number 104: find.positions
+### code chunk number 105: find.positions
 ###################################################
-positions <- find_positions(names)
+positions <- find_positions(substrates)
 positions
 
 
 ###################################################
-### code chunk number 105: substrate.info
+### code chunk number 106: substrate.info
 ###################################################
-subst.info <- substrate_info(names)
+subst.info <- substrate_info(substrates)
+subst.info
+
+
+###################################################
+### code chunk number 107: substrate.info
+###################################################
+subst.info <- substrate_info(substrates, "all")
 subst.info
 
 

@@ -176,93 +176,124 @@ stopifnot(!identical(metadata(copy, "Type2"), x$Type))
 
 \docType{methods}
 \alias{metadata.set-methods}
-\alias{metadata.set,WMD,missing,list-method}
-\alias{metadata<-,WMD,missing,list-method}
 \alias{metadata.set,WMD,missing,FOE-method}
 \alias{metadata<-,WMD,missing,FOE-method}
-\alias{metadata.set,WMD,numeric,list-method}
-\alias{metadata<-,WMD,numeric,list-method}
-\alias{metadata.set,WMD,list,list-method}
-\alias{metadata<-,WMD,list,list-method}
-\alias{metadata.set,WMD,character,ANY-method}
-\alias{metadata<-,WMD,character,ANY-method}
-\alias{metadata.set,WMD,factor,ANY-method}
-\alias{metadata<-,WMD,factor,ANY-method}
+\alias{metadata.set,WMD,missing,list-method}
+\alias{metadata<-,WMD,missing,list-method}
+\alias{metadata.set,WMD,missing,data.frame-method}
+\alias{metadata<-,WMD,missing,data.frame-method}
 \alias{metadata.set,WMD,missing,WMD-method}
 \alias{metadata<-,WMD,missing,WMD-method}
-\alias{metadata.set,WMD,ANY,WMD-method}
-\alias{metadata<-,WMD,ANY,WMD-method}
-\alias{metadata.set,WMD,ANY,OPMS-method}
-\alias{metadata<-,WMD,ANY,OPMS-method}
-\alias{metadata.set,OPMS,missing,WMD-method}
-\alias{metadata<-,OPMS,missing,WMD-method}
-\alias{metadata.set,OPMS,missing,list-method}
-\alias{metadata<-,OPMS,missing,list-method}
+\alias{metadata.set,WMD,missing,OPMS-method}
+\alias{metadata<-,WMD,missing,OPMS-method}
+\alias{metadata.set,WMD,character,ANY-method}
+\alias{metadata<-,WMD,character,ANY-method}
+\alias{metadata.set,WMD,character,data.frame-method}
+\alias{metadata<-,WMD,character,data.frame-method}
+\alias{metadata.set,WMD,character,WMD-method}
+\alias{metadata<-,WMD,character,WMD-method}
+\alias{metadata.set,WMD,character,OPMS-method}
+\alias{metadata<-,WMD,character,OPMS-method}
+\alias{metadata.set,WMD,numeric,list-method}
+\alias{metadata<-,WMD,numeric,list-method}
+\alias{metadata.set,WMD,numeric,data.frame-method}
+\alias{metadata<-,WMD,numeric,data.frame-method}
+\alias{metadata.set,WMD,numeric,WMD-method}
+\alias{metadata<-,WMD,numeric,WMD-method}
+\alias{metadata.set,WMD,numeric,OPMS-method}
+\alias{metadata<-,WMD,numeric,OPMS-method}
+\alias{metadata.set,WMD,list,list-method}
+\alias{metadata<-,WMD,list,list-method}
+\alias{metadata.set,WMD,list,data.frame-method}
+\alias{metadata<-,WMD,list,data.frame-method}
+\alias{metadata.set,WMD,list,WMD-method}
+\alias{metadata<-,WMD,list,WMD-method}
+\alias{metadata.set,WMD,list,OPMS-method}
+\alias{metadata<-,WMD,list,OPMS-method}
+\alias{metadata.set,WMD,ANY,ANY-method}
+\alias{metadata<-,WMD,ANY,ANY-method}
 \alias{metadata.set,OPMS,missing,FOE-method}
 \alias{metadata<-,OPMS,missing,FOE-method}
+\alias{metadata.set,OPMS,missing,list-method}
+\alias{metadata<-,OPMS,missing,list-method}
 \alias{metadata.set,OPMS,missing,data.frame-method}
 \alias{metadata<-,OPMS,missing,data.frame-method}
+\alias{metadata.set,OPMS,missing,WMD-method}
+\alias{metadata<-,OPMS,missing,WMD-method}
 \alias{metadata.set,OPMS,missing,OPMS-method}
 \alias{metadata<-,OPMS,missing,OPMS-method}
+\alias{metadata.set,OPMS,character,OPMS-method}
+\alias{metadata<-,OPMS,character,OPMS-method}
+\alias{metadata.set,OPMS,character,data.frame-method}
+\alias{metadata<-,OPMS,character,data.frame-method}
+\alias{metadata.set,OPMS,ANY,data.frame-method}
+\alias{metadata<-,OPMS,ANY,data.frame-method}
 \alias{metadata.set,OPMS,ANY,WMD-method}
 \alias{metadata<-,OPMS,ANY,WMD-method}
 \alias{metadata.set,OPMS,ANY,OPMS-method}
 \alias{metadata<-,OPMS,ANY,OPMS-method}
 \alias{metadata.set,OPMS,ANY,ANY-method}
 \alias{metadata<-,OPMS,ANY,ANY-method}
-\alias{metadata.set,OPMS,ANY,data.frame-method}
-\alias{metadata<-,OPMS,ANY,data.frame-method}
-\alias{metadata.set,OPMS,character,OPMS-method}
-\alias{metadata<-,OPMS,character,OPMS-method}
-\alias{metadata.set,OPMS,character,data.frame-method}
-\alias{metadata<-,OPMS,character,data.frame-method}
-\alias{metadata.set,OPMS,factor,ANY-method}
-\alias{metadata<-,OPMS,factor,ANY-method}
 \usage{
-  \S4method{metadata}{WMD,missing,list}(object, key) <- value
-
   \S4method{metadata}{WMD,missing,FOE}(object, key) <- value
 
-  \S4method{metadata}{WMD,numeric,list}(object, key) <- value
+  \S4method{metadata}{WMD,missing,list}(object, key) <- value
 
-  \S4method{metadata}{WMD,list,list}(object, key) <- value
-
-  \S4method{metadata}{WMD,character,ANY}(object, key) <- value
-
-  \S4method{metadata}{WMD,factor,ANY}(object, key) <- value
+  \S4method{metadata}{WMD,missing,data.frame}(object,
+    key) <- value
 
   \S4method{metadata}{WMD,missing,WMD}(object, key) <- value
 
-  \S4method{metadata}{WMD,ANY,WMD}(object, key) <- value
+  \S4method{metadata}{WMD,missing,OPMS}(object, key) <- value
 
-  \S4method{metadata}{WMD,ANY,OPMS}(object, key) <- value
+  \S4method{metadata}{WMD,character,ANY}(object, key) <- value
 
-  \S4method{metadata}{OPMS,missing,WMD}(object, key) <- value
+  \S4method{metadata}{WMD,character,data.frame}(object, key) <- value
 
-  \S4method{metadata}{OPMS,missing,list}(object, key) <- value
+  \S4method{metadata}{WMD,character,WMD}(object, key) <- value
+
+  \S4method{metadata}{WMD,character,OPMS}(object, key) <- value
+
+  \S4method{metadata}{WMD,numeric,list}(object, key) <- value
+
+  \S4method{metadata}{WMD,numeric,data.frame}(object, key) <- value
+
+  \S4method{metadata}{WMD,numeric,WMD}(object, key) <- value
+
+  \S4method{metadata}{WMD,numeric,OPMS}(object, key) <- value
+
+  \S4method{metadata}{WMD,list,list}(object, key) <- value
+
+  \S4method{metadata}{WMD,list,data.frame}(object, key) <- value
+
+  \S4method{metadata}{WMD,list,WMD}(object, key) <- value
+
+  \S4method{metadata}{WMD,list,OPMS}(object, key) <- value
+
+  \S4method{metadata}{WMD,ANY,ANY}(object, key) <- value
 
   \S4method{metadata}{OPMS,missing,FOE}(object, key) <- value
+
+  \S4method{metadata}{OPMS,missing,list}(object, key) <- value
 
   \S4method{metadata}{OPMS,missing,data.frame}(object,
     key) <- value
 
+  \S4method{metadata}{OPMS,missing,WMD}(object, key) <- value
+
   \S4method{metadata}{OPMS,missing,OPMS}(object, key) <- value
+
+  \S4method{metadata}{OPMS,character,OPMS}(object, key) <- value
+
+  \S4method{metadata}{OPMS,character,data.frame}(object,
+    key) <- value
+
+  \S4method{metadata}{OPMS,ANY,data.frame}(object, key) <- value
 
   \S4method{metadata}{OPMS,ANY,WMD}(object, key) <- value
 
   \S4method{metadata}{OPMS,ANY,OPMS}(object, key) <- value
 
   \S4method{metadata}{OPMS,ANY,ANY}(object, key) <- value
-
-  \S4method{metadata}{OPMS,ANY,data.frame}(object, key) <- value
-
-  \S4method{metadata}{OPMS,character,OPMS}(
-    object, key) <- value
-
-  \S4method{metadata}{OPMS,character,data.frame}(
-    object, key) <- value
-
-  \S4method{metadata}{OPMS,factor,ANY}(
-    object, key) <- value
 
 }

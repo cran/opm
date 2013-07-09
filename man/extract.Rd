@@ -11,7 +11,13 @@
   \item{as.labels}{List, character vector or formula
   indicating the metadata to be joined and used as row
   names (if \code{dataframe} is \code{FALSE}) or additional
-  columns (if otherwise). Ignored if \code{NULL}.}
+  columns (if otherwise). Ignored if \code{NULL}.
+
+  If a \code{as.labels} is a formula and \code{dataframe}
+  is \code{TRUE}, the pseudo-function \code{J} within the
+  formula can be used to trigger combination of factors
+  immediately after selecting them as data-frame columns,
+  much like \code{as.groups}.}
 
   \item{subset}{Character vector. The parameter(s) to put
   in the matrix. If it is \sQuote{disc}, discretized data
@@ -28,10 +34,23 @@
 
   \item{as.groups}{For the \code{\link{OPMS}} method, a
   list, character vector or formula indicating the metadata
-  to be joined and used as \sQuote{row.groups} attribute of
-  the output matrix. See \code{\link{heat_map}} for its
-  usage. Ignored if \code{NULL} and if \code{dataframe} is
-  \code{FALSE}.
+  to be joined and either used as \sQuote{row.groups}
+  attribute of the output matrix or as additional columns
+  of the output data frame. See \code{\link{heat_map}} for
+  its usage. Ignored if empty.
+
+  If a \code{as.groups} is a formula and \code{dataframe}
+  is \code{TRUE}, the pseudo-function \code{J} within the
+  formula can be used to trigger combination of factors
+  immediately after selecting them as data-frame columns,
+  much like \code{as.labels}.
+
+  If \code{as.groups} is a logical scalar, \code{TRUE}
+  yields a trivial group that contains all elements,
+  \code{FALSE} yields one group per element, and \code{NA}
+  yields an error. The column name in which this factor is
+  placed if \code{dataframe} is \code{TRUE} is determined
+  using \code{opm_opt("group.name")}.
 
   For the data-frame method, a logical, character or
   numeric vector indicating according to which columns
@@ -121,15 +140,23 @@ opm_opt("curve.param") # default parameter
 
 # generate matrix (containing the parameter given above)
 (x <- extract(vaas_4, as.labels = list("Species", "Strain")))[, 1:3]
-stopifnot(is.matrix(x), identical(dim(x), c(4L, 96L)), is.numeric(x))
-# Using a formula also works
+stopifnot(is.matrix(x), dim(x) == c(4, 96), is.numeric(x))
+# using a formula also works
 (y <- extract(vaas_4, as.labels = ~ Species + Strain))[, 1:3]
 stopifnot(identical(x, y))
 
 # generate data frame
 (x <- extract(vaas_4, as.labels = list("Species", "Strain"),
   dataframe = TRUE))[, 1:3]
-stopifnot(is.data.frame(x), identical(dim(x), c(4L, 99L)))
+stopifnot(is.data.frame(x), dim(x) == c(4, 99))
+# using a formula
+(y <- extract(vaas_4, as.labels = ~ Species + Strain,
+  dataframe = TRUE))[, 1:3]
+stopifnot(identical(x, y))
+# using a formula, with joining into new columns
+(y <- extract(vaas_4, as.labels = ~ J(Species + Strain),
+  dataframe = TRUE))[, 1:3]
+stopifnot(identical(x, y[, -3]))
 
 # put all parameters in a single data frame
 x <- lapply(param_names(), function(name) extract(vaas_4, subset = name,
@@ -178,7 +205,7 @@ ci_plot(y[, c(1:6, 12)], legend.field = NULL, x = 0, y = 0)
   boot::norm base::data.frame base::as.data.frame
   base::matrix base::as.matrix
 
-  Other conversion-functions:
+  Other conversion-functions: \code{\link{as.data.frame}},
   \code{\link{extract_columns}}, \code{\link{flatten}},
   \code{\link{gen_iii}}, \code{\link{merge}},
   \code{\link{oapply}}, \code{\link{plates}},

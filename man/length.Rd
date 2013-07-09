@@ -28,10 +28,10 @@ stopifnot(identical(x, 4L)) # 4 plates contained
   \code{\link{hours}}, \code{\link{max}},
   \code{\link{measurements}}, \code{\link{metadata}},
   \code{\link{minmax}}, \code{\link{plate_type}},
-  \code{\link{position}}, \code{\link{select}},
-  \code{\link{seq}}, \code{\link{setup_time}},
-  \code{\link{subset}}, \code{\link{summary}},
-  \code{\link{well}}, \code{\link{wells}}
+  \code{\link{position}}, \code{\link{seq}},
+  \code{\link{setup_time}}, \code{\link{subset}},
+  \code{\link{summary}}, \code{\link{well}},
+  \code{\link{wells}}
 }
 \keyword{attribute}
 

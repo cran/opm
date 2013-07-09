@@ -13,11 +13,6 @@
   \item{out.ext}{Character scalar. The extension of the
   outfile names (without the dot).}
 
-  \item{proc}{Integer scalar. The number of processes to
-  spawn. Cannot be set to more than 1 core if running under
-  Windows. See the \code{cores} argument of
-  \code{\link{do_aggr}} for details.}
-
   \item{outdir}{Character vector. Directories in which to
   place the outfiles.  If \code{NULL} or only containing
   empty strings, each infile's directory is used.}
@@ -58,6 +53,11 @@
   \item{names}{Character vector with file or directory
   names, or convertible to such. See
   \code{\link{explode_dir}} for details.}
+
+  \item{proc}{Integer scalar. The number of processes to
+  spawn. Cannot be set to more than 1 core if running under
+  Windows. See the \code{cores} argument of
+  \code{\link{do_aggr}} for details.}
 
   \item{...}{Optional further arguments passed to
   \code{\link{explode_dir}}.}

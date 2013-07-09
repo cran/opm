@@ -113,6 +113,16 @@ setClass(WMD,
 #'     might be way more appropriate for converting \code{\link{OPM}} objects.
 #'   }
 #'
+#' @examples
+#' # conversion of a list to an OPM object is tolerant against re-orderings
+#' # (but not against additions and omissions)
+#' x <- as(vaas_1, "list")
+#' x$measurements <- c(rev(x$measurements[7:8]), rev(x$measurements[-7:-8]))
+#' summary(x)
+#' x <- as(x, "OPM")
+#' summary(x)
+#' stopifnot(identical(measurements(x), measurements(vaas_1)))
+#'
 #' @docType class
 #' @export
 #' @aliases OPM-class
@@ -148,6 +158,8 @@ setClass(OPM,
 #' @param object Matrix or character vector.
 #' @return Character vector with description of problems, empty if there are
 #'   none.
+#' @details The matrix must contain the hours as first column, the other column
+#'   names must be sorted.
 #' @keywords internal
 #'
 setGeneric("opm_problems",
@@ -236,7 +248,8 @@ setAs(from = "list", to = OPM, function(from) {
       sort.int(colnames(mat)[-hour.pos]))
     mat[, sorted.names, drop = FALSE]
   }
-  new(OPM, csv_data = unlist(from$csv_data), metadata = as.list(from$metadata),
+  new(OPM, csv_data = unlist(from$csv_data),
+    metadata = repair_na_strings.list(as.list(from$metadata), "character"),
     measurements = convert_measurements(from$measurements))
 })
 
@@ -258,6 +271,16 @@ setAs(from = "list", to = OPM, function(from) {
 #'   already contain aggregated data.
 #'
 #'   For further details see the parent class, \code{\link{OPM}}.
+#'
+#' @examples
+#' # conversion of a list to an OPMA object is tolerant against re-orderings
+#' # and additions (but not against omissions)
+#' x <- as(vaas_1, "list")
+#' x$aggregated <- c(Answer = 42L, rev(x$aggregated), Text = LETTERS)
+#' summary(x)
+#' x <- as(x, "OPMA")
+#' summary(x)
+#' stopifnot(identical(aggregated(x), aggregated(vaas_1)))
 #'
 #' @docType class
 #' @export
@@ -379,16 +402,17 @@ setAs(from = OPMA, to = "list", function(from) {
 })
 
 setAs(from = "list", to = OPMA, function(from) {
-  convert_aggregated <- function(mat) {
-    mat <- repair_na_strings(mat)
-    mat <- as.matrix(as.data.frame(lapply(mat, unlist)))
-    mat[, sort.int(colnames(mat)), drop = FALSE]
+  select_aggr <- function(x, wanted) {
+    x <- repair_na_strings(lapply(x, `[`, unlist(map_grofit_names())))
+    x <- do.call(cbind, x[wanted])
+    must(mode(x) <- "numeric")
+    x # should now be matrix, reduced to the known wells, parameters and CIs
   }
-  opm <- as(from, OPM)
-  settings <- update_settings_list(as.list(from$aggr_settings))
-  mat <- convert_aggregated(from$aggregated)
-  new(OPMA, csv_data = csv_data(opm), measurements = measurements(opm),
-    metadata = metadata(opm), aggr_settings = settings, aggregated = mat)
+  x <- as(from, OPM)
+  new(OPMA, measurements = measurements(x),
+    csv_data = csv_data(x), metadata = metadata(x),
+    aggregated = select_aggr(from$aggregated, colnames(x@measurements)[-1L]),
+    aggr_settings = update_settings_list(as.list(from$aggr_settings)))
 })
 
 
@@ -408,7 +432,25 @@ setAs(from = "list", to = OPMA, function(from) {
 #'   files with \code{\link{read_single_opm}} or \code{\link{read_opm}} if these
 #'   files already contain discretized data.
 #'
+#'   The discretized data are considered as \sQuote{consistent} with the curve
+#'   parameter from which they have been estimated if no \code{FALSE} value
+#'   corresponds to curve parameter larger than the curve parameter of any
+#'   \code{TRUE} value; \code{NA} values are not considered when checking
+#'   consistency. The \sQuote{strict.OPMD} entry of \code{\link{opm_opt}}
+#'   determines whether an error or only a warning is issued in the case of
+#'   inconsistency.
+#'
 #'   For further details see the parent class, \code{\link{OPMA}}.
+#'
+#' @examples
+#' # conversion of a list to an OPMD object is tolerant against re-orderings
+#' # and additions (but not against omissions)
+#' x <- as(vaas_1, "list")
+#' x$discretized <- c(Answer = 42L, rev(x$discretized), Text = LETTERS)
+#' summary(x)
+#' x <- as(x, "OPMD")
+#' summary(x)
+#' stopifnot(identical(discretized(x), discretized(vaas_1)))
 #'
 #' @docType class
 #' @export
@@ -423,7 +465,8 @@ setClass(OPMD,
   contains = OPMA,
   validity = function(object) {
     errs <- opmd_problems(object@disc_settings)
-    errs <- c(errs, opmd_problems(object@aggregated, object@discretized))
+    errs <- c(errs, opmd_problems(object@aggregated, object@discretized,
+      object@disc_settings$options$parameter))
     if (length(errs))
       errs
     else
@@ -443,11 +486,13 @@ setClass(OPMD,
 #' \code{\link{OPMD}} discretization settings. Called when constructing an
 #' object of the class.
 #'
-#' @param object Matrix of original, non-discretized data, or list describing
-#'   the discretization settings.
+#' @param object Matrix of original, aggregated, non-discretized data, or list
+#'   describing the discretization settings.
 #' @param disc Vector of discretized data.
 #' @return Character vector with description of problems, empty if there are
 #'   none.
+#' @details At this stage, \code{disc} must already have the same wells than
+#'   \code{object}, in the same order.
 #' @keywords internal
 #'
 setGeneric("opmd_problems",
@@ -457,18 +502,26 @@ setMethod("opmd_problems", "list", function(object) {
   opma_problems(object)
 }, sealed = SEALED)
 
-setMethod("opmd_problems", "matrix", function(object, disc) {
+setMethod("opmd_problems", "matrix", function(object, disc, param) {
   errs <- character()
   # uncomment this once numeric vectors are allowed, too:
   #if (!is.vector(disc) || !(is.numeric(disc) || is.logical(disc)))
   #  errs <- c(errs, "discretized data have wrong storage mode")
   if (!identical(names(disc), colnames(object)))
     errs <- c(errs, "discretized data have wrong names")
+  if (length(param) != 1L || !param %in% rownames(object))
+    errs <- c(errs, "missing name of discretized parameter")
   if (length(errs))
-    return(errs) # further tests are impossible in that case
+    return(errs) # further tests are impossible in these cases
   ok <- !is.na(disc)
-  if (!identical(order(disc[ok], object["A", ok]), order(object["A", ok])))
-    errs <- c(errs, "discretized data inconsistent with 'A' parameter")
+  ok <- identical(order(disc[ok], object[param, ok]), order(object[param, ok]))
+  if (!ok) {
+    text <- sprintf("discretized data inconsistent with '%s' parameter", param)
+    if (get("strict.OPMD", OPM_OPTIONS))
+      errs <- c(errs, text)
+    else
+      warning(text)
+  }
   errs
 }, sealed = SEALED)
 
@@ -490,19 +543,19 @@ setAs(from = OPMD, to = "data.frame", function(from) {
 
 setAs(from = OPMD, to = "list", function(from) {
   result <- as(as(from, OPMA), "list")
-  result$discretized <- as.list(discretized(from))
-  result$disc_settings <- disc_settings(from)
+  result$discretized <- as.list(from@discretized)
+  result$disc_settings <- from@disc_settings
   result
 })
 
 setAs(from = "list", to = OPMD, function(from) {
-  convert_discretized <- function(x) unlist(repair_na_strings(x, "logical"))
-  opma <- as(from, OPMA)
+  x <- as(from, OPMA)
   settings <- update_settings_list(as.list(from$disc_settings))
-  discretized <- convert_discretized(from$discretized)
-  new(OPMD, csv_data = csv_data(opma), measurements = measurements(opma),
-    metadata = metadata(opma), aggr_settings = aggr_settings(opma),
-    aggregated = aggregated(opma), discretized = discretized,
+  discretized <- from$discretized[colnames(x@aggregated)]
+  discretized <- unlist(repair_na_strings(discretized, "logical"))
+  new(OPMD, csv_data = csv_data(x), measurements = measurements(x),
+    metadata = metadata(x), aggr_settings = aggr_settings(x),
+    aggregated = aggregated(x), discretized = discretized,
     disc_settings = settings)
 })
 
@@ -575,12 +628,12 @@ setMethod("opms_problems", "list", function(object) {
     errs <- c(errs, "less than two plates submitted")
     return(errs) # further checks are useless in that case
   }
-  if (length(no.opm <- which(!vapply(object, is, logical(1L), OPM))) > 0L) {
+  if (length(no.opm <- which(!vapply(object, is, NA, OPM))) > 0L) {
     bad.classes <- unlist(lapply(object[no.opm], class))
     errs <- c(errs, paste("wrong class:", bad.classes))
     return(errs) # further checks are impossible in that case
   }
-  if (!isTRUE(isuni <- is_uniform(vapply(object, plate_type, character(1L)))))
+  if (!isTRUE(isuni <- is_uniform(vapply(object, plate_type, ""))))
     errs <- c(errs, paste("plate types are not uniform:",
       paste(isuni, collapse = " <=> ")))
   if (!isTRUE(is_uniform(lapply(object, wells))))
@@ -627,10 +680,10 @@ setClass(CMAT,
       errs <- c(errs, "missing row names")
     mode <- typeof(object)
     if (mode == "list") {
-      mode <- unique.default(vapply(object, typeof, character(1L)))
+      mode <- unique.default(vapply(object, typeof, ""))
       if (length(mode) > 1L)
         errs <- c(errs, "non-uniform list elements contained")
-      if (any(vapply(object, length, integer(1L)) < 1L))
+      if (any(vapply(object, length, 0L) < 1L))
         errs <- c(errs, "empty list elements contained")
     }
     if (!all(mode %in% c("character", "integer", "double", "logical")))

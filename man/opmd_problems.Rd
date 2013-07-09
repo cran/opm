@@ -2,8 +2,9 @@
 \alias{opmd_problems}
 \title{Check OPMD}
 \arguments{
-  \item{object}{Matrix of original, non-discretized data,
-  or list describing the discretization settings.}
+  \item{object}{Matrix of original, aggregated,
+  non-discretized data, or list describing the
+  discretization settings.}
 
   \item{disc}{Vector of discretized data.}
 }
@@ -18,6 +19,10 @@
   discretization settings. Called when constructing an
   object of the class.
 }
+\details{
+  At this stage, \code{disc} must already have the same
+  wells than \code{object}, in the same order.
+}
 \keyword{internal}
 
 \docType{methods}
@@ -27,6 +32,6 @@
 \usage{
   \S4method{opmd_problems}{list}(object) 
 
-  \S4method{opmd_problems}{matrix}(object, disc) 
+  \S4method{opmd_problems}{matrix}(object, disc, param) 
 
 }

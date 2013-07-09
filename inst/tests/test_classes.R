@@ -66,6 +66,17 @@ test_that("the OPM/OPMA example data can be converted to a list and back", {
   opm.back <- as(opm.list, "OPMA")
   expect_equal(SMALL.AGG, opm.back)
 
+  # With distortion of ordering and addition of nonsense
+  change <- 1L:5L
+  expect_true("aggregated" %in% names(opm.list))
+  expect_true(all(vapply(opm.list$aggregated, is.list, NA)))
+  opm.list$aggregated <- c(opm.list$aggregated[-change],
+    opm.list$aggregated[change])
+  opm.list$aggregated[change] <- lapply(opm.list$aggregated[change], rev)
+  opm.list$aggregated[-change] <- lapply(opm.list$aggregated[-change], c, Z = 7)
+  opm.back <- as(opm.list, "OPMA")
+  expect_equal(SMALL.AGG, opm.back)
+
 })
 
 

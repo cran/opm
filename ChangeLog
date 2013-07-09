@@ -3,7 +3,54 @@
 ################################################################################
 
 
-2013-04-XX (the 9th release on CRAN)
+2013-07-11 (the 10th release on CRAN)
+
+- ensured compatibility with yaml >= 2.1.7 regarding treatment of NA values
+  and added according conversion of metadata from YAML/JSON input files
+- resolved ambiguities in method dispatch of `metadata<-`()
+- fixed bug in batch_opm() that caused empty graphics files to be produced
+- fixed bug in batch_opm() that caused crashes with MicroStation CSV files
+- old-style CSV can now always be read if CSV entries contain commas (problem
+  reported by Jesse van Dam)
+- fixed bug when generating OPMA objects from YAML data that made inputting
+  order-dependent (problem reported by Marco Galardini)
+- made to_kmeans() compatible with the new kind of 'kmeans' objects (relevant
+  as of R > 3.0.1; problem reported by CRAN team)
+
+- removed deprecated select() function
+- well_to_substrate() is now deprecated in favour of new wells() methods
+- order of arguments of listing() has been slightly changed, and it is
+  deprecated to not set the 'as.groups' argument in the OPMD method
+
+- novel as.data.frame() methods, supporting the output of CSV files
+- more opm_opt() entries, allowing for more global control
+- many additions and some corrections in the stored substrate information
+- the OPMD listing() method can now also produce 'OPMS_Listing' objects
+- logical scalars can now be passed as 'as.groups' argument to extract()
+- extract(), extract_columns() and opm_mcp() now support on-the-fly combination
+  of data-frame columns, yielding new factors
+- novel 'factors' argument for extract_columns() as well as option to provide
+  a list as 'what' argument
+- character-string well names used for indexing are now automatically cleaned
+  (e.g. 'A1' yields 'A01')
+- find_substrate() returns dedicated S3 objects with nicer print() method
+- substrate_info() now yields KEGG drug IDs and ChEBI IDs and objects of class
+  'substrate_data' for displaying all available information
+- novel substrate_info() and find_position() methods for OPM and OPMS classes
+- batch_collect() and batch_opm() get more arguments
+- batch_opm() gets more running modes, and 'run_opm.R' gets more command-line
+  options; this mainly allows for combining data sets into the same output file
+- do_disc() gets a 'unify' argument
+- run_kmeans() gets a 'cores' argument
+- substrate_info() gets a 'browse' argument, and MeSH IDs were replaced by
+  MeSH names, thus allowing for the creation of an URL
+- to_yaml() gets a 'listify' argument
+
+
+################################################################################
+
+
+2013-04-18 (the 9th release on CRAN)
 
 - fixed bug in helper xy_plot() that caused a missing negative-control well to
   not only yield a warning but also an uninformative plot

@@ -271,14 +271,14 @@ setMethod("opm_mcp", "data.frame", function(object, model, linfct = 1L,
     result <- structure(names(result), .Names = result)
     do.call(multcomp::mcp, as.list(result))
   }
-  convert_data <- function(object, split.at) {
+  convert_data <- function(object, split.at, model) {
     param.pos <- assert_splittable_matrix(object, split.at)
     # create reshaped data frame and set temporary helper column '_ID' to avoid
     # non-unique values when setting 'row.names'; note according shift of column
     # positions!
-    object <- reshape(cbind(`_ID` = seq.int(nrow(object)), object),
+    object <- reshape(cbind(`_ID` = seq_len(nrow(object)), object),
       direction = "long",
-      idvar = c("_ID", colnames(object)[seq.int(param.pos - 1L)]),
+      idvar = c("_ID", colnames(object)[seq_len(param.pos - 1L)]),
       varying = colnames(object)[seq.int(param.pos + 1L, ncol(object))],
       v.names = RESERVED_NAMES[["value"]],
       timevar = RESERVED_NAMES[["well"]],
@@ -287,6 +287,9 @@ setMethod("opm_mcp", "data.frame", function(object, model, linfct = 1L,
     object[, RESERVED_NAMES[["well"]]] <- as.factor(
       object[, RESERVED_NAMES[["well"]]])
     object$`_ID` <- NULL
+    # the next step would combine the columns that have not yet been combined
+    if (is.list(attr(model, "combine")))
+      object <- extract_columns(object, attr(model, "combine"), direct = TRUE)
     object
   }
   contrast_matrices <- function(object, linfct) {
@@ -297,18 +300,18 @@ setMethod("opm_mcp", "data.frame", function(object, model, linfct = 1L,
   }
 
   # conversions and early returns, if requested
+  model <- convert_model(model, ops)
   case(match.arg(output),
-    data = return(convert_data(object, split.at)),
-    model = return(convert_model(model, ops)),
-    linfct = return(convert_hypothesis_spec(linfct,
-      convert_model(model, ops))),
+    data = return(convert_data(object, split.at, model)),
+    model = return(model),
+    linfct = return(convert_hypothesis_spec(linfct, model)),
     contrast = return(contrast_matrices(
-      convert_data(object, split.at),
-      convert_hypothesis_spec(linfct, convert_model(model, ops)))),
+      convert_data(object, split.at, model),
+      convert_hypothesis_spec(linfct, model))),
     mcp = NULL
   )
-  object <- convert_data(object, split.at)
-  model <- convert_model(model, ops)
+
+  object <- convert_data(object, split.at, model)
   linfct <- convert_hypothesis_spec(linfct, model)
 
   # necessary at this stage because otherwise glht() does not find its

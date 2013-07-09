@@ -6,8 +6,11 @@
     force.aggr = FALSE, disc.args = NULL,
     force.disc = FALSE, gen.iii = opm_opt("gen.iii"),
     device = "mypdf", dev.args = NULL, plot.args = NULL,
-    ..., output = c("yaml", "json", "xyplot", "levelplot"),
-    verbose = TRUE, demo = FALSE)
+    csv.args = NULL,
+    table.args = list(sep = "\t", row.names = FALSE), ...,
+    proc = 1L, outdir = "", overwrite = "no",
+    output = c("yaml", "json", "csv", "xyplot", "levelplot", "split", "clean"),
+    combine.into = NULL, verbose = TRUE, demo = FALSE)
 }
 \arguments{
   \item{md.args}{If not \code{NULL} but a list, passed as
@@ -53,19 +56,50 @@
   \item{plot.args}{List. Passed as additional arguments to
   the plotting function used.}
 
+  \item{csv.args}{If not \code{NULL} but a list, used for
+  specifying ways to use \code{\link{csv_data}} entries
+  directly as \code{\link{metadata}}. The list can contain
+  character vectors used for selecting and optionally
+  renaming \acronym{CSV} entries or functions that can be
+  applied to an entire data frame containing all
+  \acronym{CSV} entries. Note that this argument has
+  nothing to do with \sQuote{csv} output.}
+
+  \item{table.args}{Passed to \code{write.table} from the
+  \pkg{utils} package if \code{output} is set to
+  \sQuote{csv}. Do not confuse this with \code{csv.args}.}
+
   \item{...}{Optional arguments passed to
   \code{\link{batch_process}} in addition to \code{verbose}
   and \code{demo}. Note that \code{out.ext}, \code{fun} and
-  \code{fun.args} are set automatically.}
+  \code{fun.args} are set automatically. Alternatively,
+  these are parameters passed to
+  \code{\link{batch_collect}}.}
 
   \item{output}{Character scalar determining the main
-  output mode. \describe{ \item{json}{Create \acronym{JSON}
-  files, one per input file.} \item{levelplot}{Create
-  graphics files, one per input file, containing the output
-  of \code{\link{level_plot}}.} \item{yaml}{Create
-  \acronym{YAML} files, one per input file.}
-  \item{xyplot}{Create graphics files, one per input file,
-  containing the output of \code{\link{xy_plot}}.} }}
+  output mode. \describe{ \item{clean}{Apply
+  \code{\link{clean_filenames}}.} \item{csv}{Create
+  \acronym{CSV} files, by default one per input file.}
+  \item{json}{Create \acronym{JSON} files, by default one
+  per input file.} \item{levelplot}{Create graphics files,
+  by default one per input file, containing the output of
+  \code{\link{level_plot}}.} \item{split}{Split multi-plate
+  new style or old style \acronym{CSV} files with
+  \code{\link{split_files}}.} \item{yaml}{Create
+  \acronym{YAML} files, by default one per input file.}
+  \item{xyplot}{Create graphics files, by default one per
+  input file, containing the output of
+  \code{\link{xy_plot}}.} }}
+
+  \item{combine.into}{Empty or character scalar modifying
+  the output mode unless it is \sQuote{clean} or
+  \sQuote{split}. If non-empty, causes the creation of a
+  single output file named per plate type encountered in
+  the input, instead of one per input file (the default).
+  Thus \code{combine.into} should be given as a template
+  string for \code{sprintf} from the \pkg{base} package
+  with one placeholder for the plate-type, and without a
+  file extension.}
 
   \item{names}{Character vector with names of files in one
   of the formats accepted by \code{\link{read_single_opm}},
@@ -87,6 +121,23 @@
   \item{demo}{Logical scalar. Do not read files, but print
   a vector with the names of the files that would be
   (attempted to) read, and return them invisibly?}
+
+  \item{proc}{Integer scalar. The number of processes to
+  spawn. Cannot be set to more than 1 core if running under
+  Windows. See the \code{cores} argument of
+  \code{\link{do_aggr}} for details.}
+
+  \item{outdir}{Character vector. Directories in which to
+  place the outfiles.  If \code{NULL} or only containing
+  empty strings, each infile's directory is used.}
+
+  \item{overwrite}{Character scalar. If \sQuote{yes},
+  conversion is always tried if \code{infile} exists and is
+  not empty. If \sQuote{no}, conversion is not tried if
+  \code{outfile} exists and is not empty. If
+  \sQuote{older}, conversion is tried if \code{outfile}
+  does not exist or is empty or is older than \code{infile}
+  (with respect to the modification time).}
 
   \item{verbose}{Logical scalar. Print conversion and
   success/failure information?}
@@ -185,7 +236,17 @@
   they, and \acronym{YAML} in general, lack a native
   representation of \code{NA} values. Such entries are
   likely to be misunderstood as \sQuote{NA} character
-  scalars.
+  scalars (if the \pkg{json} package or the \pkg{yaml}
+  package prior to version 2.1.7 are used) or as
+  \sQuote{.na}, \sQuote{.na.real}, \sQuote{.na.logical} or
+  \sQuote{.na.character} character scalars (if more recent
+  versions of the \pkg{yaml} package are used). Input
+  functions in other programming languages should conduct
+  according conversions. \pkg{opm} translates these values
+  when converting a list to a \code{\link{OPM}} object.
+
+  See \code{\link{as.data.frame}} regarding the generated
+  \acronym{CSV}.
 }
 \note{
   This function is for batch-converting many files; for

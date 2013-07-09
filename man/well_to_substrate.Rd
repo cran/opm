@@ -24,14 +24,15 @@
 \description{
   Translate well names (which are basically their
   coordinates on the plate) to substrate names, given the
-  name of the plate.
+  name of the plate. This function is \strong{deprecated};
+  use \code{\link{wells}} instead.
 }
 \examples{
 x <- c("A01", "B10")
 (y <- well_to_substrate("PM1", x))
 stopifnot(nchar(y) > nchar(x))
-# formula yields same result
-stopifnot(identical(y, well_to_substrate("PM1", ~ c(A01, B10))))
+# formula yields same result (except for row names)
+stopifnot(y == well_to_substrate("PM1", ~ c(A01, B10)))
 # using a sequence of well coordinates
 stopifnot(nrow(well_to_substrate("PM1", ~ C02:C06)) == 5) # well sequence
 stopifnot(nrow(well_to_substrate("PM1")) == 96) # all wells by default

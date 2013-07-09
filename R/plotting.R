@@ -73,7 +73,7 @@ print.OPMD_Listing <- function(x, ...) {
 print.OPMS_Listing <- function(x, ...) {
   for (name in rownames(x)) {
     cat(name, gsub(".", "-", name, perl = TRUE), sep = "\n")
-    cat(formatDL(x = x[name, ], ...), sep = "\n")
+    cat(formatDL(x[name, ], ...), sep = "\n")
     cat("\n")
   }
   invisible(x)
@@ -103,6 +103,22 @@ print.OPMS_Summary <- function(x, ...) {
   y <- attr(x, "overall")
   cat(sprintf(tmpl, OPMS, y$dimensions[1L], y$aggregated, y$discretized,
     y$plate.type, y$dimensions[3L], y$dimensions[2L]), sep = "\n")
+  invisible(x)
+}
+
+#' @rdname print
+#' @method print print_easy
+#' @export
+#'
+print.print_easy <- function(x, ...) {
+  to_map <- function(items) if (is.null(names(items)))
+    items
+  else
+    as.list(items)
+  cat(as.yaml(if (is.list(x))
+    rapply(x, to_map, "ANY", NULL, "replace")
+  else
+    to_map(x)))
   invisible(x)
 }
 
@@ -1118,7 +1134,7 @@ setMethod("ci_plot", "data.frame", function(object, rowname.sep = " ",
   # Check the triplet structure and determine all triplet start positions
   if (nrow(object) %% 3L != 0L)
     stop("need data frame with 3 * n rows")
-  chunk.pos <- seq.int(nrow(object))
+  chunk.pos <- seq_len(nrow(object))
   chunk.pos <- chunk.pos[chunk.pos %% 3L == 1L]
   row.names <- as.character(seq_along(chunk.pos))
 
@@ -1147,7 +1163,7 @@ setMethod("ci_plot", "data.frame", function(object, rowname.sep = " ",
   # Panel layout and plotting of individual panels
   old.par <- par(mfcol = best_layout(ncol(object)))
   on.exit(par(old.par))
-  lapply(seq.int(ncol(object)), FUN = single_plot)
+  lapply(seq_len(ncol(object)), FUN = single_plot)
 
   # Legend
   if (draw.legend && !is.null(legend)) {
@@ -1504,7 +1520,7 @@ setMethod("radial_plot", "matrix", function(object, rp.type = "p",
       do.call(legend, legend.args)
     }
     result <- suppressWarnings(cbind(rn, line.col))
-    result <- result[seq.int(nrow(object)), , drop = FALSE]
+    result <- result[seq_len(nrow(object)), , drop = FALSE]
     result <- structure(.Data = result[, 2L], .Names = as.vector(result[, 1L]))
   } else
     result <- NULL

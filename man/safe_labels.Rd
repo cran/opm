@@ -57,7 +57,7 @@ stopifnot(nchar(y) == 22) # padded to uniform length
 stopifnot(grepl("^'.*'$", y)) # all strings enclosed in sinqle quotes
 }
 \seealso{
-  base::gsub
+  base::gsu
 
   Other phylogeny-functions: \code{\link{html_args}},
   \code{\link{phylo_data}}

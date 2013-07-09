@@ -36,6 +36,16 @@
   \sQuote{OmniLog\eqn{\textsuperscript{\textregistered}}{(R)}
   Phenotype Microarray}.
 }
+\examples{
+# conversion of a list to an OPM object is tolerant against re-orderings
+# (but not against additions and omissions)
+x <- as(vaas_1, "list")
+x$measurements <- c(rev(x$measurements[7:8]), rev(x$measurements[-7:-8]))
+summary(x)
+x <- as(x, "OPM")
+summary(x)
+stopifnot(identical(measurements(x), measurements(vaas_1)))
+}
 \seealso{
   methods::Methods methods::new
 

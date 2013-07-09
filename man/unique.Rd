@@ -43,11 +43,12 @@ stopifnot(identical(x, vaas_1))
 \seealso{
   base::unique
 
-  Other conversion-functions: \code{\link{extract}},
-  \code{\link{extract_columns}}, \code{\link{flatten}},
-  \code{\link{gen_iii}}, \code{\link{merge}},
-  \code{\link{oapply}}, \code{\link{plates}},
-  \code{\link{rep}}, \code{\link{rev}}, \code{\link{sort}},
+  Other conversion-functions: \code{\link{as.data.frame}},
+  \code{\link{extract}}, \code{\link{extract_columns}},
+  \code{\link{flatten}}, \code{\link{gen_iii}},
+  \code{\link{merge}}, \code{\link{oapply}},
+  \code{\link{plates}}, \code{\link{rep}},
+  \code{\link{rev}}, \code{\link{sort}},
   \code{\link{thin_out}}, \code{\link{to_yaml}}
 }
 \keyword{manip}

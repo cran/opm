@@ -421,7 +421,7 @@ setMethod("do_aggr", OPM, function(object, boot = 100L, verbose = FALSE,
         control <- make_grofit_control(verbose, boot, add = options)
         grofit.time <- to_grofit_time(object)
         grofit.data <- to_grofit_data(object)
-        result <- mclapply(X = as.list(seq.int(nrow(grofit.data))),
+        result <- mclapply(X = as.list(seq_len(nrow(grofit.data))),
           FUN = function(row) {
             run_grofit(grofit.time[row, , drop = FALSE],
               grofit.data[row, , drop = FALSE], control)
@@ -451,7 +451,7 @@ setMethod("do_aggr", OPM, function(object, boot = 100L, verbose = FALSE,
         data <- as.data.frame(measurements(object))
         ## get well names
         wells <- wells(object)
-        indx <- as.list(seq.int(length(wells)))
+        indx <- as.list(seq_len(length(wells)))
         result <- mclapply(X = indx,
           FUN = function(i) {
             run_mgcv(x = HOUR, y = wells[i], data = data, options = options,
@@ -463,8 +463,8 @@ setMethod("do_aggr", OPM, function(object, boot = 100L, verbose = FALSE,
             opm_models <- lapply(result, function(x) x$model)
             names(opm_models) <- wells
             if (is.null(options$filename))
-              options$filename <- paste("opm_models_",
-                format(Sys.time(), "%Y-%m-%d_%H:%M:%S"), ".RData", sep = "")
+              options$filename <- paste0("opm_models_",
+                format(Sys.time(), "%Y-%m-%d_%H:%M:%S"), ".RData")
             save("opm_models", file = options$filename)
             cat("Models saved as 'opm_models' on disk in file\n  ",
               getwd(), "/", options$filename, "\n\n", sep = "")
@@ -550,10 +550,10 @@ pe_and_ci.boot <- function(x, ci = 0.95, as.pe = c("median", "mean", "pe"),
   if (nrow(x$t)) {
     cis <- lapply(seq_along(x$t0), FUN = boot.ci, boot.out = x, conf = ci,
       type = type, ...)
-    ok <- !vapply(cis, is.null, logical(1L))
+    ok <- !vapply(cis, is.null, NA)
     cis[!ok] <- list(c(NA_real_, NA_real_))
     cis[ok] <- lapply(cis[ok], `[[`, type, exact = FALSE)
-    cis[ok] <- lapply(cis[ok], FUN = last, i = 2L)
+    cis[ok] <- lapply(lapply(cis[ok], c), tail, 2L)
     cis <- do.call(cbind, cis)
   } else {
     if (as.pe != "pe") {

@@ -2,7 +2,9 @@
 \alias{find_positions}
 \title{Identify positions of substrates}
 \arguments{
-  \item{object}{Query character vector or query list.}
+  \item{object}{Query character vector, factor or list, S3
+  object of class \sQuote{substrate_match},
+  \code{\link{OPM}} or \code{\link{OPMS}} object.}
 
   \item{...}{Optional arguments passed between the
   methods.}
@@ -12,8 +14,10 @@
   (empty if nothing was found), with one row per position
   found, the plate name in the first column and the well
   name in the second. The names of this list correspond to
-  \code{names}. The list method returns lists of such
-  lists.
+  \code{names}. The \code{\link{OPM}} and
+  \code{\link{OPMS}} methods do the same, using their own
+  substrates. The list and \sQuote{substrate_match} methods
+  return lists of such lists.
 }
 \description{
   Identify the positions of substrates, i.e. the plate(s)
@@ -22,7 +26,9 @@
 \details{
   The query names must be written exactly as used in the
   stored plate annotations. To determine their spelling,
-  use \code{\link{find_substrate}}.
+  use \code{\link{find_substrate}}.  This spelling is not
+  guaranteed to be stable between distinct \pkg{opm}
+  releases.
 }
 \examples{
 # Character method; compare correct and misspelled substrate name
@@ -49,13 +55,22 @@ stopifnot(length(x[[1]]) > length(x[[2]]))
 \docType{methods}
 \alias{find_positions-methods}
 \alias{find_positions,character-method}
+\alias{find_positions,substrate_match-method}
 \alias{find_positions,list-method}
+\alias{find_positions,OPM-method}
 \alias{find_positions,factor-method}
+\alias{find_positions,OPMS-method}
 \usage{
-  \S4method{find_positions}{character}(object) 
+  \S4method{find_positions}{character}(object, ...) 
 
-  \S4method{find_positions}{list}(object) 
+  \S4method{find_positions}{substrate_match}(object, ...) 
+
+  \S4method{find_positions}{list}(object, ...) 
+
+  \S4method{find_positions}{OPM}(object, ...) 
 
   \S4method{find_positions}{factor}(object, ...) 
+
+  \S4method{find_positions}{OPMS}(object, ...) 
 
 }

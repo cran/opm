@@ -265,6 +265,16 @@ setMethod("include_metadata", OPMS, function(object, ...) {
 setGeneric("metadata<-",
   function(object, key, ..., value) standardGeneric("metadata<-"))
 
+#-------------------------------------------------------------------------------
+# 1:1 relationship with the OPMS methods
+
+#' @name metadata.set
+#'
+setMethod("metadata<-", c(WMD, "missing", FOE), function(object, key,
+    value) {
+  object@metadata <- map_values(object@metadata, value)
+  object
+}, sealed = SEALED)
 #' @name metadata.set
 #'
 setMethod("metadata<-", c(WMD, "missing", "list"), function(object, key,
@@ -275,13 +285,70 @@ setMethod("metadata<-", c(WMD, "missing", "list"), function(object, key,
 
 #' @name metadata.set
 #'
-setMethod("metadata<-", c(WMD, "missing", FOE), function(object, key,
-    value) {
-  object@metadata <- map_values(object@metadata, value)
+setMethod("metadata<-", c(WMD, "missing", "data.frame"), function(object,
+    key, value) {
+  if (nrow(value) != 1L)
+    stop("need data frame with one row")
+  object@metadata <- as.list.data.frame(value)
   object
 }, sealed = SEALED)
 
+#' @name metadata.set
+#'
+setMethod("metadata<-", c(WMD, "missing", WMD), function(object, key, value) {
+  object@metadata <- value@metadata
+  object
+}, sealed = SEALED)
+
+#' @name metadata.set
+#'
+setMethod("metadata<-", c(WMD, "missing", OPMS), function(object, key, value) {
+  stop("lengths of 'object' and 'value' do not fit")
+}, sealed = SEALED)
+
 #-------------------------------------------------------------------------------
+# the data-frame behaviour deliberately deviates from other key values
+
+#' @name metadata.set
+#'
+setMethod("metadata<-", c(WMD, "character", "ANY"), function(object, key,
+    value) {
+  object@metadata[[key]] <- value
+  object
+}, sealed = SEALED)
+
+#' @name metadata.set
+#'
+setMethod("metadata<-", c(WMD, "character", "data.frame"), function(object, key,
+    value) {
+  if (nrow(value) != 1L)
+    stop("need data frame with one row")
+  if (any(found <- key %in% colnames(value))) {
+    j <- key[found <- which(found)[1L]]
+    key <- key[seq.int(1L, found)]
+  } else
+    j <- TRUE
+  object@metadata[[key]] <- value[1L, j, drop = TRUE]
+  object
+}, sealed = SEALED)
+
+#' @name metadata.set
+#'
+setMethod("metadata<-", c(WMD, "character", "WMD"), function(object, key,
+    value) {
+  object@metadata[[key]] <- value@metadata
+  object
+}, sealed = SEALED)
+
+#' @name metadata.set
+#'
+setMethod("metadata<-", c(WMD, "character", "OPMS"), function(object, key,
+    value) {
+  stop("lengths of 'object' and 'value' do not fit")
+}, sealed = SEALED)
+
+#-------------------------------------------------------------------------------
+# must repeat method for data frames to avoid ambiguity in dispatch
 
 #' @name metadata.set
 #'
@@ -296,7 +363,32 @@ setMethod("metadata<-", c(WMD, "numeric", "list"), function(object, key,
   object
 }, sealed = SEALED)
 
+#' @name metadata.set
+#'
+setMethod("metadata<-", c(WMD, "numeric", "data.frame"), function(object, key,
+    value) {
+  if (nrow(value) != 1L)
+    stop("need data frame with one row")
+  metadata(object, key) <- as.list.data.frame(value)
+  object
+}, sealed = SEALED)
+
+#' @name metadata.set
+#'
+setMethod("metadata<-", c(WMD, "numeric", "WMD"), function(object, key,
+    value) {
+  metadata(object, key) <- value@metadata
+  object
+}, sealed = SEALED)
+
+#' @name metadata.set
+#'
+setMethod("metadata<-", c(WMD, "numeric", OPMS), function(object, key, value) {
+  stop("lengths of 'object' and 'value' do not fit")
+}, sealed = SEALED)
+
 #-------------------------------------------------------------------------------
+# must repeat method for data frames to avoid ambiguity in dispatch
 
 #' @name metadata.set
 #'
@@ -310,43 +402,27 @@ setMethod("metadata<-", c(WMD, "list", "list"), function(object, key, value) {
   object
 }, sealed = SEALED)
 
-#-------------------------------------------------------------------------------
-
 #' @name metadata.set
 #'
-setMethod("metadata<-", c(WMD, "character", "ANY"), function(object, key,
+setMethod("metadata<-", c(WMD, "list", "data.frame"), function(object, key,
     value) {
-  object@metadata[[key]] <- value
+  if (nrow(value) != 1L)
+    stop("need data frame with one row")
+  metadata(object, key) <- as.list.data.frame(value)
   object
 }, sealed = SEALED)
 
 #' @name metadata.set
 #'
-setMethod("metadata<-", c(WMD, "factor", "ANY"), function(object, key,
+setMethod("metadata<-", c(WMD, "list", "WMD"), function(object, key,
     value) {
-  object@metadata[[as.character(key)]] <- value
-  object
-}, sealed = SEALED)
-
-#-------------------------------------------------------------------------------
-
-#' @name metadata.set
-#'
-setMethod("metadata<-", c(WMD, "missing", WMD), function(object, key, value) {
-  object@metadata <- value@metadata
-  object
-}, sealed = SEALED)
-
-#' @name metadata.set
-#'
-setMethod("metadata<-", c(WMD, "ANY", WMD), function(object, key, value) {
   metadata(object, key) <- value@metadata
   object
 }, sealed = SEALED)
 
 #' @name metadata.set
 #'
-setMethod("metadata<-", c(WMD, "ANY", OPMS), function(object, key, value) {
+setMethod("metadata<-", c(WMD, "list", OPMS), function(object, key, value) {
   stop("lengths of 'object' and 'value' do not fit")
 }, sealed = SEALED)
 
@@ -354,9 +430,22 @@ setMethod("metadata<-", c(WMD, "ANY", OPMS), function(object, key, value) {
 
 #' @name metadata.set
 #'
-setMethod("metadata<-", c(OPMS, "missing", WMD), function(object, key, value) {
+setMethod("metadata<-", c(WMD, "ANY", "ANY"), function(object, key,
+    value) {
+  metadata(object, as.character(key)) <- value
+  object
+}, sealed = SEALED)
+
+#-------------------------------------------------------------------------------
+# 1:1 relationship with the WMD methods
+
+#' @name metadata.set
+#'
+setMethod("metadata<-", c(OPMS, "missing", FOE), function(object, key,
+    value) {
   for (i in seq_along(object@plates))
-    metadata(object@plates[[i]]) <- value@metadata
+    object@plates[[i]]@metadata <- map_values(object@plates[[i]]@metadata,
+      value)
   object
 }, sealed = SEALED)
 
@@ -371,25 +460,19 @@ setMethod("metadata<-", c(OPMS, "missing", "list"), function(object, key,
 
 #' @name metadata.set
 #'
-setMethod("metadata<-", c(OPMS, "missing", FOE), function(object, key,
-    value) {
+setMethod("metadata<-", c(OPMS, "missing", "data.frame"), function(object,
+    key, value) {
+  LL(object, .wanted = nrow(value))
   for (i in seq_along(object@plates))
-    object@plates[[i]]@metadata <- map_values(object@plates[[i]]@metadata,
-      value)
+    object@plates[[i]]@metadata <- as.list.data.frame(value[i, , drop = FALSE])
   object
 }, sealed = SEALED)
 
 #' @name metadata.set
 #'
-setMethod("metadata<-", c(OPMS, "missing", "data.frame"), function(object,
-    key, value) {
-  LL(object, .wanted = nrow(value))
-  if (ncol(value) > 1L)
-    for (i in seq_along(object@plates))
-      object@plates[[i]]@metadata <- value[i, , drop = TRUE]
-  else
-    for (i in seq_along(object@plates))
-      object@plates[[i]]@metadata <- as.list(value[i, , drop = FALSE])
+setMethod("metadata<-", c(OPMS, "missing", WMD), function(object, key, value) {
+  for (i in seq_along(object@plates))
+    metadata(object@plates[[i]]) <- value@metadata
   object
 }, sealed = SEALED)
 
@@ -397,13 +480,50 @@ setMethod("metadata<-", c(OPMS, "missing", "data.frame"), function(object,
 #'
 setMethod("metadata<-", c(OPMS, "missing", OPMS), function(object, key,
     value) {
-  LL(object, .wanted = nrow(value))
+  LL(object, .wanted = length(value))
   for (i in seq_along(object@plates))
     object@plates[[i]]@metadata <- value@plates[[i]]@metadata
   object
 }, sealed = SEALED)
 
 #-------------------------------------------------------------------------------
+
+#' @name metadata.set
+#'
+setMethod("metadata<-", c(OPMS, "character", OPMS), function(object, key,
+    value) {
+  LL(object, .wanted = length(value))
+  for (i in seq_along(object@plates))
+    object@plates[[i]]@metadata[[key]] <- value@plates[[i]]@metadata
+  object
+}, sealed = SEALED)
+
+#' @name metadata.set
+#'
+setMethod("metadata<-", c(OPMS, "character", "data.frame"), function(object,
+    key, value) {
+  LL(object, .wanted = nrow(value))
+  if (any(found <- key %in% colnames(value))) {
+    j <- key[found <- which(found)[1L]]
+    key <- key[seq.int(1L, found)]
+  } else
+    j <- TRUE
+  for (i in seq_along(object@plates))
+    object@plates[[i]]@metadata[[key]] <- value[i, j, drop = TRUE]
+  object
+}, sealed = SEALED)
+
+#-------------------------------------------------------------------------------
+
+#' @name metadata.set
+#'
+setMethod("metadata<-", c(OPMS, "ANY", "data.frame"), function(object, key,
+    value) {
+  LL(object, .wanted = nrow(value))
+  for (i in seq_along(object@plates))
+    metadata(object@plates[[i]], key) <- value[i, , drop = TRUE]
+  object
+}, sealed = SEALED)
 
 #' @name metadata.set
 #'
@@ -428,48 +548,6 @@ setMethod("metadata<-", c(OPMS, "ANY", "ANY"), function(object, key, value) {
   for (i in seq_along(object@plates))
     metadata(object@plates[[i]], key) <- value
   object
-}, sealed = SEALED)
-
-#' @name metadata.set
-#'
-setMethod("metadata<-", c(OPMS, "ANY", "data.frame"), function(object, key,
-    value) {
-  LL(object, .wanted = nrow(value))
-  for (i in seq_along(object@plates))
-    metadata(object@plates[[i]], key) <- value[i, , drop = TRUE]
-  object
-}, sealed = SEALED)
-
-#-------------------------------------------------------------------------------
-
-#' @name metadata.set
-#'
-setMethod("metadata<-", c(OPMS, "character", OPMS), function(
-    object, key, value) {
-  LL(object, .wanted = length(value))
-  for (i in seq_along(object@plates))
-    object@plates[[i]]@metadata[[key]] <- value@plates[[i]]@metadata
-  object
-}, sealed = SEALED)
-
-#' @name metadata.set
-#'
-setMethod("metadata<-", c(OPMS, "character", "data.frame"), function(
-    object, key, value) {
-  LL(object, .wanted = nrow(value))
-  j <- last(key)
-  if (!j %in% colnames(value))
-    j <- TRUE
-  for (i in seq_along(object@plates))
-    object@plates[[i]]@metadata[[key]] <- value[i, j, drop = TRUE]
-  object
-}, sealed = SEALED)
-
-#' @name metadata.set
-#'
-setMethod("metadata<-", c(OPMS, "factor", "ANY"), function(
-    object, key, value) {
-  `metadata<-`(object, as.character(key), value)
 }, sealed = SEALED)
 
 

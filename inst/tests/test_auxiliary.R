@@ -15,14 +15,6 @@ context("Testing the helper functions of the OPM package")
 ## UNTESTED
 
 
-## last
-test_that("an objects last elements can be accessed", {
-  expect_equal(c("x", "y", "z"), last(letters, 3))
-  expect_equal(letters, last(letters, 26))
-  expect_error(last(letters, 27))
-})
-
-
 ## md_data_frame
 ## UNTESTED
 
@@ -115,22 +107,55 @@ test_that("rows can be picked", {
 
 
 ## metadata_key
-test_that("we can convert formulas for use as metadata keys", {
+test_that("we can convert formulas to formulas for use as metadata keys", {
 
   var <- c("A", "B")
   f <- ~ a $ b $ c + I(var) * ("d" + e) + c("f", "g", "h") | i$"j"
   got <- metadata_key(f, TRUE)
   expect_equal(got, ~ a.b.c + A.B * (d + e) + c(f, g, h) | i.j)
+
+  f <- ~ a $ b $ c + I(var) * J("d" + e) + c("f", "g", "h") | i$"j"
+  got <- metadata_key(f, TRUE)
+  expect_equal(attr(got, "combine"), list(d.e = c("d", "e")))
+  expect_equal(got, ~ a.b.c + A.B * d.e + c(f, g, h) | i.j)
+
+  f <- ~ a $ b $ c + I(var) * J("d", e$r) + c("f", "g", "h") | i$"j"
+  old <- opm_opt(comb.key.join = "#")
+  got <- metadata_key(f, TRUE)
+  expect_equal(attr(got, "combine"), list(`d#e.r` = c("d", "e.r")))
+  expect_equal(got, ~ a.b.c + A.B * `d#e.r` + c(f, g, h) | i.j)
+  opm_opt(comb.key.join = old$comb.key.join)
+
+})
+
+
+## metadata_key
+test_that("we can convert formulas to lists for use as metadata keys", {
+  var <- c("A", "B")
+  f <- ~ a $ b $ c + I(var) * ("d" + e) + c("f", "g", "h") | i$"j"
+
   got <- metadata_key(f, FALSE)
-  expect_equal(got, list(a.b.c = c("a", "b", "c"), A.B = c("A", "B"),
-    d = "d", e = "e", f = "f", g = "g", h = "h", i.j = c("i", "j")))
+  wanted <- list(a.b.c = c("a", "b", "c"), A.B = c("A", "B"),
+    d = "d", e = "e", f = "f", g = "g", h = "h", i.j = c("i", "j"))
+  expect_equal(got, wanted)
+
   got <- metadata_key(f, FALSE, remove = c("A.B", "i.j"))
-  expect_equal(got, list(a.b.c = c("a", "b", "c"),
-    d = "d", e = "e", f = "f", g = "g", h = "h"))
+  wanted <- list(a.b.c = c("a", "b", "c"),
+    d = "d", e = "e", f = "f", g = "g", h = "h")
+  expect_equal(got, wanted)
+
+  f <- ~ a $ b $ c + I(var) * J("d" + e + E$F) + c("f", "g", "h") | i$"j"
+  got <- metadata_key(f, FALSE)
+  wanted <- list(a.b.c = c("a", "b", "c"), A.B = c("A", "B"),
+    d = "d", e = "e", E.F = c("E", "F"), f = "f", g = "g", h = "h",
+    i.j = c("i", "j"))
+  attr(wanted, "combine") <- list(d.e.E.F = c("d", "e", "E.F"))
+  expect_equal(got, wanted)
 
   f <- Value ~ Well
   got <- metadata_key(f, FALSE)
-  expect_equal(got, c(Well = "Well"))
+  wanted <- c(Well = "Well")
+  expect_equal(got, wanted)
   got <- metadata_key(f, FALSE, remove = RESERVED_NAMES)
   expect_equal(got, NULL)
 
@@ -538,16 +563,21 @@ test_that("names in lists with missing names can be mapped", {
 
 ## repair_na_strings
 test_that("NAs in a character vectors can be repaired", {
+  # old style
   x <- c("abc", " ", "NA", " NA", "           NA", "123", "NA ")
   got <- repair_na_strings(x)
   expect_equal(got, c("abc", " ", NA, NA, NA, "123", "NA "))
+  # new style (YAML >= 2.1.7)
+  x <- c("abc", " ", ".na.real", ".na.character", ".na", "123", ".na.integer")
+  got <- repair_na_strings(x)
+  expect_equal(got, c("abc", " ", NA, NA, NA, "123", NA))
 })
 
 ## repair_na_strings
 test_that("NAs in a list can be repaired", {
 
   x <- list(a = 99, b = list(xx = c("NA", "99.5", "1e+06")), c = 8,
-    d = c("NA", "Z"))
+    d = c(".na.real", "Z"))
   wanted <- list(a = 99, b = list(xx = c(NA_real_, 99.5, 1000000)), c = 8,
     d = c(NA, "Z"))
 
@@ -796,5 +826,8 @@ test_that("character-matrix objects can be updated by deletion", {
   expect_equal(dim(got), c(2, 1))
 
 })
+
+
+
 
 

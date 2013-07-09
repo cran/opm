@@ -13,7 +13,7 @@
 ################################################################################
 
 
-invisible(lapply(c("optparse", "pkgutils", "opm"), library, quietly = TRUE,
+invisible(lapply(c("optparse", "pkgutils"), library, quietly = TRUE,
   warn.conflicts = FALSE, character.only = TRUE))
 
 
@@ -25,10 +25,11 @@ RESULT <- c(
   "Collect a template for adding metadata.",
   "Draw xy plots into graphics files, one per input file.",
   "Convert input OmniLog(R) CSV (or opm YAML or JSON) files to opm YAML.",
-  "Convert input OmniLog(R) CSV (or opm YAML or JSON) files to opm JSON."
+  "Convert input OmniLog(R) CSV (or opm YAML or JSON) files to opm JSON.",
+  "Convert input OmniLog(R) CSV (or opm YAML or JSON) files to opm CSV."
 )
 names(RESULT) <- c("clean", "levelplot", "split", "template", "xyplot",
-  "yaml", "json")
+  "yaml", "json", "csv")
 AGGREGATION <- c(
   "No estimation of curve parameters.",
   "Fast estimation (only two parameters).",
@@ -46,82 +47,16 @@ names(AGGREGATION) <- c("no", "fast", "grofit", "p", "smooth", "thin")
 #
 
 
-make_md_args <- function(opt) {
-  if (is.null(opt$mdfile))
-    NULL
-  else
-    list(md = opt$mdfile, sep = opt$sep, replace = opt$exchange)
-}
-
-
-#-------------------------------------------------------------------------------
-
-
-make_disc_args <- function(opt) {
-  if (opt$discretize)
-    list(cutoff = opt$weak, plain = FALSE)
-  else
-    NULL
-}
-
-
-#-------------------------------------------------------------------------------
-
-
-make_aggr_args <- function(opt) {
-  aggr_args <- function(opt, method, spline) {
-    x <- list(boot = opt$bootstrap, verbose = !opt$quiet,
-      cores = opt$processes)
-    x$method <- method
-    if (length(spline))
-      x$options <- set_spline_options(type = spline)
-    x
-  }
-  case(match.arg(opt$aggregate, names(AGGREGATION)),
-    no = NULL,
-    fast = aggr_args(opt, "opm-fast", NULL),
-    grofit = aggr_args(opt, "grofit", NULL),
-    p = aggr_args(opt, "splines", "p.spline"),
-    smooth = aggr_args(opt, "splines", "smooth.spline"),
-    thin = aggr_args(opt, "splines", "tp.spline")
-  )
+parse_key_list <- function(x) {
+  if (!length(x))
+    return(NULL)
+  x <- unlist(strsplit(x, ",", fixed = TRUE))
+  x <- do.call(cbind, strsplit(x, ":", fixed = TRUE))
+  structure(x[nrow(x), ], names = x[1L, ])
 }
 
 
 ################################################################################
-#
-# Functions for each output mode
-#
-
-
-run_clean_mode <- function(input, opt) {
-  files <- explode_dir(input, include = opt$include, exclude = opt$exclude)
-  clean_filenames(files, overwrite = opt$overwrite == "yes")
-}
-
-
-#-------------------------------------------------------------------------------
-
-
-run_plot_mode <- function(input, opt) {
-  batch_opm(names = input, proc = opt$processes, disc.args = NULL,
-    aggr.args = NULL, md.args = make_md_args(opt), outdir = opt$dir,
-    verbose = !opt$quiet, overwrite = opt$overwrite, include = opt$include,
-    exclude = opt$exclude, gen.iii = opt$type, device = opt$format,
-    output = opt$result)
-}
-
-
-#-------------------------------------------------------------------------------
-
-
-run_split_mode <- function(input, opt) {
-  files <- explode_dir(input, include = opt$include, exclude = opt$exclude)
-  split_files(files, pattern = '^("Data File",|Data File)', outdir = opt$dir)
-}
-
-
-#-------------------------------------------------------------------------------
 
 
 run_template_mode <- function(input, opt) {
@@ -141,10 +76,43 @@ run_template_mode <- function(input, opt) {
 }
 
 
-#-------------------------------------------------------------------------------
+################################################################################
 
 
-run_yaml_mode <- function(input, opt) {
+run_batch_opm <- function(input, opt) {
+  make_md_args <- function(opt) {
+    if (is.null(opt$mdfile))
+      NULL
+    else
+      list(md = opt$mdfile, sep = opt$sep, replace = opt$exchange)
+  }
+  make_disc_args <- function(opt) {
+    if (opt$discretize)
+      list(cutoff = opt$weak, plain = FALSE)
+    else
+      NULL
+  }
+  make_table_args <- function(opt) {
+    list(row.names = FALSE, sep = opt$`use-sep`)
+  }
+  make_aggr_args <- function(opt) {
+    aggr_args <- function(opt, method, spline) {
+      x <- list(boot = opt$bootstrap, verbose = !opt$quiet,
+        cores = opt$processes)
+      x$method <- method
+      if (length(spline))
+        x$options <- set_spline_options(type = spline)
+      x
+    }
+    case(match.arg(opt$aggregate, names(AGGREGATION)),
+      no = NULL,
+      fast = aggr_args(opt, "opm-fast", NULL),
+      grofit = aggr_args(opt, "grofit", NULL),
+      p = aggr_args(opt, "splines", "p.spline"),
+      smooth = aggr_args(opt, "splines", "smooth.spline"),
+      thin = aggr_args(opt, "splines", "tp.spline")
+    )
+  }
   if (opt$coarse || opt$aggregate == "fast") {
     proc <- opt$processes # this must be run before make_aggr_args()
     opt$processes <- 1L
@@ -153,8 +121,10 @@ run_yaml_mode <- function(input, opt) {
   batch_opm(names = input, proc = proc, disc.args = make_disc_args(opt),
     outdir = opt$dir, aggr.args = make_aggr_args(opt),
     md.args = make_md_args(opt), verbose = !opt$quiet,
-    overwrite = opt$overwrite, include = opt$include,
-    exclude = opt$exclude, gen.iii = opt$type, output = opt$result)
+    table.args = make_table_args(opt),
+    overwrite = opt$overwrite, include = opt$include, device = opt$format,
+    exclude = opt$exclude, gen.iii = opt$type, output = opt$result,
+    combine.into = opt$join, csv.args = opt$keys)
 }
 
 
@@ -197,7 +167,15 @@ option.parser <- OptionParser(option_list = list(
     help = "File inclusion globbing pattern [default: <see package>]",
     metavar = "PATTERN"),
 
-  # j, k, l
+  make_option(c("-j", "--join"), type = "character", default = NULL,
+    help = "Template for joining data into that outfile [default: <none>]",
+    metavar = "TEMPLATE"),
+
+  make_option(c("-k", "--keys"), type = "character", default = NULL,
+    help = "Keys for CSV => metadata, comma-separated list [default: <none>]",
+    metavar = "KEYS"),
+
+  # l
 
   make_option(c("-m", "--mdfile"), type = "character",
     default = NULL, metavar = "NAME",
@@ -232,7 +210,11 @@ option.parser <- OptionParser(option_list = list(
     help = "Change plate type to this one [default: %default]",
     metavar = "CHAR"),
 
-  # u, v
+  make_option(c("-u", "--use-sep"), type = "character", default = "\t",
+    help = "Field separator for metadata files [default: <tab>]",
+    metavar = "CHAR"),
+
+  #  v
 
   make_option(c("-w", "--weak"), action = "store_true", default = FALSE,
     help = paste("When discretizing, estimate intermediary (weak) reaction",
@@ -257,6 +239,7 @@ if (is.null(opt$include))
   opt$include <- list()
 if (!nzchar(opt$dir))
   opt$dir <- NULL
+opt$keys <- parse_key_list(opt$keys)
 
 
 ################################################################################
@@ -275,17 +258,26 @@ if (!length(input)) {
 }
 
 
+library(opm, quietly = TRUE, warn.conflicts = FALSE)
+
+
 invisible(opm_opt(file.encoding = opt$encoding))
 
 
 case(match.arg(opt$result, names(RESULT)),
-  clean = run_clean_mode(input, opt),
+  clean =,
+  split =,
   xyplot =,
-  levelplot = run_plot_mode(input, opt),
-  split = run_split_mode(input, opt),
+  levelplot = {
+    opt$aggregate <- "no"
+    opt$coarse <- TRUE # fine-grained approach only of use within aggregation
+    opt$discretize <- FALSE
+    run_batch_opm(input, opt)
+  },
   template = run_template_mode(input, opt),
+  csv =,
   json =,
-  yaml = run_yaml_mode(input, opt)
+  yaml = run_batch_opm(input, opt)
 )
 
 

@@ -22,7 +22,8 @@
     remove = NULL, ops = "+", ...)
 
   \method{metadata_key}{formula} (x, to.formula = FALSE,
-    ..., full.eval = !to.formula, envir = parent.frame())
+    remove = NULL, ..., full.eval = !to.formula,
+    envir = parent.frame())
 }
 \arguments{
   \item{x}{List, formula, or atomic object.}

@@ -15,6 +15,12 @@
   of \acronym{YAML}?  If so, \code{sep}, \code{line.sep}
   and \code{...} are ignored.}
 
+  \item{listify}{Logical scalar indicating whether after
+  conversion to a list its non-list elements should be
+  converted to lists if they have names.  (Names of named
+  vector are \strong{not} conserved by default in output
+  \acronym{YAML}).}
+
   \item{...}{Optional other arguments passed to
   \code{as.yaml} from the \pkg{yaml} package.}
 }
@@ -58,11 +64,12 @@ write(to_yaml(x), "out.yml")
 \seealso{
   yaml::as.yaml yaml::yaml.load_file
 
-  Other conversion-functions: \code{\link{extract}},
-  \code{\link{extract_columns}}, \code{\link{flatten}},
-  \code{\link{gen_iii}}, \code{\link{merge}},
-  \code{\link{oapply}}, \code{\link{plates}},
-  \code{\link{rep}}, \code{\link{rev}}, \code{\link{sort}},
+  Other conversion-functions: \code{\link{as.data.frame}},
+  \code{\link{extract}}, \code{\link{extract_columns}},
+  \code{\link{flatten}}, \code{\link{gen_iii}},
+  \code{\link{merge}}, \code{\link{oapply}},
+  \code{\link{plates}}, \code{\link{rep}},
+  \code{\link{rev}}, \code{\link{sort}},
   \code{\link{thin_out}}, \code{\link{unique}}
 }
 \keyword{IO}
@@ -73,6 +80,6 @@ write(to_yaml(x), "out.yml")
 \alias{to_yaml,YAML_VIA_LIST-method}
 \usage{
   \S4method{to_yaml}{YAML_VIA_LIST}(object, sep = TRUE,
-    line.sep = "\n", json = FALSE, ...) 
+    line.sep = "\n", json = FALSE, listify = FALSE, ...) 
 
 }

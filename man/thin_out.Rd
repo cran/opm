@@ -46,11 +46,12 @@ copy <- thin_out(vaas_4, 10)
 stopifnot(identical(x, c(4L, 38L, 96L)))
 }
 \seealso{
-  Other conversion-functions: \code{\link{extract}},
-  \code{\link{extract_columns}}, \code{\link{flatten}},
-  \code{\link{gen_iii}}, \code{\link{merge}},
-  \code{\link{oapply}}, \code{\link{plates}},
-  \code{\link{rep}}, \code{\link{rev}}, \code{\link{sort}},
+  Other conversion-functions: \code{\link{as.data.frame}},
+  \code{\link{extract}}, \code{\link{extract_columns}},
+  \code{\link{flatten}}, \code{\link{gen_iii}},
+  \code{\link{merge}}, \code{\link{oapply}},
+  \code{\link{plates}}, \code{\link{rep}},
+  \code{\link{rev}}, \code{\link{sort}},
   \code{\link{to_yaml}}, \code{\link{unique}}
 }
 \keyword{manip}

@@ -36,8 +36,8 @@
 %\VignetteIndexEntry{Using opm}
 
 % authors, first page
-\author{Lea A.I. Vaas\\Leibniz Institute DSMZ \And
-        Johannes Sikorski\\Leibniz Institute DSMZ  \AND
+\author{Johannes Sikorski\\Leibniz Institute DSMZ  \AND
+        Lea A.I. Vaas\\Leibniz Institute DSMZ \And
         Benjamin Hofner\\Universit\"{a}t Erlangen-N\"{u}rnberg \And
         Nora Buddruhs\\Leibniz Institute DSMZ \And
         Anne Fiebig\\Leibniz Institute DSMZ \AND
@@ -70,13 +70,13 @@ The raw kinetic data can be displayed with customized plotting functions.
 In addition to 95\% confidence plots and enhanced heat-map graphics for visual comparisons of the estimated curve parameters, the package includes customized functionality for user-defined simultaneous multiple comparisons of group means.
 It is also possible to discretize the curve parameters and to export them for reconstructing character evolution or inferring phylogenies with external programs.
 Tabular and textual summaries suitable for, e.g., taxonomic journals can also be automatically created and customized.
-Export and import in the \proglang{YAML} (or \proglang{JSON}) markup language facilitates the data exchange among labs.
+Export and import in the \proglang{YAML} (or \proglang{JSON}) markup language (or as character-separated values) facilitates the data exchange among labs.
 All functionality is exemplified using real-world data sets that are part of the \pkg{opm} \proglang{R} package or are included in the accompanying data package \pkg{opmdata}.
 }
 
-\Keywords{Bootstrap, Cell Lines, \pkg{grofit}, Growth Curves, \pkg{lattice}, Metadata, Microbiology, Respiration Kinetics, Splines, \proglang{YAML}, \proglang{JSON}}
+\Keywords{Bootstrap, Cell Lines, \pkg{grofit}, Growth Curves, \pkg{lattice}, Metadata, Microbiology, Respiration Kinetics, Splines, \proglang{YAML}, \proglang{JSON}, \proglang{CSV}}
 
-\Plainkeywords{bootstrap, cell lines, grofit, growth curves, lattice, metadata, microbiology, respiration kinetics, splines, YAML, JSON}
+\Plainkeywords{bootstrap, cell lines, grofit, growth curves, lattice, metadata, microbiology, respiration kinetics, splines, YAML, JSON, CSV}
 
 \Address{
   Markus G\"{o}ker\\
@@ -124,7 +124,7 @@ An overview of these sections is provided in Section~\ref{methods overview}.
 The single most important problem users reported to us when applying \pkg{opm} was that the input files could not be read.
 This was uniformly due to the use of multi-plate CSV files.
 But the most recent versions of the OmniLog\textregistered \ software can batch-export one plate per CSV file, and \pkg{opm} can split multi-plate CSV into files that can be input by the package.
-See Section~\ref{methods import} for details and Section \ref{application import} for a usage example.
+See Section~\ref{methods import} for details and Section~\ref{application import} for a usage example.
 
 Details on the scientific background could well be skipped during a first reading.
 The interested user would nevertheless find them in Section~\ref{scientific introduction}, including references for important functionality.
@@ -181,14 +181,14 @@ Its calculation of curve parameters is rather crude \citep{vaas, biologInc}.
 The statistical treatment of raw kinetic data and curve parameters would involve cumbersome manual and hence error-prone manipulations of data in typical spreadsheet applications before they may be imported into appropriate statistical software.
 Finally, the amount of organismic or experimental metadata that can be added to the raw data is extremely limited.
 
-Based on a previous study \citep{vaas} the here presented \pkg{opm} package offers functionalities for a fast, robust and comprehensive evaluation of PM respiration kinetics suitable for a wide range of experimental questions.
+Based on a previous study \citep{vaas} the here presented \pkg{opm} package \citep{Vaas2013} offers functionalities for a fast, robust and comprehensive evaluation of PM respiration kinetics suitable for a wide range of experimental questions.
 
 Using customized input functions, raw kinetic data can be transferred into \proglang{R}, stored as \proglang{S4} objects \citep{chambers} containing single or multiple OmniLog\textregistered \ PM plates and further processed.
 The package features the statistically robust calculation and attachment of aggregated curve parameters including their (bootstrapped) confidence intervals.
 Moreover, infrastructure is provided to merge this with any kind of additional metadata.
 These complex data bundles can then be exported in \proglang{YAML} format (\url{http://www.yaml.org/}), which is a human-readable data serialization format that can be read by most common programming languages and facilitates fast and easy data exchange between laboratories.
 Its subset, \proglang{JSON} (\url{http://www.json.org/}), can also be used, for instance if a proper \proglang{YAML} parser is unavailable.
-As \pkg{opm} is also able to generate \proglang{R} matrices and data frames, output in CSV (character-separated values) files would also be easy.
+As \pkg{opm} is also able to generate \proglang{R} matrices and data frames, output in CSV (character-separated values) is also easy.
 
 Data evaluation includes the graphical display of the data such as the raw respiration curve kinetics or the confidence intervals of aggregated curve parameters.
 With sophisticated selection methods the user is able to sort, group and arrange the data according the specific experimental questions in the plotting and analysis framework.
@@ -236,7 +236,7 @@ The raw kinetic data can be exported by the proprietary OmniLog\textregistered \
 This is explained in detail in section Section~\ref{methods import}, whereas corresponding code examples are found in Section~\ref{application import}.
 
 Batch processing many files is also possible, even without starting an interactive \proglang{R} session.
-This includes storage of the \pkg{opm} data in the \proglang{YAML} (or \proglang{JSON}) format, as detailed in Section~\ref{methods batch}.
+This includes storage of the \pkg{opm} data in the \proglang{YAML} (or \proglang{JSON} or \proglang{CSV}) format, as detailed in Section~\ref{methods batch}.
 Example code is given in  Section~\ref{application batch}.
 
 All kinds of PM data can be enriched with metadata (see Figure~\ref{fig:data}).
@@ -282,7 +282,7 @@ The \pkg{opm} package currently does not support the input of several plates fro
 Forthcoming versions are expected to export the data in a slightly different CSV format we call ``new style''.
 Please contact your local representative of the vendor for the latest software version.)
 
-As of version 0.4-0, \pkg{opm} also supports the input of MicroStation\textregistered \ CSV files (frequently used in conjunction with EcoPlate\textregistered \ assay for microbial community analysis).
+As of version 0.4-0, \pkg{opm} also supports the input of MicroStation\textregistered \ CSV files (frequently used in conjunction with EcoPlate\textregistered \ assay for microbial community analysis) \citep{Vaas2013}.
 These files contain only end-point measurements but potentially several plates, which can nevertheless be input together with their potentially also rich meta-information.
 
 The easiest way to load the raw kinetic data (as CSV files or as \proglang{YAML} or \proglang{JSON}) into \proglang{R} in a single step is using the function \code{read\_opm()} (see Figure~\ref{fig:work_flow}).
@@ -301,7 +301,7 @@ We would nevertheless recommend storage in \proglang{YAML} format.
 
 \subsection[Batch conversion of many files]{Batch conversion of many files}\label{methods batch}
 
-To process and store huge numbers of raw data files, the function \code{batch\_opm()} reads all OmniLog\textregistered \ CSV files (or \proglang{YAML} files previously generated with \pkg{opm}) within a given list of files and/or directories and converts them to \pkg{opm} \proglang{YAML} (or \proglang{JSON}) format.
+To process and store huge numbers of raw data files, the function \code{batch\_opm()} reads all OmniLog\textregistered \ CSV files (or \proglang{YAML} or \proglang{JSON} files previously generated with \pkg{opm}) within a given list of files and/or directories and converts them to \pkg{opm} \proglang{YAML} (or \proglang{JSON} or \proglang{CSV}) format.
 It is possible to let \pkg{opm} automatically include metadata (Section~\ref{methods metadata}) and aggregated values (curve parameters) (Section~\ref{methods aggregating}) as well as discretized values (Section~\ref{methods discrete-binary}) during this conversion.
 Alternatively, graphics files containing the output of \code{xy\_plot()} or \code{level\_plot()} can be batch-produced; see Section~\ref{methods plotting} for Details.
 File selection and unselection using regular expressions or globbing patterns is integrated in the function.
@@ -377,7 +377,7 @@ In contrast to data frames it is not advisable to access metadata entries by pos
 Descriptive curve parameters from the kinetic raw data can be calculated and included in \proglang{OPM} and \proglang{OPMS} objects using the function \code{do\_aggr()}.
 Curve parameters can be extracted using a spline-based fitting procedure implemented in \pkg{opm}.
 (Extraction of curve parameters through the fit of sigmoid functions proved for several PM curve shapes to yield biologically unrealistic values \citep{vaas} and have therefore not been implemented.)
-Three different modelling alternatives for the splines exist:
+Three different modelling alternatives for the splines exist \citep{Vaas2013}:
 (low-rank) cubic smoothing splines \citep{Reinsch:1967} as implemented in \code{smooth.spline} from the  \pkg{base} package, thin plate splines \citep[a generalization of smoothing splines]{Wood2003} and P-splines \citep{eilers}.
 The latter two are implemented in the package \pkg{mgcv}.
 Their settings have been specifically adapted for the application to PM data.
@@ -398,9 +398,10 @@ Attaching the aggregated data to an \proglang{OPM} object yields an object of th
 A schematic depiction of a typical respiration (or growth) curve and the parameters estimated by \pkg{opm}.
 The descriptive curve parameters are the lag phase $\lambda$, the respiration (or growth) rate $\mu$ (corresponding to the steepness of the slope), the maximum cell respiration (or growth) A (corresponding to the maximum value of the curve) and the area under the curve AUC.
 Note that many respiration curves, even if representing a clearly positive reaction, do not correspond to this idealized scheme.
-The parameters can nevertheless be robustly estimated from deviating curves, particularly \textit{via} spline fits \citep{vaas}.
+The parameters can nevertheless be robustly estimated from deviating curves, particularly \textit{via} spline fits \citep{vaas, Vaas2013}.
 }
 \end{figure}
+
 
 
 \subsection[Manipulation of OPM and OPMS data]{Manipulation of \proglang{OPM} and \proglang{OPMS} data}\label{methods manipulation}
@@ -441,12 +442,14 @@ The function \code{xy\_plot()} displays the raw measurements on the y-axis in de
 For each well one sub-panel is drawn, and the user is free to colourize the plotted curves by either their affiliation to a specific plate or by a combination of metadata entries of choice.
 By default the panels are arranged according to the factual microtiter plate dimensions (eight rows labelled A to H $\times$ twelve columns labelled 01-12), but other user-defined arrangements are easily feasible because the plates can be subset by selecting specific wells.
 Every panel is annotated with the microtiter plate numbering (A01 to H12) and additionally or alternatively with the substrate name (given the plate type, the \pkg{opm} package can translate all well coordinates to substrate names).
-Thus, the function enables the user to compare the curve data in a customized and useful arrangement \citep{vaas}.
+Thus, the function enables the user to compare the curve data in a customized and useful arrangement \citep{vaas, Vaas2013}.
+
+
 
 The function \code{level\_plot()} provides false-colour level plots from the raw respiration measurements over time.
 Each respiration curve can be displayed as a thin horizontal line, in which the measured respiration value (in OmniLog\textregistered \ units) is represented by colour, while the x-axes indicates the measurement times.
 With increasing respiration measurement values, the displayed colour changes (by default) from light yellow into dark orange and brownish.
-The user can obtain an overview in a compacted design \citep{vaas}.
+The user can obtain an overview in a compacted design \citep{vaas, Vaas2013}.
 This plot offers a display format which is especially powerful in uncovering general differences between plates, for example longer lag phases or smaller AUC values across the majority of wells.
 By default one sub-panel in the level plot corresponds to one complete plate comprising 96 lines, but as in the case of \code{xy\_plot()} plotting could also be preceded by creating subsets of the plates.
 
@@ -512,8 +515,11 @@ Users of multiple-comparison procedures, especially of simultaneous multiple con
 Especially in situations where groups are defined by more than one metadata entry the evaluation of differences of treatment means may result in quite complex models. 
 Then, the application of \textit{cell-means models} (also known as \textit{pseudo-one-way layouts}) as discussed in \citep{schaarschmidt}) is strongly encouraged.
 In this approach estimators for treatment and variance are derived from a model with all treatments combined in a single factor. 
-Technically, this necessitates to merge the defining metadata variables into a single.
-An according example is given in Section~\ref{application metadata}, whereas the computation of multiple comparisons using a \textit{cell-means model} is shown in Section~\ref{application group-means}.
+Technically, this requires the merging of several defining metadata variables into a single one.
+This can be done by creating new metadata entries from given ones and storing them back in an \proglang{OPM} or \proglang{OPMS} object.
+An according example is given in Section~\ref{application metadata}.
+Alternatively, merging can be done when selecting metadata for creating data frames.
+The computation of multiple comparisons using a \textit{cell-means model} is shown in Section~\ref{application group-means}.
 
 The function \code{opm\_mcp()} internally reshapes the data into a ``flat'' data frame containing one column for the chosen parameter value, one column for the well (substrate) name and optionally additional columns for the selected metadata.
 For performing the testing procedure, a model has to be stated that specifies the factor levels that determine the grouping \citep{searle, hothorn}.
@@ -706,7 +712,7 @@ But this might only occasionally be useful, as \code{read\_opm} can cope with si
 
 \subsection[Batch conversion of many files]{Batch conversion of many files}\label{application batch}
 
-In addition to \code{read\_opm()} and \code{read\_single\_opm()} (Section~\ref{application import}), which need to be called before an interactive exploration of PM data, batch-processing large numbers of files by converting them from CSV (or previously generated \proglang{YAML} or \proglang{JSON}) to \proglang{YAML} or \proglang{JSON} format, is also possible.
+In addition to \code{read\_opm()} and \code{read\_single\_opm()} (Section~\ref{application import}), which need to be called before an interactive exploration of PM data, batch-processing large numbers of files by converting them from CSV (or previously generated \proglang{YAML} or \proglang{JSON}) to \proglang{YAML}, \proglang{JSON} or \proglang{CSV} format, is also possible.
 This optionally includes aggregating the raw data by estimating curve parameters (Section~\ref{application aggregating}), discretizing these parameters (Section~\ref{application discrete-text}) and integrating metadata (Section~\ref{application metadata}). 
 Again there is a \textit{demo} mode to first investigate the attempted conversions:
 
@@ -1012,7 +1018,7 @@ summary(aggregated(vaas_1.reaggr))
 The default settings of \code{do\_aggr()} includes 100-fold bootstrapping of the data to obtain confidence intervals.
 As this is a time-consuming intensive process (particularly if \pkg{grofit} is used), it may be split over several cores on a multi-core machine if \code{mclapply()} from the \pkg{parallel} \proglang{R} package can be run with more than one core, which is possible on all operating systems except for Windows.
 
-One can also specify different spline fitting methods using \code{method = "spline"}, which is the recommended setting (for historical reasons, it is not the default).
+One can also specify different spline fitting methods using \code{method = "spline"}, which is the recommended setting (for historical reasons, it is not the default) \citep{Vaas2013}.
 Options such as the spline type, the number of knots used for the spline and other options for the splines can be easily set using the function \code{set\_spline\_options} (which can only be used in conjunction with \code{method = "spline"}).
 To essentially reproduce the results from \code{method = "grofit"} we could use smoothing splines (and for the sake of computing time in this vignette we only use 10 bootstrap replicates to compute confidence intervals for the parameter estimates):
 <<label=smoothing.splines, results=hide>>=
@@ -1161,6 +1167,16 @@ vaas.mu <- extract(vaas_et_al, dataframe = TRUE,
 This only works if this meta-information is present for the plates under study.
 Once a data frame is exported, these metadata will be contained in additional columns; once a matrix is exported, they will be used to construct the row names.
 The metadata could also be selected using a formula; see the help pages for details, particularly \code{?metadata}.
+A peculiarity of \code{extract()} is that formulas can be used to trigger the joining of selected metadata entries (converted to data-frame columns) into new ones, using the pseudo-function \code{J()} within the formula.
+For instance, the following code would create a new entry called ``Species.Strain'':
+
+<<label=extract.with.joining, results=hide>>=
+vaas.mu <- extract(vaas_et_al, dataframe = TRUE,
+  as.labels = ~ J(Species, Strain), subset = "mu")
+@
+
+This is applied by \code{opm\_mcp()}, see Section~\ref{application group-means}.
+The behaviour during joining of factors is modified using \code{opm\_opt(comb.key.join = ...)} and \code{opm\_opt(comb.value.join = ...)}.
 The default curve parameter returned by \code{extract()} can be set with \code{opm\_opt(curve.param = ...)}.
 
 Finally, note that methods for a variety of generic \proglang{R} functions such as \code{unique}, \code{sort}, \code{duplicated}, \code{anyDuplicated} and \code{merge} are available for \proglang{OPMS} objects.
@@ -1437,7 +1453,7 @@ Examples are given based on the \pkg{BiodiversityR} package \citep{Kindt2005}.
 
 \subsection[Statistical comparisons of group means]{Statistical comparisons of group means}\label{application group-means}
 
-To demonstrate the use of \code{opm\_mcp()}, the function for conducting multiple comparisons of group means directly on \proglang{OPMS} objects, we compare four distinct strains, each of which represented by ten replicates of GEN-III microplate measurements.
+To demonstrate the use of \code{opm\_mcp()}, the function for conducting multiple comparisons of group means directly on \proglang{OPMS} objects \citep{Vaas2013}, we compare four distinct strains, each of which represented by ten replicates of GEN-III microplate measurements.
 An experimental questions that could be addressed with these data might be ``Do these four bacteria differ in the mean value of curve parameter A on well G06'' (see Figure~\ref{fig:xy_plot_mcp})?
 An according subset can be taken from the first biological replicate included in \code{vaas\_et\_al}:
 
@@ -1791,12 +1807,21 @@ and note that the \code{phylo\_data()} function has a ``html.args'' argument.
 Textual \proglang{HTML} output supports most of the formatting instructions  for the output of \proglang{HTML} tables described below (see \ref{application discrete-table}).
 Note particularly how formatting \textit{via} a \proglang{CSS} file works, as described in Section~\ref{application discrete-table}.
 
-The default settings of \code{do\_disc()} imply exact k-means partitioning into three groups (``negative'', ``ambiguous'' and ``positive''), treating all contained plates together.
+The default settings of \code{do\_disc()} imply exact k-means partitioning into three groups (``negative'', ``ambiguous'' and ``positive''), treating all contained plates together, and using the maximum-height parameter for discretization.
 Let $A_1$ and $A_2$ be the maximum-height parameters from two curves $C_1$ and $C_2$, respectively, and let us assume that $A_1 \geq A_2$ holds.
 The algorithm then guarantees that if $C_2$ is judged as positive reaction then $C_1$ is also judged as positive; if $C_2$ is weak then $C_1$ is not negative; if $C_1$ is negative then $C_2$ is negative; and if $C_1$ is weak then $C_2$ is not positive.
-There are not many other things the algorithm guarantees.
+In this sense, the results will be consistent, but there are not many other things the algorithm guarantees.
 Note particularly that always three clusters result by default (one can omit the middle cluster, i.e. the ``weak'' reactions), irrespective of the input data.
-That is, additionally checking the curve heights and particularly the ``cutoffs'' entry obtained \textit{via} \code{disc\_settings()} should be mandatory.
+This is usually unproblematic if the data contain both really negative and really positive reactions, but data that in reality are negative throughout, or uniformly positive, would nevertheless be split into three (or two) clusters.
+That is, additionally checking the curve heights and particularly the ``cutoffs'' entry obtained \textit{via} \code{disc\_settings()} should initially be mandatory.
+
+It is also possible to make the reactions uniform within metadata-defined groups.
+This would be specified with the \code{unify} argument and would deliberately deviate from the kind of consistency described above.
+The unification approach replaces the primary discretization results with the most frequent value within the respective combination of group and well if this value is present in a given proportion of the original values and with \code{NA} otherwise.
+The according cutoff is set using \code{opm\_opt(min.mode = ...)} or directly.
+Thus there are two distinct meanings of ``ambiguous'' reactions, as ambiguity either results from the clustering of the parameters, or by clustering results that deviate between distinct experimental replications.
+It is unnecessary and perhaps not preferable to use both approaches together, i.e. to cluster into three groups only and then also unify.
+Note that \code{listing()} and \code{phylo\_data()} would use the same unification approach, if requested.
 
 The manual describes the other discretization approaches available in \pkg{opm}, such as using \code{best\_cutoff()} instead of k-means partitioning, and using subsets of the plates, specified using stored metainformation.
 See \code{?do\_disc}.
@@ -1903,34 +1928,34 @@ In the manual and help pages these functions are contained in the family ``namin
 One usually would start a search by determining the exact spelling of an internally used name with \code{find\_substrate()}:
 
 <<label=find.substrate.I, results=hide>>=
-names <- find_substrate(c("Glutamine", "Glutamic acid"))
-names
+substrates <- find_substrate(c("Glutamine", "Glutamic acid"))
+substrates
 @
 
-The results is a list containing character vectors with the results for each query name as values.
+The results is a list (of the \proglang{S3} class ``substrate\_match'') containing character vectors with the results for each query name as values.
 Surprisingly, nothing was found for ``Glutamic acid'' but several values for ``Glutamine''.
 The default \code{search} argument is ``exact'', which is exact (case-sensitive) matching  of \textit{substrings} of the names.
 One might want to use ``glob'' searching mode:
 
 <<label=find.substrate.II, results=hide>>=
-names <- find_substrate(c("L-Glutamine", "L-Glutamic acid"), "glob")
-names
+substrates <- find_substrate(c("L-Glutamine", "L-Glutamic acid"), "glob")
+substrates
 @
 
 But with so-called wildcards, i.e. ``*'' for zero to many and ``?'' for a single arbitrary character the search is more flexible:
 
 <<label=find.substrat.III, results=hide>>=
-names <- find_substrate(c("*L-Glutamine", "*L-Glutamic acid"), "glob")
-names
+substrates <- find_substrate(c("*L-Glutamine", "*L-Glutamic acid"), "glob")
+substrates
 @
 
 This fetches all terms that end in either query character string, and does so case-insensitively.
 Advanced users can apply the much more powerful ``regex'' and ``approx'' search modes; see the manual for details, entry \code{?find\_substrate}.
 
-Once the internally used names have been found, information on the substrates can be queried such as their occurrences and positions on plates:
+Once the internally used names (which are not guaranteed to be stable between distinct \pkg{opm} releases) have been found, information on the substrates can be queried such as their occurrences and positions on plates:
 
 <<label=find.positions, results=hide>>=
-positions <- find_positions(names)
+positions <- find_positions(substrates)
 positions
 @
 
@@ -1938,11 +1963,20 @@ This yields a nested list containing two-column matrices with plate names in the
 References to external data resources for each substrate name can be obtained using \code{substrate\_info()}:
 
 <<label=substrate.info, results=hide>>=
-subst.info <- substrate_info(names)
+subst.info <- substrate_info(substrates)
 subst.info
 @
 
-By default this yields CAS numbers, but MeSH, KEGG and Metacyc IDs have also been collected for the majority of the substrates.
+By default this yields CAS numbers (\url{http://www.cas.org/content/chemical-substances/faqs}), but MeSH names (useful for conducting PubMed queries; see \url{http://www.ncbi.nlm.nih.gov/mesh/}) \citep{Coletti01072001}, ChEBI IDs \citep{Hastings01012013}, KEGG compound IDs, KEGG drug IDs \citep{Kanehisa01012010} and MetaCyc IDs \citep{Caspi01012012} IDs have also been collected for the majority of the substrates.
+Using the ``browse'' argument, full URLs can be created and optionally also directly opened in the default web browser.
+It is possible to nicely display all available information at once:
+
+<<label=substrate.info, results=hide>>=
+subst.info <- substrate_info(substrates, "all")
+subst.info
+@
+
+
 Another use of \code{substrate\_info()} is to convert substrate names to lower case but protecting name components such as abbreviations or chemical symbols.
 See the manual for further details, help page \code{?substrate\_info}.
 
@@ -1950,7 +1984,7 @@ See the manual for further details, help page \code{?substrate\_info}.
 \section[Discussion and conclusion]{Discussion and conclusion}
 
 The high-dimensional sets of longitudinal data collected by the OmniLog\textregistered \ PM system call for fast and easily applicable (and extendable) data organisation and analysis facilities.
-The here presented \pkg{opm} package for the free statistical software \proglang{R} \citep{r} features not only the calculation of aggregated values (curve parameters) including their (bootstrapped) confidence intervals, but also provides a rather complete infrastructure for the management of raw kinetic values and curve parameters together with any kind of meta-information of relevance for the user.
+The here presented \pkg{opm} package for the free statistical software \proglang{R} \citep{r} features not only the calculation of aggregated values (curve parameters) including their (bootstrapped) confidence intervals, but also provides a rather complete infrastructure for the management of raw kinetic values and curve parameters together with any kind of meta-information of relevance for the user \citep{vaas, Vaas2013}.
 
 The spline estimation and parameter calculation in the data-aggregation step of has been optimized for the analysis of PM data.
 One main issue in the spline-fitting procedure is the selection of suitable smoothing parameters.
@@ -1968,19 +2002,20 @@ But since the design of the \pkg{opm} objects is not intended to be limited to s
 Particularly the generation of \proglang{S4} objects featuring a rich set of methods as containers for either single or multiple OmniLog\textregistered \ PM plates enables not only the transfer of raw kinetic data into \proglang{R} but also eases their further processing.
 The complex data bundles can also be exported in \proglang{YAML} format, which is a human-readable data serialization format that can be read by most common programming languages and facilitates fast and easy data exchange between laboratories.
 If a proper \proglang{YAML} parser was unavailable, its subset \proglang{JSON} could also be used.
+The package can also generate \proglang{CSV} output files, but due to the limitation of this format these files cannot be read back into \pkg{opm} in a meaningful way (but into \proglang{R}).
 
 These features render the \pkg{opm} package the first comprehensive toolbox for the management and a broad range of analyses of OmniLog\textregistered \ PM data.
 Its usage requires some familiarity with \proglang{R}, but is otherwise intuitive and straightforward also for biologists who are not used to command-line based software.
 
 An enhancement of the \pkg{opm} package would be to include much more precomputed information about the substrates, thus greatly facilitating data arrangement and hypothesis testing.
-At the moment only the translation of well coordinates to substrate names is provided, as well as access to CAS, MeSH, KEGG and Metacyc IDs for the majority of the substrates.
+At the moment only the translation of well coordinates to substrate names is provided, as well as access to MeSH names and CAS, KEGG and Metacyc IDs (and the according web pages) for the majority of the substrates.
 More substrate information could be integrated into the package, particularly for arranging the substrate into groups, thus easing testing of phenotypic hypotheses.
 
 Last but not least, it might also be useful to provide functionality for a direct cross-talk between \pkg{opm} and database management systems.
 The current version is entirely file-based, and whereas powerful selection mechanisms for both input files and container objects for previously imported PM plates have already been implemented, future version could directly include database access.
 In the meantime, however, the output \proglang{YAML} format (or its subset, \proglang{JSON}) is likely to facilitate the quick establishment of third-party software for importing PM data into a database.
 
-To summarize, we are convinced that the \pkg{opm} package already enables the users to analyse OmniLog\textregistered \ PM data in rather unlimited exploratory directions.
+To summarize, we are convinced that the \pkg{opm} package already enables the users to analyse OmniLog\textregistered \ PM data in rather unlimited exploratory directions \citep{vaas, Vaas2013}.
 
 
 \section[Acknowledgements]{Acknowledgements}

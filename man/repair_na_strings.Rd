@@ -1,6 +1,17 @@
 \name{repair_na_strings}
 \alias{repair_na_strings}
+\alias{repair_na_strings.character}
+\alias{repair_na_strings.list}
 \title{Repair NAs}
+\usage{
+  repair_na_strings(object, ...)
+
+  \method{repair_na_strings}{character} (object, ...)
+
+  \method{repair_na_strings}{list} (object,
+    type = c("double", "integer", "complex", "logical", "character"),
+    ...)
+}
 \arguments{
   \item{object}{Character vector or list.}
 
@@ -14,9 +25,13 @@
   Replace \sQuote{NA} by \code{NA_character_}. When reading
   \acronym{YAML} input previously output by \R, \sQuote{NA}
   values cause numeric vectors to be interpreted as
-  character. This function fixes this problem and also
-  takes care of misinterpreted numbers in exponential
-  notation.
+  character. This function fixes this problem.
+}
+\details{
+  This problem does not occur anymore with the \pkg{yaml}
+  package of at least version 2.1.7, but for legacy
+  \acronym{YAML} (and \acronym{JSON}) files it is necessary
+  to conduct the conversions implemented here.
 }
 \references{
   \url{http://www.yaml.org/}
@@ -26,14 +41,3 @@
 }
 \keyword{internal}
 
-\docType{methods}
-\alias{repair_na_strings-methods}
-\alias{repair_na_strings,character-method}
-\alias{repair_na_strings,list-method}
-\usage{
-  \S4method{repair_na_strings}{character}(object) 
-
-  \S4method{repair_na_strings}{list}(object,
-    type = c("double", "integer", "complex", "logical")) 
-
-}

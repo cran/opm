@@ -88,7 +88,7 @@ stopifnot(length(x) == 0L || length(x) > length(y))
 # examples are given under glob_to_regex().
 }
 \seealso{
-  base::list.files base::Sys.glob
+  base::list.files base::Sys.glo
 
   Other io-functions: \code{\link{batch_collect}},
   \code{\link{batch_opm}}, \code{\link{batch_opm_to_yaml}},

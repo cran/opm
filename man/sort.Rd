@@ -33,8 +33,8 @@
   ordered according to only the found keys, and remains in
   the original order if none of the keys in \code{by} are
   found at all. Note that it is always an error if keys are
-  found in the \code{\link{metadata}} of some of
-  the\code{\link{plates}} but not in those of others.}
+  found in the \code{\link{metadata}} of some of the
+  \code{\link{plates}} but not in those of others.}
 
   \item{na.last}{Logical scalar. Also passed to
   \code{order}.}
@@ -88,13 +88,13 @@ stopifnot(identical(x, vaas_1))
 \seealso{
   base::order base::sort base::strptime
 
-  Other conversion-functions: \code{\link{extract}},
-  \code{\link{extract_columns}}, \code{\link{flatten}},
-  \code{\link{gen_iii}}, \code{\link{merge}},
-  \code{\link{oapply}}, \code{\link{plates}},
-  \code{\link{rep}}, \code{\link{rev}},
-  \code{\link{thin_out}}, \code{\link{to_yaml}},
-  \code{\link{unique}}
+  Other conversion-functions: \code{\link{as.data.frame}},
+  \code{\link{extract}}, \code{\link{extract_columns}},
+  \code{\link{flatten}}, \code{\link{gen_iii}},
+  \code{\link{merge}}, \code{\link{oapply}},
+  \code{\link{plates}}, \code{\link{rep}},
+  \code{\link{rev}}, \code{\link{thin_out}},
+  \code{\link{to_yaml}}, \code{\link{unique}}
 }
 \keyword{manip}
 

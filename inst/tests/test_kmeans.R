@@ -10,7 +10,13 @@ test_that("conversion to 'kmeans' objects works", {
   x.ck <- Ckmeans.1d.dp::Ckmeans.1d.dp(x, 3)
   x.k <- kmeans(x, 3)
   got <- to_kmeans(x.ck, x)
-  expect_equal(names(x.k), names(got))
+  new.names <- c("iter", "ifault")
+  if (all(new.names %in% names(x.k))) {
+    expect_equal(names(x.k), names(got))
+  } else {
+    warning(listing(new.names, "k-means objects lacks at least one of:"))
+    expect_equal(names(x.k), setdiff(names(got), new.names))
+  }
   expect_equal(sort(x.k$centers), sort(got$centers))
   expect_equal(sort(x.k$withinss), sort(got$withinss))
   expect_equal(x.k$tot.withinss, got$tot.withinss)

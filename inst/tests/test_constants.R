@@ -150,6 +150,16 @@ test_that("the known method names are OK", {
 ## UNTESTED
 
 
+## URL_BASE
+test_that("bases of URLs contain no special characters", {
+  got <- vapply(URL_BASE, URLencode, "")
+  expect_equivalent(got, URL_BASE)
+})
+
+
+################################################################################
+
+
 ## W3C_COLORS
 ## UNTESTED
 

@@ -71,7 +71,7 @@ setMethod("merge", c(OPMS, "numeric"), function(x, y, sort.first = TRUE,
     to.add <- c(0, must(cumsum(tp[-nrow(tp), ncol(tp), drop = FALSE]) + y))
     m[, 1L] <- as.vector(t(tp + to.add))
   } else if (is.list(tp)) {
-    to.add <- c(0, must(cumsum(vapply(tp[-length(tp)], last, numeric(1L))) + y))
+    to.add <- c(0, must(cumsum(vapply(tp[-length(tp)], tail, 1, 1L)) + y))
     m[, 1L] <- unlist(mapply(`+`, tp, to.add, SIMPLIFY = FALSE,
       USE.NAMES = FALSE))
   } else
@@ -90,7 +90,7 @@ setMethod("merge", c(CMAT, "ANY"), function(x, y) {
     if (L(y))
       groups <- as.factor(rownames(x))
     else
-      groups <- as.factor(seq.int(nrow(x)))
+      groups <- as.factor(seq_len(nrow(x)))
   else
     groups <- as.factor(y)
   if (length(groups) != nrow(x)) # this also covers NULL row names
@@ -485,19 +485,32 @@ setMethod("flattened_to_factor", "data.frame", function(object, sep = " ") {
 #' @param object \code{\link{OPMS}} object or data frame.
 #' @param what For the \code{\link{OPMS}} method, a list of metadata keys to
 #'   consider, or single such key; passed to \code{\link{metadata}}. A formula
-#'   is also possible; see there for details.
+#'   is also possible; see there for details. A peculiarity of
+#'   \code{extract_columns} is that including \code{J} as a pseudo-function call
+#'   in the formula triggers the combination of metadata entries to new factors
+#'   immediately after selecting them, as long as \code{join} is \code{FALSE}.
 #'
 #'   For the data-frame method, just the names of the columns to extract, or
-#'   their indices, as vector; alternatively, the name of the class to extract
-#'   from the data frame to form the matrix values.
+#'   their indices, as vector, if \code{direct} is \code{TRUE}. Alternatively,
+#'   the name of the class to extract from the data frame to form the matrix
+#'   values.
+#'
+#'   In the \sQuote{direct} mode, \code{what} can also be a named list of
+#'   vectors used for indexing. In that case a data frame is returned that
+#'   contains the columns from \code{object} together with new columns that
+#'   result from pasting the selected columns together.
 #' @param join Logical scalar. Join each row together to yield a character
 #'   vector? Otherwise it is just attempted to construct a data frame.
 #' @param sep Character scalar. Used as separator between the distinct metadata
 #'   entries if these are to be pasted together. Ignored unless \code{join} is
-#'   \code{TRUE}. The data-frame method always joins the data.
+#'   \code{TRUE}. The data-frame method always joins the data unless \code{what}
+#'   is a list.
 #' @param dups Character scalar specifying what to do in the case of duplicate
 #'   labels: either \sQuote{warn}, \sQuote{error} or \sQuote{ignore}. Ignored
 #'   unless \code{join} is \code{TRUE}.
+#' @param factors Logical scalar determining whether strings should be converted
+#'   to factors. Note that this would only affect newly created data-frame
+#'   columns.
 #' @param exact Logical scalar. Also passed to \code{\link{metadata}}.
 #' @param strict Logical scalar. Also passed to \code{\link{metadata}}.
 #' @param as.labels Character vector. See \code{\link{extract}}.
@@ -510,10 +523,12 @@ setMethod("flattened_to_factor", "data.frame", function(object, sep = " ") {
 #'   can be used for testing the applied metadata selections beforehand.
 #'
 #'   The data-frame method is partially trivial (extract the selected columns
-#'   and join them to form a character vector), partially more useful (extract
-#'   columns with data of a specified class).
-#' @return Data frame or character vector, depending on the \code{join}
-#'   argument. The data-frame method always returns a character vector.
+#'   and join them to form a character vector or new data-frame columns),
+#'   partially more useful (extract columns with data of a specified class).
+#' @return For the \code{OPMS} method, a data frame or character vector,
+#'   depending on the \code{join} argument. The data-frame method returns a
+#'   character vector or a data frame, too, but depending on the \code{what}
+#'   argument.
 #' @family conversion-functions
 #' @keywords dplot manip
 #' @seealso base::data.frame base::as.data.frame base::cbind
@@ -524,9 +539,12 @@ setMethod("flattened_to_factor", "data.frame", function(object, sep = " ") {
 #'
 #' # Create data frame
 #' (x <- extract_columns(vaas_4, what = list("Species", "Strain")))
-#' stopifnot(is.data.frame(x), identical(dim(x), c(4L, 2L)))
+#' stopifnot(is.data.frame(x), dim(x) == c(4, 2))
 #' (y <- extract_columns(vaas_4, what = ~ Species + Strain))
 #' stopifnot(identical(x, y)) # same result using a formula
+#' (y <- extract_columns(vaas_4, what = ~ J(Species + Strain)))
+#' stopifnot(is.data.frame(y), dim(y) == c(4, 3)) # additional column created
+#' stopifnot(identical(x, y[, -3]))
 #'
 #' # Create a character vector
 #' (x <- extract_columns(vaas_4, what = list("Species", "Strain"), join = TRUE))
@@ -552,15 +570,16 @@ setGeneric("extract_columns",
   function(object, ...) standardGeneric("extract_columns"))
 
 setMethod("extract_columns", OPMS, function(object, what, join = FALSE,
-    sep = " ", dups = c("warn", "error", "ignore"), exact = TRUE,
-    strict = TRUE) {
+    sep = " ", dups = c("warn", "error", "ignore"), factors = TRUE,
+    exact = TRUE, strict = TRUE) {
+  what <- metadata_key(what, FALSE, NULL)
   result <- metadata(object, what, exact, strict)
   result <- if (is.list(result))
     lapply(result, rapply, f = as.character)
   else
     as.list(as.character(result))
   if (L(join)) {
-    result <- unlist(lapply(result, FUN = paste, collapse = sep))
+    result <- unlist(lapply(result, FUN = paste0, collapse = sep))
     msg <- if (is.dup <- anyDuplicated(result))
       paste("duplicated label:", result[is.dup])
     else
@@ -569,29 +588,49 @@ setMethod("extract_columns", OPMS, function(object, what, join = FALSE,
       case(match.arg(dups), ignore = as.null, warn = warning, error = stop)(msg)
   } else {
     result <- must(do.call(rbind, result))
-    result <- as.data.frame(result, optional = TRUE, stringsAsFactors = TRUE)
+    result <- as.data.frame(result, optional = TRUE, stringsAsFactors = factors)
     if (ncol(result) > length(colnames(result)))
-      colnames(result) <- paste(metadata_key(what, FALSE),
-        collapse = OPM_OPTIONS$key.join)
+      colnames(result) <- paste(what, collapse = get("key.join", OPM_OPTIONS))
+    if (is.list(attr(what, "combine")))
+      result <- extract_columns(result, attr(what, "combine"),
+        factors = factors, direct = TRUE)
   }
   result
 }, sealed = SEALED)
 
 setMethod("extract_columns", "data.frame", function(object, what,
-    as.labels = NULL, as.groups = NULL, sep = " ",
-    direct = inherits(what, "AsIs")) {
+    as.labels = NULL, as.groups = NULL, sep = opm_opt("comb.value.join"),
+    factors = is.list(what), direct = inherits(what, "AsIs")) {
   join <- function(x, what, sep)
     do.call(paste, c(x[, what, drop = FALSE], list(sep = sep)))
   find_stuff <- function(x, what) {
-    x <- x[, vapply(x, inherits, logical(1L), what), drop = FALSE]
+    x <- x[, vapply(x, inherits, NA, what), drop = FALSE]
     if (!ncol(x))
       stop("no data of class(es) ", paste(what, collapse = "/"), " found")
     as.matrix(x)
   }
-  if (L(direct)) {
-    result <- join(object, what, sep)
-    if (length(as.labels))
-      names(result) <- join(object, as.labels, sep)
+  LL(direct, factors)
+  if (direct) {
+    if (is.list(what)) {
+      if (is.null(names(what)))
+        stop("if 'what' is a list, it must have names")
+      result <- object
+      what <- what[!match(names(what), colnames(result), 0L)]
+      if (factors)
+        for (i in seq_along(what))
+          result[, names(what)[i]] <- as.factor(join(object, what[[i]], sep))
+      else
+        for (i in seq_along(what))
+          result[, names(what)[i]] <- join(object, what[[i]], sep)
+      if (length(as.labels))
+        rownames(result) <- join(object, as.labels, sep)
+    } else {
+      result <- join(object, what, sep)
+      if (length(as.labels))
+        names(result) <- join(object, as.labels, sep)
+      if (factors)
+        result <- as.factor(result)
+    }
   } else {
     result <- find_stuff(object, what)
     if (length(as.labels))
@@ -601,7 +640,6 @@ setMethod("extract_columns", "data.frame", function(object, what,
     attr(result, "row.groups") <- as.factor(join(object, as.groups, sep))
   result
 }, sealed = SEALED)
-
 
 
 ################################################################################
@@ -638,8 +676,8 @@ setMethod("extract_columns", "data.frame", function(object, what,
 #'   If \code{FALSE}, \code{x} gets ordered according to only the found keys,
 #'   and remains in the original order if none of the keys in \code{by} are
 #'   found at all. Note that it is always an error if keys are found in the
-#'   \code{\link{metadata}} of some of the\code{\link{plates}} but not in those
-#'   of others.
+#'   \code{\link{metadata}} of some of the \code{\link{plates}} but not in
+#'   those of others.
 #' @param na.last Logical scalar. Also passed to \code{order}.
 #' @param ... Optional arguments passed between the methods.
 #' @export
@@ -697,7 +735,7 @@ setMethod("sort", c(OPMS, "logical"), function(x, decreasing, by = "setup_time",
     keys <- lapply(X = by, FUN = metadata, object = x, exact = exact,
       strict = strict)
     if (!strict)
-      if (!length(keys <- keys[!vapply(keys, is.null, logical(1L))]))
+      if (!length(keys <- keys[!vapply(keys, is.null, NA)]))
         return(x)
   } else if (is.character(by))
     keys <- case(length(by),
@@ -789,7 +827,7 @@ setMethod("unique", c(OPMS, "ANY"), function(x, incomparables, ...) {
 #'
 #' @param x \code{\link{OPMS}} or \code{\link{OPM}} object.
 #' @export
-#' @return \code{\link{OPMS}} object with the reversed order of plates, or or
+#' @return \code{\link{OPMS}} object with the reversed order of plates, or
 #'   \code{\link{OPM}} object.
 #' @family conversion-functions
 #' @keywords manip
@@ -893,6 +931,11 @@ setMethod("rep", OPMS, function(x, ...) {
 #'   be joined and used as row names (if \code{dataframe} is \code{FALSE}) or
 #'   additional columns (if otherwise). Ignored if \code{NULL}.
 #'
+#'   If a \code{as.labels} is a formula and \code{dataframe} is \code{TRUE}, the
+#'   pseudo-function \code{J} within the formula can be used to trigger
+#'   combination of factors immediately after selecting them as data-frame
+#'   columns, much like \code{as.groups}.
+#'
 #' @param subset Character vector. The parameter(s) to put in the matrix. If it
 #'   is \sQuote{disc}, discretized data are returned, and \code{ci} is ignored.
 #' @param ci Logical scalar. Also return the confidence intervals?
@@ -900,10 +943,21 @@ setMethod("rep", OPMS, function(x, ...) {
 #' @param dataframe Logical scalar. Return data frame or matrix?
 #'
 #' @param as.groups For the \code{\link{OPMS}} method, a list, character vector
-#'   or formula indicating the metadata to be joined and used as
-#'   \sQuote{row.groups} attribute of the output matrix. See
-#'   \code{\link{heat_map}} for its usage. Ignored if \code{NULL} and if
-#'   \code{dataframe} is \code{FALSE}.
+#'   or formula indicating the metadata to be joined and either used as
+#'   \sQuote{row.groups} attribute of the output matrix or as additional columns
+#'   of the output data frame. See \code{\link{heat_map}} for its usage. Ignored
+#'   if empty.
+#'
+#'   If a \code{as.groups} is a formula and \code{dataframe} is \code{TRUE}, the
+#'   pseudo-function \code{J} within the formula can be used to trigger
+#'   combination of factors immediately after selecting them as data-frame
+#'   columns, much like \code{as.labels}.
+#'
+#'   If \code{as.groups} is a logical scalar, \code{TRUE} yields a trivial group
+#'   that contains all elements, \code{FALSE} yields one group per element, and
+#'   \code{NA} yields an error. The column name in which this factor is placed
+#'   if \code{dataframe} is \code{TRUE} is determined using
+#'   \code{opm_opt("group.name")}.
 #'
 #'   For the data-frame method, a logical, character or numeric vector
 #'   indicating according to which columns (before the \code{split.at} column)
@@ -972,15 +1026,23 @@ setMethod("rep", OPMS, function(x, ...) {
 #'
 #' # generate matrix (containing the parameter given above)
 #' (x <- extract(vaas_4, as.labels = list("Species", "Strain")))[, 1:3]
-#' stopifnot(is.matrix(x), identical(dim(x), c(4L, 96L)), is.numeric(x))
-#' # Using a formula also works
+#' stopifnot(is.matrix(x), dim(x) == c(4, 96), is.numeric(x))
+#' # using a formula also works
 #' (y <- extract(vaas_4, as.labels = ~ Species + Strain))[, 1:3]
 #' stopifnot(identical(x, y))
 #'
 #' # generate data frame
 #' (x <- extract(vaas_4, as.labels = list("Species", "Strain"),
 #'   dataframe = TRUE))[, 1:3]
-#' stopifnot(is.data.frame(x), identical(dim(x), c(4L, 99L)))
+#' stopifnot(is.data.frame(x), dim(x) == c(4, 99))
+#' # using a formula
+#' (y <- extract(vaas_4, as.labels = ~ Species + Strain,
+#'   dataframe = TRUE))[, 1:3]
+#' stopifnot(identical(x, y))
+#' # using a formula, with joining into new columns
+#' (y <- extract(vaas_4, as.labels = ~ J(Species + Strain),
+#'   dataframe = TRUE))[, 1:3]
+#' stopifnot(identical(x, y[, -3]))
 #'
 #' # put all parameters in a single data frame
 #' x <- lapply(param_names(), function(name) extract(vaas_4, subset = name,
@@ -1030,6 +1092,32 @@ setMethod("extract", OPMS, function(object, as.labels,
     extract_columns(object, what = what, join = join, sep = sep, dups = dups,
       exact = exact, strict = strict)
   }
+  create_groups <- function(x, join, ci) {
+    numeric_groups <- function(how) {
+      if (L(how))
+        rep.int(1L, length(object))
+      else
+        seq_len(length(object))
+    }
+    if (join) {
+      result <- if (is.logical(x))
+        numeric_groups(x)
+      else
+        do_extract(x, join = TRUE)
+      result <- as.factor(result)
+      if (ci)
+        result <- rep(result, each = 3L)
+    } else {
+      if (is.logical(x)) {
+        result <- as.data.frame(numeric_groups(x))
+        rownames(result) <- get("group.name", OPM_OPTIONS)
+      } else
+        result <- do_extract(x, join = FALSE)
+      if (ci)
+        result <- result[rep(seq_len(nrow(result)), each = 3L), , drop = FALSE]
+    }
+    result
+  }
 
   # Collect parameters in a matrix
   subset <- match.arg(subset, c(unlist(map_grofit_names(plain = TRUE)), "disc"))
@@ -1048,7 +1136,7 @@ setMethod("extract", OPMS, function(object, as.labels,
     if (length(as.labels)) {
       columns <- do_extract(as.labels, join = FALSE)
       if (ci)
-        columns <- columns[rep(seq.int(nrow(columns)), each = 3L), ,
+        columns <- columns[rep(seq_len(nrow(columns)), each = 3L), ,
           drop = FALSE]
       columns <- cbind(columns, rownames(result))
       colnames(columns)[ncol(columns)] <- RESERVED_NAMES[["parameter"]]
@@ -1056,16 +1144,12 @@ setMethod("extract", OPMS, function(object, as.labels,
       result <- cbind(columns, result)
     } else {
       params <- rownames(result)
-      rownames(result) <- seq.int(nrow(result))
+      rownames(result) <- seq_len(nrow(result))
       result <- cbind(params, result)
       colnames(result)[1L] <- RESERVED_NAMES[["parameter"]]
     }
-    if (length(as.groups)) {
-      to.add <- do_extract(as.groups, join = FALSE)
-      if (ci)
-        to.add <- to.add[rep(seq.int(nrow(to.add)), each = 3L), , drop = FALSE]
-      result <- cbind(result, to.add)
-    }
+    if (length(as.groups))
+      result <- cbind(result, create_groups(as.groups, FALSE, ci))
 
   } else {
 
@@ -1077,17 +1161,13 @@ setMethod("extract", OPMS, function(object, as.labels,
         labels
     } else {
       rownames(result) <- if (ci)
-        paste(rownames(result), rep(seq.int(nrow(result) / 3L), each = 3L),
+        paste(rownames(result), rep(seq_len(nrow(result) / 3L), each = 3L),
           sep = sep)
       else
-        seq.int(nrow(result))
+        seq_len(nrow(result))
     }
-    if (length(as.groups)) {
-      rg <- "row.groups"
-      attr(result, rg) <- as.factor(do_extract(as.groups, join = TRUE))
-      if (ci)
-        attr(result, rg) <- rep(attr(result, rg), each = 3L)
-    }
+    if (length(as.groups))
+      attr(result, "row.groups") <- create_groups(as.groups, TRUE, ci)
   }
 
   result
@@ -1132,7 +1212,7 @@ setMethod("extract", "data.frame", function(object, as.groups = TRUE,
   if (!is.logical(as.groups) && anyDuplicated(as.groups))
     case(match.arg(dups), ignore = as.null, warn = warning, error = stop)(
       "duplicated grouping values")
-  as.groups <- unclass(object[, seq.int(param.pos - 1L), drop = FALSE][,
+  as.groups <- unclass(object[, seq_len(param.pos - 1L), drop = FALSE][,
     as.groups, drop = FALSE])
   gl <- length(as.groups)
 
@@ -1145,7 +1225,7 @@ setMethod("extract", "data.frame", function(object, as.groups = TRUE,
   # The output has to be organized in a certain structure, three rows per group:
   # first the mean, second the lower CI limit third the upper CI limit. This
   # step creates the factor-data part up to the parameter column.
-  result <- as.data.frame(sapply(aggr.mean[, seq.int(gl), drop = FALSE],
+  result <- as.data.frame(sapply(aggr.mean[, seq_len(gl), drop = FALSE],
     rep, each = 3L))
   colnames(result) <- names(as.groups)
   result[, RESERVED_NAMES[["parameter"]]] <- as.factor(unlist(map_grofit_names(
@@ -1163,7 +1243,7 @@ setMethod("extract", "data.frame", function(object, as.groups = TRUE,
   pos.1 <- ncol(aggr.CI)
   pos.2 <- seq.int(pos.1 / 2L + 1L, pos.1)
   pos.1 <- seq.int(pos.1 / 2L)
-  for (i in seq.int(nrow(aggr.mean)))
+  for (i in seq_len(nrow(aggr.mean)))
     output[, seq.int(i * 3L - 2L, 3L * i)] <- c(aggr.mean[i, , drop = TRUE],
       aggr.CI[i, pos.1, drop = TRUE], aggr.CI[i, pos.2, drop = TRUE])
   output <- t(output)
@@ -1171,6 +1251,117 @@ setMethod("extract", "data.frame", function(object, as.groups = TRUE,
 
   # Done.
   cbind(result, output)
+}, sealed = SEALED)
+
+
+################################################################################
+
+
+#' Create data frame
+#'
+#' These methods create a data frame from aggregated and discretized values in
+#' a manner distinct from \code{\link{extract}}.
+#'
+#' @param x Object of class \code{\link{OPM}}, its child classes, or
+#'   \code{\link{OPMS}}. If an \code{\link{OPMS}} object, its elements must
+#'   either all be \code{\link{OPM}} or all be \code{\link{OPMA}} or all be
+#'   \code{\link{OPMD}} objects.
+#' @param row.names Optional vector for use as row names of the resulting data
+#'   frame. Here, it is not recommended to try to set row names explicitly.
+#' @param optional Logical scalar passed to the list and matrix methods of
+#'   \code{as.data.frame}.
+#' @param sep Character scalar used as word separator in column names.
+#' @param ... Optional arguments passed to the list and matrix methods
+#'   of \code{as.data.frame}.
+#' @param stringsAsFactors Logical scalar passed to these methods.
+#' @return Data frame with one row for each combination of well and plate.
+#' @details This function is mainly intended to produce objects that can easily
+#'   be written to \acronym{CSV} files, for instance using \code{write.table}
+#'   from the \pkg{utils} package. There are no \pkg{opm} methods other than
+#'   \code{\link{batch_opm}} (which can write such files) that make use of the
+#'   created kind of objects.
+#'
+#'   The following entries are contained in the generated data frame:
+#'   \itemize{
+#'   \item The \code{\link{csv_data}} entries that identify the plate.
+#'   \item The names of the wells.
+#'   \item For \code{\link{OPMA}} objects (and \code{\link{OPMS}} objects that
+#'   contain them), the aggregated data (curve parameters), one column for each
+#'   point estimate, upper and lower confidence interval of each parameter.
+#'   \item For \code{\link{OPMA}} objects (and \code{\link{OPMS}} objects that
+#'   contain them), the used aggregation settings, one column per entry, except
+#'   for the \sQuote{options} entry (which is not a scalar).
+#'   \item For \code{\link{OPMD}} objects (and \code{\link{OPMS}} objects that
+#'   contain them), one column with the discretized data.
+#'   \item For \code{\link{OPMD}} objects (and \code{\link{OPMS}} objects that
+#'   contain them), the used discretization settings, one column per entry,
+#'   except for the \sQuote{options} entry (which is not a scalar).
+#'   }
+#'
+#'   The limits of using \acronym{CSV} as output format already show up in this
+#'   list, and in general we recommend to generate \acronym{YAML} or
+#'   \acronym{JSON} output instead.
+#' @export
+#' @family conversion-functions
+#' @seealso utils::write.table
+#' @keywords manip
+#' @examples
+#' ## OPMD method
+#' data(vaas_1)
+#' summary(x <- as.data.frame(vaas_1))
+#' stopifnot(is.data.frame(x), nrow(x) == 96)
+#'
+#' ## OPMS method
+#' data(vaas_4)
+#' summary(x <- as.data.frame(vaas_4))
+#' stopifnot(is.data.frame(x), nrow(x) == 96 * 4)
+#'
+setGeneric("as.data.frame")
+
+setMethod("as.data.frame", OPM, function(x, row.names = NULL,
+    optional = FALSE, sep = "_", ...,
+    stringsAsFactors = default.stringsAsFactors()) {
+  result <- cbind(as.data.frame(as.list(x@csv_data[CSV_NAMES]), NULL, optional,
+    ..., stringsAsFactors = stringsAsFactors), Well = wells(x))
+  rownames(result) <- row.names
+  colnames(result) <- gsub("\\W+", sep, colnames(result), FALSE, TRUE)
+  result
+}, sealed = SEALED)
+
+setMethod("as.data.frame", OPMA, function(x, row.names = NULL,
+    optional = FALSE, sep = "_", ...,
+    stringsAsFactors = default.stringsAsFactors()) {
+  result <- as.data.frame(t(x@aggregated), NULL, optional, ...,
+    stringsAsFactors = stringsAsFactors)
+  colnames(result) <- gsub("\\W+", sep, colnames(result), FALSE, TRUE)
+  result <- cbind(callNextMethod(x, row.names, optional, sep, ...,
+    stringsAsFactors = stringsAsFactors), result)
+  settings <- x@aggr_settings[c(SOFTWARE, VERSION, METHOD)]
+  names(settings) <- paste("Aggr", names(settings), sep = sep)
+  cbind(result, as.data.frame(settings, NULL, optional, ...,
+    stringsAsFactors = stringsAsFactors))
+}, sealed = SEALED)
+
+setMethod("as.data.frame", OPMD, function(x, row.names = NULL,
+    optional = FALSE, sep = "_", ...,
+    stringsAsFactors = default.stringsAsFactors()) {
+  result <- callNextMethod(x, row.names, optional, sep, ...,
+    stringsAsFactors = stringsAsFactors)
+  result$Discretized <- x@discretized
+  settings <- x@disc_settings[c(SOFTWARE, VERSION, METHOD)]
+  names(settings) <- paste("Disc", names(settings), sep = sep)
+  cbind(result, as.data.frame(settings, NULL, optional, ...,
+    stringsAsFactors = stringsAsFactors))
+}, sealed = SEALED)
+
+setMethod("as.data.frame", OPMS, function(x, row.names = NULL,
+    optional = FALSE, sep = "_", ...,
+    stringsAsFactors = default.stringsAsFactors()) {
+  if (!length(row.names))
+    row.names <- vector("list", length(x@plates))
+  do.call(rbind, mapply(as.data.frame, x@plates, row.names, SIMPLIFY = FALSE,
+    MoreArgs = list(optional = optional, sep = sep, ...,
+    stringsAsFactors = stringsAsFactors), USE.NAMES = FALSE))
 }, sealed = SEALED)
 
 
@@ -1193,6 +1384,10 @@ setMethod("extract", "data.frame", function(object, as.groups = TRUE,
 #' @param line.sep Character scalar used as output line separator.
 #' @param json Logical scalar. Create \acronym{JSON} instead of \acronym{YAML}?
 #'   If so, \code{sep}, \code{line.sep} and \code{...} are ignored.
+#' @param listify Logical scalar indicating whether after conversion to a list
+#'   its non-list elements should be converted to lists if they have names.
+#'   (Names of named vector are \strong{not} conserved by default in output
+#'   \acronym{YAML}).
 #' @param ... Optional other arguments passed to \code{as.yaml} from the
 #'   \pkg{yaml} package.
 #' @export
@@ -1226,12 +1421,19 @@ setMethod("extract", "data.frame", function(object, as.groups = TRUE,
 setGeneric("to_yaml", function(object, ...) standardGeneric("to_yaml"))
 
 setMethod("to_yaml", YAML_VIA_LIST, function(object, sep = TRUE,
-    line.sep = "\n", json = FALSE, ...) {
-  LL(sep, line.sep, json)
-  if (json)
-    result <- toJSON(as(object, "list"), "C")
-  else {
-    result <- as.yaml(x = as(object, "list"), line.sep = line.sep, ...)
+    line.sep = "\n", json = FALSE, listify = FALSE, ...) {
+  to_map <- function(items) if (is.null(names(items)))
+    items
+  else
+    as.list(items)
+  LL(sep, line.sep, json, listify)
+  object <- as(object, "list")
+  if (listify)
+    object <- rapply(object, to_map, "ANY", NULL, "replace")
+  if (json) {
+    result <- toJSON(object, "C")
+  } else {
+    result <- as.yaml(x = object, line.sep = line.sep, ...)
     if (sep)
       result <- sprintf(sprintf("---%s%%s%s", line.sep, line.sep), result)
   }

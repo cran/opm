@@ -16,12 +16,32 @@
   \code{\link{read_opm}} if these files already contain
   discretized data.
 
+  The discretized data are considered as
+  \sQuote{consistent} with the curve parameter from which
+  they have been estimated if no \code{FALSE} value
+  corresponds to curve parameter larger than the curve
+  parameter of any \code{TRUE} value; \code{NA} values are
+  not considered when checking consistency. The
+  \sQuote{strict.OPMD} entry of \code{\link{opm_opt}}
+  determines whether an error or only a warning is issued
+  in the case of inconsistency.
+
   For further details see the parent class,
   \code{\link{OPMA}}.
 }
 \note{
   \acronym{OPMD} is an acronym for \sQuote{\acronym{OPM},
   discretized}.
+}
+\examples{
+# conversion of a list to an OPMD object is tolerant against re-orderings
+# and additions (but not against omissions)
+x <- as(vaas_1, "list")
+x$discretized <- c(Answer = 42L, rev(x$discretized), Text = LETTERS)
+summary(x)
+x <- as(x, "OPMD")
+summary(x)
+stopifnot(identical(discretized(x), discretized(vaas_1)))
 }
 \seealso{
   methods::Methods methods::new

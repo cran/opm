@@ -23,6 +23,16 @@
   \acronym{OPMA} is an acronym for \sQuote{acronym{OPM},
   aggregated}.
 }
+\examples{
+# conversion of a list to an OPMA object is tolerant against re-orderings
+# and additions (but not against omissions)
+x <- as(vaas_1, "list")
+x$aggregated <- c(Answer = 42L, rev(x$aggregated), Text = LETTERS)
+summary(x)
+x <- as(x, "OPMA")
+summary(x)
+stopifnot(identical(aggregated(x), aggregated(vaas_1)))
+}
 \seealso{
   methods::Methods methods::new
 

@@ -39,11 +39,11 @@ stopifnot(is.list(x), length(x) == 4, sapply(x, class) == "OPMD")
 \seealso{
   base::sapply
 
-  Other conversion-functions: \code{\link{extract}},
-  \code{\link{extract_columns}}, \code{\link{flatten}},
-  \code{\link{gen_iii}}, \code{\link{merge}},
-  \code{\link{plates}}, \code{\link{rep}},
-  \code{\link{rev}}, \code{\link{sort}},
+  Other conversion-functions: \code{\link{as.data.frame}},
+  \code{\link{extract}}, \code{\link{extract_columns}},
+  \code{\link{flatten}}, \code{\link{gen_iii}},
+  \code{\link{merge}}, \code{\link{plates}},
+  \code{\link{rep}}, \code{\link{rev}}, \code{\link{sort}},
   \code{\link{thin_out}}, \code{\link{to_yaml}},
   \code{\link{unique}}
 }

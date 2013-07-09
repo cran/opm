@@ -43,9 +43,9 @@ stopifnot(inherits(parsed, "POSIXlt"), length(parsed) == 4)
   \code{\link{max}}, \code{\link{measurements}},
   \code{\link{metadata}}, \code{\link{minmax}},
   \code{\link{plate_type}}, \code{\link{position}},
-  \code{\link{select}}, \code{\link{seq}},
-  \code{\link{subset}}, \code{\link{summary}},
-  \code{\link{well}}, \code{\link{wells}}
+  \code{\link{seq}}, \code{\link{subset}},
+  \code{\link{summary}}, \code{\link{well}},
+  \code{\link{wells}}
 }
 \keyword{attribute}
 

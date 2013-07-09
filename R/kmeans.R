@@ -62,6 +62,8 @@ to_kmeans.Ckmeans.1d.dp <- function(x, y, ...) {
   x$centers <- as.matrix(x$centers)
   x <- x[c("cluster", "centers", "totss", "withinss", "tot.withinss",
     "betweenss", "size")]
+  x$iter <- 1L # new entry as of R 3.0.1 patched; trivially 1 here
+  x$ifault <- 0L
   class(x) <- "kmeans"
   x
 }
@@ -126,7 +128,7 @@ calinski.Ckmeans.1d.dp <- function(x, y, ...) {
 #' @export
 #'
 calinski.kmeanss <- function(x, ...) {
-  vapply(X = x, FUN = calinski, FUN.VALUE = numeric(1L), ...)
+  vapply(X = x, FUN = calinski, FUN.VALUE = 1, ...)
 }
 
 #' @rdname calinski
@@ -309,6 +311,7 @@ prepare_k <- function(k) {
 #' @param k Numeric vector. Number of clusters requested.
 #' @param nstart Numeric scalar. Ignored if \sQuote{Ckmeans.1d.dp} is called.
 #'   Otherwise passed to \sQuote{kmeans} from the \pkg{stats} package.
+#' @param cores Numeric scalar indicating the number of cores to use.
 #' @param ... List of optional arguments passed to \sQuote{kmeans} from the
 #'   \pkg{stats} package.
 #' @return S3 object of class \sQuote{kmeanss}.
@@ -329,21 +332,22 @@ prepare_k <- function(k) {
 setGeneric("run_kmeans",
   function(object, k, ...) standardGeneric("run_kmeans"))
 
-setMethod("run_kmeans", c("numeric", "numeric"), function(object, k) {
-  result <- sapply(prepare_k(k), Ckmeans.1d.dp, x = object,
-    simplify = FALSE)
+setMethod("run_kmeans", c("numeric", "numeric"), function(object, k,
+    cores = 1L) {
+  result <- mclapply(prepare_k(k), Ckmeans.1d.dp, x = object,
+    mc.cores = cores)
   structure(lapply(result, to_kmeans, y = object), class = "kmeanss",
     input = object)
 }, sealed = SEALED)
 
 setMethod("run_kmeans", c("matrix", "numeric"), function(object, k,
-    nstart = 10L, ...) {
+    cores = 1L, nstart = 10L, ...) {
   result <- if (ncol(object) < 2L)
-    run_kmeans(as.vector(object), k)
+    run_kmeans(as.vector(object), k, cores)
   else
-    structure(sapply(prepare_k(k), function(centers) {
+    structure(mclapply(prepare_k(k), function(centers) {
       kmeans(x = object, centers = centers, nstart = nstart, ...)
-    }, simplify = FALSE), class = "kmeanss")
+    }, mc.cores = cores), class = "kmeanss")
   attr(result, "input") <- object
   result
 }, sealed = SEALED)

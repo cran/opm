@@ -27,7 +27,16 @@ test_that("opm_mcp runs without actually performing mcp", {
   expect_equal(x, y)
   y <- opm_mcp(EXPL.OPMS, model = ~ organism + run, output = "data")
   expect_equal(x, y)
+  # conduct joining of columns
+  y <- opm_mcp(EXPL.OPMS, model = ~ J(organism + run), output = "data")
+  expect_equal(dim(y), c(384L, 6L))
+  expect_equivalent(x, y[, setdiff(colnames(y), "organism.run")])
+  # with the wells
+  y <- opm_mcp(EXPL.OPMS, model = ~ J(organism, Well) + run, output = "data")
+  expect_equal(dim(y), c(384L, 6L))
+  expect_equivalent(x, y[, setdiff(colnames(y), "organism.Well")])
 })
+
 
 ## opm_mcp
 test_that("opm_mcp converts 'model' arguments", {
@@ -37,7 +46,14 @@ test_that("opm_mcp converts 'model' arguments", {
   got <- opm_mcp(EXPL.DF, model = list("foo", c("bar", "baz")),
     output = "model")
   expect_equal(got, Value ~ foo + bar.baz)
+  got <- opm_mcp(EXPL.DF, model = ~ foo + bar$baz, output = "model")
+  expect_equal(got, Value ~ foo + bar.baz)
+  got <- opm_mcp(EXPL.DF, model = ~ k & J(foo + bar$baz), output = "model")
+  expect_equal(got, Value ~ k & foo.bar.baz)
+  got <- opm_mcp(EXPL.DF, model = ~ k | J(foo, bar$baz, Well), output = "model")
+  expect_equal(got, Value ~ k | foo.bar.baz.Well)
 })
+
 
 ## opm_mcp
 test_that("opm_mcp converts numeric 'linfct' arguments", {

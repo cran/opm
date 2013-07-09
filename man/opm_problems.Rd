@@ -15,6 +15,10 @@
   \code{\link{OPM}} \acronym{CSV} data. Called when
   constructing an object of the class.
 }
+\details{
+  The matrix must contain the hours as first column, the
+  other column names must be sorted.
+}
 \keyword{internal}
 
 \docType{methods}

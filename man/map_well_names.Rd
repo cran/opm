@@ -36,8 +36,7 @@
   name of the plate.
 }
 \note{
-  The user-level function is
-  \code{\link{well_to_substrate}}.
+  The user-level function is \code{\link{wells}}.
 }
 \keyword{internal}
 

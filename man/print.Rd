@@ -4,6 +4,7 @@
 \alias{print.OPMS_Listing}
 \alias{print.OPMS_Summary}
 \alias{print.OPM_Summary}
+\alias{print.print_easy}
 \title{Print}
 \usage{
   \method{print}{OPMD_Listing} (x, ...)
@@ -13,6 +14,8 @@
   \method{print}{OPM_Summary} (x, ...)
 
   \method{print}{OPMS_Summary} (x, ...)
+
+  \method{print}{print_easy} (x, ...)
 }
 \arguments{
   \item{x}{Object of class \sQuote{OPM_Summary} or

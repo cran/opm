@@ -104,7 +104,7 @@ setMethod("best_cutoff", c("matrix", "factor"), function(x, y,
   if (combined) {
     if (all)
       cbind(cutoff = cutoffs <- all_cutoffs(x),
-        score = vapply(cutoffs, opt_fun, numeric(1L)))
+        score = vapply(cutoffs, opt_fun, 1))
     else
       unlist(optimize(f = opt_fun, maximum = TRUE, lower = lower,
         upper = upper))
@@ -112,7 +112,7 @@ setMethod("best_cutoff", c("matrix", "factor"), function(x, y,
     lapply(y, function(i) {
       cutoffs <- all_cutoffs(m <- x[i, , drop = FALSE])
       cbind(cutoff = cutoffs,
-        score = vapply(cutoffs, opt_fun_2, numeric(1L), x = m))
+        score = vapply(cutoffs, opt_fun_2, 1, x = m))
     })
   else
     do.call(rbind, lapply(y, function(i) {
@@ -395,12 +395,43 @@ setMethod("discrete", "data.frame", function(x, as.labels = NULL, sep = " ",
 #'   Note that if \code{cutoff} is empty and \code{groups} is \code{TRUE}, an
 #'   error is raised since \code{\link{best_cutoff}} needs groups with more than
 #'   a single element.
+#'
+#'   The \code{groups} argument has no effect on \code{\link{OPMA}} objects.
+#'
 #' @param plain Logical scalar indicating whether or not an \code{\link{OPMD}}
 #'   or \code{\link{OPMS}} object should be created.
 #' @param subset Character scalar passed to \code{\link{extract}}. It is
 #'   recommended to use the maximum height (currently called \sQuote{A}).
+#' @param unify Logical or numeric scalar indicating whether results should be
+#'   unified per group. This works by choosing the most frequent value (mode)
+#'   if its frequency is above a given threshold and \code{NA} otherwise. (The
+#'   same approach is used by \code{\link{listing}} and
+#'   \code{\link{phylo_data}}.)
+#'
+#'   If \code{unify} is a logical scalar, \code{NA} triggers unification
+#'   using 1 as threshold, i.e. all ambiguities are codes as \code{NA}. Using
+#'   \code{TRUE} turns on unification with the default threshold given by
+#'   \code{opm_opt("min.mode")}, whereas \code{FALSE} turns unification off.
+#'
+#'   If \code{unify} is a numeric scalar, values below or equal to zero turn
+#'   unification off. Values above zero are directly used as unification
+#'   threshold, thus values above 1 or numeric \code{NA} make no sense (cause
+#'   an error).
+#'
+#'   See \sQuote{Details} below on the potential consequences of unification. In
+#'   the \code{\link{disc_settings}} entries, an according \sQuote{unified}
+#'   entry will report the threshold used, with -1 indicating no unification.
+#'
+#'   The \code{unify} argument has no effect on \code{\link{OPMA}} objects
+#'   (because they represent a single group with a single member).
 #' @param ... Optional arguments passed to \code{\link{extract}}. Only relevant
 #'   for certain settings of \code{groups}, see above.
+#'
+#' @details If \code{unify} is set to \code{FALSE}, the discretization results
+#'   are always consistent (in the sense described for the \code{\link{OPMD}}
+#'   class) with the discretized parameter. If \code{unify} is set to
+#'   \code{TRUE} this cannot be guaranteed any more. To enforce consistency,
+#'   use \code{opm_opt(strict.OPMD = TRUE)}.
 #'
 #' @note The discretized values can be queried for using \code{\link{has_disc}}
 #'   and received using \code{\link{discretized}}.
@@ -419,10 +450,6 @@ setMethod("discrete", "data.frame", function(x, as.labels = NULL, sep = " ",
 #'
 #' @examples
 #'
-#' # helper function
-#' mustbe <- function(a, b) stopifnot(identical(a, b))
-#'
-#'
 #' ## OPMA method
 #' data(vaas_1)
 #'
@@ -430,30 +457,30 @@ setMethod("discrete", "data.frame", function(x, as.labels = NULL, sep = " ",
 #' summary(x <- do_disc(vaas_1, cutoff = 100))
 #' stopifnot(has_disc(x), dim(x) == dim(vaas_1), !is.na(discretized(x)))
 #' (y <- disc_settings(x))  # stored discretization settings
-#' mustbe(y$method, "direct")
-#' mustbe(y$options, list(cutoffs = 100, datasets = 1L, parameter = "A"))
+#' stopifnot(identical(y$method, "direct"))
+#' stopifnot(is.list(y), is.list(y$options)) # named lists
 #'
 #' # arbitrary thresholds, allowing intermediate ('weak') reactions
 #' summary(x <- do_disc(vaas_1, cutoff = c(75, 125)))
 #' # the intermediate reactions are coded as NA
 #' stopifnot(has_disc(x), dim(x) == dim(vaas_1), any(is.na(discretized(x))))
 #' (y <- disc_settings(x)) # stored discretization settings
-#' mustbe(y$method, "direct")
-#' mustbe(y$options, list(cutoffs = c(75, 125), datasets = 1L, parameter = "A"))
+#' stopifnot(identical(y$method, "direct"))
+#' stopifnot(is.list(y), is.list(y$options)) # named lists
 #'
 #' # using k-means, two categories, no intermediate ('weak') reactions
 #' summary(x <- do_disc(vaas_1, cutoff = FALSE))
 #' stopifnot(has_disc(x), dim(x) == dim(vaas_1), !is.na(discretized(x)))
 #' (y <- disc_settings(x)) # stored discretization settings
-#' mustbe(y$method, "kmeans")
-#' mustbe(length(y$options$cutoffs), 1L)
+#' stopifnot(identical(y$method, "kmeans"))
+#' stopifnot(is.list(y), is.list(y$options)) # named lists
 #'
 #' # using k-means, now allowing intermediate ('weak') reactions
 #' summary(x <- do_disc(vaas_1, cutoff = TRUE))
 #' stopifnot(has_disc(x), dim(x) == dim(vaas_1), any(discretized(x)))
 #' (y <- disc_settings(x)) # stored discretization settings
-#' mustbe(y$method, "kmeans")
-#' mustbe(length(y$options$cutoffs), 2L) # now 2 cutoff values
+#' stopifnot(identical(y$method, "kmeans"))
+#' stopifnot(is.list(y), is.list(y$options)) # named lists
 #'
 #'
 #' ## OPMS method
@@ -463,62 +490,77 @@ setMethod("discrete", "data.frame", function(x, as.labels = NULL, sep = " ",
 #' x <- do_disc(vaas_4, cutoff = 100)
 #' stopifnot(has_disc(x), dim(x) == dim(vaas_4), !is.na(discretized(x)))
 #' (y <- disc_settings(x)[[1]]) # stored discretization settings
-#' mustbe(y$method, "direct")
-#' mustbe(y$options, list(cutoffs = 100, datasets = 4L, parameter = "A"))
+#' stopifnot(identical(y$method, "direct"))
+#' stopifnot(is.list(y), is.list(y$options)) # named lists
+#'
+#' # arbitrary threshold, no ambiguity, no groups, with unification
+#' x <- do_disc(vaas_4, cutoff = 100, unify = TRUE)
+#' stopifnot(has_disc(x), dim(x) == dim(vaas_4))
+#' stopifnot(any(is.na(discretized(x)))) # NAs caused by unification
+#' (y <- disc_settings(x)[[1]]) # stored discretization settings
+#' stopifnot(identical(y$method, "direct"))
+#' stopifnot(is.list(y), is.list(y$options)) # named lists
+#' # all plates made uniform (makes not much sense)
 #'
 #' # arbitrary threshold, no ambiguity, with groups, 1 plate per group
 #' x <- do_disc(vaas_4, cutoff = 100, groups = TRUE)
 #' stopifnot(has_disc(x), dim(x) == dim(vaas_4), !is.na(discretized(x)))
 #' (y <- disc_settings(x)[[1]]) # stored discretization settings
-#' mustbe(y$method, "direct")
-#' mustbe(y$options, # here, the plate numbers yield the group names
-#'   list(cutoffs = 100, datasets = 1L, group = "1", parameter = "A"))
+#' stopifnot(identical(y$method, "direct"))
+#' stopifnot(is.list(y), is.list(y$options)) # named lists
+#' # here, the plate numbers yield the group names
 #'
 #' # arbitrary threshold, no ambiguity, with specified groups
 #' x <- do_disc(vaas_4, cutoff = 100, groups = "Species")
 #' stopifnot(has_disc(x), dim(x) == dim(vaas_4), !is.na(discretized(x)))
 #' (y <- disc_settings(x)[[1]]) # stored discretization settings
-#' mustbe(y$method, "direct")
-#' mustbe(y$options, # now, groups are from the metadata (but played no role)
-#'   list(cutoffs = 100, datasets = 2L, group = "Escherichia coli",
-#'     parameter = "A"))
+#' stopifnot(identical(y$method, "direct"))
+#' stopifnot(is.list(y), is.list(y$options)) # named lists
+#' # now, groups are from the metadata (but played no role)
 #'
 #' # using k-means, no ambiguity, with specified groups
-#' x <- do_disc(vaas_4, cutoff = TRUE, groups = "Species")
-#' stopifnot(has_disc(x), dim(x) == dim(vaas_4), any(is.na(discretized(x))))
+#' x <- do_disc(vaas_4, cutoff = FALSE, groups = "Species")
+#' stopifnot(has_disc(x), dim(x) == dim(vaas_4), !is.na(discretized(x)))
 #' (y <- disc_settings(x)[[1]]) # stored discretization settings
-#' mustbe(y$method, "kmeans")
-#' mustbe(y$options$group, "Escherichia coli") # grouping by species
-#' mustbe(y$options$datasets, 2L) # discretized separately
-#' mustbe(length(y$options$cutoffs), 2L)
+#' stopifnot(identical(y$method, "kmeans"))
+#' stopifnot(is.list(y), is.list(y$options)) # named lists
+#' # grouping by species, discretized separately
+#'
+#' # same, with unification
+#' x <- do_disc(vaas_4, cutoff = FALSE, groups = "Species", unify = TRUE)
+#' stopifnot(has_disc(x), dim(x) == dim(vaas_4))
+#' stopifnot(any(is.na(discretized(x)))) # NAs caused by unification
+#' (y <- disc_settings(x)[[1]]) # stored discretization settings
+#' stopifnot(identical(y$method, "kmeans"))
+#' stopifnot(is.list(y), is.list(y$options)) # named lists
+#' # grouping by species, discretized separately, then made uniform
 #'
 #' # using best_cutoff(), groups defined by species affiliation (makes not
-#' # much sense)
+#' # much sense and by default yields warnings with these data)
 #' x <- do_disc(vaas_4, cutoff = NULL, groups = "Species")
 #' stopifnot(has_disc(x), dim(x) == dim(vaas_4), any(is.na(discretized(x))))
 #' (y <- disc_settings(x)[[1]]) # stored discretization settings
-#' mustbe(y$method, "best-cutoff")
-#' mustbe(y$options$group, "Escherichia coli") # groups as above
-#' mustbe(y$options$datasets, 2L) # 2 strains per species
-#' # ...but some additional entries:
-#' stopifnot(c("cutoffs", "score") %in% names(y$options))
+#' stopifnot(identical(y$method, "best-cutoff"))
+#' stopifnot(is.list(y), is.list(y$options)) # named lists
+#' # groups as above, 2 strains per species, but some additional entries
 #'
-#' # using best_cutoff(), single group for all plates (makes even less sense)
+#' # using best_cutoff(), single group for all plates (makes even less sense
+#' # and by default also yields warnings with these data)
 #' x <- do_disc(vaas_4, cutoff = NULL, groups = FALSE)
 #' stopifnot(has_disc(x), dim(x) == dim(vaas_4), any(is.na(discretized(x))))
 #' (y <- disc_settings(x)[[1]]) # stored discretization settings
-#' mustbe(y$method, "best-cutoff")
-#' mustbe(y$options$group, NULL) # no subgroups
-#' mustbe(y$options$datasets, 4L) # all 4 datasets in one group
-#' # ...and the some additional entries:
-#' stopifnot(c("cutoffs", "score") %in% names(y$options))
+#' stopifnot(identical(y$method, "best-cutoff"))
+#' stopifnot(is.list(y), is.list(y$options)) # named lists
+#' # no subgroups, all 4 datasets in one group, and some additional entries
 #'
 setGeneric("do_disc", function(object, ...) standardGeneric("do_disc"))
 
-setMethod("do_disc", OPMA, function(object, cutoff, plain = FALSE,
-    subset = opm_opt("disc.param")) {
+setMethod("do_disc", OPMA, function(object, cutoff, groups = FALSE,
+    plain = FALSE, subset = opm_opt("disc.param"), unify = FALSE) {
   if (!length(cutoff))
-    stop("'cutoff' must be a non-empty vector if applied to OPMA objects")
+    stop(sprintf(
+      "'cutoff' must be a non-empty vector if applied to %s objects",
+      class(object)))
   x <- aggregated(object, subset = map_grofit_names(subset, ci = FALSE)[[1L]],
     ci = FALSE)[1L, ]
   x <- discrete(x, range = cutoff, gap = TRUE, output = "logical")
@@ -526,7 +568,8 @@ setMethod("do_disc", OPMA, function(object, cutoff, plain = FALSE,
     "direct"
   else
     "kmeans",
-    list(cutoffs = attr(x, "cutoffs"), datasets = 1L, parameter = subset))
+    list(cutoffs = attr(x, "cutoffs"), datasets = 1L, parameter = subset,
+      unified = -1))
   settings <- c(settings, as.list(opm_string(version = TRUE)))
   names(settings) <- c(METHOD, OPTIONS, SOFTWARE, VERSION)
   if (L(plain))
@@ -538,22 +581,64 @@ setMethod("do_disc", OPMA, function(object, cutoff, plain = FALSE,
 }, sealed = SEALED)
 
 setMethod("do_disc", "OPMS", function(object, cutoff = TRUE, groups = FALSE,
-    plain = FALSE, subset = opm_opt("disc.param"), ...) {
+    plain = FALSE, subset = opm_opt("disc.param"), unify = !length(cutoff),
+    ...) {
+
+  do_bc <- function(x, grp, combined) {
+    bc <- best_cutoff(x, grp <- as.factor(grp), combined)
+    if (combined) # convert returned vector into appropriate matrix
+      bc <- matrix(bc, nrow = length(levels(grp)), ncol = length(bc),
+        byrow = TRUE, dimnames = list(levels(grp), names(bc)))
+    bc
+  }
+
   add_disc <- function(x, discretized, disc.settings) {
     new(OPMD, measurements = measurements(x),
       metadata = metadata(x), csv_data = csv_data(x),
       aggregated = aggregated(x), aggr_settings = aggr_settings(x),
       discretized = discretized, disc_settings = disc.settings)
   }
+
+  prepare_unify <- function(unify) {
+    if (is.logical(L(unify))) {
+      if (is.na(unify))
+        1L
+      else if (unify)
+        get("min.mode", OPM_OPTIONS)
+      else
+        -1L
+    } else if (is.numeric(unify)) {
+      if (is.na(unify))
+        stop("a numeric NA 'unify' value makes no sense")
+      if (unify > 0) {
+        if (unify > 1)
+          stop("a numeric 'unify' value > 1 makes no sense")
+        unify
+      } else
+        -1L
+    } else
+      stop("'unify' must be a logical or numeric scalar")
+  }
+
+  add_as_options <- function(x, y) {
+    x[[OPTIONS]] <- y
+    x
+  }
+
   if (!all(has_aggr(object)))
     stop("all plates must contain aggregated data to run this function")
+
+  unify <- prepare_unify(unify)
+
   if (is.logical(groups)) {
     combined <- !L(groups)
     groups <- NULL
   } else
     combined <- !length(groups)
+
   # extra step necessary here because extract() allows 'disc'
   subset <- unname(match.arg(subset, unlist(map_grofit_names(plain = TRUE))))
+
   x <- extract(object = object, as.labels = groups, subset = subset,
     ci = FALSE, full = FALSE, dataframe = FALSE, dups = "ignore", ...)
 
@@ -570,7 +655,7 @@ setMethod("do_disc", "OPMS", function(object, cutoff = TRUE, groups = FALSE,
   else if (length(groups))
     grp <- rownames(x)
   else
-    grp <- seq.int(nrow(x))
+    grp <- seq_len(nrow(x))
 
   disc.settings <- list(if (use.best)
     "best-cutoff"
@@ -581,65 +666,56 @@ setMethod("do_disc", "OPMS", function(object, cutoff = TRUE, groups = FALSE,
   disc.settings <- c(disc.settings, as.list(opm_string(version = TRUE)))
   names(disc.settings) <- c(METHOD, OPTIONS, SOFTWARE, VERSION)
 
-  if (length(grp)) {
+  if (length(grp)) { # unless empty, 'grp' now holds the group names
 
-    grp <- as.factor(grp)
     disc.settings <- rep.int(list(disc.settings), length(object))
-
-    if (use.best) {
-
-      # using best_cutoff() instead of k-means partitioning
-      bc <- best_cutoff(x, y = grp, combined = combined)
-      if (combined)
-        bc <- matrix(bc, nrow = length(levels(grp)), ncol = length(bc),
-          byrow = TRUE, dimnames = list(levels(grp), names(bc)))
+    if (use.best) { # using best_cutoff() instead of discrete()
+      bc <- do_bc(x, grp, combined)
       for (idx in split(seq_along(grp), grp)) {
-        group <- as.character(grp[idx[1L]])
-        settings <- list(cutoffs = bc[group, "maximum"],
-          score = bc[group, "objective"], datasets = length(idx),
-          group = group, parameter = subset)
+        group <- grp[idx[1L]]
+        settings <- list(cutoffs = bc[group, "maximum"], datasets = length(idx),
+          score = bc[group, "objective"], group = group, parameter = subset,
+          unified = unify)
         if (combined)
           settings$group <- NULL
-        for (i in idx) {
-          tmp <- disc.settings[[i]]
-          tmp[[OPTIONS]] <- settings
-          disc.settings[[i]] <- tmp
-        }
         x[idx, ] <- x[idx, , drop = FALSE] > settings$cutoffs
-        is.const <- is_constant(x[idx, , drop = FALSE], 2L)
-        x[idx, !is.const] <- NA
+        for (i in idx)
+          disc.settings[[i]] <- add_as_options(disc.settings[[i]], settings)
       }
-      mode(x) <- "logical"
-
-    } else {
-
-      # discrete() partitioning separately per group
+    } else { # discrete() partitioning separately per group
       for (idx in split(seq_along(grp), grp)) {
-        y <- discrete(x[idx, , drop = FALSE], range = cutoff, gap = TRUE,
-          output = "integer")
+        x[idx, ] <- y <- discrete(x[idx, , drop = FALSE], range = cutoff,
+          gap = TRUE, output = "integer")
         settings <- list(cutoffs = attr(y, "cutoffs"), datasets = length(idx),
-          group = as.character(grp[idx[1L]]), parameter = subset)
-        for (i in idx) {
-          tmp <- disc.settings[[i]]
-          tmp[[OPTIONS]] <- settings
-          disc.settings[[i]] <- tmp
-        }
-        x[idx, ] <- y
+          group = as.character(grp[idx[1L]]), parameter = subset,
+          unified = unify)
+        for (i in idx)
+          disc.settings[[i]] <- add_as_options(disc.settings[[i]], settings)
       }
-      mode(x) <- "logical"
+    }
+    mode(x) <- "logical"
+    if (unify > 0)
+      for (idx in split(seq_along(grp), grp)) {
+        y <- reduce_to_mode.matrix(x[idx, , drop = FALSE], unify, TRUE)
+        for (i in idx)
+          x[i, ] <- y
+      }
 
+  } else if (combined) { # discrete() partitioning with entire dataset at once
+
+    x <- discrete(x, range = cutoff, gap = TRUE, output = "logical")
+    disc.settings <- add_as_options(disc.settings,
+      list(cutoffs = attr(x, "cutoffs"), datasets = length(object),
+      parameter = subset, unified = unify))
+    disc.settings <- rep.int(list(disc.settings), length(object))
+    if (unify > 0) {
+      y <- reduce_to_mode.matrix(x, unify, TRUE)
+      for (i in seq_len(nrow(x)))
+        x[i, ] <- y
     }
 
-  } else if (combined) {
-
-    # discrete() partitioning with the entire dataset at once
-    x <- discrete(x, range = cutoff, gap = TRUE, output = "logical")
-    disc.settings[[OPTIONS]] <- list(cutoffs = attr(x, "cutoffs"),
-      datasets = length(object), parameter = subset)
-    disc.settings <- rep.int(list(disc.settings), length(object))
-
-  } else
-    stop(BUG_MSG) # this should be an impossible combination of settings
+  } else # this should be an impossible combination of settings
+    stop(BUG_MSG)
 
   if (L(plain))
     return(structure(c(x), settings = disc.settings))

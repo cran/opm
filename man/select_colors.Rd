@@ -2,7 +2,8 @@
 \alias{select_colors}
 \title{Select colours}
 \usage{
-  select_colors(set = c("w3c", "w3c.i", "nora", "nora.i", "brewer", "brewer.i", "roseo", "roseo.i"))
+  select_colors(set = c("w3c", "w3c.i", "nora", "nora.i", "brewer", "brewer.i", "roseo",
+    "roseo.i"))
 }
 \arguments{
   \item{set}{Character scalar. Name of the colour vector to

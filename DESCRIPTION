@@ -1,23 +1,23 @@
 Package: opm
-Version: 0.9.1
-Date: 2013-04-18
+Version: 0.10.0
+Date: 2013-07-09
 Title: Tools for analysing OmniLog(R) Phenotype Microarray data
-Author: Markus Goeker, with contributions by Lea A.I. Vaas, Benjamin
-        Hofner, Johannes Sikorski, Nora Buddruhs and Anne Fiebig
+Author: Markus Goeker, with contributions by Benjamin Hofner, Lea A.I.
+    Vaas, Johannes Sikorski, Nora Buddruhs and Anne Fiebig
 Maintainer: Markus Goeker <markus.goeker@dsmz.de>
-Depends: R (>= 2.14.0)
+Depends: R (>= 2.15.0)
 Imports: methods, lattice, parallel, boot, hwriter, plotrix,
-        Ckmeans.1d.dp, pkgutils (>= 0.3-0), yaml (>= 2.1.5), splines,
+        Ckmeans.1d.dp, pkgutils (>= 0.3-0), yaml (>= 2.1.7), splines,
         mgcv, grofit (>= 1.1), rjson (>= 0.2.12)
 Suggests: optparse, gplots, opmdata (>= 0.4-0), testthat, multcomp
 Description: Tools for analysing OmniLog(R) and Microstation Phenotype
-        Microarray (PM) data as produced by the devices distributed by
-        BiOLOG Inc., including plotting, aggregating (estimating curve
-        parameters), comparing and discretizing PM data, creating
-        phylogenetic formats and reports for taxonomic journals,
-        running multiple comparisons of means, integrating metadata,
-        using the YAML format for the storage of data and metadata, and
-        batch conversion of large numbers of files.
+    Microarray (PM) data as produced by the devices distributed by
+    BIOLOG Inc., including plotting, aggregating (estimating curve
+    parameters), comparing and discretizing PM data, creating
+    phylogenetic formats and reports for taxonomic journals,
+    running multiple comparisons of means, integrating metadata,
+    using the YAML format for the storage of data and metadata, and
+    batch conversion of large numbers of files.
 License: GPL (>= 2)
 URL: http://opm.dsmz.de/
 Collate: 'substrate-info.R' 'well-map.R' 'plate-map.R' 'imports.R'
@@ -28,7 +28,7 @@ Collate: 'substrate-info.R' 'well-map.R' 'plate-map.R' 'imports.R'
         'splinefit.R'
 LazyData: yes
 LazyDataCompression: bzip2
-Packaged: 2013-04-18 15:19:56 UTC; goeker
+Packaged: 2013-07-09 11:53:40 UTC; goeker
 NeedsCompilation: no
 Repository: CRAN
-Date/Publication: 2013-04-18 18:20:47
+Date/Publication: 2013-07-09 14:15:24

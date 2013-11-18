@@ -1,6 +1,7 @@
 \name{html_args}
 \alias{html_args}
-\title{Default HTML formatting arguments}
+\alias{safe_labels}
+\title{\acronym{HTML} formatting and output label generation}
 \usage{
   html_args(character.states = c(`negative reaction` = "-", `weak reaction` = "w",
     `positive reaction` = "+"),
@@ -10,6 +11,9 @@
     table.summary = "character matrix",
     greek.letters = TRUE, css.file = opm_opt("css.file"),
     ...)
+
+  safe_labels(x, format, enclose = TRUE, pad = FALSE,
+    comment = FALSE)
 }
 \arguments{
   \item{character.states}{Character vector used for mapping
@@ -22,7 +26,7 @@
   vector.}
 
   \item{multiple.sep}{Character scalar used for joining
-  multi-state characters together.}
+  multiple-state characters together.}
 
   \item{organisms.start}{Character scalar prepended to the
   organism part of the table legend. Ignored if empty.}
@@ -55,7 +59,7 @@
   file does not exist, but the page will then probably not
   be displayed as intended.
 
-  Under Windows it is recommended to convert a filename
+  Under Windows it is recommended to convert a file name
   \code{f} beforehand using \code{normalizePath(f, winslash
   = "/")}.}
 
@@ -72,36 +76,78 @@
   Lists are converted recursively. List names will be
   converted to \sQuote{title} and \sQuote{class} attributes
   (if missing, names are inferred from the nesting level;
-  see \code{\link{opm_opt}}, entry \sQuote{html.class}).
+  see \code{\link{opm_opt}}, entry \code{html.class}).
   Names of other vectors, if any, are converted to
   \sQuote{title} and \sQuote{span} attributes. Character
   vectors are converted using \code{\link{safe_labels}}
-  unless they inherit from \sQuote{AsIs} (see \code{I} from
+  unless they inherit from \code{AsIs} (see \code{I} from
   the \pkg{base} package).} \item{insert}{As above, but
   inserted between the legend and the table.}
   \item{append}{As above, but inserted after the table.} }}
+
+  \item{x}{Character vector or convertible to such.}
+
+  \item{format}{Character scalar. See
+  \code{\link{phylo_data}}.}
+
+  \item{enclose}{Logical scalar. See
+  \code{\link{phylo_data}} and the description of
+  \code{comment}.}
+
+  \item{pad}{Logical scalar. Bring labels to the same
+  number of characters by appending spaces? Has no effect
+  for \acronym{PHYLIP} and \acronym{HTML} output format.}
+
+  \item{comment}{Logical scalar. If \code{TRUE}, comments
+  as used in the respective format will be produced.
+  \acronym{PHYLIP} and \acronym{EPF} do not accept comments
+  and will yield an error. If \code{enclose} is
+  \code{TRUE}, the comment-enclosing characters are
+  appended and prepended to the vector, otherwise to each
+  string separately.}
 }
 \value{
-  List.
+  List of \acronym{HTML} arguments or character vector with
+  modified labels.
 }
 \description{
-  A helper function for \code{\link{phylo_data}} allowing
-  for the easy fine-tuning of the generated \acronym{HTML}
-  output.
+  These are helper functions for \code{\link{phylo_data}}
+  allowing for either the easy fine-tuning of the generated
+  \acronym{HTML} output or for the conversions of strings
+  to safe phylogenetic taxon labels.
 }
-\note{
-  The \code{\link{phylo_data}} methods for
-  \sQuote{OPMD_Listing} and \sQuote{OPMS_Listing} objects
-  do not support all \acronym{HTML} formatting options.
+\details{
+  These functions are not normally called directly by an
+  \pkg{opm} user but by \code{\link{phylo_data}}; see there
+  for their usual application. The \code{\link{phylo_data}}
+  methods for \code{OPMD_Listing} and \code{OPMS_Listing}
+  objects do not support all \acronym{HTML} formatting
+  options.
+
+  Label cleaning invokes either the replacement of
+  disallowed characters or the enclosing of all labels in
+  single quotes and the doubling of already existing single
+  quotes, if any.
 }
 \examples{
-# see phylo_data()
+# Some animals you might know
+x <- c("Elephas maximus", "Loxodonta africana", "Giraffa camelopardalis")
+
+(y <- safe_labels(x, "phylip"))
+stopifnot(nchar(y) == 10L) # truncation
+
+(y <- safe_labels(x, "epf"))
+stopifnot(nchar(y) == nchar(x)) # changes in length unnecessary
+(y <- safe_labels(x, "epf", pad = TRUE))
+stopifnot(nchar(y) == 22) # padded to uniform length
+
+(y <- safe_labels(x, "nexus", enclose = TRUE))
+stopifnot(grepl("^'.*'$", y)) # all strings enclosed in sinqle quotes
 }
 \seealso{
-  base::normalizePath base::I
+  base::normalizePath base::I base::gsub
 
-  Other phylogeny-functions: \code{\link{phylo_data}},
-  \code{\link{safe_labels}}
+  Other phylogeny-functions: \code{\link{phylo_data}}
 }
 \keyword{IO}
 \keyword{character}

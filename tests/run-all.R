@@ -9,14 +9,11 @@
 ################################################################################
 
 
-library(testthat)
 library(opm)
 
-
-# 'testhat' does not work under Solaris (Ripley, pers. comm. 14-02-2012); this
-# is a blind-flight attempt to turn it off that seemed to work so far
-#
-if (!grepl("solaris", R.version$platform, perl = TRUE, ignore.case = TRUE))
+if (require(testthat) &&
+    # 'testhat' does not work under Solaris (Ripley, pers. comm. 14-02-2012);
+    # this is a blind-flight attempt to turn it off that seemed to work so far
+    !grepl("solaris", R.version$platform, TRUE, TRUE)) {
   test_package("opm")
-
-
+}

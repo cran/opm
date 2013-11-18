@@ -2,6 +2,8 @@
 
 library(testthat)
 context("Testing the phylogeny-related functions of the OPM package")
+if (!exists("TEST.DIR"))
+  attach(objects_for_testing())
 
 
 SIMPLE.MATRIX <- matrix(LETTERS[1:10], ncol = 2L)
@@ -108,7 +110,7 @@ test_that("HTML tables can be created and information added", {
     html.args = html_args(meta = letters)))
 
   z <- phylo_data(x, "html", html.args = html_args(
-    meta = c(a = 99, b = 1:3), meta = structure(letters, .Names = LETTERS)))
+    meta = c(a = 99, b = 1:3), meta = structure(letters, names = LETTERS)))
   expect_equal(length(y) + 3L, length(z))
 
   z <- phylo_data(x, "html", comments = "This is a title")
@@ -398,5 +400,6 @@ test_that("nexus matrices can be created with other conversions", {
   expect_true("begin paup;" %in% z)
 
 })
+
 
 

@@ -1,44 +1,64 @@
 \name{map_values}
+\alias{map_names}
 \alias{map_values}
-\title{Map values}
+\title{Map values or names}
 \arguments{
-  \item{object}{List (may be nested), data frame or
-  character vector. If it has names, they are preserved.
-  \code{NULL} can also be given and yields \code{NULL} or
-  an empty named character vector (if \code{mapping} is
-  missing). \code{object} may also belong to the virtual
-  class \code{\link{MOA}}, comprising matrices and arrays.}
+  \item{object}{When mapping values, a list (may be
+  nested), data frame or character vector. If it has names,
+  they are preserved. \code{NULL} can also be given and
+  yields \code{NULL} or an empty named character vector (if
+  \code{mapping} is missing). \code{object} may also belong
+  to the virtual class \code{\link{MOA}}, comprising
+  matrices and arrays.
 
-  \item{mapping}{Character vector, function, formula,
-  expression, \code{NULL} or missing.  \itemize{ \item If a
-  character vector used as a mapping from its names to its
-  values.  Values from \code{object} are searched for in
-  the \code{names} attribute of \code{mapping}; those found
-  are replaced by the corresponding values of
-  \code{mapping}.  \item If \code{mapping} is missing, a
-  character vector is returned (sorted and with duplicates
-  removed) whose names are identical to the values. This
-  eases the construction of mapping vectors specific for
-  \code{object}. If \code{mapping} is missing, the
-  \code{coerce} argument must be named.  \code{mapping}
-  changes its usage if \code{coerce} is \code{TRUE}.  \item
-  For \code{\link{MOA}} objects, if \code{mapping} was a
+  When mapping names, \code{object} can be any \R object.
+  The default method applies the mapping to the
+  \sQuote{names} attribute. The behaviour is special for
+  lists, which are traversed recursively to also consider
+  contained lists with names. Data frames and
+  \code{\link{MOA}} objects (that is, including matrices
+  and arrays) are also treated specially because the
+  \code{dimnames} attribute, not the \sQuote{names}
+  attribute is considered.}
+
+  \item{mapping}{When mapping values, a character vector,
+  function, formula, expression, \code{NULL} or missing.
+  \itemize{ \item If a character vector used as a mapping
+  from its names to its values.  Values from \code{object}
+  are searched for in the \code{names} attribute of
+  \code{mapping}; those found are replaced by the
+  corresponding values of \code{mapping}.  \item If
+  \code{mapping} is missing, a character vector is returned
+  (sorted and with duplicates removed) whose names are
+  identical to the values. This eases the construction of
+  mapping vectors specific for \code{object}. If
+  \code{mapping} is missing, the \code{coerce} argument
+  must be named.  \code{mapping} changes its usage if
+  \code{coerce} is \code{TRUE}.  \item For
+  \code{\link{MOA}} objects, if \code{mapping} was a
   function, it would be applied to \code{object} after
   conversion with \code{as.vector}, and it would be
   attempted to add the original attributes (particularly
-  important are \sQuote{dim} and \sQuote{dimnames} back to
+  important are \sQuote{dim} and \code{dimnames} back to
   the result.  \item For \code{\link{MOA}} objects, if
   \code{mapping} is the usual character vector, it then is
   used for mapping the \code{storage.mode}, not the
   \code{class} of \code{object}.  \item \code{mapping} can
   also be a formula, it is then used to compute on lists.
   The see examples below.  \item If \code{mapping} is an
-  expression, all sub-expressions will be evualated in
+  expression, all sub-expressions will be evaluated in
   \code{object} represented as an environment, which after
   conversion back to a list, is returned.  \item If
   \code{mapping} is \code{NULL} and \code{object} is a
   list, all contained objects of zero length are removed
-  recursively. }}
+  recursively.  }
+
+  When mapping names, a mapping function that takes a
+  character vector as first argument, or character vector
+  used for mapping from its names to its values, or
+  missing. It is guaranteed that \code{NULL} input remains
+  \code{NULL}, irrespective of the value of
+  \code{mapping}.}
 
   \item{coerce}{The usage of this argument depends on
   \code{object}.  \itemize{ \item A character vector with
@@ -60,13 +80,21 @@
   (\strong{if} it is a function).}
 }
 \value{
-  List, data frame, character vector or \code{NULL}.
+  \code{map_values} returns a list, data frame, a character
+  or logical vector or \code{NULL}.
+
+  \code{map_names} yields a character vector if
+  \code{mapping} is missing, otherwise an \R object of the
+  same class than \code{object}.
 }
 \description{
   Map values using a character vector, a function or a
-  formula. This is not normally directly called by an
-  \pkg{opm} user because \code{\link{map_metadata}} is
-  available.
+  formula, or use a character vector or a function for
+  recursively mapping list names, or mapping the
+  \code{colnames} and \code{rownames} attributes of a data
+  frame or matrix. These functions are not normally
+  directly called by an \pkg{opm} user because
+  \code{\link{map_metadata}} is available.
 }
 \details{
   Mapping of \sQuote{character} data using another
@@ -79,8 +107,33 @@
   between classes using coercion functions. For convenience
   in programming, methods for the \sQuote{NULL} class are
   also available.
+
+  Mapping of logical vectors using another vector expects
+  (at least) three elements within the mapping vector, i.e.
+  the values to be used for \code{FALSE}, \code{NA} and
+  \code{TRUE} elements in \code{object}. Nothing is
+  modified if the mapping is \code{NULL}. The default
+  mapping vector \code{c(1L, 2L, 3L)} is used if
+  \code{mapping} is missing.
+
+  In the case of lists, the function passed to
+  \code{map_names} is not applied to list elements which
+  are not themselves lists, even if they have a
+  \sQuote{names} attribute. Such elements and their names,
+  if any, are returned unchanged. If a \sQuote{names},
+  \code{colnames} or \code{rownames} attribute is
+  \code{NULL}, it is ignored.
+
+  Alternatively, instead of mapping the names, collect them
+  and return them as a single character vector, sorted and
+  with duplicates removed. The collected names are added as
+  their own \code{names} attribute; this might be useful if
+  the result is later on used for some mapping (using this
+  function or \code{\link{map_values}}).
 }
 \examples{
+## map_values()
+
 # Character/character method
 map <- letters
 names(map) <- rev(LETTERS)
@@ -208,99 +261,168 @@ stopifnot(is.factor(y), levels(y) == c("a", "c"))
 # Factor/missing method
 (y <- map_values(x))
 stopifnot(levels(x) == y, names(y) == y)
+
+## map_names()
+
+# List/function method
+x <- list(a = 1:8, c = 9, d = 'x')
+map <- function(x) sprintf("\%s\%s", x, x)
+(y <- map_names(x, map))
+stopifnot(identical(as.character(x), as.character(y)))
+stopifnot(!identical(names(x), names(y)))
+
+# List/character method
+x <- list(a = 1:8, c = 9, d = 'x')
+map <- c(a = "b", e = "f", x = "y")
+(y <- map_names(x, map))
+stopifnot(identical(as.character(x), as.character(y)))
+stopifnot(!identical(names(x), names(y)))
+# compare with the map_values() example
+
+# List/missing method
+x <- list(a = 1:8, c = 9, d = 'x')
+(y <- map_names(x))
+stopifnot(identical(as.vector(y), names(x)))
+stopifnot(identical(names(y), names(x)))
+# Now a recursive list
+x <- list(a = 1:8, c = 9, d = list(d1 = 'x', d2 = 'y'))
+(y <- map_names(x))
+stopifnot(length(y) > length(names(x)))
+
+# Data frame/function method
+x <- data.frame(a = 1:3, b = letters[1:3])
+(y <- map_names(x, toupper))
+stopifnot(identical(y[[1]], x[[1]]), identical(y[[2]], x[[2]]))
+stopifnot(identical(names(y), c("A", "B")))
+
+# Data frame/character method
+(y <- map_names(x, c(a = "b", b = "a")))
+stopifnot(x == y, names(y) == c("b", "a"))
+
+# Data frame/missing method
+(y <- map_names(x))
+stopifnot(is.character(y), y == names(y), length(y) == 5)
+
+# Matrix/function method
+x <- as.matrix(x)
+(y <- map_names(x, toupper))
+stopifnot(x == y, toupper(colnames(x)) == colnames(y))
+
+# Matrix/character method
+(y <- map_names(x, c(a = "b", b = "a")))
+stopifnot(x == y, colnames(y) == c("b", "a"))
+
+# Matrix/missing method
+(y <- map_names(x))
+stopifnot(y == c("a", "b"), names(y) == y)
 }
 \seealso{
   base::rapply base::list base::as.list methods::as
   base::class base::storage.mode base::as.vector
 
   Other auxiliary-functions: \code{\link{contains}},
-  \code{\link{glob_to_regex}}, \code{\link{kubrick}},
-  \code{\link{map_names}}, \code{\link{opm_opt}},
+  \code{\link{kubrick}}, \code{\link{opm_opt}},
   \code{\link{separate}}
 }
 \keyword{list}
 \keyword{manip}
 
+%% BEGIN INSERTION BY repair_S4_docu.rb
 \docType{methods}
+\alias{map_names-methods}
+\alias{map_names,ANY,character-method}
+\alias{map_names,ANY,function-method}
+\alias{map_names,ANY,missing-method}
+\alias{map_names,MOA,character-method}
+\alias{map_names,MOA,function-method}
+\alias{map_names,MOA,missing-method}
+\alias{map_names,data.frame,character-method}
+\alias{map_names,data.frame,function-method}
+\alias{map_names,data.frame,missing-method}
+\alias{map_names,list,character-method}
+\alias{map_names,list,function-method}
+\alias{map_names,list,missing-method}
 \alias{map_values-methods}
-\alias{map_values,list,character-method}
-\alias{map_values,list,function-method}
-\alias{map_values,list,NULL-method}
-\alias{map_values,list,missing-method}
-\alias{map_values,list,formula-method}
-\alias{map_values,list,expression-method}
-\alias{map_values,data.frame,function-method}
-\alias{map_values,data.frame,character-method}
-\alias{map_values,data.frame,NULL-method}
-\alias{map_values,data.frame,missing-method}
 \alias{map_values,MOA,character-method}
-\alias{map_values,MOA,missing-method}
 \alias{map_values,MOA,function-method}
-\alias{map_values,character,function-method}
-\alias{map_values,character,character-method}
-\alias{map_values,character,missing-method}
-\alias{map_values,factor,function-method}
-\alias{map_values,factor,character-method}
-\alias{map_values,factor,missing-method}
-\alias{map_values,NULL,function-method}
+\alias{map_values,MOA,missing-method}
 \alias{map_values,NULL,character-method}
+\alias{map_values,NULL,function-method}
 \alias{map_values,NULL,missing-method}
+\alias{map_values,character,character-method}
+\alias{map_values,character,function-method}
+\alias{map_values,character,missing-method}
+\alias{map_values,data.frame,NULL-method}
+\alias{map_values,data.frame,character-method}
+\alias{map_values,data.frame,function-method}
+\alias{map_values,data.frame,missing-method}
+\alias{map_values,factor,character-method}
+\alias{map_values,factor,function-method}
+\alias{map_values,factor,missing-method}
+\alias{map_values,list,NULL-method}
+\alias{map_values,list,character-method}
+\alias{map_values,list,expression-method}
+\alias{map_values,list,formula-method}
+\alias{map_values,list,function-method}
+\alias{map_values,list,missing-method}
+\alias{map_values,logical,NULL-method}
+\alias{map_values,logical,function-method}
+\alias{map_values,logical,missing-method}
+\alias{map_values,logical,vector-method}
 \usage{
-  \S4method{map_values}{list,character}(object, mapping,
-    coerce = character()) 
-
-  \S4method{map_values}{list,function}(object, mapping,
-    coerce = character(), ...) 
-
-  \S4method{map_values}{list,NULL}(object, mapping,
-    coerce = character()) 
-
-  \S4method{map_values}{list,missing}(object, mapping,
-    coerce = character()) 
-
-  \S4method{map_values}{list,formula}(object, mapping,
-    coerce = parent.frame()) 
-
-  \S4method{map_values}{list,expression}(object, mapping,
-    coerce = parent.frame()) 
-
-  \S4method{map_values}{data.frame,function}(object, mapping,
-    coerce = character(), ...) 
-
-  \S4method{map_values}{data.frame,character}(object, mapping,
-    coerce = character()) 
-
-  \S4method{map_values}{data.frame,NULL}(object, mapping,
-    coerce = character(), ...) 
-
-  \S4method{map_values}{data.frame,missing}(object,
-    coerce = character()) 
+  \S4method{map_names}{ANY,character}(object, mapping) 
+  \S4method{map_names}{ANY,function}(object, mapping, ...) 
+  \S4method{map_names}{ANY,missing}(object) 
+  \S4method{map_names}{MOA,character}(object, mapping) 
+  \S4method{map_names}{MOA,function}(object, mapping, ...) 
+  \S4method{map_names}{MOA,missing}(object) 
+  \S4method{map_names}{data.frame,character}(object, mapping) 
+  \S4method{map_names}{data.frame,function}(object, mapping,
+    ...) 
+  \S4method{map_names}{data.frame,missing}(object) 
+  \S4method{map_names}{list,character}(object, mapping) 
+  \S4method{map_names}{list,function}(object, mapping, ...) 
+  \S4method{map_names}{list,missing}(object) 
 
   \S4method{map_values}{MOA,character}(object, mapping,
     coerce = TRUE) 
-
-  \S4method{map_values}{MOA,missing}(object, coerce = TRUE) 
-
   \S4method{map_values}{MOA,function}(object, mapping, ...) 
-
+  \S4method{map_values}{MOA,missing}(object, coerce = TRUE) 
+  \S4method{map_values}{NULL,character}(object, mapping) 
+  \S4method{map_values}{NULL,function}(object, mapping, ...) 
+  \S4method{map_values}{NULL,missing}(object, mapping) 
+  \S4method{map_values}{character,character}(object, mapping) 
   \S4method{map_values}{character,function}(object, mapping,
     ...) 
-
-  \S4method{map_values}{character,character}(object, mapping) 
-
   \S4method{map_values}{character,missing}(object) 
-
+  \S4method{map_values}{data.frame,NULL}(object, mapping,
+    coerce = character(), ...) 
+  \S4method{map_values}{data.frame,character}(object, mapping,
+    coerce = character()) 
+  \S4method{map_values}{data.frame,function}(object, mapping,
+    coerce = character(), ...) 
+  \S4method{map_values}{data.frame,missing}(object,
+    coerce = character()) 
+  \S4method{map_values}{factor,character}(object, mapping) 
   \S4method{map_values}{factor,function}(object, mapping,
     ...) 
-
-  \S4method{map_values}{factor,character}(object, mapping) 
-
   \S4method{map_values}{factor,missing}(object) 
-
-  \S4method{map_values}{NULL,function}(object, mapping, ...) 
-
-  \S4method{map_values}{NULL,character}(object, mapping) 
-
-  \S4method{map_values}{NULL,missing}(object, mapping) 
-
+  \S4method{map_values}{list,NULL}(object, mapping,
+    coerce = character()) 
+  \S4method{map_values}{list,character}(object, mapping,
+    coerce = character()) 
+  \S4method{map_values}{list,expression}(object, mapping,
+    coerce = parent.frame()) 
+  \S4method{map_values}{list,formula}(object, mapping,
+    coerce = parent.frame()) 
+  \S4method{map_values}{list,function}(object, mapping,
+    coerce = character(), ...) 
+  \S4method{map_values}{list,missing}(object, mapping,
+    coerce = character()) 
+  \S4method{map_values}{logical,NULL}(object, mapping) 
+  \S4method{map_values}{logical,function}(object, mapping,
+    ...) 
+  \S4method{map_values}{logical,missing}(object) 
+  \S4method{map_values}{logical,vector}(object, mapping) 
 }
+%% END INSERTION BY repair_S4_docu.rb

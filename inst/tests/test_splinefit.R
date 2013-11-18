@@ -38,3 +38,9 @@
 
 ## add_parameters
 ## UNTESTED
+
+## as
+## UNTESTED
+
+## n_knots
+## UNTESTED

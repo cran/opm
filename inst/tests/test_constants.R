@@ -40,6 +40,9 @@ expect_length <- function(actual, expected) {
 ## OPMX
 ## UNTESTED
 
+## MOPMX
+## UNTESTED
+
 ## YAML_VIA_LIST
 ## UNTESTED
 
@@ -100,6 +103,12 @@ test_that("the internally used parameter names are OK", {
 })
 
 
+## DISC_PARAM
+test_that("the parameter name for discretized values is OK", {
+  expect_false(DISC_PARAM %in% CURVE_PARAMS)
+})
+
+
 ## RESERVED_NAMES
 test_that("the internally used reserved metadata names are OK", {
   # this strange test is intended to ensure that one thinks twice before
@@ -142,26 +151,17 @@ test_that("the known method names are OK", {
 })
 
 
-## GRAPHICS_FORMAT_MAP
-## UNTESTED
+## INSTRUMENT
+test_that("instrument key fits to CSV names", {
+  expect_false(INSTRUMENT %in% CSV_NAMES)
+})
 
 
 ## HTML_DOCTYPE
 ## UNTESTED
 
 
-## URL_BASE
-test_that("bases of URLs contain no special characters", {
-  got <- vapply(URL_BASE, URLencode, "")
-  expect_equivalent(got, URL_BASE)
-})
-
-
 ################################################################################
-
-
-## W3C_COLORS
-## UNTESTED
 
 
 ## MEMOIZED
@@ -201,6 +201,28 @@ test_that("phylogeny formats are defined", {
 
 ## GREEK_LETTERS
 ## UNTESTED
+
+
+## COMPOUND_NAME_HTML_MAP
+## UNTESTED
+
+
+## SUBSTRATE_PATTERN
+test_that("SUBSTRATE_PATTERN matches what it should match", {
+  m <- function(s, p) grepl(p, s, FALSE, TRUE)
+  e <- function(x) as.logical(unlist(strsplit(x, "", TRUE), FALSE, FALSE))
+  x <- c("B07 (Substrate(s))", "A02@[My [other] substrate]", "F11", "foo")
+  got <- m(x, SUBSTRATE_PATTERN["paren"])
+  expect_equal(got, e("TFFF"))
+  got <- m(x, SUBSTRATE_PATTERN["bracket"])
+  expect_equal(got, e("FTFF"))
+  got <- m(x, SUBSTRATE_PATTERN["either"])
+  expect_equal(got, e("TTFF"))
+  got <- m(x, SUBSTRATE_PATTERN["any"])
+  expect_equal(got, e("TTTF"))
+  got <- m(x, SUBSTRATE_PATTERN["plain"])
+  expect_equal(got, e("FFTF"))
+})
 
 
 ################################################################################

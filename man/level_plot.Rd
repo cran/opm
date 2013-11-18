@@ -1,6 +1,6 @@
 \name{level_plot}
 \alias{level_plot}
-\title{Levelplot}
+\title{Level plot}
 \arguments{
   \item{x}{\code{\link{OPM}} or \code{\link{OPMS}} object.}
 
@@ -18,7 +18,8 @@
   numbers or those metadata that were included by
   \code{\link{flatten}} (see there). Character vectors and
   expressions are directly used for the text within these
-  panel headers.}
+  panel headers. Currently ignored by the \code{\link{OPM}}
+  method.}
 
   \item{cex}{Numeric scalar. Magnification of axis
   annotation. If \code{NULL}, automatically adapted to the
@@ -26,10 +27,11 @@
 
   \item{strip.fmt}{List controlling the format of the
   description strip above each panel. For instance, the
-  background colour is set using the \sQuote{bg} key. For
+  background colour is set using the \kbd{bg} key. For
   further details, see \code{strip.custom} from the
   \pkg{lattice} package. \code{strip.fmt} is ignored if
-  panel.headers is \code{FALSE}.}
+  panel.headers is \code{FALSE} and currently always
+  ignored by the \code{\link{OPM}} method.}
 
   \item{striptext.fmt}{List controlling the format of the
   text within the strip above each panel. See
@@ -60,18 +62,16 @@
   from the \pkg{lattice} package for details.
 }
 \description{
-  Levelplot for \code{\link{OPM}} and \code{\link{OPMS}}
+  Level plot for \code{\link{OPM}} and \code{\link{OPMS}}
   objects using the function from the \pkg{lattice}
   package.
 }
 \examples{
 # OPM method
-data(vaas_1)
 level_plot(vaas_1, main = "Levelplot example")
 
 # OPMS method
 \dontrun{
-data(vaas_4)
 # headers include species and strain
 level_plot(vaas_4, include = c("Species", "Strain"))
 }
@@ -98,23 +98,23 @@ level_plot(vaas_4, include = c("Species", "Strain"))
 
   Other plotting-functions: \code{\link{ci_plot}},
   \code{\link{heat_map}}, \code{\link{radial_plot}},
-  \code{\link{select_colors}}, \code{\link{show}},
-  \code{\link{xy_plot}}
+  \code{\link{summary}}, \code{\link{xy_plot}}
 }
 \keyword{hplot}
 
+%% BEGIN INSERTION BY repair_S4_docu.rb
 \docType{methods}
 \alias{level_plot-methods}
 \alias{level_plot,OPM-method}
 \alias{level_plot,OPMS-method}
 \usage{
   \S4method{level_plot}{OPM}(x, main = list(),
-    colors = opm_opt("color.borders"), cex = NULL, space = "Lab", bias = 0.5,
-    num.colors = 200L, ...) 
-
+    colors = opm_opt("color.borders"), panel.headers = FALSE, cex = NULL,
+    strip.fmt = list(), striptext.fmt = list(), legend.sep = " ",
+    space = "Lab", bias = 0.5, num.colors = 200L, ...) 
   \S4method{level_plot}{OPMS}(x, main = list(),
     colors = opm_opt("color.borders"), panel.headers = TRUE, cex = NULL,
     strip.fmt = list(), striptext.fmt = list(), legend.sep = " ",
     space = "Lab", bias = 0.5, num.colors = 200L, ...) 
-
 }
+%% END INSERTION BY repair_S4_docu.rb

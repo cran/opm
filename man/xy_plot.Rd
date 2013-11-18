@@ -1,6 +1,6 @@
 \name{xy_plot}
 \alias{xy_plot}
-\title{XY plot}
+\title{X-Y plot}
 \arguments{
   \item{x}{\code{\link{OPM}} or \code{\link{OPMS}} object.}
 
@@ -50,8 +50,8 @@
   \code{FALSE}, returns \code{NULL}.} \item{...}{Other
   arguments are passed to \code{\link{plate_type}}.} } If
   \code{settings} is not a list but a character scalar or
-  an expression, this is used as the \sQuote{predef} entry
-  of the above-mentioned list. If not a list but a logical
+  an expression, this is used as the \kbd{predef} entry of
+  the above-mentioned list. If not a list but a logical
   scalar, it is used as the \sQuote{use} entry of this
   list. If not a list but a numeric value, it is used as
   the \sQuote{max} entry of this list.}
@@ -75,7 +75,7 @@
 
   \item{strip.fmt}{List controlling the format of the
   description strip above each panel. For instance, the
-  background colour is set using the \sQuote{bg} key. For
+  background colour is set using the \kbd{bg} key. For
   further details, see \code{strip.custom} from the
   \pkg{lattice} package. Note that the \strong{content} of
   these descriptions is determined by arguments passed from
@@ -84,12 +84,12 @@
 
   \item{striptext.fmt}{List controlling the textual
   description at the top of each panel. For instance, the
-  relative text size is set using the \sQuote{cex} key, the
+  relative text size is set using the \kbd{cex} key, the
   colour by \sQuote{col}, the font by \sQuote{font} and the
   number of lines by \sQuote{lines}. The latter might be of
   interest in conjunction with the \code{paren.sep}
   argument of \code{\link{wells}}. See the argument
-  \sQuote{par.strip.text} of \code{xyplot} from the
+  \code{par.strip.text} of \code{xyplot} from the
   \pkg{lattice} package for details.}
 
   \item{legend.fmt}{List controlling where and how to draw
@@ -132,8 +132,9 @@
   from the \pkg{lattice} package for details.
 }
 \description{
-  Customized plotting of a single or multiple PM plate(s),
-  using \code{xyplot} from the \pkg{lattice} package.
+  Customised plotting of a single \acronym{PM} plate or
+  multiple plates, using \code{xyplot} from the
+  \pkg{lattice} package.
 }
 \details{
   The optimal number of rows and columns is estimated from
@@ -155,7 +156,6 @@
 }
 \examples{
 # OPM method
-data(vaas_1)
 \dontrun{
 xy_plot(vaas_1) # note the default main title built from the plate type
 }
@@ -171,9 +171,8 @@ xy_plot(x, neg.ctrl = 100)
 xy_plot(x, neg.ctrl = 100, col = "pink", base.col = "yellow", main = "Ugly")
 
 # OPMS method
-data(vaas_4)
 \dontrun{
-# Color by species and strain; note default main title
+# Colour by species and strain; note default main title
 xy_plot(vaas_4, include = c("Species", "Strain"))
 # Use the largest of the negative-control maxima as baseline
 xy_plot(vaas_4, include = c("Species", "Strain"),
@@ -195,11 +194,11 @@ xy_plot(vaas_4, include = c("Species", "Strain"),
 
   Other plotting-functions: \code{\link{ci_plot}},
   \code{\link{heat_map}}, \code{\link{level_plot}},
-  \code{\link{radial_plot}}, \code{\link{select_colors}},
-  \code{\link{show}}
+  \code{\link{radial_plot}}, \code{\link{summary}}
 }
 \keyword{hplot}
 
+%% BEGIN INSERTION BY repair_S4_docu.rb
 \docType{methods}
 \alias{xy_plot-methods}
 \alias{xy_plot,OPM-method}
@@ -212,7 +211,6 @@ xy_plot(vaas_4, include = c("Species", "Strain"),
     theor.max = TRUE, draw.grid = TRUE,
     strip.fmt = list(), striptext.fmt = list(),
     ...) 
-
   \S4method{xy_plot}{OPMS}(x, col = opm_opt("colors"), lwd = 1,
     neg.ctrl = "A01", base.col = "black", base.lwd = lwd,
     main = list(), xlab = "Time [h]", ylab = "Value [OmniLog units]",
@@ -220,11 +218,10 @@ xy_plot(vaas_4, include = c("Species", "Strain"),
     strip.fmt = list(), striptext.fmt = list(),
     legend.fmt = list(), legend.sep = " ", draw.legend = TRUE,
     ...) 
-
   \S4method{xy_plot}{data.frame}(x, f, groups,
     col = opm_opt("colors"), lwd = 1, neg.ctrl = NULL, base.col = "black",
     base.lwd = lwd, main = groups, xlab = elem(f, 3L:2L), ylab = elem(f, 2L),
     draw.grid = TRUE, space = "top", strip.fmt = list(), striptext.fmt = list(),
     legend.fmt = list(), legend.sep = " ", draw.legend = TRUE, ...) 
-
 }
+%% END INSERTION BY repair_S4_docu.rb

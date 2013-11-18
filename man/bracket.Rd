@@ -36,11 +36,13 @@
   error to specify additional dimensions.}
 
   \item{drop}{Logical scalar. Remove the aggregated data
-  (and the discretized data, if any) and turn an
+  (and the discretised data, if any) and turn an
   \code{\link{OPMA}} or \code{\link{OPMD}} object to an
   \code{\link{OPM}} object? Has no effect if \code{x}
   already is an \code{\link{OPM}} object or contains only
-  such objects.}
+  such objects. For the \code{\link{MOPMX}} method,
+  \code{TRUE} means dropping the class and generating a
+  list.}
 }
 \value{
   \code{\link{OPM}}, \code{\link{OPMA}} or
@@ -56,11 +58,11 @@
 \details{
   The \code{\link{OPMA}} method works like the
   \code{\link{OPM}} one, but the function applies the
-  subsetting to the original and the aggregated data in
-  parallel. The \code{\link{OPMD}} method applies the
-  selection also to the discretized data.
+  subset creation to the original and the aggregated data
+  in parallel. The \code{\link{OPMD}} method applies the
+  selection also to the discretised data.
 
-  The aggregated and discretized data may also be dropped
+  The aggregated and discretised data may also be dropped
   entirely; this might be appropriate if a subset of the
   time points is selected, potentially yielding aggregated
   values that do not fit to the measurements anymore.
@@ -70,20 +72,21 @@
   of the returned object), even if it could be simplified
   to a vector. The time column is not counted and always
   copied. It is an error to delete the entire matrix. In
-  all other respects, this method behaves like the `[`
-  methods from the \pkg{base} package.
+  all other respects, the \code{\link{OPM}} method behaves
+  like the `[` methods from the \pkg{base} package.
 
   The \code{\link{OPMS}} method selects a subset of the
   plates and/or the measurements of the individual plates.
   It simplifies the outcome to a \code{\link{OPM}} or
   \code{\link{OPMA}} object if only a single plate remains
-  and to \code{NULL} if no plate remains. This behaves like
-  subsetting a three-dimensional array with plates as first
-  dimension, time points as second, and wells as third.
+  and to \code{NULL} if no plate remains. This is different
+  from creating subsets of a list in \R. \code{\link{OPMS}}
+  subset creation rather behaves like subset creation a
+  three-dimensional array with plates as first dimension,
+  time points as second, and wells as third.
 }
 \examples{
 ## OPM(A) method
-data(vaas_1)
 
 # complete dataset, full 96-well plates
 (x <- dim(vaas_1))
@@ -93,7 +96,7 @@ stopifnot(x == c(384, 96))
 copy <- vaas_1[, 11:22]
 (x <- dim(copy))
 stopifnot(x == c(384, 12))
-# indexing with formulas allows for sequences of well coordinates
+# indexing with formulae allows for sequences of well coordinates
 copy <- vaas_1[, ~ A11:B10] # "A11" is 11th, "B10" is 22th well name
 stopifnot(dim(copy) == c(384, 12)) # same result as above
 # can also be combined
@@ -108,7 +111,6 @@ stopifnot(!has_aggr(copy), !identical(copy, vaas_1))
 
 
 ## OPMS method
-data(vaas_4)
 
 # Create OPMS object with fewer plates (the first two ones)
 x <- vaas_4[1:2]
@@ -124,7 +126,7 @@ x <- vaas_4[, 1:100]
 stopifnot(dim(x) == c(4, 100, 96))
 
 # Create OPMS object with fewer wells
-x <- vaas_4[, , 1:12]
+(x <- vaas_4[, , 1:12])
 stopifnot(dim(x) == c(4, 384, 12))
 
 # The same with well names
@@ -156,8 +158,13 @@ for (i in seq(vaas_4)) { # OR: for (i in 1:length(vaas_4))
 }
 \keyword{manip}
 
+%% BEGIN INSERTION BY repair_S4_docu.rb
 \docType{methods}
 \alias{bracket-methods}
+\alias{bracket,MOPMX,ANY,missing,ANY-method}
+\alias{[,MOPMX,ANY,missing,ANY-method}
+\alias{bracket,MOPMX,character,missing,ANY-method}
+\alias{[,MOPMX,character,missing,ANY-method}
 \alias{bracket,OPM,ANY,ANY,ANY-method}
 \alias{[,OPM,ANY,ANY,ANY-method}
 \alias{bracket,OPMA,ANY,ANY,ANY-method}
@@ -167,16 +174,17 @@ for (i in seq(vaas_4)) { # OR: for (i in 1:length(vaas_4))
 \alias{bracket,OPMS,ANY,ANY,ANY-method}
 \alias{[,OPMS,ANY,ANY,ANY-method}
 \usage{
+  \S4method{[}{MOPMX,ANY,missing,ANY}(x, i, j,
+    drop = FALSE) 
+  \S4method{[}{MOPMX,character,missing,ANY}(x, i, j,
+    drop = FALSE) 
   \S4method{[}{OPM,ANY,ANY,ANY}(x, i, j, ...,
     drop = FALSE) 
-
   \S4method{[}{OPMA,ANY,ANY,ANY}(x, i, j, ...,
     drop = FALSE) 
-
   \S4method{[}{OPMD,ANY,ANY,ANY}(x, i, j, ...,
     drop = FALSE) 
-
   \S4method{[}{OPMS,ANY,ANY,ANY}(x, i, j, k, ...,
     drop = FALSE) 
-
 }
+%% END INSERTION BY repair_S4_docu.rb

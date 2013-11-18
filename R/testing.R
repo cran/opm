@@ -1,21 +1,3 @@
-
-
-################################################################################
-################################################################################
-#
-# Testing utilities
-#
-
-
-#' Source file name
-#'
-#' Name of this source file. Does not work if \code{library} instead of
-#' \code{source} is used.
-#'
-#' @return Name of the file in which this function is defined or an empty
-#'   character vector.
-#' @keywords internal
-#'
 source_location <- function() {
   result <- attr(body(match.fun(source_location)), "srcfile")$filename
   if (length(result))
@@ -24,23 +6,6 @@ source_location <- function() {
     character()
 }
 
-
-################################################################################
-
-
-#' Test file directory
-#'
-#' Name of directory with test files. The purpose of this function is to
-#' guarantee to always find these files irrespective of whether the package was
-#' loaded using \code{library()} (e.g., during \acronym{CRAN} checking) or using
-#' \code{source()} (optionally used during development).
-#'
-#' @param files Character vector. Optional list of of filenames to append to the
-#'   directory name. They would be removed again unless all of them did in fact
-#'   exist.
-#' @return Name of the directory in which the input files for testing reside.
-#' @keywords internal
-#'
 testfile_dir <- function(files = NULL) {
   append_subdirs <- function(x) {
     # original location as well as after installation
@@ -69,17 +34,6 @@ testfile_dir <- function(files = NULL) {
   normalizePath(x)
 }
 
-
-################################################################################
-
-
-#' Test objects
-#'
-#' Create a standardized collection of objects used in the unit tests.
-#'
-#' @return Named list.
-#' @keywords internal
-#'
 objects_for_testing <- function() {
   x <- list()
   x$TEST.DIR <- testfile_dir()
@@ -90,8 +44,9 @@ objects_for_testing <- function() {
   x$OPM.2 <- read_single_opm(x$INFILES[2L])
   x$OPM.3 <- read_single_opm(x$FILE.OLD.STYLE)
   x$ORGN <- "Bacillus simplex"
-  x$MD <- data.frame(File = filename(x$OPM.1), Position = position(x$OPM.1),
-    `Setup Time` = setup_time(x$OPM.1), Organism = x$ORGN,
+  x$MD <- data.frame(File = csv_data(x$OPM.1, what = "filename"),
+    Position = csv_data(x$OPM.1, what = "position"),
+    `Setup Time` = csv_data(x$OPM.1, what = "setup_time"), Organism = x$ORGN,
     check.names = FALSE, stringsAsFactors = FALSE)
   x$OPM.WITH.MD <- include_metadata(x$OPM.1, x$MD, remove.csv.data = FALSE)
   x$OPMS.INPUT <- opms(x$OPM.1, x$OPM.2)
@@ -103,7 +58,4 @@ objects_for_testing <- function() {
   x$SMALL.AGG <- do_aggr(x$SMALL, boot = 0L, cores = 1L)
   x
 }
-
-
-################################################################################
 

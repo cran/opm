@@ -50,23 +50,29 @@ expect_path_equal <- function(actual, expected) {
 # IO helpers
 #
 
+
+## glob_to_regex
+test_that("wildcards can be converted to regular expressions", {
+  # from http://docstore.mik.ua/orelly/perl/cookbook/ch06_10.htm
+  # with some adaptations and
+  x <- c("list.?", "project.*", "*old", "type*.[ch]", "*.*", "*")
+  wanted <- c("^list\\..$", "^project\\.", "^.*old$", "^type.*\\.\\[ch]$",
+    "^.*\\.", "^")
+  got <- glob_to_regex(x)
+  expect_equal(wanted, got)
+  x <- c("^anc-+k", "+us$hs+")
+  got <- glob_to_regex(x)
+  expect_equal(c("^\\^anc-\\+k$", "^\\+us\\$hs\\+$"), got)
+})
+
+
 ## file_pattern
 test_that("file patterns can be constructed", {
   default.pat <- "\\.(csv|ya?ml|json)(\\.(bz2|gz|lzma|xz))?$"
   expect_equal(default.pat, file_pattern())
   expect_equal("\\.csv$", file_pattern(type = "csv", compressed = FALSE))
-})
-
-
-##  extended_file_pattern
-test_that("extended file patterns can be constructed", {
-  default.pat <- "\\.(csv|ya?ml|json)(\\.(bz2|gz|lzma|xz))?$"
-  expect_equal(NULL, extended_file_pattern(NULL))
-  expect_equal(default.pat, extended_file_pattern(list()))
-  expect_error(extended_file_pattern("*.csv"))
-  expect_equal("*.csv", extended_file_pattern("*.csv", wildcard = FALSE))
-  expect_equal("^.*\\.csv$", extended_file_pattern("*.csv", wildcard = TRUE))
-  expect_equal("5", extended_file_pattern(5, wildcard = FALSE))
+  expect_equal("\\.(ya?ml|json)$", file_pattern(type = "yorj",
+    compressed = FALSE))
 })
 
 
@@ -91,14 +97,17 @@ test_that("extended file patterns can be constructed", {
 ## read_opm_yaml
 ## UNTESTED
 
+## FILE_NOT_CSV
+## UNTESTED
+
 ## read_single_opm
 test_that("the example file in old style can be read", {
   x <- read_single_opm(FILE.OLD.STYLE)
   expect_is(x, "OPM")
-  expect_equal(filename(x), FILE.OLD.STYLE)
+  expect_equal(csv_data(x, what = "filename"), FILE.OLD.STYLE)
   expect_equal(plate_type(x), "PM20")
-  expect_equal(setup_time(x), "Apr 11 2011 5:08 PM")
-  expect_equal(position(x), "12-A")
+  expect_equal(csv_data(x, what = "setup_time"), "Apr 11 2011 5:08 PM")
+  expect_equal(csv_data(x, what = "position"), "12-A")
   expect_equal(hours(x), 91.25)
   expect_equal(dim(x), c(366, 96))
   expect_equal(metadata(x), list())
@@ -108,10 +117,10 @@ test_that("the example file in old style can be read", {
 test_that("the ID-run example file can be read", {
   x <- read_single_opm(FILE.ID.RUN)
   expect_is(x, "OPM")
-  expect_equal(filename(x), FILE.ID.RUN)
+  expect_equal(csv_data(x, what = "filename"), FILE.ID.RUN)
   expect_equal(plate_type(x), SPECIAL_PLATES[["gen.iii"]])
-  expect_equal(setup_time(x), "2/28/2012 9:59:53 AM")
-  expect_equal(position(x), " 9-B")
+  expect_equal(csv_data(x, what = "setup_time"), "2/28/2012 9:59:53 AM")
+  expect_equal(csv_data(x, what = "position"), " 9-B")
   expect_equal(dim(x), c(1, 96))
   expect_equal(metadata(x), list())
 })
@@ -128,7 +137,7 @@ test_that("the ECO-run example file can be read", {
   example.file.eco <- file.path(TEST.DIR, "Example_Ecoplate.csv.xz")
   x <- read_opm(example.file.eco)
   expect_is(x, "OPMS")
-  expect_equal(unique(filename(x)), example.file.eco)
+  expect_equal(unique(csv_data(x, what = "filename")), example.file.eco)
   expect_equal(plate_type(x), SPECIAL_PLATES[["eco"]])
   expect_equal(dim(x), c(11, 1, 96))
   md.len <- unique(vapply(metadata(x), length, integer(1L)))
@@ -162,9 +171,8 @@ test_that("read_opm can read two compatible files", {
   expect_is(opm.1, "OPMS")
   expect_equal(NULL, names(plates(opm.1)))
   opm.1 <- read_opm(files, convert = "no")
-  expect_is(opm.1, "list")
+  expect_is(opm.1, "MOPMX")
   expect_equal(2L, length(opm.1))
-  expect_equal(NULL, names(opm.1))
 })
 
 ## read_opm
@@ -174,31 +182,28 @@ test_that("read_opm can read three partially incompatible files", {
     "Example_Old_Style_1.csv.xz"))
 
   expect_warning(opm.1 <- read_opm(files))
-  expect_is(opm.1, "list")
+  expect_is(opm.1, "MOPMX")
   expect_equal(3L, length(opm.1))
-  expect_equal(NULL, names(opm.1))
 
   expect_warning(opm.1 <- read_opm(files, convert = "try"))
-  expect_is(opm.1, "list")
+  expect_is(opm.1, "MOPMX")
   expect_equal(3L, length(opm.1))
-  expect_equal(NULL, names(opm.1))
 
   expect_error(opm.1 <- read_opm(files, convert = "yes"))
 
   opm.1 <- read_opm(files, convert = "no")
-  expect_is(opm.1, "list")
+  expect_is(opm.1, "MOPMX")
   expect_equal(3L, length(opm.1))
-  expect_equal(NULL, names(opm.1))
 
   opm.1 <- read_opm(files, convert = "sep")
   expect_is(opm.1, "list")
   expect_equal(2L, length(opm.1))
-  expect_true(all(sapply(opm.1, class) == "list"))
-  expect_true(all(sapply(opm.1[[1]], class) == OPM))
-  expect_true(all(sapply(opm.1[[2]], class) == OPM))
+  expect_true(all(vapply(opm.1, is, NA, "MOPMX")))
+  expect_true(all(vapply(opm.1[[1]], is, NA, OPM)))
+  expect_true(all(vapply(opm.1[[2]], is, NA, OPM)))
 
   opm.1 <- read_opm(files, convert = "grp")
-  expect_is(opm.1, "list")
+  expect_is(opm.1, "MOPMX")
   expect_equal(2L, length(opm.1))
   expect_is(opm.1[[1L]], OPMS)
   expect_is(opm.1[[2L]], OPM)
@@ -269,27 +274,29 @@ test_that("explode_dir deals with non-existing files", {
   expect_warning(explode_dir(x, missing.error = FALSE))
 })
 
-## opm_files
-## UNTESTED
-
 
 ################################################################################
 #
 # Metadata IO
 #
 
+
+## finish_template
+## UNTESTED
+
+
 ## to_metadata
 test_that("to_metadata converts objects in the right way", {
   x <- data.frame(a = 1:10, b = letters[1:10])
-  expect_equivalent(c("integer", "factor"), sapply(x, class))
+  expect_equivalent(c("integer", "factor"), vapply(x, class, ""))
   x <- as.data.frame(x)
-  expect_equivalent(c("integer", "factor"), sapply(x, class))
+  expect_equivalent(c("integer", "factor"), vapply(x, class, ""))
   x <- to_metadata(x)
-  expect_equivalent(c("integer", "factor"), sapply(x, class))
+  expect_equivalent(c("integer", "factor"), vapply(x, class, ""))
   x <- to_metadata(as.matrix(x))
-  expect_equivalent(c("character", "character"), sapply(x, class))
+  expect_equivalent(c("character", "character"), vapply(x, class, ""))
   x <- as.data.frame(as.matrix(x))
-  expect_equivalent(c("factor", "factor"), sapply(x, class))
+  expect_equivalent(c("factor", "factor"), vapply(x, class, ""))
 })
 
 ## to_metadata
@@ -298,9 +305,9 @@ test_that("to_metadata converts OPMS objects in the right way", {
   got <- to_metadata(OPMS.INPUT)
   expect_is(got, "data.frame")
   expect_equal(nrow(got), length(OPMS.INPUT))
-  expect_true(setequal(sapply(got, class), c("character", "integer")))
+  expect_true(setequal(vapply(got, class, ""), c("character", "integer")))
   got <- to_metadata(OPMS.INPUT, stringsAsFactors = TRUE)
-  expect_true(setequal(sapply(got, class), c("factor", "integer")))
+  expect_true(setequal(vapply(got, class, ""), c("factor", "integer")))
   # 2 (nested metadata)
   x <- OPM.1
   metadata(x) <- list(A = 1:3, B = 7L, C = list('c1', 1:3))
@@ -311,7 +318,8 @@ test_that("to_metadata converts OPMS objects in the right way", {
   expect_warning(got <- to_metadata(x))
   expect_equal(nrow(got), length(x))
   expect_true(setequal(names(got), LETTERS[1:4]))
-  expect_true(setequal(sapply(got, class), c("list", "integer", "character")))
+  expect_true(setequal(vapply(got, class, ""),
+    c("list", "integer", "character")))
 })
 
 
@@ -326,8 +334,8 @@ test_that("batch collection works as expected", {
   got <- batch_collect(files, readLines, fun.arg = list(n = 5L))
   expect_is(got, "list")
   expect_equal(files, names(got))
-  expect_true(all(sapply(got, is.character)))
-  expect_true(all(sapply(got, length) == 5L))
+  expect_true(all(vapply(got, is.character, NA)))
+  expect_true(all(vapply(got, length, 0L) == 5L))
   expect_that(got <- batch_collect(files, readLines, fun.arg = list(n = 5L),
     demo = TRUE), shows_message())
   expect_path_equal(got, files)
@@ -385,7 +393,7 @@ test_that("templates can be collected and written to files", {
   expect_equal(colnames(template), c("Setup Time", "Position", "File"))
   expect_equal(nrow(template), 2L)
   expect_true(all(! is.na(template)))
-  expect_true(all("character" == sapply(template, class)))
+  expect_true(all("character" == vapply(template, class, "")))
   unlink(outfile)
 
   expect_error(template <- collect_template(files, exclude = "*Example*_3.*",
@@ -415,7 +423,7 @@ test_that("templates can be collected with added columns", {
   expect_equal(nrow(template), 2L)
   expect_true(all(!is.na(template[, 1L:3L])))
   expect_true(all(is.na(template[, to.add])))
-  expect_true(all("character" == sapply(template, class)))
+  expect_true(all("character" == vapply(template, class, "")))
 
   # if 'exclude' was not specific enough, 'template' would be empty
   expect_that(template <- collect_template(files, exclude = "*Example*_3.*",
@@ -532,8 +540,6 @@ test_that("batch conversion to yaml works", {
   unlink(exp.outfile)
 })
 
-## batch_opm_to_yaml
-## UNTESTED
 
 ################################################################################
 #

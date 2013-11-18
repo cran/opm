@@ -11,15 +11,47 @@ context("Testing the helper functions of the OPM package")
 #
 
 
-## opm_string
-## UNTESTED
-
-
-## md_data_frame
-## UNTESTED
+## get_and_remember
+test_that("we can memoize queries", {
+  query <- letters[1L:5L]
+  prefix <- "TEST."
+  expect_false(any(vapply(paste0(prefix, query), exists, NA, MEMOIZED)))
+  qfun <- function(x) as.list(rep.int(42L, length(x)))
+  result <- get_and_remember(query, prefix, NA, qfun)
+  expect_equal(names(result), query)
+  expect_true(all(vapply(paste0(prefix, query), exists, NA, MEMOIZED)))
+  result.2 <- get_and_remember(query, prefix, NA, qfun)
+  expect_equal(result.2, result)
+  expect_true(all(vapply(paste0(prefix, query), exists, NA, MEMOIZED)))
+  rm(list = paste0(prefix, query), envir = MEMOIZED)
+})
 
 
 ## reduce_to_mode
+## UNTESTED
+
+
+## list2matrix
+## UNTESTED
+
+
+## close_index_gaps
+## UNTESTED
+
+
+## fix_names
+## UNTESTED
+
+
+## sub_indexes
+test_that("sub-indexes can be got and incremented", {
+  x <- list(a = 1:2, b = 'a', c = c(TRUE, FALSE, FALSE))
+  got <- sub_indexes(x)
+  expect_equal(got, structure(list(a = 1:2, b = 3, c = 4:6), total = 6L))
+})
+
+
+## simplify_conditionally
 ## UNTESTED
 
 
@@ -94,6 +126,12 @@ test_that("rows can be picked", {
 ## assert_splittable_matrix
 ## UNTESTED
 
+## strip_whitespace
+## UNTESTED
+
+## vector2row
+## UNTESTED
+
 
 ################################################################################
 ################################################################################
@@ -109,42 +147,61 @@ test_that("rows can be picked", {
 ## metadata_key
 test_that("we can convert formulas to formulas for use as metadata keys", {
 
-  var <- c("A", "B")
-  f <- ~ a $ b $ c + I(var) * ("d" + e) + c("f", "g", "h") | i$"j"
+  v <- c("A", "B")
+  f <- ~ a $ b $ c + I(v) * ("d" + e) + c("f", "g", "h") | i$"j"
   got <- metadata_key(f, TRUE)
   expect_equal(got, ~ a.b.c + A.B * (d + e) + c(f, g, h) | i.j)
 
-  f <- ~ a $ b $ c + I(var) * J("d" + e) + c("f", "g", "h") | i$"j"
+  f <- ~ a $ b $ c + I(v) * J("d" + e) + c("f", "g", "h") | i$"j"
   got <- metadata_key(f, TRUE)
   expect_equal(attr(got, "combine"), list(d.e = c("d", "e")))
   expect_equal(got, ~ a.b.c + A.B * d.e + c(f, g, h) | i.j)
 
-  f <- ~ a $ b $ c + I(var) * J("d", e$r) + c("f", "g", "h") | i$"j"
+  f <- ~ a $ b $ c + I(v) * J("d", e$r) + c("f", "g", "h") | i$"j"
   old <- opm_opt(comb.key.join = "#")
   got <- metadata_key(f, TRUE)
   expect_equal(attr(got, "combine"), list(`d#e.r` = c("d", "e.r")))
   expect_equal(got, ~ a.b.c + A.B * `d#e.r` + c(f, g, h) | i.j)
   opm_opt(comb.key.join = old$comb.key.join)
 
+  f <- Value ~ k & foo.bar.baz
+  got <- metadata_key(f, TRUE)
+  expect_equal(got, f)
+  got <- metadata_key(f, TRUE, syntactic = TRUE)
+  expect_equal(got, f)
+  f2 <- Value ~ k & `foo.bar?baz`
+  got <- metadata_key(f2, TRUE)
+  expect_equal(got, f2)
+  got <- metadata_key(f2, TRUE, syntactic = TRUE)
+  expect_equal(got, f)
+
 })
 
 
 ## metadata_key
 test_that("we can convert formulas to lists for use as metadata keys", {
-  var <- c("A", "B")
-  f <- ~ a $ b $ c + I(var) * ("d" + e) + c("f", "g", "h") | i$"j"
+  v <- c("A", "B")
+  f <- ~ a $ b $ c + I(v) * ("d ?" + e) + c("f", "g", "h") | i$"j"
 
   got <- metadata_key(f, FALSE)
   wanted <- list(a.b.c = c("a", "b", "c"), A.B = c("A", "B"),
-    d = "d", e = "e", f = "f", g = "g", h = "h", i.j = c("i", "j"))
+    `d ?` = "d ?", e = "e", f = "f", g = "g", h = "h", i.j = c("i", "j"))
+  expect_equal(got, wanted)
+  got <- metadata_key(f, FALSE, syntactic = TRUE)
+  pos <- match("d ?", names(wanted))
+  names(wanted)[pos] <- wanted[[pos]] <- "d.."
   expect_equal(got, wanted)
 
   got <- metadata_key(f, FALSE, remove = c("A.B", "i.j"))
   wanted <- list(a.b.c = c("a", "b", "c"),
-    d = "d", e = "e", f = "f", g = "g", h = "h")
+    `d ?` = "d ?", e = "e", f = "f", g = "g", h = "h")
+  expect_equal(got, wanted)
+  got <- metadata_key(f, FALSE, syntactic = TRUE, remove = c("A.B", "i.j"))
+  pos <- match("d ?", names(wanted))
+  names(wanted)[pos] <- wanted[[pos]] <- "d.."
   expect_equal(got, wanted)
 
-  f <- ~ a $ b $ c + I(var) * J("d" + e + E$F) + c("f", "g", "h") | i$"j"
+  f <- ~ a $ b $ c + I(v) * J("d" + e + E$F) + c("f", "g", "h") | i$"j"
   got <- metadata_key(f, FALSE)
   wanted <- list(a.b.c = c("a", "b", "c"), A.B = c("A", "B"),
     d = "d", e = "e", E.F = c("E", "F"), f = "f", g = "g", h = "h",
@@ -165,13 +222,16 @@ test_that("we can convert formulas to lists for use as metadata keys", {
 ## metadata_key
 test_that("we can convert lists for use as formulas", {
 
-  x <- list(c("a", "b"), list(K = "t", I = c("D", "E")))
+  x <- list(c("a", "b c"), list(K = "t", I = c("D", "E")))
   got <- metadata_key(x, TRUE)
-  expect_equal(got, ~ a.b + K + I)
+  expect_equal(got, ~ `a.b c` + K + I)
   got <- metadata_key(x, TRUE, ops = c("+", "|"))
-  expect_equal(got, ~ a.b + K | I)
-  got <- metadata_key(x, TRUE, remove = "K")
-  expect_equal(got, ~ a.b + I)
+  expect_equal(got, ~ `a.b c` + K | I)
+  got <- metadata_key(x, TRUE, remove = "K", ops = c("+", "|"))
+  expect_equal(got, ~ `a.b c` + I)
+
+  got <- metadata_key(x, TRUE, syntactic = TRUE)
+  expect_equal(got, ~ a.b.c + K + I)
 
   x <- list("run")
   got <- metadata_key(x, TRUE)
@@ -181,7 +241,7 @@ test_that("we can convert lists for use as formulas", {
 
 
 ## metadata_key
-test_that("some edge cases are correctly handled", {
+test_that("some edge cases are correctly handled by metadata_key()", {
   x <- character()
   names(x) <- character()
   expect_error(metadata_key(x, TRUE))
@@ -328,21 +388,6 @@ test_that("factors can be split regularly", {
 ## UNTESTED (data-frame method)
 
 
-## glob_to_regex
-test_that("wildcards can be converted to regular expressions", {
-  # from http://docstore.mik.ua/orelly/perl/cookbook/ch06_10.htm
-  # with some adaptations and
-  x <- c("list.?", "project.*", "*old", "type*.[ch]", "*.*", "*")
-  wanted <- c("^list\\..$", "^project\\.", "^.*old$", "^type.*\\.\\[ch]$",
-    "^.*\\.", "^")
-  got <- glob_to_regex(x)
-  expect_equal(wanted, got)
-  x <- c("^anc-+k", "+us$hs+")
-  got <- glob_to_regex(x)
-  expect_equal(c("^\\^anc-\\+k$", "^\\+us\\$hs\\+$"), got)
-})
-
-
 ## trim_string
 test_that("strings can be trimmed", {
   x <- c("abcd", "a", "", "xy-", "zzz")
@@ -398,7 +443,7 @@ test_that("annotations can be added with word-wise abbreviation", {
 
 ## list2html
 test_that("HTML can be recursively generated", {
-  x <- list(a = 63, c = list(b = letters, structure(LETTERS, .Names = letters)))
+  x <- list(a = 63, c = list(b = letters, structure(LETTERS, names = letters)))
   got <- list2html(x)
   expect_is(got, "character")
   expect_equal(length(got), 1L)
@@ -456,6 +501,21 @@ test_that("values in character vectors can be mapped", {
   map.2 <- as.character(1L:3L) # no names => all mappings unsuccessful
   got <- map_values(x, map.2)
   expect_equal(x, got)
+})
+
+
+## map_values
+test_that("values in logical vectors can be mapped", {
+  x <- c(i = TRUE, j = FALSE, k = NA, l = TRUE)
+  got <- map_values(x, NULL)
+  expect_equal(x, got)
+  got <- map_values(x)
+  expect_is(got, "integer")
+  expect_equal(names(got), names(x))
+  got <- map_values(x, LETTERS)
+  expect_equal(names(got), names(x))
+  expect_equivalent(got, c("C", "A", "B", "C"))
+  expect_error(map_values(x, LETTERS[1:2]))
 })
 
 
@@ -595,6 +655,16 @@ test_that("NAs in a list can be repaired", {
   wanted$b$xx <- c(NA_complex_, as.complex(x$b$xx[2L:3L]))
   expect_equal(wanted, got)
 
+})
+
+
+## rescue_dots
+test_that("rescue_dots re-inserts dots but only where necessary", {
+  x <- 1:10
+  expect_equal(rescue_dots(x), x)
+  x <- c("A_B", "A.B", "_AB", "_A_B", "__AB_", NA, "")
+  got <- rescue_dots(x)
+  expect_equal(got, c("A_B", "A.B", "_AB", "A.B", ".AB.", NA, ""))
 })
 
 

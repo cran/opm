@@ -13,7 +13,7 @@
 ################################################################################
 
 
-invisible(lapply(c("optparse", "pkgutils"), library, quietly = TRUE,
+invisible(lapply(c("methods", "optparse", "pkgutils"), library, quietly = TRUE,
   warn.conflicts = FALSE, character.only = TRUE))
 
 
@@ -72,7 +72,8 @@ run_template_mode <- function(input, opt) {
   } else
     previous <- mdfile
   collect_template(object = input, outfile = mdfile, previous = previous,
-    include = opt$include, exclude = opt$exclude, sep = opt$sep)
+    include = opt$include, exclude = opt$exclude, sep = opt$sep,
+    instrument = opt$ynstrument, normalize = opt$`value-normal`)
 }
 
 
@@ -120,8 +121,8 @@ run_batch_opm <- function(input, opt) {
     proc <- 1L
   batch_opm(names = input, proc = proc, disc.args = make_disc_args(opt),
     outdir = opt$dir, aggr.args = make_aggr_args(opt),
-    md.args = make_md_args(opt), verbose = !opt$quiet,
-    table.args = make_table_args(opt),
+    md.args = make_md_args(opt), verbose = !opt$quiet, force.aggr = opt$force,
+    table.args = make_table_args(opt), force.disc = opt$force,
     overwrite = opt$overwrite, include = opt$include, device = opt$format,
     exclude = opt$exclude, gen.iii = opt$type, output = opt$result,
     combine.into = opt$join, csv.args = opt$keys)
@@ -157,11 +158,16 @@ option.parser <- OptionParser(option_list = list(
   make_option(c("-f", "--format"), type = "character", default = "postscript",
     help = "Graphics output format [default: %default]", metavar = "NAME"),
 
+  make_option(c("-F", "--force"), action = "store_true", default = FALSE,
+    help = paste("Overwrite previous aggregated/discretized values",
+      "[default: %default]")),
+
   ## A bug in Rscript causes '-g' to generate strange warning messages.
   ## See https://stat.ethz.ch/pipermail/r-devel/2008-January/047944.html
   # g
 
-  # h
+  make_option(c("-h", "--help"), action = "store_true", default = FALSE,
+    help = "Show this help message and exit [default: %default]"),
 
   make_option(c("-i", "--include"), type = "character", default = NULL,
     help = "File inclusion globbing pattern [default: <see package>]",
@@ -175,7 +181,9 @@ option.parser <- OptionParser(option_list = list(
     help = "Keys for CSV => metadata, comma-separated list [default: <none>]",
     metavar = "KEYS"),
 
-  # l
+  make_option(c("-l", "--list"), type = "character", default = "1,2,3",
+    help = "List of numbers giving the 'input.try.order' [default: %default]",
+    metavar = "INDEXES"),
 
   make_option(c("-m", "--mdfile"), type = "character",
     default = NULL, metavar = "NAME",
@@ -214,7 +222,8 @@ option.parser <- OptionParser(option_list = list(
     help = "Field separator for metadata files [default: <tab>]",
     metavar = "CHAR"),
 
-  #  v
+  make_option(c("-v", "--value-normal"), action = "store_true", default = FALSE,
+    help = paste("Normalize setup time and position [default: %default]")),
 
   make_option(c("-w", "--weak"), action = "store_true", default = FALSE,
     help = paste("When discretizing, estimate intermediary (weak) reaction",
@@ -224,12 +233,21 @@ option.parser <- OptionParser(option_list = list(
     help = paste("Exchange old by new metadata instead of appending",
       "[default: %default]")),
 
-  # y
+  make_option(c("-y", "--ynstrument"), type = "integer", default = -1,
+    help = "Use this as instrument ID (ignored if < 0) [default: %default]",
+    metavar = "NUM"),
 
   make_option(c("-z", "--discretize"), action = "store_true", default = FALSE,
     help = "Discretize after estimating curve parameters [default: %default]")
 
-), usage = "%prog [options] [directories/files]")
+), usage = "%prog [options] [directories/files]", add_help_option = FALSE,
+  epilogue = c(
+    listing(RESULT, header = "The output modes are:", footer = "",
+      prepend = 5L, indent = 10L),
+    listing(AGGREGATION, header = "The aggregation modes are:", footer = "",
+      prepend = 5L, indent = 10L)
+  )
+)
 
 
 opt <- parse_args(option.parser, positional_arguments = TRUE)
@@ -240,6 +258,9 @@ if (is.null(opt$include))
 if (!nzchar(opt$dir))
   opt$dir <- NULL
 opt$keys <- parse_key_list(opt$keys)
+if (opt$ynstrument < 0L)
+  opt$ynstrument <- NULL
+opt$list <- must(as.integer(parse_key_list(opt$list)))
 
 
 ################################################################################
@@ -250,10 +271,6 @@ opt$keys <- parse_key_list(opt$keys)
 
 if (!length(input)) {
   print_help(option.parser)
-  cat(listing(RESULT, header = "The output modes are:", footer = "",
-    prepend = 5L, indent = 10L), sep = "\n")
-  cat(listing(AGGREGATION, header = "The aggregation modes are:", footer = "",
-    prepend = 5L, indent = 10L), sep = "\n")
   quit(status = 1L)
 }
 
@@ -261,7 +278,7 @@ if (!length(input)) {
 library(opm, quietly = TRUE, warn.conflicts = FALSE)
 
 
-invisible(opm_opt(file.encoding = opt$encoding))
+invisible(opm_opt(file.encoding = opt$encoding, input.try.order = opt$list))
 
 
 case(match.arg(opt$result, names(RESULT)),

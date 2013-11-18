@@ -88,67 +88,12 @@ test_that("the plates can be obtained as a list", {
   pl <- plates(OPMS.INPUT)
   expect_is(pl, "list")
   expect_equal(length(pl), 2L)
-  expect_true(all(sapply(pl, class) == "OPM"))
+  expect_true(all(vapply(pl, is, NA, "OPM")))
 })
 
 
 ## oapply
 ## UNTESTED -- but see examples and tests for subsetting
-
-
-## thin_out
-test_that("OPM example data can be thinned out", {
-  expect_error(thin_out(OPM.1, 0.5), "'factor' must be >= 1")
-  thin <- thin_out(OPM.1, 1)
-  expect_equal(OPM.1, thin)
-  thin <- thin_out(OPM.1, 2)
-  dims <- dim(thin)
-  dims[1L] <- dims[1] * 2
-  expect_equal(dims, dim(OPM.1))
-})
-
-## thin_out
-test_that("OPMS example data can be thinned out", {
-  dims <- dim(OPMS.INPUT)
-  dims[2L] <- floor(dims[2L] / 10)
-  thin <- thin_out(OPMS.INPUT, 10)
-  expect_equal(dim(thin), dims)
-  expect_equal(metadata(thin), metadata(OPMS.INPUT))
-})
-
-
-################################################################################
-
-
-## gen_iii
-test_that("the plate type can be changed to generation 3", {
-  gen.3 <- gen_iii(OPM.1)
-  expect_is(gen.3, "OPM")
-  expect_equal(plate_type(gen.3), SPECIAL_PLATES[["gen.iii"]])
-  expect_equal(metadata(gen.3), metadata(OPM.1))
-  expect_equal(length(which(csv_data(gen.3) != csv_data(OPM.1))), 1L)
-})
-
-## gen_iii
-test_that("the plate type can be changed to ecoplate", {
-  eco <- gen_iii(OPM.1, "ECO")
-  expect_is(eco, "OPM")
-  expect_equal(plate_type(eco), SPECIAL_PLATES[["eco"]])
-  expect_equal(metadata(eco), metadata(OPM.1))
-  expect_equal(length(which(csv_data(eco) != csv_data(OPM.1))), 1L)
-})
-
-## gen_iii
-test_that("the plate type of OPMS objects can be changed", {
-  x <- gen_iii(OPMS.INPUT)
-  expect_equal(class(x), class(OPMS.INPUT))
-  expect_equal(dim(x), dim(OPMS.INPUT))
-  expect_false(plate_type(x) == plate_type(OPMS.INPUT))
-  x <- gen_iii(OPMS.INPUT, "Eco")
-  expect_equal(class(x), class(OPMS.INPUT))
-  expect_equal(dim(x), dim(OPMS.INPUT))
-  expect_false(plate_type(x) == plate_type(OPMS.INPUT))
-})
 
 
 ################################################################################
@@ -337,6 +282,7 @@ test_that("extract_columns can be applied to a data frame", {
   x <- data.frame(A = letters[1:5], B = 1:5)
   got <- extract_columns(x, list(C = c("A", "B")), direct = TRUE)
   expect_is(got, "data.frame")
+  expect_equal(attr(got, "joined.columns"), list(C = c("A", "B")))
   expect_equal(dim(got), c(5, 3))
   expect_equal(names(got), c("A", "B", "C"))
   expect_equal(rownames(got), rownames(x))
@@ -448,8 +394,8 @@ test_that("aggregated parameters can be extracted as dataframe", {
   expect_equal(colnames(mat), c("organism", "run",
     RESERVED_NAMES[["parameter"]],
     wells(THIN.AGG, full = TRUE)))
-  expect_true(all(sapply(mat[, 1L:3L], is.factor)))
-  expect_true(all(sapply(mat[, 4L:99L], is.numeric)))
+  expect_true(all(vapply(mat[, 1L:3L], is.factor, NA)))
+  expect_true(all(vapply(mat[, 4L:99L], is.numeric, NA)))
   expect_equal(as.character(mat[, 1L]), rep(ORGN, 2L))
   expect_equal(as.character(mat[, 2L]), c("4", "3"))
   expect_equal(as.character(mat[, 3L]), rep("lambda", 2L))
@@ -462,9 +408,9 @@ test_that("aggregated parameters can be extracted as dataframe", {
   expect_equal(colnames(mat), c("organism", "run",
     RESERVED_NAMES[["parameter"]],
     wells(THIN.AGG, full = TRUE), "run", "organism"))
-  expect_true(all(sapply(mat[, 1L:3L], is.factor)))
-  expect_true(all(sapply(mat[, 4L:99L], is.numeric)))
-  expect_true(all(sapply(mat[, 100L:101L], is.factor)))
+  expect_true(all(vapply(mat[, 1L:3L], is.factor, NA)))
+  expect_true(all(vapply(mat[, 4L:99L], is.numeric, NA)))
+  expect_true(all(vapply(mat[, 100L:101L], is.factor, NA)))
   expect_equal(as.character(mat[, 1L]), rep(ORGN, 2L))
   expect_equal(as.character(mat[, 2L]), c("4", "3"))
   expect_equal(as.character(mat[, 3L]), rep("mu", 2L))
@@ -484,8 +430,8 @@ test_that("aggregated parameters can be extracted as dataframe with CIs", {
   expect_equal(colnames(mat), c("organism", "run",
     RESERVED_NAMES[["parameter"]],
     wells(THIN.AGG, full = TRUE)))
-  expect_true(all(sapply(mat[, 1L:3L], is.factor)))
-  expect_true(all(sapply(mat[, 4L:99L], is.numeric)))
+  expect_true(all(vapply(mat[, 1L:3L], is.factor, NA)))
+  expect_true(all(vapply(mat[, 4L:99L], is.numeric, NA)))
   expect_equal(as.character(mat[, 1L]), rep(ORGN, 6L))
   expect_equal(as.character(mat[, 2L]), rep(c("4", "3"), each = 3L))
   expect_equal(as.character(mat[, 3L]) == rep("lambda", 6L),
@@ -509,9 +455,9 @@ test_that("aggregated parameters can be extracted as dataframe with CIs", {
   expect_equal(colnames(mat), c("organism", "run",
     RESERVED_NAMES[["parameter"]],
     wells(THIN.AGG, full = TRUE), "run", "organism"))
-  expect_true(all(sapply(mat[, 1L:3L], is.factor)))
-  expect_true(all(sapply(mat[, 4L:99L], is.numeric)))
-  expect_true(all(sapply(mat[, 100L:101L], is.factor)))
+  expect_true(all(vapply(mat[, 1L:3L], is.factor, NA)))
+  expect_true(all(vapply(mat[, 4L:99L], is.numeric, NA)))
+  expect_true(all(vapply(mat[, 100L:101L], is.factor, NA)))
   expect_equal(as.character(mat[, 1L]), rep(ORGN, 6L))
   expect_equal(as.character(mat[, 2L]), rep(c("4", "3"), each = 3L))
   expect_equal(as.character(mat[, 3L]) == rep("lambda", 6L),

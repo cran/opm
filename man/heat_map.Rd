@@ -2,11 +2,12 @@
 \alias{heat_map}
 \title{Heat map}
 \arguments{
-  \item{object}{Matrix, data frame or \sQuote{OPMS} object.
-  The matrix method is mainly designed for curve-parameter
-  matrices as created by \code{\link{extract}} but can be
-  used with any numeric matrix. If a data frame, it must
-  contain at least one column with numeric data.}
+  \item{object}{Matrix, data frame or \code{\link{OPMS}}
+  object. The matrix method is mainly designed for
+  curve-parameter matrices as created by
+  \code{\link{extract}} but can be used with any numeric
+  matrix. If a data frame, it must contain at least one
+  column with numeric data.}
 
   \item{as.labels}{Character, numeric or logical vector
   indicating the positions of the columns to be joined and
@@ -23,7 +24,7 @@
   and group names. See \code{\link{extract}} for details.}
 
   \item{subset}{Character scalar passed to the
-  \sQuote{OPMS} method of \code{\link{extract}}.}
+  \code{\link{OPMS}} method of \code{\link{extract}}.}
 
   \item{extract.args}{Optional list of arguments passed to
   that method.}
@@ -92,8 +93,19 @@
   relative size of the margin (i) at the bottom and (ii) at
   the left.}
 
-  \item{col}{Character vector containing the proper heatmap
-  colours.}
+  \item{col}{Character vector containing the proper heat
+  map colours.}
+
+  \item{asqr}{Logical scalar indicating whether the data
+  should be treated with the arcsine-square root
+  transformation. This usually only makes sense for
+  proportion data. If \code{NA}, percentages are assumed.}
+
+  \item{lmap}{Numeric scalar with at least three elements,
+  or empty. If empty, ignored. Otherwise used for mapping
+  logical values to numeric values. See
+  \code{\link{map_values}} for details. Ignored if the data
+  are not logical.}
 
   \item{...}{Optional arguments passed to \code{heatmap} or
   \code{heatmap.2}.  Note that some defaults of
@@ -101,34 +113,33 @@
   transparent from the argument list of \code{heat_map}. If
   set explicitly, the default \code{heatmap.2} behaviour is
   restored.  \code{\dots} also represents all arguments
-  passed from the \sQuote{OPMS} or data-frame methods to
-  the matrix method.}
+  passed from the \code{\link{OPMS}} or data-frame methods
+  to the matrix method.}
 
-  \item{use.fun}{Character scalar. If \sQuote{gplots}, it
-  is attempted to load the \pkg{gplots} package and use its
+  \item{use.fun}{Character scalar. If \kbd{gplots}, it is
+  attempted to load the \pkg{gplots} package and use its
   \code{heatmap.2} function (the default). If this fails, a
   warning is issued, and \code{heatmap} from the
   \pkg{stats} package (the default) is called instead.}
 }
 \value{
   A list as output by \code{heatmap} or \code{heatmap.2}
-  with the additional entries \sQuote{rowColMap} or
-  \sQuote{colColMap} giving the mapping(s) of group names
-  to colours as named character vector(s), if this feature
-  was used.
+  with the additional entries \code{rowColMap} or
+  \code{colColMap} giving the mapping(s) of group names to
+  colours as named character vector(s), if this feature was
+  used.
 }
 \description{
   A wrapper for \code{heatmap} from the \pkg{stats} package
   and \code{heatmap.2} from the \pkg{gplots} package with
   some adaptations likely to be useful for
   OmniLog\eqn{\textsuperscript{\textregistered}}{(R)} data.
-  The data-frame and \sQuote{OPMS} methods extract a
-  numeric matrix from a given data frame or \sQuote{OPMS}
-  object and pass the result to the matrix method.
+  The data-frame and \code{\link{OPMS}} methods extract a
+  numeric matrix from a given data frame or
+  \code{\link{OPMS}} object and pass the result to the
+  matrix method.
 }
 \examples{
-data(vaas_4)
-
 # Matrix method (usually unnecessary, see below)
 x <- extract(vaas_4, as.labels = list("Strain"),
   as.groups = list("Species"))
@@ -149,17 +160,22 @@ stopifnot(identical(metadata(vaas_4, "Species"), names(hm$rowColMap)))
 
   Other plotting-functions: \code{\link{ci_plot}},
   \code{\link{level_plot}}, \code{\link{radial_plot}},
-  \code{\link{select_colors}}, \code{\link{show}},
-  \code{\link{xy_plot}}
+  \code{\link{summary}}, \code{\link{xy_plot}}
 }
 \keyword{hplot}
 
+%% BEGIN INSERTION BY repair_S4_docu.rb
 \docType{methods}
 \alias{heat_map-methods}
-\alias{heat_map,matrix-method}
-\alias{heat_map,data.frame-method}
 \alias{heat_map,OPMS-method}
+\alias{heat_map,data.frame-method}
+\alias{heat_map,matrix-method}
 \usage{
+  \S4method{heat_map}{OPMS}(object, as.labels,
+    subset = opm_opt("curve.param"), as.groups = NULL, sep = " ",
+    extract.args = list(), ...) 
+  \S4method{heat_map}{data.frame}(object, as.labels,
+    as.groups = NULL, sep = " ", ...) 
   \S4method{heat_map}{matrix}(object,
     hclustfun = "ward", distfun = "euclidean", scale = "none",
     r.groups = "row.groups", r.col = opm_opt("colors"),
@@ -172,15 +188,8 @@ stopifnot(identical(metadata(vaas_4, "Species"), names(hm$rowColMap)))
       borders[length(borders)] * cexRow * max(nchar(rownames(object))))
     else
       c(5, 5),
-    col = opm_opt("heatmap.colors"),
+    col = opm_opt("heatmap.colors"), asqr = FALSE, lmap = 1L:3L,
     ...,
     use.fun = c("gplots", "stats")) 
-
-  \S4method{heat_map}{data.frame}(object, as.labels,
-    as.groups = NULL, sep = " ", ...) 
-
-  \S4method{heat_map}{OPMS}(object, as.labels,
-    subset = opm_opt("curve.param"), as.groups = NULL, sep = " ",
-    extract.args = list(), ...) 
-
 }
+%% END INSERTION BY repair_S4_docu.rb

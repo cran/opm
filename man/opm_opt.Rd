@@ -1,19 +1,26 @@
 \name{opm_opt}
 \alias{opm_opt}
-\title{OPM options}
+\title{Global \pkg{opm} options}
 \arguments{
-  \item{x}{Character scalar or list. If not given, all
-  current settings are returned (as a named list). If a
-  list, it is expected to contain key-value pairs that can
-  be set. In that case, it is an error if a key is unknown
-  or if the value's class(es) is/are not compatible with
-  the previously stored value's class(es). If \code{x} is a
-  character scalar, it is used for querying for a value.}
+  \item{x}{Character scalar or list or missing. If not
+  given, all current settings are returned (as a named
+  list). If \code{x} is a character scalar, it is used for
+  querying for a single value.
+
+  If \code{x} is a list, it is expected to contain
+  key-value pairs that can be set. In that case, it is an
+  error if a key is unknown, i.e. it is an error to use a
+  name that is not already contained (\pkg{opm} would never
+  query for it anyway). It is also illegal to attempt set
+  novel values whose classes are not identical to, or
+  derived from, the classes of the old value. Further, it
+  is illegal to set a zero-length value.}
 
   \item{...}{Optional arguments. If \code{x} is missing,
   these arguments are concatenated into a list and used as
   if \code{x} was given as a list (see above). That is, the
-  argument names are used as the keys for setting values.}
+  argument names are used as the keys for setting values.
+  This is usually easier than working with a list.}
 }
 \value{
   List or atomic vector. If one to several values are set,
@@ -24,21 +31,24 @@
 }
 \details{
   The following keys can be used with the following kinds
-  of values: \describe{ \item{colors}{Default color set
+  of values: \describe{ \item{colors}{Default colour set
   used by the \code{\link{OPMS}} method of
   \code{\link{xy_plot}} and other plotting functions.}
-  \item{color.borders}{Character vector with default color
+  \item{color.borders}{Character vector with default colour
   borders between which \code{\link{level_plot}}
   interpolates to obtain a colour palette.}
   \item{comb.key.join}{Used by functions that support
   combination of metadata entries converted to data-frame
   columns immediately after their selection. Sets the
   character string that is used when joining old names to
-  new name.} \item{comb.value.join}{Used by functions that
-  support combination of metadata entries converted to
-  data-frame columns immediately after their selection.
-  Sets the character string that is used when joining old
-  values to new values.} \item{contrast.type}{Character
+  new name. Should normally only be a single character.}
+  \item{comb.value.join}{Used by functions that support
+  combination of metadata entries converted to data-frame
+  columns immediately after their selection. Sets the
+  character string that is used when joining old values to
+  new values. Should normally only be a single character;
+  must be a single character when used by
+  \code{\link{opm_mcp}}.} \item{contrast.type}{Character
   scalar indicating the default type of contrast used by
   \code{\link{opm_mcp}}.} \item{css.file}{Character scalar.
   Default \acronym{CSS} file linked by
@@ -73,35 +83,49 @@
   \code{\link{heat_map}}.} \item{html.attr}{Used by
   \code{\link{phylo_data}} for automatically creating
   \acronym{HTML} \sQuote{title} and \sQuote{class}
-  attributes.} \item{key.join}{Used by
+  attributes.} \item{input.try.order}{Integer vector
+  indicating the preferred order when trying to read
+  \acronym{CSV} files with \code{\link{read_single_opm}}.
+  See there for details.} \item{key.join}{Used by
   \code{\link{metadata}} and some other functions that must
   be in sync with it for joining metadata keys used in
   nested queries (because the resulting object is
-  \sQuote{flat}).} \item{min.mode}{Used when making
-  discretization results uniform within a group. The
-  minimum proportion the most frequent value much reach to
-  be used for representing all values (if less, frequent,
-  \code{NA} is used). Must be a numeric scalar between 0
-  and 1.} \item{phylo.fmt}{Character scalar indicating the
-  default output format used by \code{\link{phylo_data}}.}
+  \sQuote{flat}).} \item{machine.id}{Integer scalar that
+  can be used for identifying an
+  OmniLog\eqn{\textsuperscript{\textregistered}}{(R)}
+  instrument. Useful for \code{\link{collect_template}} if
+  several such machines are in use.}
+  \item{max.chars}{Integer scalar used when abbreviating
+  full substrate names. See \code{\link{wells}} for an
+  example.} \item{min.mode}{Used when making discretisation
+  results uniform within a group. The minimum proportion
+  the most frequent value much reach to be used for
+  representing all values (if less, frequent, \code{NA} is
+  used). Must be a numeric scalar between 0 and 1.}
+  \item{phylo.fmt}{Character scalar indicating the default
+  output format used by \code{\link{phylo_data}}.}
   \item{split}{Character scalar indicating the default
   splitting characters used by \code{\link{separate}}.}
   \item{strict.OPMD}{Logical scalar indicating whether
   \code{\link{OPMD}} objects can only be created if the
-  discretized data are consistent with the parameter from
-  which they have been estimated.}
-  \item{time.zone}{Character scalar indicating the time
-  zone to be used when parsing \code{\link{setup_time}}
-  entries. This is relevant for \code{\link{merge}}, which
-  by default attempts to sort by parsed setup times}
-  \item{time.fmt}{Character vector indicating the time
-  formats used for parsing the \code{\link{setup_time}}
-  entries (in the given order). Also relevant for
-  \code{\link{merge}} by default.} } It is an error to set
-  novel values whose classes are not identical to, or
-  derived from, the classes of the old value. It is also an
-  error to use a name that is not already contained
-  (\pkg{opm} would never query for it anyway).
+  discretised data are consistent with the parameter from
+  which they have been estimated.} \item{threshold}{Numeric
+  scalar indicating the default threshold used by
+  \code{\link{annotated}}.} \item{time.zone}{Character
+  scalar indicating the time zone to be used when parsing
+  \code{\link{setup_time}} entries. This is relevant for
+  \code{\link{merge}}, which by default attempts to sort by
+  parsed setup times} \item{time.fmt}{Character vector
+  indicating the time formats used for parsing the
+  \code{\link{setup_time}} entries (in the given order).
+  Also relevant for \code{\link{merge}} by default. It is
+  advisable to put the more specific formats to the front
+  because otherwise information such as an \sQuote{AM} or
+  \sQuote{PM} indication might be lost. A wrong format
+  might well match a given entry, causing \pkg{opm} to
+  misinterpret the time or even the date.} } For parameter
+  names used by \pkg{opm} that cannot be modified by the
+  user see \code{\link{param_names}}.
 }
 \examples{
 # fetching a value
@@ -128,22 +152,20 @@ stopifnot(digits == 4)
   base::options base::getOption
 
   Other auxiliary-functions: \code{\link{contains}},
-  \code{\link{glob_to_regex}}, \code{\link{kubrick}},
-  \code{\link{map_names}}, \code{\link{map_values}},
-  \code{\link{separate}}
+  \code{\link{kubrick}}, \code{\link{map_names}},
+  \code{\link{map_values}}, \code{\link{separate}}
 }
 \keyword{utilities}
 
+%% BEGIN INSERTION BY repair_S4_docu.rb
 \docType{methods}
 \alias{opm_opt-methods}
+\alias{opm_opt,character-method}
 \alias{opm_opt,list-method}
 \alias{opm_opt,missing-method}
-\alias{opm_opt,character-method}
 \usage{
-  \S4method{opm_opt}{list}(x) 
-
-  \S4method{opm_opt}{missing}(x, ...) 
-
   \S4method{opm_opt}{character}(x) 
-
+  \S4method{opm_opt}{list}(x) 
+  \S4method{opm_opt}{missing}(x, ...) 
 }
+%% END INSERTION BY repair_S4_docu.rb

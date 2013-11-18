@@ -12,13 +12,13 @@
   only non-duplicated single-character strings. For
   instance, the default \code{split} argument \code{".-_"}
   yields \code{c(".", "-", "_")}.  \item If a vector of
-  only empty strings or \code{TRUE}, strings with
-  substrings representing fixed-width fields are assumed,
-  and splitting is done at whitespace-only columns.
-  Beforehand, equal-length strings are created by padding
-  with spaces at the right. After splitting in fixed-width
-  mode, whitespace characters are trimmed from both ends of
-  the resulting strings.  }}
+  only empty strings or \code{TRUE}, strings with parts
+  representing fixed-width fields are assumed, and
+  splitting is done at whitespace-only columns. Beforehand,
+  equal-length strings are created by padding with spaces
+  at the right. After splitting in fixed-width mode,
+  whitespace characters are trimmed from both ends of the
+  resulting strings.  }}
 
   \item{simplify}{Logical scalar indicating whether a
   resulting matrix with one column should be simplified to
@@ -78,8 +78,8 @@
   matrix or data frame. For instance, file names created by
   a batch export conducted by a some software are usually
   more or less regularly structured and contain content at
-  distinct possitions. In such situations, the correct
-  splitting approach can be recognized by yielding the same
+  distinct positions. In such situations, the correct
+  splitting approach can be recognised by yielding the same
   number of fields from each vector element.
 }
 \examples{
@@ -120,27 +120,25 @@ stopifnot(sapply(y, class) == c("integer", "factor", "factor"))
   base::strsplit utils::read.fwf
 
   Other auxiliary-functions: \code{\link{contains}},
-  \code{\link{glob_to_regex}}, \code{\link{kubrick}},
-  \code{\link{map_names}}, \code{\link{map_values}},
-  \code{\link{opm_opt}}
+  \code{\link{kubrick}}, \code{\link{map_names}},
+  \code{\link{map_values}}, \code{\link{opm_opt}}
 }
 \keyword{character}
 \keyword{manip}
 
+%% BEGIN INSERTION BY repair_S4_docu.rb
 \docType{methods}
 \alias{separate-methods}
 \alias{separate,character-method}
-\alias{separate,factor-method}
 \alias{separate,data.frame-method}
+\alias{separate,factor-method}
 \usage{
   \S4method{separate}{character}(object, split = opm_opt("split"),
     simplify = FALSE, keep.const = TRUE, list.wise = FALSE,
     strip.white = list.wise) 
-
-  \S4method{separate}{factor}(object, split = opm_opt("split"),
-    simplify = FALSE, keep.const = TRUE, ...) 
-
   \S4method{separate}{data.frame}(object, split = opm_opt("split"),
     simplify = FALSE, keep.const = TRUE, coerce = TRUE, name.sep = ".", ...) 
-
+  \S4method{separate}{factor}(object, split = opm_opt("split"),
+    simplify = FALSE, keep.const = TRUE, ...) 
 }
+%% END INSERTION BY repair_S4_docu.rb

@@ -17,9 +17,89 @@ if (!exists("TEST.DIR"))
 ## try_opms
 ## UNTESTED
 
-
 ## [<-
-## UNTESTED
+test_that("MOPMX objects are restricted (bracket operator)", {
+  x <- new("MOPMX")
+  expect_equal(length(x), 0L)
+  expect_error(x[2] <- 1)
+  expect_equal(length(x), 0L)
+  expect_error(x[1] <- "a")
+  expect_equal(length(x), 0L)
+  x[TRUE] <- NULL
+  expect_equal(length(x), 0L)
+  x["A"] <- SMALL
+  expect_equal(length(x), 1L)
+  expect_equal(names(x), "A")
+  x["B"] <- SMALL
+  expect_equal(length(x), 2L)
+  expect_equal(names(x), c("A", "B"))
+  x["B"] <- NULL
+  expect_equal(length(x), 1L)
+  expect_equal(names(x), "A")
+  expect_warning(x[3:4] <- SMALL)
+  expect_equal(length(x), 3L)
+  x[c(TRUE, FALSE, TRUE)] <- NULL
+  expect_equal(length(x), 1L)
+})
+
+## [[<-
+test_that("MOPMX objects are restricted (double bracket operator)", {
+  x <- new("MOPMX")
+  expect_equal(length(x), 0L)
+  expect_error(x[["A"]] <- 1)
+  expect_equal(length(x), 0L)
+  expect_error(x[[2]] <- "a")
+  expect_equal(length(x), 0L)
+  x[[TRUE]] <- NULL
+  expect_equal(length(x), 0L)
+  x[["A"]] <- SMALL
+  expect_equal(length(x), 1L)
+  expect_equal(names(x), "A")
+  x[["B"]] <- SMALL
+  expect_equal(length(x), 2L)
+  expect_equal(names(x), c("A", "B"))
+  x[["B"]] <- NULL
+  expect_equal(length(x), 1L)
+  expect_warning(x[[3]] <- SMALL)
+  expect_equal(length(x), 2L)
+  x[[3]] <- SMALL.WITH.MD
+  expect_equal(length(x), 3L)
+  x[[TRUE]] <- NULL
+  expect_equal(length(x), 2L)
+})
+
+## $<-
+test_that("MOPMX objects are restricted (dollar operator)", {
+  x <- new("MOPMX")
+  expect_equal(length(x), 0L)
+  expect_error(x$A <- 1)
+  expect_equal(length(x), 0L)
+  expect_error(x$A <- "a")
+  expect_equal(length(x), 0L)
+  x$A <- NULL
+  expect_equal(length(x), 0L)
+  x$A <- SMALL
+  expect_equal(length(x), 1L)
+  x$B <- SMALL.WITH.MD
+  expect_equal(length(x), 2L)
+})
+
+## c
+test_that("MOPMX objects can be combined with c()", {
+  x <- new("MOPMX")
+  expect_is(x, "MOPMX")
+  got <- c(x, list(NULL), recursive = TRUE)
+  expect_is(got, "MOPMX")
+  got <- c(x, NULL)
+  expect_is(got, "MOPMX")
+  got <- c(x, list(NULL), recursive = FALSE)
+  expect_false(is(got, "MOPMX"))
+  got <- c(x, list(a = letters))
+  expect_false(is(got, "MOPMX"))
+  x <- c(x, SMALL, NULL, x)
+  expect_is(x, "MOPMX")
+  expect_equal(length(x), 1L)
+})
 
 
 ## +

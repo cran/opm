@@ -1,0 +1,7 @@
+%\VignetteIndexEntry{Using opm}
+%% need no \usepackage{Sweave.sty}
+\documentclass{article}
+\begin{document}
+%% Rnw document stub because checking is disabled on CRAN
+...
+\end{document}

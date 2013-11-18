@@ -18,6 +18,21 @@ rand_range <- function(n, minstart = 0, maxstart = 100, maxrange = 100) {
 ################################################################################
 
 
+## summary
+test_that("a summary can be printed", {
+  # OPM method
+  x <- summary(OPM.1)
+  expect_is(x, "OPM_Summary")
+  expect_true(length(x) > 7L)
+  capture.output(expect_equal(print(x), x))
+  # OPMS method
+  s <- summary(OPMS.INPUT)
+  capture.output(expect_equal(print(s), s))
+  expect_is(s, "OPMS_Summary")
+  expect_equal(length(s), length(OPMS.INPUT))
+  expect_true(all(vapply(s, inherits, logical(1L), "OPM_Summary")))
+})
+
 ## show
 ## UNTESTED
 
@@ -69,11 +84,11 @@ test_that("cex can be guessed", {
 test_that("best layouts can be determined", {
   x <- 0:100
   got <- lapply(x, best_layout)
-  prods <- sapply(got, Reduce, f = `*`)
+  prods <- vapply(got, Reduce, 0, f = `*`)
   expect_true(all(prods >= x))
   expect_false(all(prods > x))
-  expect_true(all(sapply(got, length) == 2L))
-  expect_true(all(sapply(got, function(a) a[1] >= a[2])))
+  expect_true(all(vapply(got, length, 0L) == 2L))
+  expect_true(all(vapply(got, function(a) a[1] >= a[2], NA)))
   expect_error(best_layout(-1))
 })
 
@@ -149,16 +164,6 @@ test_that("
   nc.got <- negative_control(OPMS.INPUT, neg.ctrl = TRUE)
   expect_is(nc.got, "numeric")
   expect_equal(length(nc.got), 1L)
-})
-
-
-## select_colors
-test_that("predefined color sets can be obtained", {
-  for (arg in as.character(formals(select_colors)[[1L]])[-1L]) {
-    got <- select_colors(arg)
-    expect_is(got, "character")
-    expect_true(length(got) >= 10L)
-  }
 })
 
 

@@ -1,8 +1,8 @@
 \name{ci_plot}
 \alias{ci_plot}
-\title{Plot point estimates with CIs}
+\title{Plot point estimates with \acronym{CI}s}
 \arguments{
-  \item{object}{\code{\link{OPMS}} object or (seldomly) a
+  \item{object}{\code{\link{OPMS}} object or (rarely) a
   data frame. If an \code{\link{OPMS}} object, it is in
   most cases necessary to restrict the plates to at most
   about one dozen wells. See \code{\link{[}} for how to
@@ -12,10 +12,10 @@
   an \pkg{opm} user but via the \code{\link{OPMS}} method,
   unless it is used after \code{\link{extract}} was applied
   to a data frame for calculating point estimates and
-  confidence intervals from groups of oberservations. See
+  confidence intervals from groups of observations. See
   there for details.
 
-  Otherwise, the data frame should be as exported bythe
+  Otherwise, the data frame should be as exported by the
   \code{\link{OPMS}} method of \code{\link{extract}} with
   \code{ci} set to \code{TRUE}. There must be a column
   named \code{\link{param_names}("split.at")} followed by
@@ -41,8 +41,8 @@
   consistency within the plot).}
 
   \item{align}{Character scalar. How to apply the offset;
-  one of \sQuote{center}, \sQuote{left} and
-  \sQuote{right}.}
+  in addition to the default, \sQuote{left} and
+  \sQuote{right} are possible.}
 
   \item{col}{Character scalar. Colour to be used.}
 
@@ -70,9 +70,13 @@
   y-axis of a vertical line to be drawn. Ignored if
   \code{NULL}.}
 
-  \item{...}{Optional other arguments passed to
-  \code{legend}, or arguments passed from the
-  \code{\link{OPMS}} method to the data frame method.}
+  \item{crr}{Numeric scalar (column-row-ratio) interpreted
+  as number of columns per number of rows. Determines the
+  arrangement of the subplots.}
+
+  \item{...}{Optional arguments passed to \code{legend}, or
+  arguments passed from the \code{\link{OPMS}} method to
+  the data frame method.}
 
   \item{split.at}{Character vector. See
   \code{\link{extract}}.}
@@ -90,15 +94,13 @@
 }
 \details{
   The default placement of the legend is currently not
-  necessarily very useful. When plotting entire PM plates,
-  the \sQuote{mar} parameter of \code{par} most likely
-  would need to be set to a lower value, but it is
-  recommended to plot only subsets of plates, i.e. selected
-  wells.
+  necessarily very useful. When plotting entire
+  \acronym{PM} plates, the \sQuote{mar} parameter of
+  \code{par} most likely would need to be set to a lower
+  value, but it is recommended to plot only subsets of
+  plates, i.e. selected wells.
 }
 \examples{
-data(vaas_4)
-
 x <- ci_plot(vaas_4[, , 1:3], as.labels = list("Species", "Strain"),
   subset = "A", x = "bottomright", legend.field = NULL)
 # note that the values on the y axes are drawn to scale
@@ -119,22 +121,21 @@ stopifnot(is.character(x), identical(length(x), 4L))
 
   Other plotting-functions: \code{\link{heat_map}},
   \code{\link{level_plot}}, \code{\link{radial_plot}},
-  \code{\link{select_colors}}, \code{\link{show}},
-  \code{\link{xy_plot}}
+  \code{\link{summary}}, \code{\link{xy_plot}}
 }
 \keyword{hplot}
 
+%% BEGIN INSERTION BY repair_S4_docu.rb
 \docType{methods}
 \alias{ci_plot-methods}
-\alias{ci_plot,data.frame-method}
 \alias{ci_plot,OPMS-method}
+\alias{ci_plot,data.frame-method}
 \usage{
+  \S4method{ci_plot}{OPMS}(object, as.labels,
+    subset = opm_opt("curve.param"), ...) 
   \S4method{ci_plot}{data.frame}(object, rowname.sep = " ",
     prop.offset = 0.04, align = "center", col = "blue", na.action = "warn",
     draw.legend = TRUE, legend.field = c(1, 1), x = "topleft", xpd = TRUE,
-    vline = 0, split.at = param_names("split.at"), ...) 
-
-  \S4method{ci_plot}{OPMS}(object, as.labels,
-    subset = opm_opt("curve.param"), ...) 
-
+    vline = 0, split.at = param_names("split.at"), crr = 0.75, ...) 
 }
+%% END INSERTION BY repair_S4_docu.rb

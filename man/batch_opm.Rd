@@ -1,6 +1,6 @@
 \name{batch_opm}
 \alias{batch_opm}
-\title{Batch-convert PM data}
+\title{Batch-convert \acronym{PM} data}
 \usage{
   batch_opm(names, md.args = NULL, aggr.args = NULL,
     force.aggr = FALSE, disc.args = NULL,
@@ -34,12 +34,12 @@
   \item{disc.args}{If not \code{NULL} but a list, passed as
   arguments to \code{\link{do_disc}} with the data read
   from each individual file as additional argument
-  \code{object}.  If \code{NULL}, discretization takes not
-  place (but discretized data may already be present in
+  \code{object}.  If \code{NULL}, discretisation takes not
+  place (but discretised data may already be present in
   case of \acronym{YAML} input).}
 
   \item{force.disc}{Logical scalar. If \code{FALSE}, do not
-  discretize already discretized data (which can be present
+  discretise already discretised data (which can be present
   in \acronym{YAML} input).}
 
   \item{device}{Character scalar describing the graphics
@@ -47,8 +47,8 @@
   the \pkg{grDevices} package and \code{mypdf} from the
   \pkg{pkgutils} package for possible values. The extension
   of the output files is created from the device name after
-  a few adaptations (such as converting \sQuote{postscript}
-  to \sQuote{ps}).}
+  a few adaptations (such as converting \kbd{postscript} to
+  \kbd{ps}).}
 
   \item{dev.args}{List. Passed as additional arguments to
   \code{device}.}
@@ -63,11 +63,11 @@
   renaming \acronym{CSV} entries or functions that can be
   applied to an entire data frame containing all
   \acronym{CSV} entries. Note that this argument has
-  nothing to do with \sQuote{csv} output.}
+  nothing to do with \kbd{csv} output.}
 
   \item{table.args}{Passed to \code{write.table} from the
-  \pkg{utils} package if \code{output} is set to
-  \sQuote{csv}. Do not confuse this with \code{csv.args}.}
+  \pkg{utils} package if \code{output} is set to \kbd{csv}.
+  Do not confuse this with \code{csv.args}.}
 
   \item{...}{Optional arguments passed to
   \code{\link{batch_process}} in addition to \code{verbose}
@@ -83,9 +83,9 @@
   \item{json}{Create \acronym{JSON} files, by default one
   per input file.} \item{levelplot}{Create graphics files,
   by default one per input file, containing the output of
-  \code{\link{level_plot}}.} \item{split}{Split multi-plate
-  new style or old style \acronym{CSV} files with
-  \code{\link{split_files}}.} \item{yaml}{Create
+  \code{\link{level_plot}}.} \item{split}{Split
+  multiple-plate new style or old style \acronym{CSV} files
+  with \code{\link{split_files}}.} \item{yaml}{Create
   \acronym{YAML} files, by default one per input file.}
   \item{xyplot}{Create graphics files, by default one per
   input file, containing the output of
@@ -112,9 +112,9 @@
   \item{gen.iii}{Logical or character scalar. If
   \code{TRUE}, invoke \code{\link{gen_iii}} on each plate.
   This is automatically done with \acronym{CSV} input if
-  the plate type is given as \sQuote{OTH} (which is usually
-  the case for plates run in ID mode). If a character
-  scalar, it is used as the \code{to} argument of
+  the plate type is given as \acronym{OTH} (which is
+  usually the case for plates run in ID mode). If a
+  character scalar, it is used as the \code{to} argument of
   \code{\link{gen_iii}} to set other plate types unless it
   is empty.}
 
@@ -128,8 +128,8 @@
   \code{\link{do_aggr}} for details.}
 
   \item{outdir}{Character vector. Directories in which to
-  place the outfiles.  If \code{NULL} or only containing
-  empty strings, each infile's directory is used.}
+  place the output files. If \code{NULL} or only containing
+  empty strings, the directory of each input file is used.}
 
   \item{overwrite}{Character scalar. If \sQuote{yes},
   conversion is always tried if \code{infile} exists and is
@@ -158,6 +158,10 @@
   files.
 }
 \details{
+  This function is for batch-converting many files; for
+  writing a single object to a \acronym{YAML} file (or
+  string), see \code{\link{to_yaml}}.
+
   A \acronym{YAML} document can comprise \emph{scalars}
   (single values of some type), \emph{sequences} (ordered
   collections of some values, without names) and
@@ -194,11 +198,11 @@
   value of \sQuote{options} is an arbitrarily nested
   mapping with arbitrary content.} \item{discretized}{A
   mapping, only present if curve parameters have been
-  estimated and also discretized. Its keys correspond to
+  estimated and also discretised. Its keys correspond to
   those of \sQuote{measurements} with the exception of
   \sQuote{hours}. The values are logical scalars.}
   \item{disc_settings}{A mapping, only present if curve
-  parameters have been estimated and also discretized. Its
+  parameters have been estimated and also discretised. Its
   keys are \sQuote{software}, \sQuote{version} and
   \sQuote{options}. The value of the former two is a
   character scalar. The value of \sQuote{options} is an
@@ -217,7 +221,7 @@
   or hang. This problem was observed with \acronym{CSV}
   files that were generated on a distinct operating system
   and contained special characters such as German umlauts.
-  It is then necessary to explicitely (and correctly)
+  It is then necessary to explicitly (and correctly)
   specify the encoding used in these files; see the
   \sQuote{file.encoding} option of \code{\link{opm_opt}}
   for how to do this.
@@ -238,8 +242,8 @@
   likely to be misunderstood as \sQuote{NA} character
   scalars (if the \pkg{json} package or the \pkg{yaml}
   package prior to version 2.1.7 are used) or as
-  \sQuote{.na}, \sQuote{.na.real}, \sQuote{.na.logical} or
-  \sQuote{.na.character} character scalars (if more recent
+  \code{.na}, \code{.na.real}, \code{.na.logical} or
+  \code{.na.character} character scalars (if more recent
   versions of the \pkg{yaml} package are used). Input
   functions in other programming languages should conduct
   according conversions. \pkg{opm} translates these values
@@ -248,14 +252,8 @@
   See \code{\link{as.data.frame}} regarding the generated
   \acronym{CSV}.
 }
-\note{
-  This function is for batch-converting many files; for
-  writing a single object to a \acronym{YAML} file (or
-  string), see \code{\link{to_yaml}}.
-}
 \examples{
-test.files <- grep("Multiple", opm_files("testdata"), invert = TRUE,
-  value = TRUE, fixed = TRUE)
+test.files <- opm_files("omnilog")
 if (length(test.files) > 0) { # if the files are found
   num.files <- length(list.files(outdir <- tempdir()))
   x <- batch_opm(test.files[1], outdir = outdir)
@@ -280,14 +278,13 @@ if (length(test.files) > 0) { # if the files are found
   pkgutils::mypdf
 
   Other io-functions: \code{\link{batch_collect}},
-  \code{\link{batch_opm_to_yaml}},
   \code{\link{batch_process}},
   \code{\link{clean_filenames}},
   \code{\link{collect_template}},
   \code{\link{explode_dir}}, \code{\link{file_pattern}},
-  \code{\link{opm_files}}, \code{\link{read_opm}},
-  \code{\link{read_single_opm}}, \code{\link{split_files}},
-  \code{\link{to_metadata}}
+  \code{\link{glob_to_regex}},
+      \code{\link{read_opm}}, \code{\link{read_single_opm}},
+  \code{\link{split_files}}, \code{\link{to_metadata}}
 }
 \keyword{IO}
 

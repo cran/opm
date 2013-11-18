@@ -1,16 +1,17 @@
 \name{subset}
 \alias{subset}
+\alias{thin_out}
 \title{Select a subset of the plates (or time points)}
 \arguments{
   \item{x}{\code{\link{OPMS}} object.}
 
-  \item{query}{Logical, numeric or character vector, list,
-  or formula. If a logical or numeric vector, \code{query}
-  is directly used as the first argument of
-  \code{\link{[}}, and all following arguments, if any, are
-  ignored. If a list, formula or a character vector, it is
-  used for conducting a query based on one of the infix
-  operators as described below.}
+  \item{query}{Logical or numeric vector or object accepted
+  as query by the infix operators. If a logical or numeric
+  vector, \code{query} is directly used as the first
+  argument of \code{\link{[}}, and all following arguments,
+  if any, are ignored. If otherwise, it is used for
+  conducting a query based on one of the infix operators as
+  described below.}
 
   \item{values}{Logical scalar. If \code{TRUE}, the values
   of \code{query} are also considered (by using
@@ -22,8 +23,8 @@
   metadata entries contain certain values, or choose the
   plates for which these metadata have been set at all (to
   some arbitrary value). See the mentioned functions for
-  details, and note the special behavior if \code{query} is
-  a character vector and \code{values} is \code{FALSE}.}
+  details, and note the special behaviour if \code{query}
+  is a character vector and \code{values} is \code{FALSE}.}
 
   \item{invert}{Logical scalar. If \code{TRUE}, return the
   plates for which the condition is not \code{TRUE}.}
@@ -43,7 +44,7 @@
   used. Otherwise all previous arguments except
   \code{object} are ignored, and the function yields an
   error unless all elements of \code{object} have
-  discretized values.
+  discretised values.
 
   In that case, if \sQuote{any}, wells are selected that
   contain positive reactions in at least one plate. If
@@ -68,6 +69,16 @@
   Otherwise, \code{use} is taken directly as the one-latter
   name of the infix operators to use for plate selection,
   overriding \code{values} and \code{exact}.}
+
+  \item{object}{\code{\link{OPMX}} object.}
+
+  \item{factor}{Numeric scalar >= 1 indicating how much the
+  data set shall be thinned out.}
+
+  \item{drop}{Logical scalar. See \code{\link{[}}.}
+
+  \item{...}{Optional arguments passed between the
+  methods.}
 }
 \value{
   \code{NULL} or \code{\link{OPM}} or \code{\link{OPMS}}
@@ -78,10 +89,17 @@
   Select a subset of the plates in an \code{\link{OPMS}}
   object based on the content of the metadata.
   Alternatively, select a common subset of time points from
-  all plates.
+  all plates. \code{thin_out} keeps only a regular subset
+  of the time points from \code{\link{OPM}} measurements.
+  This is a mainly experimental function that might be of
+  use in testing.
+}
+\details{
+  Thinning the plates out is experimental insofar as it has
+  \strong{not} been tested whether and how this could
+  sensibly be applied before aggregating the data.
 }
 \examples{
-data(vaas_4) # example OPMS object
 # simple object comparison function
 mustbe <- function(a, b) stopifnot(identical(a, b))
 
@@ -106,7 +124,7 @@ mustbe(vaas_4[c(1, 3)],
   subset(vaas_4, ~ Strain \%in\% c("DSM18039", "DSM1707")))
 mustbe(vaas_4[c(1, 3)],
   subset(vaas_4, ~ Strain == "DSM18039" || Strain == "DSM1707"))
-# note that particularly formulas can be used to set up very complex queries
+# note that particularly formulae can be used to set up very complex queries
 
 # select all plates that have aggregated values
 dim(x <- subset(vaas_4, has_aggr(vaas_4)))
@@ -132,6 +150,25 @@ stopifnot(dim(y)[3] < dim(x)[3])
 # select all wells that have non-negative reactions in at least one plate
 dim(y <- subset(vaas_4, use = "N", invert = TRUE))
 stopifnot(dim(y)[3] > dim(x)[3])
+
+## thin_out()
+
+# 'OPM' method
+(x <- dim(vaas_1))
+stopifnot(identical(x, c(384L, 96L)))
+copy <- thin_out(vaas_1, 10) # keep every 10th time point and measurement
+(x <- dim(copy))
+stopifnot(identical(x, c(38L, 96L)), has_aggr(copy))
+copy <- thin_out(vaas_1, 10, drop = TRUE) # also remove the parameters
+(x <- dim(copy))
+stopifnot(identical(x, c(38L, 96L)), !has_aggr(copy))
+
+# 'OPMS' method
+(x <- dim(vaas_4))
+stopifnot(identical(x, c(4L, 384L, 96L)))
+copy <- thin_out(vaas_4, 10)
+(x <- dim(copy))
+stopifnot(identical(x, c(4L, 38L, 96L)))
 }
 \seealso{
   base::`[` base::`[[` base::subset
@@ -142,19 +179,20 @@ stopifnot(dim(y)[3] > dim(x)[3])
   \code{\link{disc_settings}}, \code{\link{discretized}},
   \code{\link{duplicated}}, \code{\link{filename}},
   \code{\link{has_aggr}}, \code{\link{has_disc}},
-  \code{\link{hours}}, \code{\link{length}},
-  \code{\link{max}}, \code{\link{measurements}},
-  \code{\link{metadata}}, \code{\link{minmax}},
-  \code{\link{plate_type}}, \code{\link{position}},
-  \code{\link{seq}}, \code{\link{setup_time}},
-  \code{\link{summary}}, \code{\link{well}},
-  \code{\link{wells}}
+  \code{\link{hours}}, \code{\link{max}},
+  \code{\link{measurements}}, \code{\link{minmax}},
+  \code{\link{position}}, \code{\link{seq}},
+  \code{\link{setup_time}}, \code{\link{well}}
 }
 \keyword{manip}
 
+%% BEGIN INSERTION BY repair_S4_docu.rb
 \docType{methods}
 \alias{subset-methods}
 \alias{subset,OPMS-method}
+\alias{thin_out-methods}
+\alias{thin_out,OPM-method}
+\alias{thin_out,OPMS-method}
 \usage{
   \S4method{subset}{OPMS}(x, query, values = TRUE,
     invert = FALSE, exact = FALSE, time = FALSE,
@@ -162,4 +200,7 @@ stopifnot(dim(y)[3] > dim(x)[3])
     negative = c("ignore", "any", "all"),
     use = c("i", "I", "k", "K", "n", "N", "p", "P", "q", "Q", "t", "T")) 
 
+  \S4method{thin_out}{OPM}(object, factor, drop = FALSE) 
+  \S4method{thin_out}{OPMS}(object, ...) 
 }
+%% END INSERTION BY repair_S4_docu.rb

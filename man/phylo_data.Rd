@@ -2,31 +2,33 @@
 \alias{phylo_data}
 \title{Export phylogenetic data}
 \arguments{
-  \item{object}{Data frame, numeric matrix or \sQuote{OPMS}
-  object (with aggregated values). Currently only
-  \sQuote{integer}, \sQuote{logical}, \sQuote{double} and
-  \sQuote{character} matrix content is supported. The
-  data-frame and \sQuote{OPMS} methods first call
-  \code{\link{extract}} and then the matrix method. The
-  methods for \sQuote{OPMD_Listing} and
-  \sQuote{OPMS_Listing} objects can be applied to the
-  results of \code{\link{listing}}.}
+  \item{object}{Data frame, numeric matrix or
+  \code{\link{OPMS}} object (with aggregated values).
+  Currently only \sQuote{integer}, \sQuote{logical},
+  \sQuote{double} and \sQuote{character} matrix content is
+  supported. The data-frame and \code{\link{OPMS}} methods
+  first call \code{\link{extract}} and then the matrix
+  method. The methods for \code{OPMD_Listing} and
+  \code{OPMS_Listing} objects can be applied to the results
+  of \code{\link{listing}}.}
 
   \item{format}{Character scalar determining the output
-  format, either \sQuote{epf} (Extended Phylip Format),
-  \sQuote{nexus}, \sQuote{phylip}, \sQuote{hennig} or
-  \sQuote{html}.
+  format, either \kbd{epf} (Extended \acronym{PHYLIP}
+  Format), \kbd{nexus}, \kbd{phylip}, \kbd{hennig} or
+  \kbd{html}.
 
-  If \sQuote{nexus} or \sQuote{hennig} format are chosen, a
+  If \acronym{NEXUS} or \sQuote{Hennig} format is chosen, a
   non-empty \code{comment} attribute will be output
   together with the data (and appropriately escaped). In
-  case of \sQuote{html} format, a non-empty \code{comment}
+  case of \acronym{HTML} format, a non-empty \code{comment}
   yields the title of the HTML document.
 
-  The main difference between \sQuote{epf} and
-  \sQuote{phylip} is that the former can use labels with
+  \acronym{EPF} or \sQuote{extended \acronym{PHYLIP}} is
+  sometimes called \sQuote{relaxed \acronym{PHYLIP}}. The
+  main difference between \acronym{EPF} and
+  \acronym{PHYLIP} is that the former can use labels with
   more than ten characters, but its labels must not contain
-  whitespace. (These adaptations are done automatically
+  whitespace.  (These adaptations are done automatically
   with \code{\link{safe_labels}}.)}
 
   \item{outfile}{Character scalar. If a non-empty character
@@ -37,8 +39,8 @@
   in single quotes?  Ignored unless \code{format} is
   \sQuote{nexus}.}
 
-  \item{indent}{Integer scalar. Indentation of subcommands
-  in NEXUS format.  Ignored unless \code{format} is
+  \item{indent}{Integer scalar. Indentation of commands in
+  NEXUS format.  Ignored unless \code{format} is
   \sQuote{nexus} (and a matter of taste anyway).}
 
   \item{paup.block}{Logical scalar. Append a
@@ -55,7 +57,7 @@
   at least one single field) are removed.}
   \item{constant}{Columns which are constant in the strict
   sense are removed.} } \code{delete} is currently ignored
-  for formats other than \sQuote{html}, and note that
+  for formats other than \acronym{HTML}, and note that
   columns become rows in the final \acronym{HTML} output.}
 
   \item{join}{Logical scalar, vector or factor. Unless
@@ -66,8 +68,8 @@
   same organism or treatment.}
 
   \item{cutoff}{Numeric scalar. If joining results in
-  multi-state characters, they can be filtered by removing
-  all entries with a relative frequency less than
+  multiple-state characters, they can be filtered by
+  removing all entries with a relative frequency less than
   \sQuote{cutoff}. Makes not much sense for non-integer
   numeric data.}
 
@@ -93,29 +95,33 @@
 
   \item{run.tidy}{Logical scalar. Filter the resulting
   \acronym{HTML} through the Tidy program? Ignored unless
-  \code{format} is \sQuote{html}. Otherwise, if
-  \code{TRUE}, it is an error if the Tidy executable is not
-  found.}
+  \code{format} is \kbd{html}. Otherwise, if \code{TRUE},
+  it is an error if the Tidy executable is not found.}
 
-  \item{as.labels}{Vector of data-frame indices or
-  \sQuote{OPMS} metadata entries. See
+  \item{as.labels}{Vector of data-frame indexes or
+  \code{\link{OPMS}} metadata entries. See
   \code{\link{extract}}.}
 
-  \item{what}{Character scalar. See \code{\link{extract}}.}
+  \item{what}{Character scalar. See \code{\link{extract}}.
+  Deprecated; use \code{subset} instead.}
 
   \item{sep}{Character scalar. See \code{\link{extract}}.}
 
-  \item{subset}{Character scalar passed to the
-  \sQuote{OPMS} method of \code{\link{extract}}.}
+  \item{subset}{Character scalar. For the
+  \code{\link{OPMS}} method, passed to the
+  \code{\link{OPMS}} method of \code{\link{extract}}. For
+  the data-frame method, a selection of column classes to
+  extract.}
 
   \item{extract.args}{Optional list of arguments passed to
   that method.}
 
   \item{discrete.args}{Optional list of arguments passed
-  from the \sQuote{OPMS} method to \code{\link{discrete}}.
-  If set to \code{NULL}, discretization is turned off.
-  Ignored if precomputed discretized values are chosen by
-  setting \code{subset} to \sQuote{disc}.}
+  from the \code{\link{OPMS}} method to
+  \code{\link{discrete}}. If set to \code{NULL},
+  discretisation is turned off. Ignored if precomputed
+  discretised values are chosen by setting \code{subset} to
+  \code{\link{param_names}("disc.name")}.}
 
   \item{...}{Optional arguments passed between the methods
   (i.e., from the other methods to the matrix method) or to
@@ -138,22 +144,24 @@
   taxonomic journals such as \acronym{IJSEM}.
 }
 \details{
-  Exporting PM data in such formats allows one to either
-  infer trees from the data under the maximum-likelihood
-  and/or the maximum-parsimony criterion, or to reconstruct
-  the evolution of PM characters on given phylogenetic
-  trees, or to nicely display the data in \acronym{HTML}
-  format.
+  Exporting \acronym{PM} data in such formats allows one to
+  either infer trees from the data under the
+  maximum-likelihood and/or the maximum-parsimony
+  criterion, or to reconstruct the evolution of
+  \acronym{PM} characters on given phylogenetic trees, or
+  to nicely display the data in \acronym{HTML} format.
 
   For exporting NEXUS format, the matrix should normally be
   converted beforehand by applying \code{\link{discrete}}.
-  Exporting \acronym{HTML} is optimized for data
-  discretized with \code{gap} set to \code{TRUE}. For other
+  Exporting \acronym{HTML} is optimised for data
+  discretised with \code{gap} set to \code{TRUE}. For other
   data, the \code{character.states} argument should be
-  modified, see \code{\link{html_args}}. The
-  \sQuote{hennig} (Hennig86) format is the one used by
-  \acronym{TNT}; it allows continuous characters to be
-  analysed as such.
+  modified, see \code{\link{html_args}}. The \kbd{hennig}
+  (Hennig86) format is the one used by \acronym{TNT}; it
+  allows continuous characters to be analysed as such.
+  Regarding the meaning of \sQuote{character} as used here,
+  see the \sQuote{Details} section of
+  \code{\link{discrete}}.
 
   The generated \acronym{HTML} is guaranteed to produce
   neither errors nor warnings if checked using the Tidy
@@ -167,16 +175,9 @@
   files that come with the package, see the examples below
   and \code{\link{opm_files}}.
 }
-\note{
-  \itemize{ \item Regarding the meaning of
-  \sQuote{character} as used here, see the \sQuote{Details}
-  section of \code{\link{discrete}}.  \item \sQuote{epf} or
-  \sQuote{extended PHYLIP} is sometimes called
-  \sQuote{relaxed PHYLIP}. }
-}
 \examples{
 # simple helper functions
-echo <- function(x) write(substring(x, 1, 250), file = "")
+echo <- function(x) write(substr(x, 1, 250), file = "")
 is_html <- function(x) is.character(x) &&
   c("<html>", "<head>", "<body>", "</html>", "</head>", "</body>") \%in\% x
 longer <- function(x, y) any(nchar(x) > nchar(y)) &&
@@ -190,7 +191,7 @@ rownames(x) <- c("Ahoernchen", "Behoernchen") # Chip and Dale in German
 # EPF is a comparatively restricted format
 echo(y.epf <- phylo_data(x, format = "epf"))
 stopifnot(is.character(y.epf), length(y.epf) == 3)
-stopifnot(identical(y.epf, phylo_data(as.data.frame(x), what = "factor",
+stopifnot(identical(y.epf, phylo_data(as.data.frame(x), subset = "factor",
   format = "epf")))
 
 # PHYLIP is even more restricted (shorter labels!)
@@ -222,14 +223,13 @@ echo(y.hennig <- phylo_data(x, format = "hennig"))
 stopifnot(identical(length(y.hennig), hennig.len.1 - 1L))
 
 ## examples with real data and HTML
-data(vaas_4)
 
 # setting the CSS file that comes with opm as default
-opm_opt(css.file = grep("[.]css$", opm_files("auxiliary"), value = TRUE))
+opm_opt(css.file = opm_files("css")[[1]])
 
 # see discrete() for the conversion and note the OPMS example below: one
 # could also get the results directly from OPMS objects
-x <- extract(vaas_4, as.labels = list("Species", "Strain"),
+x <- extract(vaas_4[, , 1:10], as.labels = list("Species", "Strain"),
   in.parens = FALSE)
 x <- discrete(x, range = TRUE, gap = TRUE)
 echo(y <- phylo_data(x, format = "html",
@@ -240,7 +240,8 @@ stopifnot(is_html(y))
 
 # now with joining of the results per species (and changing the organism
 # description accordingly)
-x <- extract(vaas_4, as.labels = list("Species"), in.parens = FALSE)
+x <- extract(vaas_4[, , 1:10], as.labels = list("Species"),
+  in.parens = FALSE)
 x <- discrete(x, range = TRUE, gap = TRUE)
 echo(y <- phylo_data(x, format = "html", join = TRUE,
   html.args = html_args(organisms.start = "Species: ")))
@@ -252,15 +253,15 @@ stopifnot(is_html(y))
 # distinct between all organisms.
 
 # 'OPMS' method, yielding the same results than above but directly
-echo(yy <- phylo_data(vaas_4, as.labels = "Species", format = "html",
-  join = TRUE, extract.args = list(in.parens = FALSE),
+echo(yy <- phylo_data(vaas_4[, , 1:10], as.labels = "Species",
+  format = "html", join = TRUE, extract.args = list(in.parens = FALSE),
   html.args = html_args(organisms.start = "Species: ")))
 # the timestamps might differ, but otherwise the result is as above
 stopifnot(length(y) == length(yy) && length(which(y != yy)) < 2)
 
 # appending user-defined sections
-echo(yy <- phylo_data(vaas_4, as.labels = "Species", format = "html",
-  join = TRUE, extract.args = list(in.parens = FALSE),
+echo(yy <- phylo_data(vaas_4[, , 1:10], as.labels = "Species",
+  format = "html", join = TRUE, extract.args = list(in.parens = FALSE),
   html.args = html_args(organisms.start = "Species: ",
   append = list(section.1 = "additional text", section.2 = "more text"))))
 stopifnot(length(y) < length(yy), length(which(!y \%in\% yy)) < 2)
@@ -279,21 +280,21 @@ stopifnot(longer(y, y.nouninf))
 echo(y.noconst <- phylo_data(x, "html", delete = "const", join = TRUE))
 stopifnot(longer(y.noconst, y.nouninf))
 
-# getting real numbers, not discretized ones
-echo(yy <- phylo_data(vaas_4, as.labels = "Species", format = "html",
-  join = TRUE, extract.args = list(in.parens = FALSE), subset = "A",
-  discrete.args = NULL,
+# getting real numbers, not discretised ones
+echo(yy <- phylo_data(vaas_4[, , 1:10], as.labels = "Species",
+  format = "html", join = TRUE, extract.args = list(in.parens = FALSE),
+  subset = "A", discrete.args = NULL,
   html.args = html_args(organisms.start = "Species: ")))
 stopifnot(is_html(yy), length(yy) == length(y) - 1) # no symbols list
 # the highlighting is also used here, based on the following heuristic:
 # if mean+/-2*sd does not overlap, the character is informative; else
 # if mean+/-sd does not overlap, the character is uninformative; otherwise
-# is is constant
+# it is constant
 
 # this can also be used for formats other than HTML (but not all make sense)
-echo(yy <- phylo_data(vaas_4, as.labels = "Species", format = "hennig",
-  join = TRUE, extract.args = list(in.parens = FALSE), subset = "A",
-  discrete.args = NULL))
+echo(yy <- phylo_data(vaas_4[, , 1:10], as.labels = "Species",
+  format = "hennig", join = TRUE, extract.args = list(in.parens = FALSE),
+  subset = "A", discrete.args = NULL))
 stopifnot(is.character(yy), length(yy) > 10)
 
 ## 'OPMD_Listing' method
@@ -326,7 +327,7 @@ stopifnot(is.character(x), length(x) > 2, is.null(names(x)))
   \strong{24}, 774--786 [the TNT program].
 
   Goloboff, P.A., Mattoni, C., Quinteros, S. 2005
-  Continuous characters analyzed as such. \emph{Cladistics}
+  Continuous characters analysed as such. \emph{Cladistics}
   \strong{22}, 589--601.
 
   Maddison, D. R., Swofford, D. L., Maddison, W. P. 1997
@@ -358,32 +359,29 @@ stopifnot(is.character(x), length(x) > 2, is.null(names(x)))
 \keyword{character}
 \keyword{cluster}
 
+%% BEGIN INSERTION BY repair_S4_docu.rb
 \docType{methods}
 \alias{phylo_data-methods}
-\alias{phylo_data,matrix-method}
-\alias{phylo_data,data.frame-method}
-\alias{phylo_data,OPMS-method}
 \alias{phylo_data,OPMD_Listing-method}
+\alias{phylo_data,OPMS-method}
 \alias{phylo_data,OPMS_Listing-method}
+\alias{phylo_data,data.frame-method}
+\alias{phylo_data,matrix-method}
 \usage{
+  \S4method{phylo_data}{OPMD_Listing}(object,
+    html.args = html_args(), run.tidy = FALSE) 
+  \S4method{phylo_data}{OPMS}(object, as.labels,
+    subset = param_names("disc.name"), sep = " ", extract.args = list(),
+    join = TRUE, discrete.args = list(range = TRUE, gap = TRUE), ...) 
+  \S4method{phylo_data}{OPMS_Listing}(object,
+    html.args = html_args(), run.tidy = FALSE) 
+  \S4method{phylo_data}{data.frame}(object, as.labels = NULL,
+    subset = what, sep = " ", what = "numeric", ...) 
   \S4method{phylo_data}{matrix}(object,
     format = opm_opt("phylo.fmt"), outfile = "", enclose = TRUE, indent = 3L,
     paup.block = FALSE, delete = c("none", "uninf", "constant", "ambig"),
     join = FALSE, cutoff = 0, digits = opm_opt("digits"),
     comments = comment(object), html.args = html_args(),
     prefer.char = format == "html", run.tidy = FALSE, ...) 
-
-  \S4method{phylo_data}{data.frame}(object, as.labels = NULL,
-    what = "numeric", sep = " ", ...) 
-
-  \S4method{phylo_data}{OPMS}(object, as.labels, subset = "disc",
-    sep = " ", extract.args = list(), join = TRUE,
-    discrete.args = list(range = TRUE, gap = TRUE), ...) 
-
-  \S4method{phylo_data}{OPMD_Listing}(object,
-    html.args = html_args(), run.tidy = FALSE) 
-
-  \S4method{phylo_data}{OPMS_Listing}(object,
-    html.args = html_args(), run.tidy = FALSE) 
-
 }
+%% END INSERTION BY repair_S4_docu.rb

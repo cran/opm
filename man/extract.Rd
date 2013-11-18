@@ -1,12 +1,14 @@
 \name{extract}
 \alias{extract}
-\title{Extract aggregated values}
+\alias{extract_columns}
+\title{Extract aggregated values and/or metadata}
 \arguments{
-  \item{object}{\code{\link{OPMS}} object or data frame
-  with one column named as indicated by \code{split.at}
-  (default given by \code{\link{param_names}("split.at")}),
-  columns with factor variables before that column and
-  columns with numeric vectors after that column.}
+  \item{object}{\code{\link{OPMS}} object or data frame,
+  for \code{extract} with one column named as indicated by
+  \code{split.at} (default given by
+  \code{\link{param_names}("split.at")}), columns with
+  factor variables before that column and columns with
+  numeric vectors after that column.}
 
   \item{as.labels}{List, character vector or formula
   indicating the metadata to be joined and used as row
@@ -20,8 +22,10 @@
   much like \code{as.groups}.}
 
   \item{subset}{Character vector. The parameter(s) to put
-  in the matrix. If it is \sQuote{disc}, discretized data
-  are returned, and \code{ci} is ignored.}
+  in the matrix. One of the values of
+  \code{\link{param_names}()}. Alternatively, if it is
+  \code{\link{param_names}("disc.name")}, discretised data
+  are returned, and \code{ci} is ignored..}
 
   \item{ci}{Logical scalar. Also return the confidence
   intervals?}
@@ -59,19 +63,24 @@
   If \code{FALSE}, such an aggregation does not take place.
   If \code{TRUE}, all those columns are used for grouping.}
 
-  \item{sep}{Character scalar. See
-  \code{\link{extract_columns}}.}
+  \item{sep}{Character scalar. Used as separator between
+  the distinct metadata entries if these are to be pasted
+  together. \code{extract_columns} ignores this unless
+  \code{join} is \code{TRUE}. The data-frame method always
+  joins the data unless \code{what} is a list.}
 
-  \item{dups}{Character scalar. See
-  \code{\link{extract_columns}}. For the data-frame method,
-  a character scalar defining the action to conduct if
-  \code{as.groups} contains duplicates.}
+  \item{dups}{Character scalar specifying what to do in the
+  case of duplicate labels: either \sQuote{warn},
+  \sQuote{error} or \sQuote{ignore}. Ignored unless
+  \code{join} is \code{TRUE}. For the data-frame method of
+  \code{extract}, a character scalar defining the action to
+  conduct if \code{as.groups} contains duplicates.}
 
-  \item{exact}{Logical scalar. See
-  \code{\link{extract_columns}}.}
+  \item{exact}{Logical scalar. Passed to
+  \code{\link{metadata}}.}
 
-  \item{strict}{Logical scalar. See
-  \code{\link{extract_columns}}.}
+  \item{strict}{Logical scalar. Also passed to
+  \code{\link{metadata}}.}
 
   \item{full}{Logical scalar indicating whether full
   substrate names shall be used. This is passed to
@@ -86,11 +95,11 @@
   \code{\link{wells}}.}
 
   \item{norm.per}{Character scalar indicating the presence
-  and direction of a normalization step.  \describe{
-  \item{none}{No normalization.} \item{row}{Normalization
+  and direction of a normalisation step.  \describe{
+  \item{none}{No normalisation.} \item{row}{Normalisation
   per row. By default, this would subtract the mean of each
   plate from each of its values (over all wells of that
-  plate).} \item{column}{Normalization per column. By
+  plate).} \item{column}{Normalisation per column. By
   default, this would subtract the mean of each well from
   each of its values (over all plates in which this well is
   present).} } This step can further by modified by the
@@ -98,44 +107,97 @@
 
   \item{norm.by}{Vector indicating which wells (columns) or
   plates (rows) are used to calculate means used for the
-  normalization. By default, the mean is calculated over
-  all rows or columns if normalization is requested using
+  normalisation. By default, the mean is calculated over
+  all rows or columns if normalisation is requested using
   \code{norm.per}. But if \code{direct} is \code{TRUE},
   \code{norm.by} is directly interpreted as numeric vector
-  used for normalization.}
+  used for normalisation.}
 
-  \item{direct}{Logical scalar indicating how to use
-  \code{norm.by}. See there for details.}
+  \item{direct}{Logical scalar. For \code{extract},
+  indicating how to use \code{norm.by}. See there for
+  details. For \code{extract_columns}, indicating whether
+  to extract column names directly, or search for columns
+  of one to several given classes.}
 
   \item{subtract}{Logical scalar indicating whether
-  normalization (if any) is done by subtracting or
+  normalisation (if any) is done by subtracting or
   dividing.}
 
   \item{split.at}{Character vector defining alternative
   names of the column at which the data frame shall be
   divided. Exactly one must match.}
+
+  \item{what}{For the \code{\link{OPMS}} method, a list of
+  metadata keys to consider, or single such key; passed to
+  \code{\link{metadata}}. A formula is also possible; see
+  there for details. A peculiarity of
+  \code{extract_columns} is that including \code{J} as a
+  pseudo-function call in the formula triggers the
+  combination of metadata entries to new factors
+  immediately after selecting them, as long as \code{join}
+  is \code{FALSE}.
+
+  For the data-frame method, just the names of the columns
+  to extract, or their indexes, as vector, if \code{direct}
+  is \code{TRUE}. Alternatively, the name of the class to
+  extract from the data frame to form the matrix values.
+
+  In the \sQuote{direct} mode, \code{what} can also be a
+  named list of vectors used for indexing. In that case a
+  data frame is returned that contains the columns from
+  \code{object} together with new columns that result from
+  pasting the selected columns together.}
+
+  \item{join}{Logical scalar. Join each row together to
+  yield a character vector? Otherwise it is just attempted
+  to construct a data frame.}
+
+  \item{factors}{Logical scalar determining whether strings
+  should be converted to factors. Note that this would only
+  affect newly created data-frame columns.}
 }
 \value{
-  Numeric matrix or data frame; always a data frame for the
-  data-frame method with the same column structure as
-  \code{object} and, if grouping was used, a triplet
-  structure of the rows, as indicated in the new
-  \code{split.at} column: (i) group mean, (ii) lower and
-  (iii) upper boundary of the group confidence interval.
-  The data could then be visualized using
+  Numeric matrix or data frame from \code{extract}; always
+  a data frame for the data-frame method with the same
+  column structure as \code{object} and, if grouping was
+  used, a triplet structure of the rows, as indicated in
+  the new \code{split.at} column: (i) group mean, (ii)
+  lower and (iii) upper boundary of the group confidence
+  interval. The data could then be visualised using
   \code{\link{ci_plot}}. See the examples.
+
+  For the \code{OPMS} method of \code{extract_columns}, a
+  data frame or character vector, depending on the
+  \code{join} argument. The data-frame method of
+  \code{extract_columns} returns a character vector or a
+  data frame, too, but depending on the \code{what}
+  argument.
 }
 \description{
-  Extract selected aggregated and/or discretized values
-  into common matrix or data frame. The data-frame method
-  conducts normalisation and/or computes normalized
-  point-estimates and respective confidence intervals for
-  user-defined experimental groups. It is mainly a helper
-  function for \code{\link{ci_plot}}.
+  Extract selected aggregated and/or discretised values
+  into common matrix or data frame. The \code{extract}
+  data-frame method conducts normalisation and/or computes
+  normalised point-estimates and respective confidence
+  intervals for user-defined experimental groups. It is
+  mainly a helper function for \code{\link{ci_plot}}.
+  \code{extract_columns} extracts only selected metadata
+  entries for use as additional columns in a data frame or
+  (after joining) as character vector with labels.
+}
+\details{
+  \code{extract_columns} is not normally directly called by
+  an \pkg{opm} user because \code{extract} is available,
+  which uses this function, but can be used for testing the
+  applied metadata selections beforehand.
+
+  The \code{extract_columns} data-frame method is partially
+  trivial (extract the selected columns and join them to
+  form a character vector or new data-frame columns),
+  partially more useful (extract columns with data of a
+  specified class).
 }
 \examples{
 ## 'OPMS' method
-data(vaas_4)
 opm_opt("curve.param") # default parameter
 
 # generate matrix (containing the parameter given above)
@@ -163,8 +225,9 @@ x <- lapply(param_names(), function(name) extract(vaas_4, subset = name,
   as.labels = list("Species", "Strain"), dataframe = TRUE))
 x <- do.call(rbind, x)
 
-# get discretized data
-(x <- extract(vaas_4, subset = "disc", as.labels = list("Strain")))[, 1:3]
+# get discretised data
+(x <- extract(vaas_4, subset = param_names("disc.name"),
+  as.labels = list("Strain")))[, 1:3]
 stopifnot(is.matrix(x), identical(dim(x), c(4L, 96L)), is.logical(x))
 
 ## data-frame method
@@ -194,6 +257,39 @@ y <- extract(x, as.groups = "Species",  norm.per = "row", norm.by = 10,
   subtract = TRUE)
 # plotting using ci_plot()
 ci_plot(y[, c(1:6, 12)], legend.field = NULL, x = 0, y = 0)
+
+## extract_columns()
+
+# 'OPMS' method
+
+# Create data frame
+(x <- extract_columns(vaas_4, what = list("Species", "Strain")))
+stopifnot(is.data.frame(x), dim(x) == c(4, 2))
+(y <- extract_columns(vaas_4, what = ~ Species + Strain))
+stopifnot(identical(x, y)) # same result using a formula
+(y <- extract_columns(vaas_4, what = ~ J(Species + Strain)))
+stopifnot(is.data.frame(y), dim(y) == c(4, 3)) # additional column created
+stopifnot(identical(x, y[, -3]))
+
+# Create a character vector
+(x <- extract_columns(vaas_4, what = list("Species", "Strain"), join = TRUE))
+stopifnot(is.character(x), length(x) == 4L)
+(x <- try(extract_columns(vaas_4, what = list("Species"), join = TRUE,
+  dups = "error"), silent = TRUE)) # duplicates yield error
+stopifnot(inherits(x, "try-error"))
+(x <- try(extract_columns(vaas_4, what = list("Species"), join = TRUE,
+  dups = "warn"), silent = TRUE)) # duplicates yield warning only
+stopifnot(is.character(x), length(x) == 4L)
+
+# data-frame method, 'direct' running mode
+x <- data.frame(a = 1:26, b = letters, c = LETTERS)
+(y <- extract_columns(x, I(c("a", "b")), sep = "-"))
+stopifnot(grepl("^\\\s*\\\d+-[a-z]$", y)) # pasted columns 'a' and 'b'
+
+# data-frame method, using class name
+(y <- extract_columns(x, as.labels = "b", what = "integer", as.groups = "c"))
+stopifnot(is.matrix(y), dim(y) == c(26, 1), rownames(y) == x$b)
+stopifnot(identical(attr(y, "row.groups"), x$c))
 }
 \author{
   Lea A.I. Vaas, Markus Goeker
@@ -203,33 +299,41 @@ ci_plot(y[, c(1:6, 12)], legend.field = NULL, x = 0, y = 0)
   values from a single \code{OPMA} objects.
 
   boot::norm base::data.frame base::as.data.frame
-  base::matrix base::as.matrix
+  base::matrix base::as.matrix base::cbind
 
   Other conversion-functions: \code{\link{as.data.frame}},
-  \code{\link{extract_columns}}, \code{\link{flatten}},
-  \code{\link{gen_iii}}, \code{\link{merge}},
+  \code{\link{flatten}}, \code{\link{merge}},
   \code{\link{oapply}}, \code{\link{plates}},
   \code{\link{rep}}, \code{\link{rev}}, \code{\link{sort}},
-  \code{\link{thin_out}}, \code{\link{to_yaml}},
-  \code{\link{unique}}
+  \code{\link{to_yaml}}, \code{\link{unique}}
 }
 \keyword{dplot}
 \keyword{htest}
 \keyword{manip}
 
+%% BEGIN INSERTION BY repair_S4_docu.rb
 \docType{methods}
 \alias{extract-methods}
 \alias{extract,OPMS-method}
 \alias{extract,data.frame-method}
+\alias{extract_columns-methods}
+\alias{extract_columns,OPMS-method}
+\alias{extract_columns,data.frame-method}
 \usage{
   \S4method{extract}{OPMS}(object, as.labels,
     subset = opm_opt("curve.param"), ci = FALSE, trim = "full",
     dataframe = FALSE, as.groups = NULL, sep = " ", dups = "warn",
     exact = TRUE, strict = TRUE, full = TRUE, max = 10000L, ...) 
-
   \S4method{extract}{data.frame}(object, as.groups = TRUE,
     norm.per = c("row", "column", "none"), norm.by = TRUE, subtract = TRUE,
     direct = inherits(norm.by, "AsIs"), dups = c("warn", "error", "ignore"),
     split.at = param_names("split.at")) 
 
+  \S4method{extract_columns}{OPMS}(object, what, join = FALSE,
+    sep = " ", dups = c("warn", "error", "ignore"), factors = TRUE,
+    exact = TRUE, strict = TRUE) 
+  \S4method{extract_columns}{data.frame}(object, what,
+    as.labels = NULL, as.groups = NULL, sep = opm_opt("comb.value.join"),
+    factors = is.list(what), direct = inherits(what, "AsIs")) 
 }
+%% END INSERTION BY repair_S4_docu.rb

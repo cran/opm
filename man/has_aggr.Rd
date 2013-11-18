@@ -1,6 +1,7 @@
 \name{has_aggr}
 \alias{has_aggr}
-\title{Are aggregated data present?}
+\alias{has_disc}
+\title{Are aggregated or discretised data present?}
 \arguments{
   \item{object}{\code{\link{OPM}} or \code{\link{OPMS}}
   object.}
@@ -12,21 +13,15 @@
   Logical vector, one element per plate.
 }
 \description{
-  Check whether aggregated data are present. This always
-  returns \code{FALSE} for the \code{\link{OPM}} class, but
-  not necessarily for its child classes.
-}
-\note{
-  See \code{\link{do_aggr}} for generating aggregated data.
+  Check whether aggregated or discretised data are present.
+  (See \code{\link{do_aggr}} and \code{\link{do_disc}} for
+  generating such data.) This always returns \code{FALSE}
+  for the \code{\link{OPM}} class, but not necessarily for
+  its child classes.
 }
 \examples{
-# 'OPM' method
-data(vaas_1)
-stopifnot(has_aggr(vaas_1))
-
-# 'OPMS' method
-data(vaas_4)
-stopifnot(has_aggr(vaas_4))
+stopifnot(has_aggr(vaas_1), has_disc(vaas_1)) # OPM methods
+stopifnot(has_aggr(vaas_4), has_disc(vaas_4)) # OPMS methods
 }
 \seealso{
   Other getter-functions: \code{\link{aggr_settings}},
@@ -34,24 +29,31 @@ stopifnot(has_aggr(vaas_4))
   \code{\link{csv_data}}, \code{\link{dim}},
   \code{\link{disc_settings}}, \code{\link{discretized}},
   \code{\link{duplicated}}, \code{\link{filename}},
-  \code{\link{has_disc}}, \code{\link{hours}},
-  \code{\link{length}}, \code{\link{max}},
-  \code{\link{measurements}}, \code{\link{metadata}},
-  \code{\link{minmax}}, \code{\link{plate_type}},
+  \code{\link{hours}}, \code{\link{max}},
+  \code{\link{measurements}}, \code{\link{minmax}},
   \code{\link{position}}, \code{\link{seq}},
   \code{\link{setup_time}}, \code{\link{subset}},
-  \code{\link{summary}}, \code{\link{well}},
-  \code{\link{wells}}
+  \code{\link{thin_out}}, \code{\link{well}}
 }
 \keyword{attribute}
 
+%% BEGIN INSERTION BY repair_S4_docu.rb
 \docType{methods}
 \alias{has_aggr-methods}
+\alias{has_aggr,MOPMX-method}
 \alias{has_aggr,OPM-method}
 \alias{has_aggr,OPMS-method}
+\alias{has_disc-methods}
+\alias{has_disc,MOPMX-method}
+\alias{has_disc,OPM-method}
+\alias{has_disc,OPMS-method}
 \usage{
+  \S4method{has_aggr}{MOPMX}(object, ...) 
   \S4method{has_aggr}{OPM}(object) 
-
   \S4method{has_aggr}{OPMS}(object, ...) 
 
+  \S4method{has_disc}{MOPMX}(object, ...) 
+  \S4method{has_disc}{OPM}(object) 
+  \S4method{has_disc}{OPMS}(object, ...) 
 }
+%% END INSERTION BY repair_S4_docu.rb

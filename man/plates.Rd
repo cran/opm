@@ -74,7 +74,8 @@ stopifnot(is.list(x), length(x) == 4, sapply(x, class) == "OPMD")
   \code{\link{extract}}, \code{\link{extract_columns}},
   \code{\link{flatten}}, \code{\link{merge}},
   \code{\link{rep}}, \code{\link{rev}}, \code{\link{sort}},
-  \code{\link{to_yaml}}, \code{\link{unique}}
+  \code{\link{split}}, \code{\link{to_yaml}},
+  \code{\link{unique}}
 }
 \keyword{attribute}
 \keyword{manip}

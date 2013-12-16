@@ -1,3 +1,18 @@
+2013-12-08 (the 12th release on CRAN)
+
+- corrected the dependency on R to '>= 3.0.0' (as noted by the CRAN team)
+- use of the 'direct' argument of extract_columns() improved
+- minor changes in the colour assignment of radial_plot(), some improvements
+  of the documentation and of the corresponding chapter in the vignette 
+- new parallelplot() methods
+- as.data.frame() gets new arguments 'csv.data', 'settings', 'normalize' and
+  'include'
+- new OPM method for extract_columns()
+- substrate_info() gets a 'peptide' mode
+
+
+################################################################################
+
 
 2013-11-18 (the 11th release on CRAN)
 

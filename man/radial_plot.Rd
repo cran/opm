@@ -28,35 +28,45 @@
   the \code{\link{OPMS}} method of \code{\link{extract}}.
   Currently ignored by the other methods.}
 
-  \item{rp.type}{Character vector. These and the following
-  arguments are passed to \code{plotrix::radial.plot}. See
-  there for details.}
+  \item{rp.type}{Character scalar. Among the possible
+  values \sQuote{p} for polygons, \sQuote{s} for symbols
+  and \sQuote{r} for radial lines, the latter is not
+  recommended. These and the following arguments are passed
+  to \code{plotrix::radial.plot}. See there for details.}
 
-  \item{radlab}{Logical scalar.}
+  \item{radlab}{Logical scalar. Rotation of the outer
+  labels to a radial orientation might safe some space in
+  the graphic.}
 
   \item{show.centroid}{Logical scalar.}
 
-  \item{show.grid.labels}{Logical scalar.}
+  \item{show.grid.labels}{Logical scalar. Indicates whether
+  and where display labels for the grid are shown.}
 
-  \item{lwd}{Numeric scalar.}
+  \item{lwd}{Numeric scalar for the line width.}
 
-  \item{mar}{Numeric vector of length 4.}
+  \item{mar}{Numeric vector of length 4 determining the
+  margins of the plot.}
 
-  \item{line.col}{Character or numeric vector.}
+  \item{line.col}{Character or numeric vector for
+  determining the line colour.}
 
-  \item{point.symbols}{Passed to \code{radial.plot} from
-  the \pkg{plotrix} package. See there for details.
-  Explicitly provided here to silence some
-  \code{radial.plot} warnings occurring as of \R 3.0.0.}
+  \item{point.symbols}{Like the following arguments, passed
+  to \code{radial.plot} from the \pkg{plotrix} package. See
+  there for details.  Explicitly provided here to silence
+  some \code{radial.plot} warnings occurring as of \R
+  3.0.0.}
 
-  \item{point.col}{Also passed to that function.}
+  \item{point.col}{Indicates the colour(s) of the symbols.}
 
-  \item{poly.col}{Also passed to that function.}
+  \item{poly.col}{Indicates the colour for filling the
+  drawn polygons, if any.  Use \code{NA} for no fill
+  (recommended).}
 
-  \item{main}{Also passed to that function.}
+  \item{main}{The main title of the plot.}
 
-  \item{...}{Optional other arguments passed to that
-  function.}
+  \item{...}{Optional other arguments passed to
+  \code{radial.plot} from the \pkg{plotrix} package.}
 
   \item{draw.legend}{Logical scalar. Whether to draw a
   legend. Ignored unless \code{object} has row names
@@ -102,9 +112,14 @@
 data("vaas_4")
 
 ## 'OPMS' method
-# note that we have to use only a subset of the wells for plotting
+# Note that this visualization is not useful when applied to too many wells.
+# Thus, we here use only a subset of the wells for plotting.
 (y <- radial_plot(vaas_4[, , 1:5], as.labels = list("Species", "Strain"),
-  main = "Test"))
+  main = "Test", x = 200, y = 200))
+
+# with some fine tuning; note the centroids
+(y <-radial_plot(vaas_4[, , 1:5], as.labels = list("Species", "Strain"),
+  main = "Test", x = 200, y = 200, rp.type = "s", show.centroid = TRUE))
 
 ## Data-frame method (rarely needed)
 x <- extract(vaas_4, as.labels = list("Species", "Strain"), dataframe = TRUE)
@@ -124,7 +139,8 @@ stopifnot(is.character(yy), names(yy) == rownames(x))
 
   Other plotting-functions: \code{\link{ci_plot}},
   \code{\link{heat_map}}, \code{\link{level_plot}},
-  \code{\link{summary}}, \code{\link{xy_plot}}
+  \code{\link{parallelplot}}, \code{\link{summary}},
+  \code{\link{xy_plot}}
 }
 \keyword{hplot}
 
@@ -144,7 +160,7 @@ stopifnot(is.character(yy), names(yy) == rownames(x))
     radlab = FALSE, show.centroid = TRUE, show.grid.labels = 1, lwd = 3,
     mar = c(2, 2, 2, 2), line.col = opm_opt("colors"), draw.legend = TRUE,
     x = "bottom", y = NULL, xpd = TRUE, pch = 15, legend.args = list(),
-    point.symbols = NA, point.col = NA, poly.col = NA,
+    point.symbols = 15, point.col = opm_opt("colors"), poly.col = NA,
     main = paste0(as.labels, sep = sep), ...) 
 }
 %% END INSERTION BY repair_S4_docu.rb

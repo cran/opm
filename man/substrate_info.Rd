@@ -32,7 +32,11 @@
   conducting \acronym{PubMed} searches), optionally
   expanded to an \acronym{URL}.}
   \item{metacyc}{\acronym{MetaCyc} database ID, optionally
-  expanded to an \acronym{URL}.} } See the references for
+  expanded to an \acronym{URL}.} \item{peptide}{List of
+  character vectors representing amino acids in
+  three-letter code, in order, contained in the substrate
+  if it is a peptide. Empty character vectors are returned
+  for non-peptide substrates.} } See the references for
   information on the databases.}
 
   \item{browse}{Numeric scalar. If non-zero, an
@@ -127,6 +131,10 @@ stopifnot(nchar(x) > nchar(c("a-D-Glucose", "a-D-Gloucose")))
 # note the protection of 'D' and the conversion of 'a'
 # whether or not substrate names are known does not matter here
 
+# Peptide extraction (note treatment of non-standard amino acids)
+(x <- substrate_info(c("Ala-b-Ala-D-Glu", "Glucose", "Trp-Val"), "peptide"))
+stopifnot(is.list(x), sapply(x, length) == c(3, 0, 2))
+
 # List method
 (x <- substrate_info(find_substrate(c("D-Glucose", "D-Gloucose"))))
 stopifnot(length(x[[1]]) > length(x[[2]]))
@@ -205,8 +213,8 @@ stopifnot(identical(x, substrate_info(vaas_4[, , 1:3], "all")))
   \S4method{substrate_info}{OPMS}(object, ...) 
   \S4method{substrate_info}{character}(object,
     what = c("cas", "kegg", "drug", "metacyc", "chebi", "mesh", "downcase",
-      "greek", "concentration", "html", "all"), browse = 0L, download = FALSE,
-    ...) 
+      "greek", "concentration", "html", "peptide", "all"), browse = 0L,
+    download = FALSE, ...) 
   \S4method{substrate_info}{factor}(object, ...) 
   \S4method{substrate_info}{list}(object, ...) 
   \S4method{substrate_info}{substrate_match}(object, ...) 

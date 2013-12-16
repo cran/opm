@@ -16,7 +16,7 @@ setMethod("discrete", "numeric", function(x, range, gap = FALSE,
       if (length(states) == 1L) {
         if (!nzchar(states))
           stop("'states' cannot be the empty string")
-        unlist(strsplit(states, "", fixed = TRUE))
+        unlist(strsplit(states, "", TRUE), FALSE, FALSE)
       } else if (any(nchar(states) != 1L))
         stop("'states' cannot contain strings of length other than one")
       else

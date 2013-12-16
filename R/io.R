@@ -623,7 +623,7 @@ batch_opm <- function(names, md.args = NULL, aggr.args = NULL,
         message(paste0(x, collapse = "\n"))
       return(invisible(x))
     }
-    out.names <- gsub(" ", "-", names(x), fixed = TRUE)
+    out.names <- gsub(" ", "-", names(x), FALSE, FALSE, TRUE)
     out.names <- paste(sprintf(outfile.template, out.names), out.ext, sep = ".")
     x <- mclapply(x, convert_dataset, mc.cores = proc)
     mcmapply(create_single_file, x, out.names, mc.cores = proc)
@@ -772,8 +772,8 @@ clean_filenames <- function(x, overwrite = FALSE, demo = FALSE,
     x
   }
   clean_basenames <- function(x) {
-    x <- lapply(strsplit(x, ".", fixed = TRUE), FUN = clean_parts)
-    unlist(lapply(x, FUN = paste, collapse = "."))
+    x <- lapply(strsplit(x, ".", TRUE), clean_parts)
+    unlist(lapply(x, paste0, collapse = "."), FALSE, FALSE)
   }
   LL(overwrite, demo, empty.tmpl)
   x <- unique.default(as.character(x))

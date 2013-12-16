@@ -83,6 +83,10 @@ test_that("character-matrix objects can be merged", {
 })
 
 
+## split
+## UNTESTED
+
+
 ## plates
 test_that("the plates can be obtained as a list", {
   pl <- plates(OPMS.INPUT)
@@ -206,6 +210,37 @@ test_that("extract_columns() gets nested metadata right", {
 
 
 ## extract_columns
+test_that("extract_columns() for OPM objects gets nested metadata right", {
+
+  nmd <- NESTED.MD[1L]
+
+  # 1
+  got <- extract_columns(nmd, list(c("A", "C"), "K"))
+  expect_equal(names(got), c("A.C", "K"))
+
+  # 2
+  got <- extract_columns(nmd, list(u = c("A", "C"), v = "K"))
+  expect_equal(names(got), c("u", "v"))
+
+  # 3
+  old <- opm_opt(key.join = "~")
+  on.exit(opm_opt(old))
+  got <- extract_columns(nmd, list(c("A", "C"), "K"))
+  expect_equal(names(got), c("A~C", "K"))
+  opm_opt(old)
+
+  # 4
+  got <- extract_columns(nmd, list(u = "A"))
+  expect_equal(names(got), c("u.B", "u.C"))
+
+  # 4
+  got <- extract_columns(nmd, list(z = "K"))
+  expect_equal(names(got), "z")
+
+})
+
+
+## extract_columns
 test_that("extract_columns() gets metadata right using character vector", {
 
   # 1
@@ -226,6 +261,27 @@ test_that("extract_columns() gets metadata right using character vector", {
 
 
 ## extract_columns
+test_that("extract_columns() for OPM objects works using character vector", {
+
+  nmd <- NESTED.MD[1L]
+
+  # 1
+  got <- extract_columns(nmd, "A")
+  expect_equal(names(got), c("B", "C"))
+
+  # 2
+  got <- extract_columns(nmd, c("A", "C"))
+  expect_equal(names(got), "A.C")
+
+  # 3
+  old <- opm_opt(key.join = "~")
+  on.exit(opm_opt(old))
+  got <- extract_columns(nmd, c("A", "C"))
+  expect_equal(names(got), "A~C")
+
+})
+
+## extract_columns
 test_that("extract_columns() gets metadata right if a formula is used", {
 
   # 1
@@ -244,6 +300,32 @@ test_that("extract_columns() gets metadata right if a formula is used", {
   old <- opm_opt(key.join = "~")
   on.exit(opm_opt(old))
   got <- extract_columns(NESTED.MD, ~ A$C + K)
+  expect_equal(names(got), c("A~C", "K"))
+
+})
+
+
+## extract_columns
+test_that("extract_columns() for OPM objects works if a formula is used", {
+
+  nmd <- NESTED.MD[1L]
+
+  # 1
+  got <- extract_columns(nmd, ~ A$C + K)
+  expect_equal(names(got), c("A.C", "K"))
+
+  # 2
+  got <- extract_columns(nmd, ~ A$C)
+  expect_equal(names(got), "A.C")
+
+  # 3
+  got <- extract_columns(nmd, ~ K)
+  expect_equal(names(got), "K")
+
+  # 4
+  old <- opm_opt(key.join = "~")
+  on.exit(opm_opt(old))
+  got <- extract_columns(nmd, ~ A$C + K)
   expect_equal(names(got), c("A~C", "K"))
 
 })
@@ -272,6 +354,36 @@ test_that("extract_columns() works if a formula is used with joining", {
   old <- opm_opt(key.join = "~", comb.key.join = "!")
   on.exit(opm_opt(old))
   got <- extract_columns(NESTED.MD, ~ J(A$C + K))
+  expect_equal(names(got), c("A~C", "K", "A~C!K"))
+
+})
+
+
+## extract_columns
+test_that("extract_columns() for OPM objects works with formula and joining", {
+
+  nmd <- NESTED.MD[1L]
+
+  # 1
+  got <- extract_columns(nmd, ~ J(A$C) + K)
+  expect_equal(names(got), c("A.C", "K"))
+
+  # 2
+  got <- extract_columns(nmd, ~ A$C + J(K))
+  expect_equal(names(got), c("A.C", "K"))
+
+  # 3
+  got <- extract_columns(nmd, ~ J(A$C, K))
+  expect_equal(names(got), c("A.C", "K", "A.C.K"))
+
+  # 3
+  got <- extract_columns(nmd, ~ J(A$C + K))
+  expect_equal(names(got), c("A.C", "K", "A.C.K"))
+
+  # 4
+  old <- opm_opt(key.join = "~", comb.key.join = "!")
+  on.exit(opm_opt(old))
+  got <- extract_columns(nmd, ~ J(A$C + K))
   expect_equal(names(got), c("A~C", "K", "A~C!K"))
 
 })

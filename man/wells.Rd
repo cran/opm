@@ -70,11 +70,11 @@
   \code{OPMD_Listing} object is produced.}
 
   \item{cutoff}{Numeric scalar used if \sQuote{as.groups}
-  is a list. If the relative frequency of the most frequent
-  entry within the discretised values to be joined is below
-  that cutoff, \code{NA} is used. Ignored if \code{x} is an
-  \code{\link{OPMD}} object but added to the result if
-  \code{as.groups} is non-empty.}
+  is non-empty. If the relative frequency of the most
+  frequent entry within the discretised values to be joined
+  is below that cutoff, \code{NA} is used. Ignored if
+  \code{x} is an \code{\link{OPMD}} object but added to the
+  result if \code{as.groups} is non-empty.}
 
   \item{html}{Logical scalar. Convert to \acronym{HTML}?
   This involves Greek letters and paragraph (\sQuote{div})

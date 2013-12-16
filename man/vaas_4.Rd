@@ -15,20 +15,31 @@
 \details{
   The \code{\link{OPMS}} object \code{vaas_4} contains
   measurements from four selected plates from the study by
-  Vaas et al. (2012). Metadata have been added to fully
-  describe the conducted \acronym{PM} experiments: these
-  plates are the sixth technical replicate from the first
-  biological replicate for the four bacterial strains
+  Vaas \emph{et al.} (2012). Metadata have been added to
+  fully describe the conducted \acronym{PM} experiments:
+  these plates are the sixth technical replicate from the
+  first biological replicate for the four bacterial strains
   considered in the study.
+
+  This particular subset served as input for Figure 2 in
+  Vaas \emph{et al.} (2012), which can be reproduced by
+  running \code{\link{xy_plot}} with \code{vaas_4}.
+  Accordingly, Figure 3 in Vaas \emph{et al.} (2012)
+  represents the wells G11 and H11 selected from
+  \code{vaas_4}. Figure 4 focuses then further on that
+  subset, namely showing the data from strain \acronym{DSM}
+  30083T (left curve) and strain \emph{Pseudomonas
+  aeruginosa} \acronym{DSM} 1707 (right curve).
 
   The \code{\link{OPMD}} object \code{vaas_1} contains
   measurements from a single selected plate from the study
-  by Vaas et al. (2012). Metadata have been added to fully
-  describe the conducted \acronym{PM} experiments: this
-  plate is the sixth technical replicate from the first
-  biological replicate for the strain \emph{Escherichia
-  coli} \acronym{DSM} 30083T (yes, the type strain of
-  \emph{E. coli}). This is a subset of \code{vaas_4}.
+  by Vaas \emph{et al.} (2012). Metadata have been added to
+  fully describe the conducted \acronym{PM} experiments:
+  this plate is the sixth technical replicate from the
+  first biological replicate for the strain
+  \emph{Escherichia coli} \acronym{DSM} 30083T (yes, the
+  type strain of \emph{E. coli}). This is a subset of
+  \code{vaas_4}.
 
   The complete data set is available as \code{vaas_et_al}
   in the \pkg{opmdata} package.

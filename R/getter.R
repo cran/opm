@@ -293,7 +293,7 @@ setMethod("aggregated", OPMA, function(object, subset = NULL, ci = TRUE,
       dimnames = dimnames(x))
   }
   trim_lambda <- function(x, hours, trim) {
-    is.lambda <- grepl(CURVE_PARAMS[2L], rownames(x), fixed = TRUE)
+    is.lambda <- grepl(CURVE_PARAMS[2L], rownames(x), FALSE, FALSE, TRUE)
     x[is.lambda, ] <- trim_mat_into_hours(x[is.lambda, , drop = FALSE],
       hours, trim = trim)
     x

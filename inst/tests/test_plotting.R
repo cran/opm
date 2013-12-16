@@ -268,3 +268,6 @@ test_that("a radial plot can be drawn", {
 ################################################################################
 
 
+## parallelplot
+## UNTESTED
+

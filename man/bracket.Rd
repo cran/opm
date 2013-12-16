@@ -138,13 +138,6 @@ stopifnot(dim(x) == c(4, 384, 12))
 x <- vaas_4[has_aggr(vaas_4)]
 stopifnot(identical(x, vaas_4)) # all have such values!
 
-# Split into list of OPMS objects with the same overall measurement hours;
-# the default split() method can be applied here based on "["
-x <- split(vaas_4, hours(vaas_4))
-stopifnot(class(x) == "list", length(x) == 1, class(x[[1]]) == "OPMS")
-# ... because the running times were actually already identical, the list
-# contains only a single element.
-
 # Traverse all contained OPM objects
 for (i in seq(vaas_4)) { # OR: for (i in 1:length(vaas_4))
   x <- vaas_4[i]

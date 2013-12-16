@@ -160,7 +160,7 @@ stopifnot(is.null(rep(vaas_4, 0)))
   \code{\link{extract}}, \code{\link{extract_columns}},
   \code{\link{flatten}}, \code{\link{merge}},
   \code{\link{oapply}}, \code{\link{plates}},
-  \code{\link{to_yaml}}
+  \code{\link{split}}, \code{\link{to_yaml}}
 }
 \keyword{manip}
 

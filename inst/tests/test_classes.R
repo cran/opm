@@ -37,6 +37,10 @@ test_that("OPMS has all method of OPM/OPMA/OPMD", {
 ## UNTESTED
 
 
+## rename_wells
+## UNTESTED
+
+
 ## opma_problems
 ## UNTESTED
 

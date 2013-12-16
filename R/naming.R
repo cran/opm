@@ -454,8 +454,8 @@ setGeneric("substrate_info",
 
 setMethod("substrate_info", "character", function(object,
     what = c("cas", "kegg", "drug", "metacyc", "chebi", "mesh", "downcase",
-      "greek", "concentration", "html", "all"), browse = 0L, download = FALSE,
-    ...) {
+      "greek", "concentration", "html", "peptide", "all"), browse = 0L,
+    download = FALSE, ...) {
 
   find_substrate_id <- function(x) {
     result <- WELL_MAP[, , "substrate_id"][match(x, WELL_MAP[, , "name"])]
@@ -515,6 +515,16 @@ setMethod("substrate_info", "character", function(object,
     as.integer(substr(x, m, m + attr(m, "match.length") - 1L))
   }
 
+  parse_peptide <- function(x) {
+    parse <- function(x) strsplit(gsub("(?<=\\b[A-Za-z])-", "_", x, FALSE,
+      TRUE), "-", TRUE)
+    result <- structure(vector("list", length(x)), names = x)
+    pat <- sprintf("^%s(-%s)*$", pat <- "([A-Za-z]-)?[A-Z][a-z][a-z]", pat)
+    result[ok] <- parse(x[ok <- grepl(pat, x, FALSE, TRUE)])
+    result[!ok] <- list(character())
+    result
+  }
+
   all_information <- function(x) {
     result <- SUBSTRATE_INFO[find_substrate_id(x), , drop = FALSE]
     colnames(result) <- map_values(colnames(result),
@@ -528,12 +538,13 @@ setMethod("substrate_info", "character", function(object,
 
   result <- case(what <- match.arg(what),
     all = all_information(object),
+    chebi =, drug =, kegg =, metacyc =, mesh =,
+    cas = SUBSTRATE_INFO[find_substrate_id(object), toupper(what)],
+    concentration = extract_concentration(object),
     downcase = safe_downcase(object),
     greek = expand_greek_letters(object),
-    concentration = extract_concentration(object),
     html = compound_name_to_html(object),
-    chebi =, drug =, kegg =, metacyc =, mesh =,
-    cas = SUBSTRATE_INFO[find_substrate_id(object), toupper(what)]
+    peptide = parse_peptide(object)
   )
   browse <- must(as.integer(L(browse)))
   if (browse != 0L) {

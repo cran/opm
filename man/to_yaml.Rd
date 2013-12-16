@@ -81,7 +81,7 @@ write(to_yaml(x), "out.yml")
   \code{\link{flatten}}, \code{\link{merge}},
   \code{\link{oapply}}, \code{\link{plates}},
   \code{\link{rep}}, \code{\link{rev}}, \code{\link{sort}},
-  \code{\link{unique}}
+  \code{\link{split}}, \code{\link{unique}}
 }
 \keyword{IO}
 \keyword{character}

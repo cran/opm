@@ -81,6 +81,7 @@ OPM_OPTIONS$machine.id <- 1L
 OPM_OPTIONS$max.chars <- 100L
 OPM_OPTIONS$min.mode <- 0.5
 OPM_OPTIONS$phylo.fmt <- "epf"
+OPM_OPTIONS$series.key <- "Concentration"
 OPM_OPTIONS$split <- "/.-_"
 OPM_OPTIONS$strict.OPMD <- FALSE
 OPM_OPTIONS$threshold <- 0

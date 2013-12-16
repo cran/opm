@@ -1,11 +1,11 @@
 Package: opm
-Version: 1.0.6
-Date: 2013-11-18
+Version: 1.0.24
+Date: 2013-12-16
 Title: Tools for analysing OmniLog(R) Phenotype Microarray data
 Author: Markus Goeker, with contributions by Benjamin Hofner, Lea A.I.
     Vaas, Johannes Sikorski, Nora Buddruhs and Anne Fiebig
 Maintainer: Markus Goeker <markus.goeker@dsmz.de>
-Depends: R (>= 2.15.0)
+Depends: R (>= 3.0.0)
 Imports: methods, lattice, parallel, boot, hwriter, plotrix,
         Ckmeans.1d.dp, pkgutils (>= 0.5-0), yaml (>= 2.1.7), splines,
         mgcv, grofit (>= 1.1), rjson (>= 0.2.12), nlme
@@ -35,8 +35,8 @@ LazyData: yes
 LazyDataCompression: bzip2
 Repository: CRAN
 Repository/R-Forge/Project: opm
-Repository/R-Forge/Revision: 396
-Repository/R-Forge/DateTimeStamp: 2013-11-18 12:33:56
-Date/Publication: 2013-12-12 09:56:40
-Packaged: 2013-12-12 08:28:49 UTC; ripley
+Repository/R-Forge/Revision: 460
+Repository/R-Forge/DateTimeStamp: 2013-12-16 15:09:40
+Date/Publication: 2013-12-17 12:44:22
+Packaged: 2013-12-16 19:15:50 UTC; rforge
 NeedsCompilation: no

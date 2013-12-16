@@ -336,7 +336,7 @@ setMethod("map_metadata", c(WMD, "character"), function(object, mapping,
 }, sealed = SEALED)
 
 setMethod("map_metadata", c(WMD, FOE), function(object, mapping,
-    values = parent.frame()) {
+    values = parent.frame(), classes = NULL) {
   object@metadata <- map_values(object@metadata, mapping, values)
   object
 }, sealed = SEALED)

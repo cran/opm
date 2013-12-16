@@ -47,7 +47,8 @@ vaas_4 # calls show()
 
   Other plotting-functions: \code{\link{ci_plot}},
   \code{\link{heat_map}}, \code{\link{level_plot}},
-  \code{\link{radial_plot}}, \code{\link{xy_plot}}
+  \code{\link{parallelplot}}, \code{\link{radial_plot}},
+  \code{\link{xy_plot}}
 }
 \keyword{attribute}
 

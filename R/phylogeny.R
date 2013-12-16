@@ -45,7 +45,7 @@ safe_labels <- function(x, format, enclose = TRUE, pad = FALSE,
   if (comment) {
     case(format,
       html = surround( # the replacement used is the one favoured by HTML Tidy
-        gsub("--", "==", x, fixed = TRUE), "<!-- ", " -->", enclose),
+        gsub("--", "==", x, FALSE, FALSE, TRUE), "<!-- ", " -->", enclose),
       hennig = surround(chartr("'", '"', x), "'", "'", enclose),
       nexus = surround(chartr("[]", "{}", x), "[", "]", enclose),
       epf =,

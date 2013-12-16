@@ -1,4 +1,26 @@
-Changes in version 1.0.5
+Changes in version 1.0.22
+-------------------------
+
+Significant user-visible changes:
+
+- the dependency on the R version is now correctly stated as '>= 3.0.0' (as
+  noted by the CRAN team)
+
+- use of the 'direct' argument of extract_columns() is slightly different
+  (easier to use)
+
+- colour assignment by radial_plot() is slightly different (improved)
+
+New features:
+
+- new parallelplot() plotting approach for OPMX objects
+
+- new new OPM method for extract_columns()
+
+- more arguments for as.data.frame() and substrate_info()
+
+
+Changes in version 1.0.6
 -------------------------
 
 Significant user-visible changes:

@@ -230,7 +230,7 @@ stopifnot(identical(x, metadata(vaas_4))) # nothing to modify in that case
   \S4method{map_metadata}{OPMS,missing}(object, mapping,
     values = TRUE, classes = "factor") 
   \S4method{map_metadata}{WMD,FOE}(object, mapping,
-    values = parent.frame()) 
+    values = parent.frame(), classes = NULL) 
   \S4method{map_metadata}{WMD,character}(object, mapping,
     values = TRUE, classes = "factor") 
   \S4method{map_metadata}{WMD,function}(object, mapping,

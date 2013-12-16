@@ -316,6 +316,26 @@ setMethod("update_settings_list", "list", function(x) {
   x
 }, sealed = SEALED)
 
+setGeneric("rename_wells",
+  function(object, keys) standardGeneric("rename_wells"))
+
+setMethod("rename_wells", c(OPM, "ANY"), function(object, keys) {
+  colnames(object@measurements)[-1L] <- keys
+  object
+}, sealed = SEALED)
+
+setMethod("rename_wells", c(OPMA, "ANY"), function(object, keys) {
+  object <- callNextMethod()
+  colnames(object@aggregated) <- keys
+  object
+}, sealed = SEALED)
+
+setMethod("rename_wells", c(OPMS, "ANY"), function(object, keys) {
+  object <- callNextMethod()
+  names(object@discretized) <- keys
+  object
+}, sealed = SEALED)
+
 setAs(from = OPM, to = "matrix", function(from) {
   attach_attr(from, from@measurements)
 })

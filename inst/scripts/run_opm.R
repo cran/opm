@@ -242,13 +242,16 @@ option.parser <- OptionParser(option_list = list(
 
 ), usage = "%prog [options] [directories/files]", add_help_option = FALSE,
   epilogue = c(
-    listing(RESULT, header = "The output modes are:", footer = "",
+    listing(RESULT, header = "The output modes are:",
+      footer = paste0(
+        "\nNote that an unsuitable combination of input and output settings",
+        " can cause\nthe deletion of input files.\n"
+      ),
       prepend = 5L, indent = 10L),
     listing(AGGREGATION, header = "The aggregation modes are:", footer = "",
       prepend = 5L, indent = 10L)
   )
 )
-
 
 opt <- parse_args(option.parser, positional_arguments = TRUE)
 input <- opt$args

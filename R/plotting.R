@@ -729,13 +729,27 @@ setMethod("radial_plot", "matrix", function(object, as.labels = NULL,
     radlab = FALSE, show.centroid = TRUE, show.grid.labels = 1, lwd = 3,
     mar = c(2, 2, 2, 2), line.col = opm_opt("colors"), draw.legend = TRUE,
     x = "bottom", y = NULL, xpd = TRUE, pch = 15, legend.args = list(),
-    point.symbols = NA, point.col = NA, poly.col = NA,
+    point.symbols = 15, point.col = opm_opt("colors"), poly.col = NA,
     main = paste0(as.labels, sep = sep), ...) {
+
+  # insert a ready-made colour vector for line.col
+  #adapt_colors <- function(x, colors) {
+  #  x <- as.factor(x)
+  #  if (length(colors) < length(levels(x)))
+  #    stop("not enough colours provided")
+  #  colors[x]
+  #}
+
   LL(radlab, show.centroid, show.grid.labels, draw.legend, xpd, pch)
   line.col <- try_select_colors(line.col)
+  point.col <- try_select_colors(point.col)
   changed.par <- NULL
   on.exit(if (!is.null(changed.par))
     par(changed.par))
+
+  # check if line.col has the same length as object[, subset, drop = FALSE]
+  #  if (length(line.col) < nsets)
+  #    nsets <- length(object[, subset, drop = FALSE])
   changed.par <- radial.plot(lengths = object[, subset, drop = FALSE],
     labels = colnames(object), rp.type = rp.type, radlab = radlab,
     show.centroid = show.centroid, lwd = lwd, mar = mar,
@@ -768,5 +782,130 @@ setMethod("radial_plot", OPMS, function(object, as.labels,
     as.labels = as.labels, as.groups = NULL, subset = subset,
     dataframe = FALSE, ci = FALSE, sep = sep), .force = TRUE)
   invisible(radial_plot(do.call(extract, extract.args), ...))
+}, sealed = SEALED)
+
+setGeneric("parallelplot")
+
+setMethod("parallelplot", c("missing", OPMX), function(x, data, ...) {
+  parallelplot(data, NULL, ...)
+}, sealed = SEALED)
+
+setMethod("parallelplot", c("NULL", OPMX), function(x, data, ...) {
+  parallelplot(data, x, ...)
+}, sealed = SEALED)
+
+setMethod("parallelplot", c("vector", OPMX), function(x, data, ...) {
+  parallelplot(data, x, ...)
+}, sealed = SEALED)
+
+setMethod("parallelplot", c("formula", OPMX), function(x, data, ...) {
+  parallelplot(data, x, ...)
+}, sealed = SEALED)
+
+setMethod("parallelplot", c(OPMX, "missing"), function(x, data, ...) {
+  parallelplot(x, NULL, ...)
+}, sealed = SEALED)
+
+setMethod("parallelplot", c(OPMX, "ANY"), function(x, data, groups = 1L,
+  panel.var = NULL, pnames = param_names(), col = opm_opt("colors"),
+  strip.fmt = list(), striptext.fmt = list(), legend.fmt = list(),
+  legend.sep = " ", draw.legend = TRUE, space = "top", ...) {
+
+  # Get the used column names from the 'data' argument
+  final_dataframe_names <- function(x) {
+    if (is.null(x))
+      return(x)
+    x <- metadata_key(x)
+    combined <- attr(x, "combine") # a list mapping new name to old names
+    x <- names(x)
+    for (i in seq_along(combined)) { # does nothing if combined has zero length!
+      j <- match(combined[[i]], x) # find position of old name and replace it
+      x[j] <- c(names(combined)[i], rep.int(NA_character_, length(j) - 1L))
+    }
+    x[!is.na(x)]
+  }
+  # Convert left side of formula to character vector
+  extract_left_side <- function(x) {
+    if (!inherits(x, "formula") || length(x) < 3L)
+      character()
+    else
+      all.vars(x[[2L]])
+  }
+  # Assign first element of 'n' to 'x' ('groups'/'panel.var'), if that
+  # is numeric and 'n' is non-empty.
+  fetch_from_md_names <- function(x, n) {
+    if (!length(x))
+      return(x)
+    if (is.numeric(x) || is.logical(x))
+      if (length(n))
+        n[x]
+      else
+        NULL
+    else
+      x
+  }
+
+  x <- as.data.frame(x = x, include = data, sep = NULL, settings = FALSE)
+
+  # Process the 'param' argument
+  if (missing(pnames))
+    if (length(tmp <- extract_left_side(data)))
+      pnames <- tmp
+    else
+      pnames <- match.arg(pnames, several.ok = TRUE)
+  else {
+    if (is.language(pnames))
+      pnames <- all.vars(pnames)
+    pnames <- match.arg(pnames, param_names(), TRUE)
+  }
+  if (length(pnames) < 2L)
+    stop("'pnames' has to be at least of length 2")
+
+  md.names <- final_dataframe_names(data)
+
+  # Process 'groups'
+  groups <- fetch_from_md_names(groups, md.names)
+  if (!length(groups))
+    groups <- make.names(CSV_NAMES[["PLATE_TYPE"]])
+  else if (length(groups) > 1L)
+    stop("'groups' argument must be of length 1")
+  pos <- match(groups, names(x), 0L)
+  if (!pos)
+    stop("value of 'groups' not found in the column names of the data")
+  # Renaming for lattice. Must be in sync with the processing of 'panel.var'.
+  names(x)[pos] <- "_GROUPING"
+
+  # Legend format
+  strip.fmt <- insert(as.list(strip.fmt), bg = "grey90")
+  striptext.fmt <- insert(as.list(striptext.fmt),
+    cex = 1.5 / sqrt(9), lines = 1.25)
+  legend.fmt <- insert(as.list(legend.fmt), space = space, .force = FALSE)
+
+  # Legend text and colours
+  col <- try_select_colors(col)
+  key.text <- levels(x$`_GROUPING`)
+  if (length(col) < length(key.text))
+    stop("colour should be by plate or metadata, but there are too few colours")
+  col <- col[seq_along(key.text)]
+
+  # Build basic formula and process 'panel.var'
+  f <- paste0("~ x[", deparse(pnames), "]")
+  panel.var <- fetch_from_md_names(panel.var, md.names)
+
+  # Add content of 'panel.var' to formula if it is provided
+  if (length(panel.var)) {
+    panel.var[match(groups, panel.var)] <- "_GROUPING"
+    f <- paste(f, "|", paste0(sprintf("`%s`", panel.var), collapse = " + "))
+  }
+  f <- formula(f)
+
+  parallelplot(
+    x = f, data = x, as.table = TRUE, groups = `_GROUPING`, col = col,
+    strip = do.call(strip.custom, strip.fmt), par.strip.text = striptext.fmt,
+    key = if (draw.legend)
+        c(list(col = col, text = list(key.text)), legend.fmt)
+      else
+        NULL, ...
+  )
 }, sealed = SEALED)
 

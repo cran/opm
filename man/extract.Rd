@@ -8,7 +8,9 @@
   \code{split.at} (default given by
   \code{\link{param_names}("split.at")}), columns with
   factor variables before that column and columns with
-  numeric vectors after that column.}
+  numeric vectors after that column.  For
+  \code{extract_columns} optionally an \code{\link{OPM}}
+  object.}
 
   \item{as.labels}{List, character vector or formula
   indicating the metadata to be joined and used as row
@@ -72,7 +74,8 @@
   \item{dups}{Character scalar specifying what to do in the
   case of duplicate labels: either \sQuote{warn},
   \sQuote{error} or \sQuote{ignore}. Ignored unless
-  \code{join} is \code{TRUE}. For the data-frame method of
+  \code{join} is \code{TRUE} and if \code{object} is an
+  \code{\link{OPM}} object. For the data-frame method of
   \code{extract}, a character scalar defining the action to
   conduct if \code{as.groups} contains duplicates.}
 
@@ -305,7 +308,8 @@ stopifnot(identical(attr(y, "row.groups"), x$c))
   \code{\link{flatten}}, \code{\link{merge}},
   \code{\link{oapply}}, \code{\link{plates}},
   \code{\link{rep}}, \code{\link{rev}}, \code{\link{sort}},
-  \code{\link{to_yaml}}, \code{\link{unique}}
+  \code{\link{split}}, \code{\link{to_yaml}},
+  \code{\link{unique}}
 }
 \keyword{dplot}
 \keyword{htest}
@@ -317,6 +321,7 @@ stopifnot(identical(attr(y, "row.groups"), x$c))
 \alias{extract,OPMS-method}
 \alias{extract,data.frame-method}
 \alias{extract_columns-methods}
+\alias{extract_columns,OPM-method}
 \alias{extract_columns,OPMS-method}
 \alias{extract_columns,data.frame-method}
 \usage{
@@ -329,11 +334,14 @@ stopifnot(identical(attr(y, "row.groups"), x$c))
     direct = inherits(norm.by, "AsIs"), dups = c("warn", "error", "ignore"),
     split.at = param_names("split.at")) 
 
+  \S4method{extract_columns}{OPM}(object, what, join = FALSE,
+    sep = " ", dups = c("warn", "error", "ignore"), factors = TRUE,
+    exact = TRUE, strict = TRUE) 
   \S4method{extract_columns}{OPMS}(object, what, join = FALSE,
     sep = " ", dups = c("warn", "error", "ignore"), factors = TRUE,
     exact = TRUE, strict = TRUE) 
   \S4method{extract_columns}{data.frame}(object, what,
     as.labels = NULL, as.groups = NULL, sep = opm_opt("comb.value.join"),
-    factors = is.list(what), direct = inherits(what, "AsIs")) 
+    factors = is.list(what), direct = is.list(what) || inherits(what, "AsIs")) 
 }
 %% END INSERTION BY repair_S4_docu.rb

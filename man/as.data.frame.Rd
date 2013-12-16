@@ -18,7 +18,17 @@
   matrix methods of \code{as.data.frame}.}
 
   \item{sep}{Character scalar used as word separator in
-  column names.}
+  column names. Set this to \code{NULL} or an empty vector
+  to turn off character replacement in column names.}
+
+  \item{csv.data}{Logical scalar indicating whether the
+  \code{\link{csv_data}} entries that identify the plate
+  shall be included.}
+
+  \item{settings}{Logical scalar indicating whether the
+  \code{\link{aggr_settings}} and
+  \code{\link{disc_settings}} entries, if available, shall
+  be included.}
 
   \item{stringsAsFactors}{Logical scalar passed to the list
   and matrix methods of \code{as.data.frame}.}
@@ -26,11 +36,17 @@
   \item{object}{\code{\link{OPM}} or \code{\link{OPMS}}
   object (or list).}
 
-  \item{include}{\code{NULL}, character vector, list or
-  formula. If not empty, include this meta-information in
-  the data frame, replicated in each row.  Otherwise it
-  converted to a list and passed to \code{\link{metadata}}.
-  See there for details.}
+  \item{include}{For \code{flatten}, either \code{NULL},
+  character vector, list or formula. If not empty, include
+  this meta-information in the data frame, replicated in
+  each row. Otherwise it converted to a list and passed to
+  \code{\link{metadata}}. See there for details.
+
+  For \code{as.data.frame}, if empty or \code{FALSE},
+  ignored. If \code{TRUE}, all metadata are including using
+  \code{\link{to_metadata}}. If otherwise and non-empty,
+  metadata selected using \code{\link{extract_columns}} are
+  included.}
 
   \item{fixed}{\code{NULL} or list. If not \code{NULL},
   include these items in the data frame, replicated in each
@@ -91,23 +107,29 @@
   make use of the created kind of objects.
 
   The following entries are contained in the generated data
-  frame: \itemize{ \item The \code{\link{csv_data}} entries
-  that identify the plate.  \item The names of the wells.
+  frame: \itemize{ \item Optionally the
+  \code{\link{csv_data}} entries that identify the plate.
+  \item The names of the wells. Always included.  \item For
+  \code{\link{OPMA}} objects (and \code{\link{OPMS}}
+  objects that contain them), always the aggregated data
+  (curve parameters), one column for each point estimate,
+  upper and lower confidence interval of each parameter.
   \item For \code{\link{OPMA}} objects (and
-  \code{\link{OPMS}} objects that contain them), the
-  aggregated data (curve parameters), one column for each
-  point estimate, upper and lower confidence interval of
-  each parameter.  \item For \code{\link{OPMA}} objects
-  (and \code{\link{OPMS}} objects that contain them), the
-  used aggregation settings, one column per entry, except
-  for the \sQuote{options} entry (which is not a scalar).
-  \item For \code{\link{OPMD}} objects (and
-  \code{\link{OPMS}} objects that contain them), one column
-  with the discretised data.  \item For \code{\link{OPMD}}
-  objects (and \code{\link{OPMS}} objects that contain
-  them), the used discretisation settings, one column per
-  entry, except for the \sQuote{options} entry (which is
-  not a scalar).  }
+  \code{\link{OPMS}} objects that contain them), optionally
+  the used aggregation settings, one column per entry,
+  except for the \sQuote{options} entry (which is not a
+  scalar). The column names are prefixed with \code{"Aggr"}
+  followed by \code{sep}. If \code{sep} is empty,
+  \code{\link{opm_opt}("comb.key.join")} is used.  \item
+  For \code{\link{OPMD}} objects (and \code{\link{OPMS}}
+  objects that contain them), always one column with the
+  discretised data.  \item For \code{\link{OPMD}} objects
+  (and \code{\link{OPMS}} objects that contain them),
+  optionally the used discretisation settings, one column
+  per entry, except for the \sQuote{options} entry (which
+  is not a scalar). The column names are prefixed with
+  \code{"Disc"} followed by \code{sep}. If \code{sep} is
+  empty, \code{\link{opm_opt}("comb.key.join")} is used.  }
 
   The limits of using \acronym{CSV} as output format
   already show up in this list, and in general we recommend
@@ -147,7 +169,8 @@ stopifnot(is.data.frame(x), identical(dim(x), c(15360L, 6L)))
   \code{\link{extract_columns}}, \code{\link{merge}},
   \code{\link{oapply}}, \code{\link{plates}},
   \code{\link{rep}}, \code{\link{rev}}, \code{\link{sort}},
-  \code{\link{to_yaml}}, \code{\link{unique}}
+  \code{\link{split}}, \code{\link{to_yaml}},
+  \code{\link{unique}}
 }
 \keyword{dplot}
 \keyword{manip}
@@ -166,17 +189,17 @@ stopifnot(is.data.frame(x), identical(dim(x), c(15360L, 6L)))
 \alias{flatten,OPMS-method}
 \usage{
   \S4method{as.data.frame}{OPM}(x, row.names = NULL,
-    optional = FALSE, sep = "_", ...,
-    stringsAsFactors = default.stringsAsFactors()) 
+    optional = FALSE, sep = "_", csv.data = TRUE, settings = TRUE,
+    include = FALSE, ..., stringsAsFactors = default.stringsAsFactors()) 
   \S4method{as.data.frame}{OPMA}(x, row.names = NULL,
-    optional = FALSE, sep = "_", ...,
-    stringsAsFactors = default.stringsAsFactors()) 
+    optional = FALSE, sep = "_", csv.data = TRUE, settings = TRUE,
+    include = FALSE, ..., stringsAsFactors = default.stringsAsFactors()) 
   \S4method{as.data.frame}{OPMD}(x, row.names = NULL,
-    optional = FALSE, sep = "_", ...,
-    stringsAsFactors = default.stringsAsFactors()) 
+    optional = FALSE, sep = "_", csv.data = TRUE, settings = TRUE,
+    include = FALSE, ..., stringsAsFactors = default.stringsAsFactors()) 
   \S4method{as.data.frame}{OPMS}(x, row.names = NULL,
-    optional = FALSE, sep = "_", ...,
-    stringsAsFactors = default.stringsAsFactors()) 
+    optional = FALSE, sep = "_", csv.data = TRUE, settings = TRUE,
+    include = FALSE, ..., stringsAsFactors = default.stringsAsFactors()) 
   \S4method{as.data.frame}{kegg_compound}(x, row.names = NULL,
     optional = TRUE, ..., stringsAsFactors = FALSE) 
   \S4method{as.data.frame}{kegg_compounds}(x, row.names = NULL,

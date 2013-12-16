@@ -24,7 +24,7 @@
   the extracted \R code.} \item{demo}{Example \R code using
   the \pkg{opm} package that neither fitted into these help
   pages nor into the vignette. Can directly be loaded via
-  \code{demo}; see \code{demo(package = "opm")}}.
+  \code{demo}; see \code{demo(package = "opm")}.}
   \item{examples}{\strong{Deprecated} synonym of
   \sQuote{demo}.} \item{multiple}{Not directly readable
   (i.e., multiple-plate) test files.}
@@ -43,7 +43,7 @@
   (and metadata management).} } and the following kinds of
   parameter names: \describe{ \item{param.names}{Names of
   the estimated curve parameters used internally and in the
-  output} \item{disc.name}{Alternative name used to select
+  output.} \item{disc.name}{Alternative name used to select
   discretised values instead.}
   \item{reserved.md.names}{Names that should not be used in
   metadata entries because they are used as predefined

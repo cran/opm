@@ -27,6 +27,24 @@ test_that("we can memoize queries", {
 })
 
 
+################################################################################
+
+
+## common_times
+## UNTESTED
+
+
+## select_by_disc
+## UNTESTED
+
+
+## do_select
+## UNTESTED
+
+
+################################################################################
+
+
 ## reduce_to_mode
 ## UNTESTED
 
@@ -39,7 +57,7 @@ test_that("we can memoize queries", {
 ## UNTESTED
 
 
-## fix_names
+## metadata2factorlist
 ## UNTESTED
 
 
@@ -62,6 +80,14 @@ test_that("uniformity can be checked", {
   x <- c(x, list(c = 1:6))
   expect_false(isTRUE(isuni <- is_uniform(x)))
   expect_equal(isuni, x[c(1L, 4L)])
+})
+
+
+## reassign_duplicates
+test_that("calculation are not done for duplicates again", {
+  x <- c("d", "a", "a", "b", "b", "a", "d")
+  got <- reassign_duplicates(x, function(x) paste0(x, x))
+  expect_equal(got, paste0(x, x))
 })
 
 
@@ -132,6 +158,9 @@ test_that("rows can be picked", {
 ## vector2row
 ## UNTESTED
 
+## collect_rows
+## UNTESTED
+
 
 ################################################################################
 ################################################################################
@@ -143,6 +172,8 @@ test_that("rows can be picked", {
 ## create_formula
 ## UNTESTED
 
+## formula2infix
+## UNTESTED
 
 ## metadata_key
 test_that("we can convert formulas to formulas for use as metadata keys", {
@@ -253,6 +284,10 @@ test_that("some edge cases are correctly handled by metadata_key()", {
   x <- ~ list(list(), list())
   expect_equal(x, metadata_key(x, TRUE))
 })
+
+
+## reassign_args_using
+## UNTESTED
 
 
 ## parse_time
@@ -453,25 +488,16 @@ test_that("HTML can be recursively generated", {
 })
 
 
+## single_tag
+## UNTESTED
+
+
 ## html_head
 ## UNTESTED
 
 
 ## tidy
 ## UNTESTED
-
-
-################################################################################
-################################################################################
-#
-# Easter eggs
-#
-
-
-## kubrick
-test_that("Stanley Kubrick is honoured", {
-  expect_message(kubrick())
-})
 
 
 ################################################################################
@@ -487,132 +513,6 @@ test_that("Stanley Kubrick is honoured", {
 
 ## prepare_class_names
 ## UNTESTED
-
-
-## map_values
-test_that("values in character vectors can be mapped", {
-  map <- c(a = '1', b = '2', c = '3')
-  x <- c("d", "c", "b", "a", "A")
-  names(x) <- LETTERS[1L:5L]
-  exp <- c("d", "3", "2", "1", "A")
-  names(exp) <- names(x)
-  got <- map_values(x, map)
-  expect_equal(exp, got)
-  map.2 <- as.character(1L:3L) # no names => all mappings unsuccessful
-  got <- map_values(x, map.2)
-  expect_equal(x, got)
-})
-
-
-## map_values
-test_that("values in logical vectors can be mapped", {
-  x <- c(i = TRUE, j = FALSE, k = NA, l = TRUE)
-  got <- map_values(x, NULL)
-  expect_equal(x, got)
-  got <- map_values(x)
-  expect_is(got, "integer")
-  expect_equal(names(got), names(x))
-  got <- map_values(x, LETTERS)
-  expect_equal(names(got), names(x))
-  expect_equivalent(got, c("C", "A", "B", "C"))
-  expect_error(map_values(x, LETTERS[1:2]))
-})
-
-
-## map_values
-test_that("values in lists can be mapped using character vectors", {
-
-  map <- c(a = '1', b = '2', c = '3')
-  x <- c("d", "c", "b", "a", "A")
-  names(x) <- LETTERS[1L:5L]
-  exp <- c("d", "3", "2", "1", "A")
-  names(exp) <- names(x)
-
-  xy <- list(x = x, y = 1:10)
-  got <- map_values(xy, map)
-  expect_is(got, "list")
-  expect_equal(got[[1L]], exp)
-  expect_equal(got[[2L]], 1:10)
-  expect_equal(names(got), names(xy))
-
-  got <- map_values(xy, map, coerce = "integer")
-  expect_is(got, "list")
-  expect_equal(got[[1L]], exp)
-  expect_equal(got[[2L]], as.character(1:10))
-  expect_equal(names(got), names(xy))
-
-})
-
-
-## map_values
-test_that("values in lists can be mapped by cleaning", {
-  x <- list(A = 13, B = list(B1 = NULL, B2 = -5), C = "z", character(),
-    D = list(D1 = NULL, D2 = list()))
-  got <- map_values(x, NULL)
-  expect_equal(got, list(A = 13, B = list(B2 = -5), C = "z"))
-  got <- map_values(x, NULL, "numeric")
-  expect_equal(got, list(A = "13", B = list(B2 = "-5"), C = "z"))
-})
-
-
-## map_values
-test_that("values in lists can be mapped using expressions", {
-  x <- list(a = 1:5, b = letters[1:3], K = list(K1 = 3, 89))
-  assign("z", 7.5, 1)
-  # 1
-  got <- map_values(x, expression(a <- a, u <- a + z))
-  expect_equal(got, c(x, list(u = x$a + z)))
-  # 2
-  expect_error(map_values(x, expression(u <- a + z), baseenv()))
-  # 3
-  got <- map_values(x, expression(u <- a + z, v <- u))
-  expect_equivalent(got, c(x, list(u = x$a + z, v = x$a + z)))
-  # 4
-  b <- 4
-  got <- map_values(x, expression(rm(b)))
-  x$b <- NULL
-  expect_equal(got, x)
-  expect_equal(b, 4)
-  # 5
-  got <- map_values(x, expression(b <- NULL))
-  expect_equal(got, c(x, list(b = NULL)))
-})
-
-
-## map_names
-test_that("names in lists can be mapped and received", {
-  x <- list(a = 99, b = list(xx = c(a = "NA", b = "99.5", c = "10e+06")),
-    c = 8, d = "Z")
-
-  # Using a character vector
-  map <- c(a = "b", b = "a", xx = "yy", c = "d", d = "e")
-  got <- map_names(x, map)
-  exp <- list(b = 99, a = list(yy = c(a = "NA", b = "99.5", c = "10e+06")),
-    d = 8, e = "Z")
-  expect_equal(got, exp)
-
-  # Using a function
-  got <- map_names(x, identity)
-  expect_equal(got, x)
-
-  # Conducting just a query
-  got <- map_names(x)
-  exp <- c("a", "b", "c", "d", "xx")
-  names(exp) <- exp
-  expect_equal(got, exp)
-})
-
-## map_names
-test_that("names in lists with missing names can be mapped", {
-  x <- list(a = list(1:2, 5:6), b = 3:8)
-  map <- c(a = "A", b = "B")
-  got <- map_names(x, map)
-  expect_equal(got, list(A = list(1:2, 5:6), B = 3:8))
-  got <- map_names(x, toupper)
-  expect_equal(got, list(A = list(1:2, 5:6), B = 3:8))
-  x <- list(list(), list())
-  expect_equivalent(character(), map_names(x))
-})
 
 
 ################################################################################
@@ -711,101 +611,6 @@ test_that("anything and nothing can be inserted in a list", {
 })
 
 
-## contains
-test_that("a list can be queried with a list with exact matches", {
-
-  x <- list(a = 99, list(i = 1, j = 2), d = 1:2, c = list(99, y = 100, z = 101))
-
-  query <- list(c = list(y = 100), d = 1:2)
-  expect_true(contains(x, query, values = TRUE, exact = TRUE))
-  expect_true(contains(x, query, values = FALSE, exact = TRUE))
-  expect_true(contains(x, query, values = TRUE, exact = FALSE))
-  expect_true(contains(x, query, values = FALSE, exact = FALSE))
-
-  query <- list(a = 99, c = list(z = 101))
-  expect_true(contains(x, query, values = TRUE, exact = TRUE))
-  expect_true(contains(x, query, values = FALSE, exact = TRUE))
-  expect_true(contains(x, query, values = TRUE, exact = FALSE))
-  expect_true(contains(x, query, values = FALSE, exact = FALSE))
-
-  query <- list()
-  expect_true(contains(x, query, values = TRUE, exact = TRUE))
-  expect_true(contains(x, query, values = FALSE, exact = TRUE))
-  expect_true(contains(x, query, values = TRUE, exact = FALSE))
-  expect_true(contains(x, query, values = FALSE, exact = FALSE))
-
-})
-
-## contains
-test_that("a list can be queried with a list without matches", {
-
-  x <- list(a = 99, list(i = 1, j = 2), d = 1:2, c = list(99, y = 100, z = 101))
-
-  query <- list(b = 99, c = list(z = 101))
-  expect_false(contains(x, query, values = TRUE, exact = TRUE))
-  expect_false(contains(x, query, values = FALSE, exact = TRUE))
-  expect_false(contains(x, query, values = TRUE, exact = FALSE))
-  expect_false(contains(x, query, values = FALSE, exact = FALSE))
-
-})
-
-## contains
-test_that("a list can be queried with a list with only non-exact matches", {
-
-  x <- list(a = 99, list(i = 1, j = 2), d = 1:2, c = list(99, y = 100, z = 101))
-
-  query <- list(c = list(y = c(100, 101)), d = 1:3)
-  expect_false(contains(x, query, values = TRUE, exact = TRUE))
-  expect_true(contains(x, query, values = FALSE, exact = TRUE))
-  expect_true(contains(x, query, values = TRUE, exact = FALSE))
-  expect_true(contains(x, query, values = FALSE, exact = FALSE))
-
-  query <- list(c = list(y = 101), d = list(1:2))
-  expect_false(contains(x, query, values = TRUE, exact = TRUE))
-  expect_true(contains(x, query, values = FALSE, exact = TRUE))
-  expect_false(contains(x, query, values = TRUE, exact = FALSE))
-  expect_true(contains(x, query, values = FALSE, exact = FALSE))
-
-  query <- list(a = "99", c = list(z = 101))
-  expect_false(contains(x, query, values = TRUE, exact = TRUE))
-  expect_true(contains(x, query, values = FALSE, exact = TRUE))
-  expect_true(contains(x, query, values = TRUE, exact = FALSE))
-  expect_true(contains(x, query, values = FALSE, exact = FALSE))
-
-  query <- list(c = list(y = 100), d = list(1:2))
-  expect_false(contains(x, query, values = TRUE, exact = TRUE))
-  expect_true(contains(x, query, values = FALSE, exact = TRUE))
-  expect_false(contains(x, query, values = TRUE, exact = FALSE))
-  expect_true(contains(x, query, values = FALSE, exact = FALSE))
-
-})
-
-## contains
-test_that("a list can be queried with a list with missing names", {
-
-  x <- list(a = 99, list(i = 1, j = 2), d = 1:2, c = list(99, y = 100, z = 101))
-
-  query <- list(list(i = 1, j = 2))
-  expect_false(contains(x, query, values = TRUE, exact = TRUE))
-  expect_false(contains(x, query, values = FALSE, exact = TRUE))
-  expect_false(contains(x, query, values = TRUE, exact = FALSE))
-  expect_false(contains(x, query, values = FALSE, exact = FALSE))
-
-  query <- list(1, 2)
-  expect_false(contains(x, query, values = TRUE, exact = TRUE))
-  expect_false(contains(x, query, values = FALSE, exact = TRUE))
-  expect_false(contains(x, query, values = TRUE, exact = FALSE))
-  expect_false(contains(x, query, values = FALSE, exact = FALSE))
-
-  query <- list(13, a = 99, 2)
-  expect_false(contains(x, query, values = TRUE, exact = TRUE))
-  expect_false(contains(x, query, values = FALSE, exact = TRUE))
-  expect_false(contains(x, query, values = TRUE, exact = FALSE))
-  expect_false(contains(x, query, values = FALSE, exact = FALSE))
-
-})
-
-
 ################################################################################
 ################################################################################
 #
@@ -898,6 +703,10 @@ test_that("character-matrix objects can be updated by deletion", {
 })
 
 
+## remove_concentration
+## UNTESTED
 
 
+## get_partial_match
+## UNTESTED
 

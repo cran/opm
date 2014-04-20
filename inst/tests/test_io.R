@@ -215,13 +215,11 @@ test_that("read_opm can read three partially incompatible files", {
 test_that("explode_dir finds the files it should find", {
   files <- explode_dir(TEST.DIR, include = file_pattern(type = "csv"),
     wildcard = FALSE)
-  # TODO: might be safer to apply normalizePath() here, too
   expect_true(all(grepl(TEST.DIR, files, fixed = TRUE)))
   expect_equal(length(files), 9L)
   expect_equal(names(files), NULL)
   files <- explode_dir(TEST.DIR, include = file_pattern(type = "csv"),
     exclude = "old", wildcard = FALSE)
-  # TODO: might be safer to apply normalizePath() here, too
   expect_true(all(grepl(TEST.DIR, files, fixed = TRUE)))
   expect_equal(length(files), 5L)
   expect_equal(names(files), NULL)
@@ -320,6 +318,31 @@ test_that("to_metadata converts OPMS objects in the right way", {
   expect_true(setequal(names(got), LETTERS[1:4]))
   expect_true(setequal(vapply(got, class, ""),
     c("list", "integer", "character")))
+})
+
+## to_metadata
+test_that("to_metadata converts MOPMX objects in the right way", {
+  expect_warning(got <- to_metadata(MOPMX.1))
+  expect_is(got, "data.frame")
+  expect_equal(nrow(got), sum(vapply(MOPMX.1, length, 0L)))
+  expect_false(all(complete.cases(got)))
+  expect_equal(ncol(got), 2L)
+  expect_true(all(got[-1L, ] == to_metadata(MOPMX.1[2L])))
+
+  metadata(MOPMX.1[[1]]) <- list(run = 17)
+  got <- to_metadata(MOPMX.1)
+  expect_is(got, "data.frame")
+  expect_equal(nrow(got), sum(vapply(MOPMX.1, length, 0L)))
+  expect_false(all(complete.cases(got)))
+  expect_equal(ncol(got), 2L)
+  expect_true(all(got[-1L, ] == to_metadata(MOPMX.1[2L])))
+
+  metadata(MOPMX.1[[1]]) <- list(organism = 'Unknown', run = 17)
+  got <- to_metadata(MOPMX.1)
+  expect_true(all(complete.cases(got)))
+
+  expect_equivalent(to_metadata(MOPMX.1[2L]), to_metadata(MOPMX.1[[2L]]))
+  # i.e. differences in the row names are possible
 })
 
 
@@ -430,6 +453,15 @@ test_that("templates can be collected with added columns", {
     add.cols = to.add, demo = TRUE), shows_message())
   expect_equal(template, files[1L:2L])
 
+})
+
+
+## collect_template
+test_that("templates can be collected from MOPMX objects", {
+  got <- collect_template(MOPMX.1)
+  expect_equal(nrow(got), length(plates(MOPMX.1)))
+  got.2 <- collect_template(MOPMX.1, add.cols = letters[1:2])
+  expect_equal(ncol(got.2), ncol(got) + 2L)
 })
 
 

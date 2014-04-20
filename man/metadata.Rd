@@ -3,7 +3,7 @@
 \alias{metadata_chars}
 \title{Get metadata}
 \arguments{
-  \item{object}{\code{\link{WMD}}, \code{\link{OPMS}} or
+  \item{object}{\code{\link{WMD}}, \code{\link{WMDS}} or
   \code{\link{MOPMX}} object.}
 
   \item{key}{\code{NULL}, vector, factor or formula.
@@ -41,7 +41,7 @@
   details.}
 
   \item{...}{Optional argument passed from the
-  \code{\link{OPMS}} to the \code{\link{WMD}} method.}
+  \code{\link{WMDS}} to the \code{\link{WMD}} method.}
 }
 \value{
   \code{metadata} generates a list (empty if metadata were
@@ -63,11 +63,11 @@
 \details{
   The result of \code{metadata_chars} can be used to create
   a mapping for \code{\link{map_metadata}}. The
-  \code{\link{OPMS}} method just applies the
+  \code{\link{WMDS}} method just applies the
   \code{\link{WMD}} method to all contained plates in turn.
 }
 \examples{
-# 'OPM' methods
+# 'WMD' methods
 
 (x <- metadata(vaas_1, "Strain"))
 stopifnot(x == "DSM30083T")
@@ -80,7 +80,7 @@ stopifnot(names(x) == x) # mapping metadata keys to themselves
 stopifnot(names(x) == x) # mapping metadata values to themselves
 # See map_metadata() for a potential usage of the metadata_chars() result
 
-# 'OPMS' methods
+# 'WMDS' methods
 
 (x <- metadata(vaas_4, "Strain"))
 stopifnot(x == c("DSM18039", "DSM30083T", "DSM1707", "429SC1"))
@@ -94,29 +94,29 @@ stopifnot(length(x) > length(y))
 \seealso{
   Other metadata-functions: \code{\link{edit}},
   \code{\link{include_metadata}},
-  \code{\link{map_metadata}}, \code{\link{metadata.set}},
-                                  }
+  \code{\link{map_metadata}}, \code{\link{map_values}},
+  \code{\link{metadata.set}},                                 }
 \keyword{attribute}
 
 %% BEGIN INSERTION BY repair_S4_docu.rb
 \docType{methods}
 \alias{metadata-methods}
 \alias{metadata,MOPMX-method}
-\alias{metadata,OPMS-method}
 \alias{metadata,WMD-method}
+\alias{metadata,WMDS-method}
 \alias{metadata_chars-methods}
 \alias{metadata_chars,MOPMX-method}
-\alias{metadata_chars,OPMS-method}
 \alias{metadata_chars,WMD-method}
+\alias{metadata_chars,WMDS-method}
 \usage{
   \S4method{metadata}{MOPMX}(object, ...) 
-  \S4method{metadata}{OPMS}(object, ...) 
   \S4method{metadata}{WMD}(object, key = NULL, exact = TRUE,
     strict = FALSE) 
+  \S4method{metadata}{WMDS}(object, ...) 
 
   \S4method{metadata_chars}{MOPMX}(object, ...) 
-  \S4method{metadata_chars}{OPMS}(object, ...) 
   \S4method{metadata_chars}{WMD}(object, values = TRUE,
     classes = "factor") 
+  \S4method{metadata_chars}{WMDS}(object, ...) 
 }
 %% END INSERTION BY repair_S4_docu.rb

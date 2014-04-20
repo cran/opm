@@ -4,9 +4,10 @@
 \title{Listing of well names}
 \arguments{
   \item{object}{\code{\link{OPM}} object,
-  \code{\link{OPMS}} object or well name or index. If
-  missing, defaults to the selection of all possible wells
-  (for the default plate type, see below).}
+  \code{\link{OPMS}} or \code{\link{MOPMX}} object or well
+  name or index. If missing, defaults to the selection of
+  all possible wells (for the default plate type, see
+  below).}
 
   \item{full}{Logical scalar. Return the full names of the
   wells (if available) or just their coordinates on the
@@ -37,31 +38,51 @@
   and removing vowels first.}
 
   \item{paren.sep}{Character scalar. What to insert before
-  the opening parenthesis (or bracket).}
+  the opening parenthesis (or bracket). Currently only zero
+  to many whitespace characters are allowed. The ability to
+  insert a line break is the main purpose of this argument.
+  Using the \sQuote{at sign} as value is the only
+  alternative and also special, as it causes the plate name
+  itself to be appended to the well coordinate (after an
+  \sQuote{at sign}, without parentheses or brackets). So
+  mapping is not actually done in that case but the
+  resulting names are understood by certain other \pkg{opm}
+  methods which can conduct the mapping at a later stage.}
 
   \item{downcase}{Logical scalar indicating whether full
   names should be (carefully) converted to lower case. This
   uses \code{\link{substrate_info}} in \kbd{downcase} mode;
   see there for details.}
 
+  \item{rm.num}{Logical scalar indicating whether numbering
+  (used in the case of replicated substrates per plate)
+  should be stripped from the end of the full well names.}
+
   \item{plate}{Name of the plate type. Several ones can be
   given unless \code{object} is of class \code{\link{OPM}}
-  or \code{\link{OPMS}}.  \code{\link{plate_type}} is
-  applied before searching for the substrate names, and
-  partial matching is allowed.}
+  or \code{\link{OPMS}}.  Normalisation as in
+  \code{\link{plate_type}} is applied before searching for
+  the substrate names but otherwise the match must be
+  exact.}
+
+  \item{simplify}{Logical scalar indicating whether the
+  result should be simplified to a vector. This will never
+  be done if more than a single column is contained, i.e.
+  if data for more than a single plate type are queried
+  for.}
 
   \item{...}{Optional arguments passed between the
   methods.}
 
-  \item{x}{\code{\link{OPMD}} or \code{\link{OPMS}}
-  object.}
+  \item{x}{\code{\link{OPMD}}, \code{\link{OPMS}} or
+  \code{well_coords_map} object.}
 
-  \item{as.groups}{Vector or \code{NULL}. If non-empty,
-  passed as eponymous argument to \code{\link{extract}}.
-  Thus \code{TRUE} and \code{FALSE} can be used, creating
-  either a single group or one per plate. The extracted
-  metadata define groups for which the discretised data are
-  aggregated.
+  \item{as.groups}{Key suitable for querying the metadata,
+  or \code{NULL}. If non-empty, passed as eponymous
+  argument to \code{\link{extract}}. Thus \code{TRUE} and
+  \code{FALSE} can be used, creating either a single group
+  or one per plate. The extracted metadata define groups
+  for which the discretised data are aggregated.
 
   If \code{x} is an \code{\link{OPMD}} object and
   \code{as.groups} is not empty, it is used to create the
@@ -90,10 +111,20 @@
   \code{\link{metadata}}.}
 }
 \value{
-  Character vector. For the \code{listing} methods, a
-  character vector or matrix with additional class
-  attribute \code{OPMD_Listing} or \code{OPMS_Listing}. See
-  the examples for details.
+  The \code{wells} methods return a named character vector
+  or a named matrix of the S3 class \code{well_coords_map},
+  depending on \code{simplify} and \code{plate}.
+
+  The return value of the \code{listing} methods for
+  \code{\link{OPMX}} objects is a character vector or
+  matrix with additional class attribute
+  \code{OPMD_Listing} or \code{OPMS_Listing}.
+
+  The \code{well_coords_map} method creates a nested list
+  of the class \code{well_coords_listing} which can be used
+  in conjunction with \code{\link{to_yaml}} or
+  \code{saveRDS} for externally storing well maps.  See the
+  examples for details.
 }
 \description{
   Get the names of the wells contained in an
@@ -138,8 +169,13 @@ x <- c("A01", "B10")
 stopifnot(nchar(y) > nchar(x))
 (z <- wells(x, plate = "PM1", in.parens = TRUE))
 stopifnot(nchar(z) > nchar(y))
-# formula yields same result (except for row names)
+# formula yields same result
 stopifnot(y == wells(~ c(A01, B10), plate = "PM1"))
+# querying for several plate types at once
+(y <- wells(~ c(A01, B10), plate = c("PM2", "PM3", "PM10")))
+stopifnot(dim(y) == c(2, 3))
+(z <- listing(y)) # create a printable nested list
+stopifnot(is.list(z), sapply(z, is.list), names(z) == colnames(y))
 # using a sequence of well coordinates
 stopifnot(nrow(wells(~ C02:C06)) == 5) # well sequence
 stopifnot(nrow(wells(plate = "PM1")) == 96) # all wells by default
@@ -191,8 +227,8 @@ stopifnot(!is.null(rownames(x)), !is.null(colnames(x)))
   Other naming-functions: \code{\link{find_positions}},
   \code{\link{find_substrate}}, \code{\link{gen_iii}},
   \code{\link{opm_files}}, \code{\link{param_names}},
-  \code{\link{plate_type}}, \code{\link{select_colors}},
-  \code{\link{substrate_info}}
+  \code{\link{plate_type}}, \code{\link{register_plate}},
+  \code{\link{select_colors}}, \code{\link{substrate_info}}
 }
 \keyword{attribute}
 \keyword{category}
@@ -202,9 +238,11 @@ stopifnot(!is.null(rownames(x)), !is.null(colnames(x)))
 \docType{methods}
 \alias{listing-methods}
 \alias{listing,OPMD-method}
-\alias{listing,OPMS-method}
+\alias{listing,XOPMX-method}
+\alias{listing,well_coords_map-method}
 \alias{wells-methods}
 \alias{wells,ANY-method}
+\alias{wells,MOPMX-method}
 \alias{wells,OPM-method}
 \alias{wells,OPMS-method}
 \alias{wells,missing-method}
@@ -213,17 +251,20 @@ stopifnot(!is.null(rownames(x)), !is.null(colnames(x)))
     cutoff = opm_opt("min.mode"), downcase = TRUE, full = TRUE,
     in.parens = FALSE, html = FALSE, sep = " ", ..., exact = TRUE,
     strict = TRUE) 
-  \S4method{listing}{OPMS}(x, as.groups, cutoff = opm_opt("min.mode"),
+  \S4method{listing}{XOPMX}(x, as.groups, cutoff = opm_opt("min.mode"),
     downcase = TRUE, full = TRUE, in.parens = FALSE, html = FALSE, sep = " ",
     ..., exact = TRUE, strict = TRUE) 
+  \S4method{listing}{well_coords_map}(x) 
 
   \S4method{wells}{ANY}(object, full = TRUE, in.parens = FALSE,
     max = opm_opt("max.chars"), brackets = FALSE, clean = TRUE,
-    word.wise = FALSE, paren.sep = " ", downcase = FALSE, plate = "PM01") 
+    word.wise = FALSE, paren.sep = " ", downcase = FALSE, rm.num = FALSE,
+    plate = "PM01", simplify = FALSE) 
+  \S4method{wells}{MOPMX}(object, ...) 
   \S4method{wells}{OPM}(object, full = FALSE, in.parens = TRUE,
     max = opm_opt("max.chars"), brackets = FALSE, clean = TRUE,
-    word.wise = FALSE, paren.sep = " ", downcase = FALSE,
-    plate = plate_type(object)) 
+    word.wise = FALSE, paren.sep = " ", downcase = FALSE, rm.num = FALSE,
+    plate = plate_type(object), simplify = TRUE) 
   \S4method{wells}{OPMS}(object, ...) 
   \S4method{wells}{missing}(object, ...) 
 }

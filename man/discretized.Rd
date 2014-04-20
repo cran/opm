@@ -3,8 +3,8 @@
 \alias{discretized}
 \title{Get discretised data}
 \arguments{
-  \item{object}{\code{\link{OPMD}} or \code{\link{OPMS}}
-  object.}
+  \item{object}{\code{\link{OPMD}}, \code{\link{OPMS}} or
+  \code{\link{MOPMX}} object.}
 
   \item{full}{Logical scalar passed to \code{\link{wells}}.
   This and the following arguments affect the names of the
@@ -19,8 +19,8 @@
   eponymous argument of \code{\link{aggr_settings}}; see
   there for details.}
 
-  \item{...}{Optional arguments passed between the
-  methods.}
+  \item{...}{Optional arguments passed between the methods
+  or to \code{\link{wells}}.}
 }
 \value{
   Logical vector or matrix in the case of
@@ -61,13 +61,12 @@ stopifnot(is.matrix(x), is.character(x), nrow(x) == 4)
 \seealso{
   Other getter-functions: \code{\link{aggr_settings}},
   \code{\link{aggregated}}, \code{\link{anyDuplicated}},
-  \code{\link{csv_data}}, \code{\link{dim}},
-  \code{\link{duplicated}}, \code{\link{filename}},
+  \code{\link{contains}}, \code{\link{csv_data}},
+  \code{\link{dim}}, \code{\link{duplicated}},
   \code{\link{has_aggr}}, \code{\link{has_disc}},
   \code{\link{hours}}, \code{\link{max}},
   \code{\link{measurements}}, \code{\link{minmax}},
-  \code{\link{position}}, \code{\link{seq}},
-  \code{\link{setup_time}}, \code{\link{subset}},
+  \code{\link{seq}}, \code{\link{subset}},
   \code{\link{thin_out}}, \code{\link{well}}
 }
 \keyword{attribute}

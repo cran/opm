@@ -2,14 +2,17 @@ NOT_YET <- "not yet implemented"
 BUG_MSG <- "a bug -- this should not happen"
 
 WMD <- "WMD"
+WMDS <- "WMDS"
+WMDX <- "WMDX"
 OPM <- "OPM"
 OPMA <- "OPMA"
 OPMD <- "OPMD"
 OPMS <- "OPMS"
 OPMX <- "OPMX"
 MOPMX <- "MOPMX"
+XOPMX <- "XOPMX"
+OPM_MCP_OUT <- "OPM_MCP_OUT"
 YAML_VIA_LIST <- "YAML_VIA_LIST"
-MOA <- "MOA"
 FOE <- "FOE"
 CMAT <- "CMAT"
 
@@ -37,6 +40,8 @@ DISC_PARAM <- "disc"
 
 RESERVED_NAMES <- c("Plate", "Well", "Time", "Value", "Parameter")
 names(RESERVED_NAMES) <- tolower(RESERVED_NAMES)
+
+MEASUREMENT_COLUMN_MAP <- c(Well = "well_id", Time = "time", Value = "value")
 
 SOFTWARE <- "software"
 VERSION <- "version"
@@ -94,6 +99,24 @@ MISSING_CHAR <- "?"
 
 PHYLO_FORMATS <- c("epf", "nexus", "phylip", "hennig", "html")
 
+AMINO_ACIDS <- c(
+  # proteinogenic amino acids
+  Alanine = "Ala", Cysteine = "Cys", Glycine = "Gly", Isoleucine = "Ile",
+  Leucine = "Leu", Methionine = "Met", Proline = "Pro", Valine = "Val",
+  Serine = "Ser", Threonine = "Thr", `Aspartic Acid` = "Asp",
+  `Glutamic Acid` = "Glu", Histidine = "His", Arginine = "Arg", Lysine = "Lys",
+  Asparagine = "Asn", Glutamine = "Gln", Phenylalanine = "Phe",
+  Tryptophan = "Trp", Tyrosine = "Tyr",
+  # modified proteinogenic amino acids and selection of uncommon ones
+  # three-letter abbreviations are from CAS search engine
+  `Diamino-Pimelic Acid` = "Dpm", Homoarginine = "Har", Homocysteine = "Hcy",
+  Homohistidine = "Hhs", Homoserine = "Hse", Hydroxyproline = "Hyp",
+  Isovaline = "Iva", Norleucine = "Nle", Nortyrosine = "Nty", Norvaline = "Nva",
+  Ornithine = "Orn", Penicillamine = "Pen", `Pyroglutamic Acid` = "Glp",
+  Pyrrolysine = "Pyl", Sarcosine = "Sar", Selenocysteine = "Scy",
+  Statine = "Sta"
+)
+
 GREEK_LETTERS <- c("alpha", "beta", "gamma", "delta", "epsilon")
 names(GREEK_LETTERS) <- substr(GREEK_LETTERS, 1L, 1L)
 
@@ -121,10 +144,9 @@ SUBSTRATE_PATTERN <- (function() {
   # we prepare for paired parentheses or paired brackets in substrate names
   x <- c(paren = "\\(((?:[^()]+|\\([^()]+\\))+)\\)",
     bracket = "\\[((?:[^\\[\\]]+|\\[[^\\[\\]]+\\])+)\\]")
-  # because 'paren.sep' may be anything, we cannot be too strict here
-  x <- c(x, either = paste0(".*(", x[1L], "|", x[2L], ")", collapse = ""))
-  x <- c(x, any = paste0("(?:.*(?:", x[1L], "|", x[2L], "))?", collapse = ""))
-  x[1L:2L] <- sprintf(".*%s", x[1L:2L])
+  x <- c(x, either = paste0("\\s*(", x[1L], "|", x[2L], ")", collapse = ""))
+  x <- c(x, any = paste0("(?:\\s*(?:", x[1L], "|", x[2L], "))?", collapse = ""))
+  x[1L:2L] <- sprintf("\\s*%s", x[1L:2L])
   x <- c(x, plain = "")
   structure(sprintf("^[A-Z]\\d{2}%s$", x), names = names(x))
 })()

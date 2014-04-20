@@ -3,10 +3,8 @@
 \alias{to_metadata}
 \title{Input metadata}
 \arguments{
-  \item{object}{Character vector or \code{\link{OPM}} or
-  \code{\link{OPMS}} object. The \code{\link{OPM}} and
-  \code{\link{OPMS}} methods collect a data frame from
-  their input object.
+  \item{object}{Character vector or \code{\link{OPM}},
+  \code{\link{OPMS}} or \code{\link{MOPMX}} object.
 
   If a character vector is provided to
   \code{\link{collect_template}}, it acts like the
@@ -16,7 +14,10 @@
   contains (unless restrictions with patterns are made).
   One can also provide file names, or a mixture of file and
   directory names. Regarding the supported input file
-  formats, see \code{\link{read_single_opm}}.
+  formats, see \code{\link{read_single_opm}}. The
+  \code{\link{OPM}}, \code{\link{OPMS}} and
+  \code{\link{MOPMX}} methods collect a data frame from
+  their input object.
 
   \code{to_metadata} needs the name of an input file
   (unnamed character scalar), or any object convertible to
@@ -243,8 +244,9 @@ stopifnot(identical(copy, vaas_4))
 \alias{collect_template,character-method}
 \alias{to_metadata-methods}
 \alias{to_metadata,ANY-method}
-\alias{to_metadata,OPMS-method}
+\alias{to_metadata,MOPMX-method}
 \alias{to_metadata,WMD-method}
+\alias{to_metadata,WMDS-method}
 \alias{to_metadata,character-method}
 \usage{
   \S4method{collect_template}{MOPMX}(object, outfile = NULL,
@@ -266,9 +268,11 @@ stopifnot(identical(copy, vaas_4))
 
   \S4method{to_metadata}{ANY}(object, stringsAsFactors = FALSE,
     optional = TRUE, sep = "\t", strip.white = FALSE, ...) 
-  \S4method{to_metadata}{OPMS}(object, stringsAsFactors = FALSE,
+  \S4method{to_metadata}{MOPMX}(object, stringsAsFactors = FALSE,
     optional = TRUE, sep = "\t", strip.white = FALSE, ...) 
   \S4method{to_metadata}{WMD}(object, stringsAsFactors = FALSE,
+    optional = TRUE, sep = "\t", strip.white = FALSE, ...) 
+  \S4method{to_metadata}{WMDS}(object, stringsAsFactors = FALSE,
     optional = TRUE, sep = "\t", strip.white = FALSE, ...) 
   \S4method{to_metadata}{character}(object, stringsAsFactors = FALSE,
     optional = TRUE, sep = "\t", strip.white = NA, ...) 

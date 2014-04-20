@@ -56,6 +56,10 @@ objects_for_testing <- function() {
   x$THIN.AGG <- do_aggr(thin_out(x$OPMS.INPUT, 10), boot = 2L, verbose = FALSE)
   x$SMALL <- x$OPM.1[, 1L:10L]
   x$SMALL.AGG <- do_aggr(x$SMALL, boot = 0L, cores = 1L)
+  x$MOPMX.1 <- as(list(A = x$OPM.3, B = x$OPMS.INPUT), MOPMX)
+  x$MOPMX.2 <- as(list(U = c(x$SMALL.AGG, x$SMALL.AGG), V = x$THIN.AGG), MOPMX)
+  metadata(x$MOPMX.2[[1L]][1L]) <- list(run = 5, organism = "Unknown")
+  metadata(x$MOPMX.2[[1L]][2L]) <- list(organism = "Unknown", run = 8)
   x
 }
 

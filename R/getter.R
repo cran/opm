@@ -81,14 +81,15 @@ setMethod("[", c(OPMS, "ANY", "ANY", "ANY"), function(x, i, j, k, ...,
     drop = FALSE) {
   if (!missing(...))
     stop("incorrect number of dimensions")
-  if (missing(i) || identical(i, TRUE))
+  if (missing(i) || identical(i, TRUE)) {
     y <- x@plates
-  else {
-    y <- x@plates[i]
-    if (any(bad <- vapply(y, is.null, NA))) {
-      warning("plate indexes partially out of range")
-      y <- y[!bad]
-    }
+  } else {
+    if (!is.logical(i) && !is.numeric(i))
+      if (inherits(i, "formula"))
+        i <- do.call(formula2infix(i), list(i, x))
+      else
+        i <- i %q% x
+    y <- close_index_gaps(x@plates[i])
     if (!length(y))
       return(NULL)
   }
@@ -110,21 +111,79 @@ setMethod("[", c(OPMS, "ANY", "ANY", "ANY"), function(x, i, j, k, ...,
   x
 }, sealed = SEALED)
 
+setMethod("[", c(MOPMX, "missing", "missing", "missing"), function(x, i, j,
+    drop) {
+  x
+}, sealed = SEALED)
+
+setMethod("[", c(MOPMX, "missing", "missing", "ANY"), function(x, i, j,
+    drop) {
+  if (drop)
+    x@.Data
+  else
+    x
+}, sealed = SEALED)
+
+setMethod("[", c(MOPMX, "character", "missing", "missing"), function(x, i, j,
+    drop) {
+  x@.Data <- close_index_gaps(x@.Data[match(i, names(x))])
+  x
+}, sealed = SEALED)
+
 setMethod("[", c(MOPMX, "character", "missing", "ANY"), function(x, i, j,
-    drop = FALSE) {
+    drop) {
   if (drop) # remove the class, return a list
     return(x@.Data[match(i, names(x))])
   x@.Data <- close_index_gaps(x@.Data[match(i, names(x))]) # keeps the class
   x
-})
+}, sealed = SEALED)
 
-setMethod("[", c(MOPMX, "ANY", "missing", "ANY"), function(x, i, j,
-    drop = FALSE) {
+setMethod("[", c(MOPMX, "expression", "missing", "missing"), function(x, i, j,
+    drop) {
+  x[i %q% x]
+}, sealed = SEALED)
+
+setMethod("[", c(MOPMX, "expression", "missing", "ANY"), function(x, i, j,
+    drop) {
+  x[i %q% x, drop = drop]
+}, sealed = SEALED)
+
+setMethod("[", c(MOPMX, "formula", "missing", "missing"), function(x, i, j,
+    drop) {
+  x[do.call(formula2infix(i), list(i, x))]
+}, sealed = SEALED)
+
+setMethod("[", c(MOPMX, "formula", "missing", "ANY"), function(x, i, j,
+    drop) {
+  x[do.call(formula2infix(i), list(i, x)), drop = drop]
+}, sealed = SEALED)
+
+setMethod("[", c(MOPMX, "list", "missing", "missing"), function(x, i, j,
+    drop) {
+  x@.Data <- mapply(do_select, x@.Data, i, SIMPLIFY = FALSE, USE.NAMES = TRUE)
+  x@.Data <- close_index_gaps(x@.Data)
+  x
+}, sealed = SEALED)
+
+setMethod("[", c(MOPMX, "list", "missing", "ANY"), function(x, i, j, drop) {
+  x@.Data <- mapply(do_select, x@.Data, i, SIMPLIFY = FALSE, USE.NAMES = TRUE)
+  if (drop)
+    return(x@.Data)
+  x@.Data <- close_index_gaps(x@.Data)
+  x
+}, sealed = SEALED)
+
+setMethod("[", c(MOPMX, "ANY", "missing", "missing"), function(x, i, j, drop) {
+  x@.Data <- close_index_gaps(x@.Data[i])
+  x
+}, sealed = SEALED)
+
+setMethod("[", c(MOPMX, "ANY", "missing", "ANY"), function(x, i, j, drop) {
   if (drop) # remove the class, return a list
     return(x@.Data[i])
-  x@.Data <- x@.Data[i] # keeps the class
+  x@.Data <- close_index_gaps(x@.Data[i]) # keeps the class
   x
-})
+}, sealed = SEALED)
 
 setMethod("max", OPM, function(x, ..., na.rm = FALSE) {
   if (missing(...))
@@ -134,19 +193,19 @@ setMethod("max", OPM, function(x, ..., na.rm = FALSE) {
 }, sealed = SEALED)
 
 setMethod("max", OPMS, function(x, ..., na.rm = FALSE) {
-  max(vapply(x@plates, FUN = max, 1, ..., na.rm = na.rm),
+  max(vapply(X = x@plates, FUN = max, FUN.VALUE = 1, ..., na.rm = na.rm),
     na.rm = na.rm)
 }, sealed = SEALED)
 
 setGeneric("minmax", function(x, ...) standardGeneric("minmax"))
 
 setMethod("minmax", OPM, function(x, ..., na.rm = FALSE) {
-  min(apply(x@measurements[, -1L, drop = FALSE][, ..., drop = FALSE], 2L,
-    FUN = max, na.rm = na.rm))
+  min(apply(x@measurements[, -1L, drop = FALSE][, ..., drop = FALSE],
+    2L, FUN = max, na.rm = na.rm))
 }, sealed = SEALED)
 
 setMethod("minmax", OPMS, function(x, ..., na.rm = FALSE) {
-  min(vapply(x@plates, FUN = minmax, 1, ..., na.rm = na.rm))
+  min(vapply(X = x@plates, FUN = minmax, FUN.VALUE = 1, ..., na.rm = na.rm))
 }, sealed = SEALED)
 
 setMethod("dim", OPM, function(x) {
@@ -157,21 +216,21 @@ setMethod("dim", OPMS, function(x) {
   c(length(x@plates), dim(x@plates[[1L]]))
 }, sealed = SEALED)
 
-setMethod("length", OPM, function(x) {
+setMethod("length", WMD, function(x) {
   1L
 }, sealed = SEALED)
 
-setMethod("length", OPMS, function(x) {
+setMethod("length", WMDS, function(x) {
   length(x@plates)
 }, sealed = SEALED)
 
 setGeneric("seq")
 
-setMethod("seq", OPM, function(...) {
+setMethod("seq", WMD, function(...) {
   stop("one cannot loop over an object of class ", class(..1))
 }, sealed = SEALED)
 
-setMethod("seq", OPMS, function(...) {
+setMethod("seq", WMDS, function(...) {
   seq_along(..1@plates)
 }, sealed = SEALED)
 
@@ -181,6 +240,8 @@ setMethod("csv_data", OPM, function(object,
     keys = character(), strict = TRUE,
     what = c("select", "filename", "setup_time", "position", "other"),
     normalize = FALSE) {
+  no_backslash <- function(x) gsub("\\",
+    "/", x, FALSE, FALSE, TRUE)
   LL(strict, normalize)
   result <- case(match.arg(what),
       select = NULL,
@@ -193,7 +254,10 @@ setMethod("csv_data", OPM, function(object,
           clean_plate_positions(object@csv_data[[CSV_NAMES[["POS"]]]])
         else
           object@csv_data[[CSV_NAMES[["POS"]]]],
-      other = object@csv_data[!names(object@csv_data) %in% CSV_NAMES]
+      other = if (normalize)
+          no_backslash(object@csv_data[!names(object@csv_data) %in% CSV_NAMES])
+        else
+          object@csv_data[!names(object@csv_data) %in% CSV_NAMES]
     )
   if (length(result))
     return(result)
@@ -213,6 +277,8 @@ setMethod("csv_data", OPM, function(object,
       result[pos[1L]] <- as.character(parse_time(result[pos[1L]]))
     if (pos[2L])
       result[pos[2L]] <- clean_plate_positions(result[pos[2L]])
+    pos <- setdiff(seq_along(result), pos)
+    result[pos] <- no_backslash(result[pos])
   }
   result
 }, sealed = SEALED)
@@ -221,10 +287,7 @@ setMethod("csv_data", "OPMS", function(object, ...) {
   x <- lapply(X = object@plates, FUN = csv_data, ...)
   if (all(vapply(x, length, 0L) == 1L))
     return(unlist(x, FALSE, TRUE))
-  x <- lapply(x, vector2row)
-  for (i in seq_along(x)) # next step necessary to keep all rows
-    rownames(x[[i]]) <- i # TODO: this should go into collect()
-  collect(x, "datasets", 1L, TRUE)
+  collect_rows(lapply(x, vector2row))
 }, sealed = SEALED)
 
 setMethod("csv_data", "MOPMX", function(object, ...) {
@@ -232,30 +295,7 @@ setMethod("csv_data", "MOPMX", function(object, ...) {
   if (all(is.vec <- !vapply(x, is.matrix, 0L)))
     return(unlist(x, FALSE, TRUE))
   x[is.vec] <- lapply(x[is.vec], vector2row)
-  for (i in seq_along(x)) # next step necessary to keep all rows
-    rownames(x[[i]]) <- paste(i, seq_len(nrow(x[[i]])), sep = ".")
-  collect(x, "datasets", 1L, TRUE) # TODO: the above should go into collect()
-}, sealed = SEALED)
-
-setGeneric("filename", function(object, ...) standardGeneric("filename"))
-
-setMethod("filename", OPM, function(object) {
-  warning("this function is deprecated -- use csv_data() instead")
-  csv_data(object, what = "filename")
-}, sealed = SEALED)
-
-setGeneric("setup_time", function(object, ...) standardGeneric("setup_time"))
-
-setMethod("setup_time", OPM, function(object) {
-  warning("this function is deprecated -- use csv_data() instead")
-  csv_data(object, what = "setup_time")
-}, sealed = SEALED)
-
-setGeneric("position", function(object, ...) standardGeneric("position"))
-
-setMethod("position", OPM, function(object) {
-  warning("this function is deprecated -- use csv_data() instead")
-  csv_data(object, what = "position")
+  collect_rows(x)
 }, sealed = SEALED)
 
 setGeneric("has_aggr", function(object, ...) standardGeneric("has_aggr"))
@@ -387,73 +427,48 @@ setMethod("disc_settings", MOPMX, function(object, join = NULL) {
 
 setGeneric("subset")
 
-setMethod("subset", OPMS, function(x, query, values = TRUE,
+setMethod("subset", OPMX, function(x, query, values = TRUE,
     invert = FALSE, exact = FALSE, time = FALSE,
     positive = c("ignore", "any", "all"),
     negative = c("ignore", "any", "all"),
     use = c("i", "I", "k", "K", "n", "N", "p", "P", "q", "Q", "t", "T")) {
-  select_binary <- function(x, invert.1, combine, invert.2) {
-    y <- discretized(x)
-    if (invert.1)
-      y <- !y
-    y[is.na(y)] <- FALSE
-    y <- apply(y, 2L, combine)
-    if (invert.2)
-      y <- !y
-    x[, , y]
-  }
-  case(match.arg(use),
-    i =, I = NULL,
-    k =, K = values <- FALSE,
-    n = negative <- "any",
-    N = negative <- "all",
-    p = positive <- "any",
-    P = positive <- "all",
-    q = {
-      values <- TRUE
-      exact <- FALSE
-    },
-    Q = {
-      values <- TRUE
-      exact <- TRUE
-    },
-    t =, T = time <- TRUE
-  )
-  LL(values, invert, exact, time)
+  if (missing(use))
+    LL(values, invert, exact, time)
+  else
+    reassign_args_using(match.arg(use))
   case(negative <- match.arg(negative),
     ignore = NULL,
     any =,
-    all = return(select_binary(x, TRUE, negative, invert))
+    all = return(select_by_disc(x, TRUE, invert, negative))
   )
   case(positive <- match.arg(positive),
     ignore = NULL,
     any =,
-    all = return(select_binary(x, FALSE, positive, invert))
+    all = return(select_by_disc(x, FALSE, invert, positive))
   )
-  if (time) {
-    tp <- hours(x, what = "all")
-    if (is.matrix(tp))
-      tp <- lapply(seq_len(nrow(tp)), function(i) tp[i, ])
-    if (length(maxs <- unique.default(vapply(tp, max, 1))) < 2L)
-      return(x)
-    min.max <- min(maxs)
-    tp <- lapply(tp, function(x) which(x <= min.max))
-    return(x[, tp])
+  if (time)
+    return(common_times(x))
+  if (!is.logical(query) && !is.numeric(query)) {
+    query <- if (values) {
+        if (exact)
+          query %Q% x
+        else
+          query %q% x
+      } else if (exact) {
+        query %K% x
+      } else {
+        query %k% x
+      }
+    if (invert)
+      query <- !query
   }
-  if (is.logical(query) || is.numeric(query))
-    return(x[query, , ])
-  pos <- if (values) {
-    if (exact)
-      query %Q% x
-    else
-      query %q% x
-  } else if (exact)
-    query %K% x
-  else
-    query %k% x
-  if (invert)
-    pos <- !pos
-  x[pos, , ]
+  do_select(x, query)
+}, sealed = SEALED)
+
+setMethod("subset", MOPMX, function(x, query, ...) {
+  x@.Data <- lapply(X = x@.Data, FUN = subset, query = query, ...)
+  x@.Data <- close_index_gaps(x@.Data)
+  x
 }, sealed = SEALED)
 
 setGeneric("thin_out", function(object, ...) standardGeneric("thin_out"))
@@ -470,41 +485,123 @@ setMethod("thin_out", OPMS, function(object, ...) {
   new(OPMS, plates = lapply(X = object@plates, FUN = thin_out, ...))
 }, sealed = SEALED)
 
+setMethod("thin_out", MOPMX, function(object, ...) {
+  object@.Data <- lapply(X = object@.Data, FUN = thin_out, ...)
+  object
+}, sealed = SEALED)
+
 setGeneric("duplicated")
 
-setMethod("duplicated", c(OPM, "ANY"), function(x, incomparables, ...) {
-  FALSE
+setMethod("duplicated", c(OPM, "missing"), function(x, incomparables, ...) {
+  duplicated(x = x, incomparables = FALSE, ...)
 }, sealed = SEALED)
 
 setMethod("duplicated", c(OPMS, "missing"), function(x, incomparables, ...) {
   duplicated(x = x, incomparables = FALSE, ...)
 }, sealed = SEALED)
 
+setMethod("duplicated", c(OPM, "ANY"), function(x, incomparables, ...) {
+  FALSE
+}, sealed = SEALED)
+
 setMethod("duplicated", c(OPMS, "ANY"), function(x, incomparables,
-    what = c("all", "csv", "metadata"), ...) {
+    what = c("all", "csv", "metadata"), exact = TRUE, strict = FALSE, ...) {
   selection <- tryCatch(match.arg(what), error = function(e) "other")
   duplicated(x = case(selection,
     all = x@plates,
     csv = cbind(csv_data(x, what = "setup_time"),
       csv_data(x, what = "position")),
     metadata = metadata(x),
-    other = metadata(object = x, key = what)
+    other = metadata(object = x, key = what, exact = exact, strict = strict)
+  ), incomparables = incomparables, ...)
+}, sealed = SEALED)
+
+setMethod("duplicated", c(MOPMX, "missing"), function(x, incomparables, ...) {
+  duplicated(x = x, incomparables = FALSE, ...)
+}, sealed = SEALED)
+
+setMethod("duplicated", c(MOPMX, "ANY"), function(x, incomparables,
+    what = c("all", "plate.type", "metadata"), exact = TRUE, strict = FALSE,
+    ...) {
+  selection <- tryCatch(match.arg(what), error = function(e) "other")
+  duplicated(x = case(selection,
+    all = x@.Data,
+    metadata = metadata(x),
+    other = metadata(object = x, key = what, exact = exact, strict = strict),
+    plate.type = plate_type(x)
   ), incomparables = incomparables, ...)
 }, sealed = SEALED)
 
 setGeneric("anyDuplicated")
 
-setMethod("anyDuplicated", c(OPM, "ANY"), function(x, incomparables, ...) {
-  0L
+setMethod("anyDuplicated", c(OPM, "missing"), function(x, incomparables, ...) {
+  anyDuplicated(x = x, incomparables = FALSE, ...)
 }, sealed = SEALED)
 
 setMethod("anyDuplicated", c(OPMS, "missing"), function(x, incomparables, ...) {
   anyDuplicated(x = x, incomparables = FALSE, ...)
 }, sealed = SEALED)
 
+setMethod("anyDuplicated", c(OPM, "ANY"), function(x, incomparables, ...) {
+  0L
+}, sealed = SEALED)
+
 setMethod("anyDuplicated", c(OPMS, "ANY"), function(x, incomparables, ...) {
   dups <- which(duplicated(x = x, incomparables = incomparables, ...))
   case(length(dups), 0L, dups[1L])
+}, sealed = SEALED)
+
+setMethod("anyDuplicated", c(MOPMX, "missing"), function(x, incomparables,
+    ...) {
+  anyDuplicated(x = x, incomparables = FALSE, ...)
+}, sealed = SEALED)
+
+setMethod("anyDuplicated", c(MOPMX, "ANY"), function(x, incomparables, ...) {
+  dups <- which(duplicated(x = x, incomparables = incomparables, ...))
+  case(length(dups), 0L, dups[1L])
+}, sealed = SEALED)
+
+setGeneric("contains")
+
+setMethod("contains", c(OPMS, OPM), function(object, other, ...) {
+  for (plate in object@plates)
+    if (identical(x = plate, y = other, ...))
+      return(TRUE)
+  FALSE
+}, sealed = SEALED)
+
+setMethod("contains", c(OPMS, OPMS), function(object, other, ...) {
+  single_contained <- function(x) {
+    for (plate in object@plates)
+      if (identical(x = plate, y = x, ...))
+        return(TRUE)
+    FALSE
+  }
+  vapply(other@plates, single_contained, NA)
+}, sealed = SEALED)
+
+setMethod("contains", c(OPM, OPMS), function(object, other, ...) {
+  mapply(identical, y = other@plates, MoreArgs = list(x = object, ...),
+    SIMPLIFY = TRUE, USE.NAMES = FALSE)
+}, sealed = SEALED)
+
+setMethod("contains", c(OPM, OPM), function(object, other, ...) {
+  identical(x = object, y = other, ...)
+}, sealed = SEALED)
+
+setMethod("contains", c(OPMX, MOPMX), function(object, other, ...) {
+  FALSE
+}, sealed = SEALED)
+
+setMethod("contains", c(MOPMX, OPMX), function(object, other, ...) {
+  for (elem in object@.Data)
+    if (all(contains(elem, other, ...)))
+      return(TRUE)
+  FALSE
+}, sealed = SEALED)
+
+setMethod("contains", c(MOPMX, MOPMX), function(object, other, ...) {
+  vapply(X = other@.Data, FUN = contains, FUN.VALUE = NA, object = object, ...)
 }, sealed = SEALED)
 
 lapply(c(
@@ -515,15 +612,11 @@ lapply(c(
     has_disc,
     hours,
     measurements,
-    metadata,
-    filename, # deprecated
-    position, # deprecated
-    setup_time, # deprecated
     well
     #-
   ), FUN = function(func_) {
   setMethod(func_, OPMS, function(object, ...) {
-    simplify_conditionally(lapply(object@plates, FUN = func_, ...))
+    simplify_conditionally(lapply(X = object@plates, FUN = func_, ...))
   }, sealed = SEALED)
 })
 
@@ -536,7 +629,6 @@ lapply(c(
     hours,
     measurements,
     metadata,
-    plate_type,
     well
     #-
   ), FUN = function(func_) {
@@ -674,7 +766,7 @@ lapply(c(
     `%Q%`
     #-
   ), FUN = function(func_) {
-  setMethod(func_, c("list", OPMS), function(x, table) {
+  setMethod(func_, c("list", WMDS), function(x, table) {
     vapply(table@plates, func_, NA, x = x, USE.NAMES = FALSE)
   }, sealed = SEALED)
 })
@@ -687,7 +779,7 @@ lapply(c(
     `%Q%`
     #-
   ), FUN = function(func_) {
-  setMethod(func_, c(WMD, OPMS), function(x, table) {
+  setMethod(func_, c(WMD, WMDS), function(x, table) {
     vapply(table@plates, func_, NA, x = x, USE.NAMES = FALSE)
   }, sealed = SEALED)
 })
@@ -700,7 +792,7 @@ lapply(c(
     `%Q%`
     #-
   ), FUN = function(func_) {
-  setMethod(func_, c("character", OPMS), function(x, table) {
+  setMethod(func_, c("character", WMDS), function(x, table) {
     vapply(table@plates, func_, NA, x = x, USE.NAMES = FALSE)
   }, sealed = SEALED)
 })
@@ -713,7 +805,7 @@ lapply(c(
     `%Q%`
     #-
   ), FUN = function(func_) {
-  setMethod(func_, c("factor", OPMS), function(x, table) {
+  setMethod(func_, c("factor", WMDS), function(x, table) {
     vapply(table@plates, func_, NA, x = x, USE.NAMES = FALSE)
   }, sealed = SEALED)
 })
@@ -726,7 +818,7 @@ lapply(c(
     `%Q%`
     #-
   ), FUN = function(func_) {
-  setMethod(func_, c("formula", OPMS), function(x, table) {
+  setMethod(func_, c("formula", WMDS), function(x, table) {
     vapply(table@plates, func_, NA, x = x, USE.NAMES = FALSE)
   }, sealed = SEALED)
 })
@@ -739,7 +831,7 @@ lapply(c(
     `%Q%`
     #-
   ), FUN = function(func_) {
-  setMethod(func_, c("expression", OPMS), function(x, table) {
+  setMethod(func_, c("expression", WMDS), function(x, table) {
     vapply(table@plates, func_, NA, x = x, USE.NAMES = FALSE)
   }, sealed = SEALED)
 })
@@ -765,8 +857,34 @@ lapply(c(
     `%Q%`
     #-
   ), FUN = function(func_) {
-  setMethod(func_, c(OPMS, "ANY"), function(x, table) {
+  setMethod(func_, c(WMDS, "ANY"), function(x, table) {
     func_(table, x)
+  }, sealed = SEALED)
+})
+
+lapply(c(
+    #+
+    `%k%`,
+    `%K%`,
+    `%q%`,
+    `%Q%`
+    #-
+  ), FUN = function(func_) {
+  setMethod(func_, c(MOPMX, "ANY"), function(x, table) {
+    func_(table, x)
+  }, sealed = SEALED)
+})
+
+lapply(c(
+    #+
+    `%k%`,
+    `%K%`,
+    `%q%`,
+    `%Q%`
+    #-
+  ), FUN = function(func_) {
+  setMethod(func_, c("ANY", MOPMX), function(x, table) {
+    lapply(table@.Data, func_, x = x)
   }, sealed = SEALED)
 })
 

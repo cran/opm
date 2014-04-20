@@ -11,7 +11,7 @@
 \value{
   For the \code{\link{OPM}} method, a named list of the
   class \code{OPM_Summary}, returned invisibly. The
-  \sQuote{metadata} entry is the number of non-list
+  \sQuote{Metadata} entry is the number of non-list
   elements in \code{\link{metadata}}. For the
   \code{\link{OPMS}} method, a list of such lists (one per
   plate), also returned invisibly, with the class set to

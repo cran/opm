@@ -143,7 +143,11 @@
   \code{\link{wells}} for creating substrate names. Some
   restrictions are necessary here if the resulting object
   shall latter on be analysed with \code{\link{annotated}};
-  see there for details.}
+  see there for details. This holds particularly if
+  \code{object} is of class \code{\link{MOPMX}}. In that
+  case, setting \code{full} to \code{FALSE} is likely to
+  cause most combinations of wells and plates to be omitted
+  because the well names get non-unique.}
 }
 \value{
   The kind of object returned by this function are
@@ -154,27 +158,27 @@
   \code{coef} and \code{vcov} are available for this class.
   See \code{glht} in the \pkg{multcomp} package for
   details.} \item{data}{Reshaped (\sQuote{flattened}) data
-  frame. It contains one column for the measured values,
-  one factorial variable determining the well, one
-  factorial variable for the curve parameter (see
-  \code{\link{param_names}}) and additional factorial
-  variables selected by \code{model} as factors. The column
-  names are converted to syntactical names. Such a data
-  frame might be of use for model-building approaches not
-  covered by this function.} \item{model}{The \code{model}
-  argument \emph{after} the conversions conducted by
-  \code{opm_mcp}, if any.} \item{linfct}{The \code{linfct}
-  argument \emph{after} the conversions conducted by
-  \code{opm_mcp}, if any.} \item{contrast}{A list of
-  contrast matrices as specified by \code{model} and
-  \code{linfct}. As these matrices would be guaranteed to
-  fit to \code{object}, they could serve as template
-  matrices to be further specified by the user. Note that
-  this only works if \code{linfct} either is an object of
-  class \code{mcp} or convertible to such an object, and if
-  its values are character scalars that can be passed as
-  \code{type} argument to \code{contrMat} from the
-  \pkg{multcomp} package.} }
+  frame of the class \code{\link{OPM_MCP_OUT}}. It contains
+  one column for the measured values, one factorial
+  variable determining the well, one factorial variable for
+  the curve parameter (see \code{\link{param_names}}) and
+  additional factorial variables selected by \code{model}
+  as factors. The column names are converted to syntactical
+  names. Such a data frame might be of use for
+  model-building approaches not covered by this function.}
+  \item{model}{The \code{model} argument \emph{after} the
+  conversions conducted by \code{opm_mcp}, if any.}
+  \item{linfct}{The \code{linfct} argument \emph{after} the
+  conversions conducted by \code{opm_mcp}, if any.}
+  \item{contrast}{A list of contrast matrices as specified
+  by \code{model} and \code{linfct}. As these matrices
+  would be guaranteed to fit to \code{object}, they could
+  serve as template matrices to be further specified by the
+  user. Note that this only works if \code{linfct} either
+  is an object of class \code{mcp} or convertible to such
+  an object, and if its values are character scalars that
+  can be passed as \code{type} argument to \code{contrMat}
+  from the \pkg{multcomp} package.} }
 }
 \description{
   This function provides linear-hypothesis testing and
@@ -348,9 +352,13 @@ if (do.plot)
 %% BEGIN INSERTION BY repair_S4_docu.rb
 \docType{methods}
 \alias{opm_mcp-methods}
+\alias{opm_mcp,MOPMX-method}
 \alias{opm_mcp,OPMS-method}
 \alias{opm_mcp,data.frame-method}
 \usage{
+  \S4method{opm_mcp}{MOPMX}(object, model, linfct = 1L,
+    m.type = "glm", rhs = 0, alternative = "two.sided", glht.args = list(),
+    ops = "+", output = "mcp", sep = opm_opt("comb.value.join"), ...) 
   \S4method{opm_mcp}{OPMS}(object, model, linfct = 1L,
     m.type = "glm", rhs = 0, alternative = "two.sided", glht.args = list(),
     ops = "+", output = "mcp", sep = opm_opt("comb.value.join"), ...) 

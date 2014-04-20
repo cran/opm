@@ -3,7 +3,7 @@
 \alias{metadata<-}
 \title{Replace metadata}
 \arguments{
-  \item{object}{\code{\link{WMD}}, \code{\link{OPMS}} or
+  \item{object}{\code{\link{WMD}}, \code{\link{WMDS}} or
   \code{\link{MOPMX}} object.}
 
   \item{key}{Missing, numeric scalar, character vector,
@@ -26,7 +26,7 @@
   mode \sQuote{character}. }}
 
   \item{value}{Character vector, list, data frame, formula,
-  \code{\link{WMD}} or \code{\link{OPMS}} object.
+  \code{\link{WMD}} or \code{\link{WMDS}} object.
   \itemize{ \item If \code{key} is a character vector, this
   can be arbitrary value(s) to be included in the metadata
   (if \code{NULL}, this metadata entry is deleted).  \item
@@ -37,12 +37,12 @@
   case, the formula can specify the key to be replaced. See
   the examples below and \code{\link{map_values}} for
   details.  \item If \code{object} is of class
-  \code{\link{OPMS}}, \code{value} can be a data frame
+  \code{\link{WMDS}}, \code{value} can be a data frame
   whose number of rows must be equal to the number of
   plates.  Metadata to be set will then be selected from
   each individual row in turn and in input order. This
   works analogously if \code{value} is an
-  \code{\link{OPMS}} object. The lengths of both objects
+  \code{\link{WMDS}} object. The lengths of both objects
   must match. If \code{value} is a \code{\link{WMD}}
   object, its metadata entries will be recycled. \item If
   \code{object} is of class \code{\link{WMD}}, \code{value}
@@ -53,7 +53,7 @@
 }
 \description{
   Set the meta-information stored together with the data.
-  For most kinds of arguments the \code{\link{OPMS}} and
+  For most kinds of arguments the \code{\link{WMDS}} and
   \code{\link{MOPMX}} methods set the meta-information
   stored together with the measurements for all plates at
   once. But they can address the plates individually if
@@ -129,9 +129,9 @@ stopifnot(metadata(copy, "Strain") != metadata(vaas_1, "Strain"))
 metadata(copy, as.factor("Strain")) <- metadata(vaas_1, "Strain")
 stopifnot(metadata(copy, "Strain") == metadata(vaas_1, "Strain"))
 
-## OPMS methods
+## WMDS methods
 
-# OPMS/missing/list method
+# WMDS/missing/list method
 copy <- vaas_4
 (metadata(copy) <- list(x = -99)) # will replace all of them
 stopifnot(identical(unique(metadata(copy)), list(list(x = -99))))
@@ -139,17 +139,17 @@ metadata(copy[2]) <- list(x = 1) # will replace those of 2nd plate
 stopifnot(identical(unique(metadata(copy)),
   list(list(x = -99), list(x = 1))))
 
-# OPMS/missing/WMD method
+# WMDS/missing/WMD method
 (metadata(copy) <- vaas_1) # will also replace all of them
 stopifnot(identical(unique(metadata(copy)), list(metadata(vaas_1))))
 
-# OPMS/missing/formula method
+# WMDS/missing/formula method
 copy <- vaas_4
 metadata(copy) <- Organism ~ paste(Species, Strain)
 (x <- metadata(copy, "Organism"))
 stopifnot(length(x) == length(metadata(vaas_4, "Organism")) + 4)
 
-# OPMS/ANY/ANY method
+# WMDS/ANY/ANY method
 copy <- vaas_4
 (metadata(copy, "Species") <- "Bacillus subtilis") # will set all of them
 stopifnot(identical(unique(metadata(copy, "Species")), "Bacillus subtilis"))
@@ -160,7 +160,7 @@ stopifnot(identical(metadata(copy), metadata(vaas_4)))
 (metadata(copy) <- vaas_1) # set everything to metadata of vaas_1
 stopifnot(identical(unique(metadata(copy)), list(metadata(vaas_1))))
 
-# OPMS/character/data frame method
+# WMDS/character/data frame method
 copy <- vaas_4
 (x <- data.frame(Type = grepl("T$", metadata(vaas_4, "Strain"))))
 metadata(copy, "Type") <- x
@@ -177,8 +177,8 @@ stopifnot(!identical(metadata(copy, "Type2"), x$Type))
 \seealso{
   Other metadata-functions: \code{\link{edit}},
   \code{\link{include_metadata}},
-  \code{\link{map_metadata}}, \code{\link{metadata}},
-  \code{\link{metadata_chars}}
+  \code{\link{map_metadata}}, \code{\link{map_values}},
+  \code{\link{metadata}}, \code{\link{metadata_chars}}
 }
 \keyword{manip}
 
@@ -186,107 +186,117 @@ stopifnot(!identical(metadata(copy, "Type2"), x$Type))
 \docType{methods}
 \alias{metadata.set-methods}
 \alias{metadata.set,MOPMX,ANY,ANY-method}
+\alias{metadata.set,MOPMX-method}
 \alias{metadata<-,MOPMX,ANY,ANY-method}
+\alias{metadata<-,MOPMX-method}
 \alias{metadata.set,MOPMX,ANY,data.frame-method}
 \alias{metadata<-,MOPMX,ANY,data.frame-method}
 \alias{metadata.set,MOPMX,missing,ANY-method}
+\alias{metadata.set,MOPMX,missing-method}
 \alias{metadata<-,MOPMX,missing,ANY-method}
+\alias{metadata<-,MOPMX,missing-method}
 \alias{metadata.set,MOPMX,missing,data.frame-method}
 \alias{metadata<-,MOPMX,missing,data.frame-method}
-\alias{metadata.set,OPMS,ANY,ANY-method}
-\alias{metadata<-,OPMS,ANY,ANY-method}
-\alias{metadata.set,OPMS,ANY,OPMS-method}
-\alias{metadata<-,OPMS,ANY,OPMS-method}
-\alias{metadata.set,OPMS,ANY,WMD-method}
-\alias{metadata<-,OPMS,ANY,WMD-method}
-\alias{metadata.set,OPMS,ANY,data.frame-method}
-\alias{metadata<-,OPMS,ANY,data.frame-method}
-\alias{metadata.set,OPMS,character,OPMS-method}
-\alias{metadata<-,OPMS,character,OPMS-method}
-\alias{metadata.set,OPMS,character,data.frame-method}
-\alias{metadata<-,OPMS,character,data.frame-method}
-\alias{metadata.set,OPMS,missing,FOE-method}
-\alias{metadata<-,OPMS,missing,FOE-method}
-\alias{metadata.set,OPMS,missing,OPMS-method}
-\alias{metadata<-,OPMS,missing,OPMS-method}
-\alias{metadata.set,OPMS,missing,WMD-method}
-\alias{metadata<-,OPMS,missing,WMD-method}
-\alias{metadata.set,OPMS,missing,data.frame-method}
-\alias{metadata<-,OPMS,missing,data.frame-method}
-\alias{metadata.set,OPMS,missing,list-method}
-\alias{metadata<-,OPMS,missing,list-method}
 \alias{metadata.set,WMD,ANY,ANY-method}
+\alias{metadata.set,WMD-method}
 \alias{metadata<-,WMD,ANY,ANY-method}
+\alias{metadata<-,WMD-method}
 \alias{metadata.set,WMD,character,ANY-method}
+\alias{metadata.set,WMD,character-method}
 \alias{metadata<-,WMD,character,ANY-method}
-\alias{metadata.set,WMD,character,OPMS-method}
-\alias{metadata<-,WMD,character,OPMS-method}
+\alias{metadata<-,WMD,character-method}
 \alias{metadata.set,WMD,character,WMD-method}
 \alias{metadata<-,WMD,character,WMD-method}
+\alias{metadata.set,WMD,character,WMDS-method}
+\alias{metadata<-,WMD,character,WMDS-method}
 \alias{metadata.set,WMD,character,data.frame-method}
 \alias{metadata<-,WMD,character,data.frame-method}
-\alias{metadata.set,WMD,list,OPMS-method}
-\alias{metadata<-,WMD,list,OPMS-method}
 \alias{metadata.set,WMD,list,WMD-method}
 \alias{metadata<-,WMD,list,WMD-method}
+\alias{metadata.set,WMD,list,WMDS-method}
+\alias{metadata<-,WMD,list,WMDS-method}
 \alias{metadata.set,WMD,list,data.frame-method}
 \alias{metadata<-,WMD,list,data.frame-method}
 \alias{metadata.set,WMD,list,list-method}
 \alias{metadata<-,WMD,list,list-method}
 \alias{metadata.set,WMD,missing,FOE-method}
 \alias{metadata<-,WMD,missing,FOE-method}
-\alias{metadata.set,WMD,missing,OPMS-method}
-\alias{metadata<-,WMD,missing,OPMS-method}
 \alias{metadata.set,WMD,missing,WMD-method}
 \alias{metadata<-,WMD,missing,WMD-method}
+\alias{metadata.set,WMD,missing,WMDS-method}
+\alias{metadata<-,WMD,missing,WMDS-method}
 \alias{metadata.set,WMD,missing,data.frame-method}
 \alias{metadata<-,WMD,missing,data.frame-method}
 \alias{metadata.set,WMD,missing,list-method}
 \alias{metadata<-,WMD,missing,list-method}
-\alias{metadata.set,WMD,numeric,OPMS-method}
-\alias{metadata<-,WMD,numeric,OPMS-method}
 \alias{metadata.set,WMD,numeric,WMD-method}
 \alias{metadata<-,WMD,numeric,WMD-method}
+\alias{metadata.set,WMD,numeric,WMDS-method}
+\alias{metadata<-,WMD,numeric,WMDS-method}
 \alias{metadata.set,WMD,numeric,data.frame-method}
 \alias{metadata<-,WMD,numeric,data.frame-method}
 \alias{metadata.set,WMD,numeric,list-method}
 \alias{metadata<-,WMD,numeric,list-method}
+\alias{metadata.set,WMDS,ANY,ANY-method}
+\alias{metadata.set,WMDS-method}
+\alias{metadata<-,WMDS,ANY,ANY-method}
+\alias{metadata<-,WMDS-method}
+\alias{metadata.set,WMDS,ANY,WMD-method}
+\alias{metadata<-,WMDS,ANY,WMD-method}
+\alias{metadata.set,WMDS,ANY,WMDS-method}
+\alias{metadata<-,WMDS,ANY,WMDS-method}
+\alias{metadata.set,WMDS,ANY,data.frame-method}
+\alias{metadata<-,WMDS,ANY,data.frame-method}
+\alias{metadata.set,WMDS,character,WMDS-method}
+\alias{metadata<-,WMDS,character,WMDS-method}
+\alias{metadata.set,WMDS,character,data.frame-method}
+\alias{metadata<-,WMDS,character,data.frame-method}
+\alias{metadata.set,WMDS,missing,FOE-method}
+\alias{metadata<-,WMDS,missing,FOE-method}
+\alias{metadata.set,WMDS,missing,WMD-method}
+\alias{metadata<-,WMDS,missing,WMD-method}
+\alias{metadata.set,WMDS,missing,WMDS-method}
+\alias{metadata<-,WMDS,missing,WMDS-method}
+\alias{metadata.set,WMDS,missing,data.frame-method}
+\alias{metadata<-,WMDS,missing,data.frame-method}
+\alias{metadata.set,WMDS,missing,list-method}
+\alias{metadata<-,WMDS,missing,list-method}
 \usage{
   \S4method{metadata}{MOPMX,ANY,ANY}(object, key) <- value
   \S4method{metadata}{MOPMX,ANY,data.frame}(object, key) <- value
   \S4method{metadata}{MOPMX,missing,ANY}(object, key) <- value
   \S4method{metadata}{MOPMX,missing,data.frame}(object, key) <- value
-  \S4method{metadata}{OPMS,ANY,ANY}(object, key) <- value
-  \S4method{metadata}{OPMS,ANY,OPMS}(object, key) <- value
-  \S4method{metadata}{OPMS,ANY,WMD}(object, key) <- value
-  \S4method{metadata}{OPMS,ANY,data.frame}(object, key) <- value
-  \S4method{metadata}{OPMS,character,OPMS}(object, key) <- value
-  \S4method{metadata}{OPMS,character,data.frame}(object,
-    key) <- value
-  \S4method{metadata}{OPMS,missing,FOE}(object, key) <- value
-  \S4method{metadata}{OPMS,missing,OPMS}(object, key) <- value
-  \S4method{metadata}{OPMS,missing,WMD}(object, key) <- value
-  \S4method{metadata}{OPMS,missing,data.frame}(object,
-    key) <- value
-  \S4method{metadata}{OPMS,missing,list}(object, key) <- value
   \S4method{metadata}{WMD,ANY,ANY}(object, key) <- value
   \S4method{metadata}{WMD,character,ANY}(object, key) <- value
-  \S4method{metadata}{WMD,character,OPMS}(object, key) <- value
   \S4method{metadata}{WMD,character,WMD}(object, key) <- value
+  \S4method{metadata}{WMD,character,WMDS}(object, key) <- value
   \S4method{metadata}{WMD,character,data.frame}(object, key) <- value
-  \S4method{metadata}{WMD,list,OPMS}(object, key) <- value
   \S4method{metadata}{WMD,list,WMD}(object, key) <- value
+  \S4method{metadata}{WMD,list,WMDS}(object, key) <- value
   \S4method{metadata}{WMD,list,data.frame}(object, key) <- value
   \S4method{metadata}{WMD,list,list}(object, key) <- value
   \S4method{metadata}{WMD,missing,FOE}(object, key) <- value
-  \S4method{metadata}{WMD,missing,OPMS}(object, key) <- value
   \S4method{metadata}{WMD,missing,WMD}(object, key) <- value
+  \S4method{metadata}{WMD,missing,WMDS}(object, key) <- value
   \S4method{metadata}{WMD,missing,data.frame}(object,
     key) <- value
   \S4method{metadata}{WMD,missing,list}(object, key) <- value
-  \S4method{metadata}{WMD,numeric,OPMS}(object, key) <- value
   \S4method{metadata}{WMD,numeric,WMD}(object, key) <- value
+  \S4method{metadata}{WMD,numeric,WMDS}(object, key) <- value
   \S4method{metadata}{WMD,numeric,data.frame}(object, key) <- value
   \S4method{metadata}{WMD,numeric,list}(object, key) <- value
+  \S4method{metadata}{WMDS,ANY,ANY}(object, key) <- value
+  \S4method{metadata}{WMDS,ANY,WMD}(object, key) <- value
+  \S4method{metadata}{WMDS,ANY,WMDS}(object, key) <- value
+  \S4method{metadata}{WMDS,ANY,data.frame}(object, key) <- value
+  \S4method{metadata}{WMDS,character,WMDS}(object, key) <- value
+  \S4method{metadata}{WMDS,character,data.frame}(object,
+    key) <- value
+  \S4method{metadata}{WMDS,missing,FOE}(object, key) <- value
+  \S4method{metadata}{WMDS,missing,WMD}(object, key) <- value
+  \S4method{metadata}{WMDS,missing,WMDS}(object, key) <- value
+  \S4method{metadata}{WMDS,missing,data.frame}(object,
+    key) <- value
+  \S4method{metadata}{WMDS,missing,list}(object, key) <- value
 }
 %% END INSERTION BY repair_S4_docu.rb

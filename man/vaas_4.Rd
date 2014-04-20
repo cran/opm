@@ -28,8 +28,9 @@
   represents the wells G11 and H11 selected from
   \code{vaas_4}. Figure 4 focuses then further on that
   subset, namely showing the data from strain \acronym{DSM}
-  30083T (left curve) and strain \emph{Pseudomonas
-  aeruginosa} \acronym{DSM} 1707 (right curve).
+  30083\eqn{\textsuperscript{T}}{T} (left curve) and strain
+  \emph{Pseudomonas aeruginosa} \acronym{DSM} 1707 (right
+  curve).
 
   The \code{\link{OPMD}} object \code{vaas_1} contains
   measurements from a single selected plate from the study
@@ -37,9 +38,9 @@
   fully describe the conducted \acronym{PM} experiments:
   this plate is the sixth technical replicate from the
   first biological replicate for the strain
-  \emph{Escherichia coli} \acronym{DSM} 30083T (yes, the
-  type strain of \emph{E. coli}). This is a subset of
-  \code{vaas_4}.
+  \emph{Escherichia coli} \acronym{DSM}
+  30083\eqn{\textsuperscript{T}}{T} (yes, the type strain
+  of \emph{E. coli}). This is a subset of \code{vaas_4}.
 
   The complete data set is available as \code{vaas_et_al}
   in the \pkg{opmdata} package.
@@ -47,11 +48,11 @@
 \examples{
 \dontrun{
 
-# Calling this yielded a variable vaas_4 containing the data. The opm
+# Calling this yielded a variable 'vaas_4' containing the data. The opm
 # package must be loaded beforehand using library().
 data(vaas_4)
 
-# Calling this yielded a variable vaas_1 containing the data. The opm
+# Calling this yielded a variable 'vaas_1' containing the data. The opm
 # package must be loaded beforehand using library().
 data(vaas_1)
 }
@@ -82,6 +83,5 @@ data(vaas_1)
 
   \url{http://www.dsmz.de/catalogues/details/culture/DSM-30083.html}
 }
-\keyword{datasets}
 \keyword{datasets}
 

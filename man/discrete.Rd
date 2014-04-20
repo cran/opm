@@ -3,11 +3,11 @@
 \alias{discrete}
 \title{Discretisation functions}
 \arguments{
-  \item{x}{Numeric vector or a \code{\link{MOA}} object
-  convertible to a numeric vector. The data-frame method
-  first calls \code{\link{extract}}, restricting the
-  columns to the numeric ones. \code{best_cutoff} only
-  accepts a numeric matrix.}
+  \item{x}{Numeric vector or array object convertible to a
+  numeric vector. The data-frame method first calls
+  \code{\link{extract}}, restricting the columns to the
+  numeric ones. \code{best_cutoff} only accepts a numeric
+  matrix.}
 
   \item{range}{If a numeric vector, in non-\code{gap} mode
   (see next argument) the assumed real range of the data;
@@ -249,7 +249,7 @@ plot(y$b, type = "l")
 \alias{best_cutoff,matrix,character-method}
 \alias{best_cutoff,matrix,factor-method}
 \alias{discrete-methods}
-\alias{discrete,MOA-method}
+\alias{discrete,array-method}
 \alias{discrete,data.frame-method}
 \alias{discrete,numeric-method}
 \usage{
@@ -258,7 +258,7 @@ plot(y$b, type = "l")
     combined = TRUE, lower = min(x, na.rm = TRUE),
     upper = max(x, na.rm = TRUE), all = FALSE) 
 
-  \S4method{discrete}{MOA}(x, ...) 
+  \S4method{discrete}{array}(x, ...) 
   \S4method{discrete}{data.frame}(x, ..., as.labels = NULL,
     sep = " ") 
   \S4method{discrete}{numeric}(x, range, gap = FALSE,

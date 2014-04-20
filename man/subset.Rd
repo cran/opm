@@ -3,7 +3,8 @@
 \alias{thin_out}
 \title{Select a subset of the plates (or time points)}
 \arguments{
-  \item{x}{\code{\link{OPMS}} object.}
+  \item{x}{\code{\link{OPMX}} or \code{\link{MOPMX}}
+  object.}
 
   \item{query}{Logical or numeric vector or object accepted
   as query by the infix operators. If a logical or numeric
@@ -43,14 +44,17 @@
   \item{positive}{Character scalar. If \sQuote{ignore}, not
   used. Otherwise all previous arguments except
   \code{object} are ignored, and the function yields an
-  error unless all elements of \code{object} have
-  discretised values.
+  error unless \code{object} has been discretised
+  throughout, i.e.  either it is an \code{\link{OPMD}}
+  object or all elements of \code{object} have discretised
+  values.
 
-  In that case, if \sQuote{any}, wells are selected that
-  contain positive reactions in at least one plate. If
-  \sQuote{all}, wells are selected that contain positive
-  reactions in all plates. Using \code{invert} means
-  selecting all negative or weak reactions.}
+  If \code{object} has the necessary discretised values, if
+  \sQuote{any}, wells are selected that contain positive
+  reactions in at least one plate.  If \sQuote{all}, wells
+  are selected that contain positive reactions in all
+  plates. Using \code{invert} means selecting all negative
+  or weak reactions.}
 
   \item{negative}{Character scalar. Like \code{positive},
   but returns the negative reactions. Using \code{invert}
@@ -83,7 +87,8 @@
 \value{
   \code{NULL} or \code{\link{OPM}} or \code{\link{OPMS}}
   object. This depends on how many plates are selected; see
-  \code{\link{[}} for details.
+  \code{\link{[}} for details.  The \code{\link{MOPMX}}
+  method always returns a \code{\link{MOPMX}} object.
 }
 \description{
   Select a subset of the plates in an \code{\link{OPMS}}
@@ -95,6 +100,16 @@
   use in testing.
 }
 \details{
+  The \code{\link{MOPMX}} method creates subsets of all
+  contained \code{\link{OPMX}} objects (if any) in turn and
+  then removes those that yielded \code{NULL}. Thus
+  \code{subset} is not intended for directly creating
+  subsets of \code{\link{MOPMX}} but of their elements to
+  yield, e.g., elements that have a common set of
+  \code{\link{metadata}} entries, as required under most
+  circumstances by some other \code{\link{MOPMX}} methods
+  such as \code{\link{extract}}.
+
   Thinning the plates out is experimental insofar as it has
   \strong{not} been tested whether and how this could
   sensibly be applied before aggregating the data.
@@ -106,9 +121,9 @@ mustbe <- function(a, b) stopifnot(identical(a, b))
 # all plates have that entry: selection identical to original object
 mustbe(vaas_4, vaas_4["Species" \%k\% vaas_4, ])
 mustbe(vaas_4, subset(vaas_4, list(Species = "Escherichia coli"),
-  values  = FALSE)) # equivalent
+  values = FALSE)) # equivalent
 mustbe(vaas_4, subset(vaas_4, ~ Species == "Escherichia coli",
-  values  = FALSE)) # also equivalent
+  values = FALSE)) # also equivalent
 
 # two plates also have that value: yielding OPMS object with only two plates
 mustbe(vaas_4[1:2], vaas_4[list(Species = "Escherichia coli") \%q\% vaas_4, ])
@@ -175,31 +190,34 @@ stopifnot(identical(x, c(4L, 38L, 96L)))
 
   Other getter-functions: \code{\link{aggr_settings}},
   \code{\link{aggregated}}, \code{\link{anyDuplicated}},
-  \code{\link{csv_data}}, \code{\link{dim}},
-  \code{\link{disc_settings}}, \code{\link{discretized}},
-  \code{\link{duplicated}}, \code{\link{filename}},
+  \code{\link{contains}}, \code{\link{csv_data}},
+  \code{\link{dim}}, \code{\link{disc_settings}},
+  \code{\link{discretized}}, \code{\link{duplicated}},
   \code{\link{has_aggr}}, \code{\link{has_disc}},
   \code{\link{hours}}, \code{\link{max}},
   \code{\link{measurements}}, \code{\link{minmax}},
-  \code{\link{position}}, \code{\link{seq}},
-  \code{\link{setup_time}}, \code{\link{well}}
+  \code{\link{seq}}, \code{\link{well}}
 }
 \keyword{manip}
 
 %% BEGIN INSERTION BY repair_S4_docu.rb
 \docType{methods}
 \alias{subset-methods}
-\alias{subset,OPMS-method}
+\alias{subset,MOPMX-method}
+\alias{subset,OPMX-method}
 \alias{thin_out-methods}
+\alias{thin_out,MOPMX-method}
 \alias{thin_out,OPM-method}
 \alias{thin_out,OPMS-method}
 \usage{
-  \S4method{subset}{OPMS}(x, query, values = TRUE,
+  \S4method{subset}{MOPMX}(x, query, ...) 
+  \S4method{subset}{OPMX}(x, query, values = TRUE,
     invert = FALSE, exact = FALSE, time = FALSE,
     positive = c("ignore", "any", "all"),
     negative = c("ignore", "any", "all"),
     use = c("i", "I", "k", "K", "n", "N", "p", "P", "q", "Q", "t", "T")) 
 
+  \S4method{thin_out}{MOPMX}(object, ...) 
   \S4method{thin_out}{OPM}(object, factor, drop = FALSE) 
   \S4method{thin_out}{OPMS}(object, ...) 
 }

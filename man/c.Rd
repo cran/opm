@@ -3,24 +3,30 @@
 \alias{plus}
 \title{Combination and addition of plates}
 \arguments{
-  \item{x}{\code{\link{OPMX}} object.}
+  \item{x}{\code{\link{OPMX}} or \code{\link{MOPMX}}
+  object.}
 
   \item{...}{Other \R objects.}
 
   \item{recursive}{Logical scalar. See \code{c} from the
   \pkg{base} package.}
 
-  \item{e1}{\code{\link{OPM}} or \code{\link{OPMS}}
-  object.}
+  \item{e1}{\code{\link{OPMX}} object. If \code{e2} is a
+  \code{\link{MOPMX}} object, anything that can be
+  converted with \code{as} to that class.}
 
-  \item{e2}{\code{\link{OPM}} or \code{\link{OPMS}} object,
-  or list.}
+  \item{e2}{\code{\link{OPMX}} object, or list. If
+  \code{e1} is a \code{\link{MOPMX}} object, anything that
+  can be converted with \code{as} to that class.}
 }
 \value{
-  \code{c} creates an \code{\link{OPMS}} object if
-  possible, otherwise a list, or an \code{\link{OPM}}
-  object (if \code{\dots} is not given and \code{x} is such
-  an object).
+  The \code{\link{OPMX}} method of \code{c} creates an
+  \code{\link{OPMS}} object if possible, otherwise a list,
+  or an \code{\link{OPM}} object (if \code{\dots} is not
+  given and \code{x} is such an object). Similarly, the
+  \code{\link{MOPMX}} method of \code{c} creates a
+  \code{\link{MOPMX}} object is possible and a list
+  otherwise.
 
   If successful, \code{+} yields an \code{\link{OPMS}}
   object that contains the plates from both \code{e1} and
@@ -28,8 +34,8 @@
   combined.
 }
 \description{
-  Combine a \code{\link{OPM}} or \code{\link{OPMS}} object
-  with other objects.
+  Combine an \code{\link{OPMX}} or \code{\link{MOPMX}}
+  object with other objects.
 }
 \examples{
 # Adding nothing
@@ -85,12 +91,24 @@ stopifnot(identical(dim(x), c(5L, dim(vaas_1))))
 %% BEGIN INSERTION BY repair_S4_docu.rb
 \docType{methods}
 \alias{plus-methods}
+\alias{plus,ANY,MOPMX-method}
+\alias{+,ANY,MOPMX-method}
+\alias{plus,MOPMX,ANY-method}
+\alias{plus,MOPMX-method}
+\alias{+,MOPMX,ANY-method}
+\alias{+,MOPMX-method}
+\alias{plus,MOPMX,OPMX-method}
+\alias{+,MOPMX,OPMX-method}
+\alias{plus,OPM,MOPMX-method}
+\alias{+,OPM,MOPMX-method}
 \alias{plus,OPM,OPM-method}
 \alias{+,OPM,OPM-method}
 \alias{plus,OPM,OPMS-method}
 \alias{+,OPM,OPMS-method}
 \alias{plus,OPM,list-method}
 \alias{+,OPM,list-method}
+\alias{plus,OPMS,MOPMX-method}
+\alias{+,OPMS,MOPMX-method}
 \alias{plus,OPMS,OPM-method}
 \alias{+,OPMS,OPM-method}
 \alias{plus,OPMS,OPMS-method}
@@ -101,9 +119,14 @@ stopifnot(identical(dim(x), c(5L, dim(vaas_1))))
 \alias{c,MOPMX-method}
 \alias{c,OPMX-method}
 \usage{
+  \S4method{+}{ANY,MOPMX}(e1, e2) 
+  \S4method{+}{MOPMX,ANY}(e1, e2) 
+  \S4method{+}{MOPMX,OPMX}(e1, e2) 
+  \S4method{+}{OPM,MOPMX}(e1, e2) 
   \S4method{+}{OPM,OPM}(e1, e2) 
   \S4method{+}{OPM,OPMS}(e1, e2) 
   \S4method{+}{OPM,list}(e1, e2) 
+  \S4method{+}{OPMS,MOPMX}(e1, e2) 
   \S4method{+}{OPMS,OPM}(e1, e2) 
   \S4method{+}{OPMS,OPMS}(e1, e2) 
   \S4method{+}{OPMS,list}(e1, e2) 

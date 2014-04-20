@@ -2,18 +2,21 @@
 \name{WMD}
 \alias{FOE}
 \alias{FOE-class}
-\alias{MOA}
-\alias{MOA-class}
 \alias{OPMX}
 \alias{OPMX-class}
 \alias{WMD}
 \alias{WMD-class}
+\alias{WMDS}
+\alias{WMDS-class}
+\alias{WMDX}
+\alias{WMDX-class}
+\alias{XOPMX-class}
 \alias{YAML_VIA_LIST}
 \alias{YAML_VIA_LIST-class}
 \title{Virtual classes of the \pkg{opm} package}
 \description{
   Classes that are virtual and thus are not directly dealt
-  with by an \pkg{opm} user: \acronym{WMD}, \acronym{MOA},
+  with by an \pkg{opm} user: \acronym{WMD}, \acronym{WMDS},
   \acronym{FOE}, \acronym{OPMX} and \code{YAML_VIA_LIST}.
 }
 \details{
@@ -42,13 +45,14 @@
   \acronym{YAML} files created by the \pkg{opm} package,
   however.
 
-  \acronym{MOA} is an acronym for \sQuote{matrix or array}.
-  \acronym{MOA} is a virtual class facilitating the
-  implementation of functionality for both matrices and
-  arrays. Methods defined for objects from the class can be
-  applied to either kind of object. See
-  \code{\link{map_values}} and \code{\link{map_names}} for
-  usage examples.
+  \acronym{WMDS} is virtual class containing a collection
+  of \acronym{WMD} objects (the name \acronym{WMDS} is just
+  the plural of \acronym{WMD}). It shares many methods with
+  \acronym{WMD} but they often return a collection of the
+  return values of the according \acronym{WMD} method.
+
+  \acronym{WMDX} is the class union of \acronym{WMD} and
+  \acronym{WMDS}.
 
   \acronym{FOE} is an acronym for \sQuote{formula or
   expression}. This is a virtual class facilitating the
@@ -64,19 +68,32 @@
   \code{\link{OPMS}} objects. See \code{\link{show}} and
   \code{\link{sort}} for usage examples.
 
+  Similarly, \acronym{XOPMX} unifies \code{\link{OPMS}} and
+  \code{\link{MOPMX}}.
+
   See \code{\link{to_yaml}} for a usage example of
   \code{YAML_VIA_LIST}. This is a virtual class
   facilitating the conversion to \acronym{YAML} format (or
   its subset, \acronym{JSON}). It can currently be used by
   any class that can be coerced to a list.
 }
+\examples{
+showClass("WMD")
+showClass("WMDS")
+showClass("OPMX")
+showClass("XOPMX")
+showClass("FOE")
+showClass("YAML_VIA_LIST")
+}
 \seealso{
   methods::Methods base::matrix base::array
   base::expression stats::formula
 
   Other classes: \code{\link{MOPMX}}, \code{\link{OPM}},
-  \code{\link{OPMA}}, \code{\link{OPMD}},
-  \code{\link{OPMS}}
+  \code{\link{OPMA}}, \code{\link{OPMA_DB}},
+  \code{\link{OPMD}}, \code{\link{OPMD_DB}},
+  \code{\link{OPMS}}, \code{\link{OPM_DB}},
+  \code{\link{OPM_MCP_OUT}}
 }
 \keyword{classes}
 \keyword{methods}

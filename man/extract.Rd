@@ -3,12 +3,13 @@
 \alias{extract_columns}
 \title{Extract aggregated values and/or metadata}
 \arguments{
-  \item{object}{\code{\link{OPMS}} object or data frame,
-  for \code{extract} with one column named as indicated by
+  \item{object}{\code{\link{OPMS}} object,
+  \code{\link{MOPMX}} object or data frame, for
+  \code{extract} with one column named as indicated by
   \code{split.at} (default given by
   \code{\link{param_names}("split.at")}), columns with
   factor variables before that column and columns with
-  numeric vectors after that column.  For
+  numeric vectors after that column. For
   \code{extract_columns} optionally an \code{\link{OPM}}
   object.}
 
@@ -149,7 +150,11 @@
   named list of vectors used for indexing. In that case a
   data frame is returned that contains the columns from
   \code{object} together with new columns that result from
-  pasting the selected columns together.}
+  pasting the selected columns together. If \code{what} is
+  named, its names are used as the new column names.
+  Otherwise each name is created by joining the respective
+  value within \code{what} with the \code{"comb.key.join"}
+  entry of \code{\link{opm_opt}} as separator.}
 
   \item{join}{Logical scalar. Join each row together to
   yield a character vector? Otherwise it is just attempted
@@ -198,6 +203,43 @@
   form a character vector or new data-frame columns),
   partially more useful (extract columns with data of a
   specified class).
+
+  Not all \code{\link{MOPMX}} objects are suitable for
+  \code{extract}. The call will be successful if only
+  \code{\link{OPMS}} objects are contained, i.e.
+  \code{\link{OPM}} objects are forbidden. But even if
+  successful it might result in \code{NA} values within the
+  resulting matrix or data frame.  This may cause methods
+  that call \code{extract} to fail. \code{NA} values will
+  not occur if the set of row names created using
+  \code{as.labels} is equal between the distinct elements
+  of \code{object}. The also holds if \code{dataframe} is
+  \code{TRUE}, even though in that case row names are only
+  temporarily created.
+
+  Duplicate combinations of row and columns names currently
+  cause the \code{\link{MOPMX}} methods to skip all of them
+  except the last one if \code{dataframe} is \code{FALSE}.
+  This should mainly effect substrates that occur in plates
+  of distinct plate types.
+
+  Similarly, duplicate row names will cause the skipping of
+  all but the last one. This can be circumvented by using
+  an \code{as.labels} argument that yields unique row
+  names. If \code{as.labels} is empty, the
+  \code{\link{MOPMX}} method of \code{extract} will create
+  potentially unique row names from the names if these are
+  present but from the plate types if the \sQuote{names}
+  attribute is \code{NULL}. This will not be done, and rows
+  will neither be skipped nor reordered, if
+  \code{dataframe} is \code{TRUE}.
+
+  Otherwise row names and names of substrate columns will
+  be reordered (sorted). The created \sQuote{row.groups}
+  attribute, if any, will be adapted accordingly. If
+  \code{dataframe} is \code{TRUE}, the placement of the
+  columns created by \code{as.groups} will also be as
+  usual, but duplicates, if any, will be removed.
 }
 \examples{
 ## 'OPMS' method
@@ -241,22 +283,22 @@ stopifnot(is.matrix(x), identical(dim(x), c(4L, 96L)), is.logical(x))
   dataframe = TRUE))[, 1:3]
 
 # no normalisation, but grouping for 'Species'
-y <- extract(x, as.groups = "Species",  norm.per = "none")
+y <- extract(x, as.groups = "Species", norm.per = "none")
 # plotting using ci_plot()
 ci_plot(y[, c(1:6, 12)], legend.field = NULL, x = 350, y = 1)
 
 # normalisation by plate means
-y <- extract(x, as.groups = "Species",  norm.per = "row")
+y <- extract(x, as.groups = "Species", norm.per = "row")
 # plotting using ci_plot()
 ci_plot(y[, c(1:6, 12)], legend.field = NULL, x = 130, y = 1)
 
 # normalisation by well means
-y <- extract(x, as.groups = "Species",  norm.per = "column")
+y <- extract(x, as.groups = "Species", norm.per = "column")
 # plotting using ci_plot()
 ci_plot(y[, c(1:6, 12)], legend.field = NULL, x = 20, y = 1)
 
 # normalisation by subtraction of the well means of well A10 only
-y <- extract(x, as.groups = "Species",  norm.per = "row", norm.by = 10,
+y <- extract(x, as.groups = "Species", norm.per = "row", norm.by = 10,
   subtract = TRUE)
 # plotting using ci_plot()
 ci_plot(y[, c(1:6, 12)], legend.field = NULL, x = 0, y = 0)
@@ -273,6 +315,10 @@ stopifnot(identical(x, y)) # same result using a formula
 (y <- extract_columns(vaas_4, what = ~ J(Species + Strain)))
 stopifnot(is.data.frame(y), dim(y) == c(4, 3)) # additional column created
 stopifnot(identical(x, y[, -3]))
+(x <- extract_columns(vaas_4, what = TRUE)) # use logical scalar
+stopifnot(is.data.frame(x), dim(x) == c(4, 1))
+(y <- extract_columns(vaas_4, what = FALSE))
+stopifnot(is.data.frame(y), dim(y) == c(4, 1), !all(y[, 1] == x[, 1]))
 
 # Create a character vector
 (x <- extract_columns(vaas_4, what = list("Species", "Strain"), join = TRUE))
@@ -306,8 +352,9 @@ stopifnot(identical(attr(y, "row.groups"), x$c))
 
   Other conversion-functions: \code{\link{as.data.frame}},
   \code{\link{flatten}}, \code{\link{merge}},
-  \code{\link{oapply}}, \code{\link{plates}},
-  \code{\link{rep}}, \code{\link{rev}}, \code{\link{sort}},
+  \code{\link{oapply}}, \code{\link{opmx}},
+  \code{\link{plates}}, \code{\link{rep}},
+  \code{\link{rev}}, \code{\link{sort}},
   \code{\link{split}}, \code{\link{to_yaml}},
   \code{\link{unique}}
 }
@@ -318,13 +365,17 @@ stopifnot(identical(attr(y, "row.groups"), x$c))
 %% BEGIN INSERTION BY repair_S4_docu.rb
 \docType{methods}
 \alias{extract-methods}
+\alias{extract,MOPMX-method}
 \alias{extract,OPMS-method}
 \alias{extract,data.frame-method}
 \alias{extract_columns-methods}
-\alias{extract_columns,OPM-method}
-\alias{extract_columns,OPMS-method}
+\alias{extract_columns,WMD-method}
+\alias{extract_columns,WMDS-method}
 \alias{extract_columns,data.frame-method}
 \usage{
+  \S4method{extract}{MOPMX}(object, as.labels,
+    subset = opm_opt("curve.param"), ci = FALSE, trim = "full",
+    dataframe = FALSE, as.groups = NULL, ...) 
   \S4method{extract}{OPMS}(object, as.labels,
     subset = opm_opt("curve.param"), ci = FALSE, trim = "full",
     dataframe = FALSE, as.groups = NULL, sep = " ", dups = "warn",
@@ -334,10 +385,10 @@ stopifnot(identical(attr(y, "row.groups"), x$c))
     direct = inherits(norm.by, "AsIs"), dups = c("warn", "error", "ignore"),
     split.at = param_names("split.at")) 
 
-  \S4method{extract_columns}{OPM}(object, what, join = FALSE,
+  \S4method{extract_columns}{WMD}(object, what, join = FALSE,
     sep = " ", dups = c("warn", "error", "ignore"), factors = TRUE,
     exact = TRUE, strict = TRUE) 
-  \S4method{extract_columns}{OPMS}(object, what, join = FALSE,
+  \S4method{extract_columns}{WMDS}(object, what, join = FALSE,
     sep = " ", dups = c("warn", "error", "ignore"), factors = TRUE,
     exact = TRUE, strict = TRUE) 
   \S4method{extract_columns}{data.frame}(object, what,

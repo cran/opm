@@ -1,8 +1,5 @@
 \name{csv_data}
 \alias{csv_data}
-\alias{filename}
-\alias{position}
-\alias{setup_time}
 \title{Information from input \acronym{CSV} file}
 \arguments{
   \item{object}{\code{\link{OPM}}, \code{\link{OPMS}} or
@@ -31,7 +28,9 @@
   normalised. This should always work for the plate
   positions, but for the setup times it depends on the
   values for the \code{\link{opm_opt}} keys \code{time.fmt}
-  and \code{time.zone} (see also \code{\link{merge}}).}
+  and \code{time.zone} (see also \code{\link{merge}}). For
+  other entries, normalisation means replacing backslashes
+  by slashes.}
 
   \item{...}{Optional arguments passed between the
   methods.}
@@ -52,10 +51,6 @@
   \code{\link{read_single_opm}} for reading such files).
 }
 \details{
-  \code{filename}, \code{setup_time} and \code{position}
-  are \strong{deprecated} convenience functions for some of
-  the more important entries of \code{csv_data}.
-
   It is easy to copy the \acronym{CSV} data to the
   \code{\link{metadata}}; see the examples section. Editing
   of the \acronym{CSV} data has deliberately not been
@@ -114,13 +109,14 @@ stopifnot(sapply(metadata(x), length) > sapply(metadata(vaas_4), length))
 
   Other getter-functions: \code{\link{aggr_settings}},
   \code{\link{aggregated}}, \code{\link{anyDuplicated}},
-  \code{\link{dim}}, \code{\link{disc_settings}},
-  \code{\link{discretized}}, \code{\link{duplicated}},
-  \code{\link{has_aggr}}, \code{\link{has_disc}},
-  \code{\link{hours}}, \code{\link{max}},
-  \code{\link{measurements}}, \code{\link{minmax}},
-  \code{\link{seq}}, \code{\link{subset}},
-  \code{\link{thin_out}}, \code{\link{well}}
+  \code{\link{contains}}, \code{\link{dim}},
+  \code{\link{disc_settings}}, \code{\link{discretized}},
+  \code{\link{duplicated}}, \code{\link{has_aggr}},
+  \code{\link{has_disc}}, \code{\link{hours}},
+  \code{\link{max}}, \code{\link{measurements}},
+  \code{\link{minmax}}, \code{\link{seq}},
+  \code{\link{subset}}, \code{\link{thin_out}},
+  \code{\link{well}}
 }
 \keyword{attribute}
 
@@ -130,15 +126,6 @@ stopifnot(sapply(metadata(x), length) > sapply(metadata(vaas_4), length))
 \alias{csv_data,MOPMX-method}
 \alias{csv_data,OPM-method}
 \alias{csv_data,OPMS-method}
-\alias{filename-methods}
-\alias{filename,OPM-method}
-\alias{filename,OPMS-method}
-\alias{position-methods}
-\alias{position,OPM-method}
-\alias{position,OPMS-method}
-\alias{setup_time-methods}
-\alias{setup_time,OPM-method}
-\alias{setup_time,OPMS-method}
 \usage{
   \S4method{csv_data}{MOPMX}(object, ...) 
   \S4method{csv_data}{OPM}(object,
@@ -146,14 +133,5 @@ stopifnot(sapply(metadata(x), length) > sapply(metadata(vaas_4), length))
     what = c("select", "filename", "setup_time", "position", "other"),
     normalize = FALSE) 
   \S4method{csv_data}{OPMS}(object, ...) 
-
-  \S4method{filename}{OPM}(object) 
-  \S4method{filename}{OPMS}(object, ...) 
-
-  \S4method{position}{OPM}(object) 
-  \S4method{position}{OPMS}(object, ...) 
-
-  \S4method{setup_time}{OPM}(object) 
-  \S4method{setup_time}{OPMS}(object, ...) 
 }
 %% END INSERTION BY repair_S4_docu.rb

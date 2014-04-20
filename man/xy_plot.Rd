@@ -108,6 +108,10 @@
   legend is drawn, and the two aforementioned arguments are
   ignored.}
 
+  \item{rcr}{Numeric scalar (row-column-ratio) interpreted
+  as number of rows per number of columns. Determines the
+  arrangement of the subplots.}
+
   \item{...}{Arguments that are passed to
   \code{\link{flatten}}. For the \code{\link{OPMS}} method,
   \code{include} is particularly important: the selected
@@ -210,19 +214,20 @@ xy_plot(vaas_4, include = c("Species", "Strain"),
     neg.ctrl = "A01", base.col = "grey10", base.lwd = lwd,
     main = list(), xlab = "Time [h]", ylab = "Value [OmniLog units]",
     theor.max = TRUE, draw.grid = TRUE,
-    strip.fmt = list(), striptext.fmt = list(),
+    strip.fmt = list(), striptext.fmt = list(), rcr = 0.75,
     ...) 
   \S4method{xy_plot}{OPMS}(x, col = opm_opt("colors"), lwd = 1,
     neg.ctrl = "A01", base.col = "black", base.lwd = lwd,
     main = list(), xlab = "Time [h]", ylab = "Value [OmniLog units]",
     theor.max = TRUE, draw.grid = TRUE, space = "top",
     strip.fmt = list(), striptext.fmt = list(),
-    legend.fmt = list(), legend.sep = " ", draw.legend = TRUE,
+    legend.fmt = list(), legend.sep = " ", draw.legend = TRUE, rcr = 0.75,
     ...) 
   \S4method{xy_plot}{data.frame}(x, f, groups,
     col = opm_opt("colors"), lwd = 1, neg.ctrl = NULL, base.col = "black",
     base.lwd = lwd, main = groups, xlab = elem(f, 3L:2L), ylab = elem(f, 2L),
     draw.grid = TRUE, space = "top", strip.fmt = list(), striptext.fmt = list(),
-    legend.fmt = list(), legend.sep = " ", draw.legend = TRUE, ...) 
+    legend.fmt = list(), legend.sep = " ", draw.legend = TRUE, rcr = 0.75,
+    ...) 
 }
 %% END INSERTION BY repair_S4_docu.rb

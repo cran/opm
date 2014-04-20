@@ -185,7 +185,8 @@ setMethod("do_aggr", OPM, function(object, boot = 100L, verbose = FALSE,
     result
   }
 
-  if (plate_type(object) %in% SPECIAL_PLATES && dim(object)[1] < 2L) {
+  if ((plate_type(object) %in% SPECIAL_PLATES ||
+      custom_plate_is(plate_type(object))) && dim(object)[1] < 2L) {
     result <- copy_A_param(well(object))
     attr(result, METHOD) <- "shortcut"
     attr(result, OPTIONS) <- list(boot = boot)

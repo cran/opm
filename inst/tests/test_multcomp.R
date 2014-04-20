@@ -8,7 +8,6 @@ context("Testing the multiple-testing functions of the OPM package")
 if (!exists("TEST.DIR"))
   attach(objects_for_testing())
 
-
 EXPL.OPMS <- c(THIN.AGG, THIN.AGG)
 EXPL.DF <- extract(EXPL.OPMS,
   as.labels = list("organism", "run"), subset = "A", dataframe = TRUE)
@@ -50,6 +49,18 @@ test_that("opm_mcp outputs converted data frames", {
   expect_equivalent(x, y[, setdiff(colnames(y), "organism.Well.run")])
   expect_equal(attr(y, "joined.columns"),
     list(organism.Well.run = c("organism", "Well", "run")))
+})
+
+
+## opm_mcp
+test_that("opm_mcp converts MOPMX objects", {
+  got <- opm_mcp(MOPMX.2, ~ run + organism, output = "data")
+  expect_is(got, "data.frame")
+  expect_true(all(complete.cases(got)))
+  expect_true(all(c("run", "organism") %in% colnames(got)))
+  w <- unlist(lapply(MOPMX.2, wells, full = TRUE), FALSE, FALSE)
+  expect_true(setequal(w, got[, RESERVED_NAMES[["well"]]]))
+  expect_true(all(RESERVED_NAMES[c("parameter", "value")] %in% colnames(got)))
 })
 
 
@@ -219,6 +230,45 @@ test_that("Pairs-like tests are converted by annotated() to binary data", {
 })
 
 
+## annotated
+test_that("annotated() yields amino-acid vectors, matrices and data frames", {
+  x <- annotated(EXPL.OPMS, "peptide")
+  expect_is(x, "numeric")
+  got <- names(x)
+  expect_true(any(is.na(got)))
+  expect_false(all(is.na(got)))
+  x <- annotated(EXPL.OPMS, "peptide", how = "values")
+  expect_is(x, "matrix")
+  expect_is(comment(x), "character")
+  x <- x[, -1L, drop = FALSE]
+  expect_true(all(x %in% c(0, 1)))
+  expect_false(all(x == 1))
+  expect_true(all(colSums(x) > 0L))
+  x <- annotated(EXPL.OPMS, "peptide", how = "data.frame")
+  expect_is(x, "data.frame")
+  expect_is(comment(x), "character")
+  klasses <- vapply(x, class, "")
+  expect_true(setequal(klasses, c("numeric", "factor")))
+})
+
+
+## annotated
+test_that("annotated works with MOPMX objects", {
+  got <- annotated(MOPMX.2)
+  expect_is(got, "numeric")
+  expect_false(is.null(names(got)))
+  expect_error(got.d <- annotated(MOPMX.2, output = DISC_PARAM))
+  x <- do_disc(MOPMX.2)
+  got.d <- annotated(x, output = DISC_PARAM)
+  expect_is(got.d, "logical")
+  expect_equal(length(got), length(got.d))
+  expect_equal(names(got), names(got.d))
+})
+
+
+################################################################################
+
+
 ## opm_mcp
 test_that("opm_mcp generates contrast matrices", {
   got <- opm_mcp(EXPL.DF[, 1:7], model = list("run", "Well"),
@@ -375,23 +425,6 @@ test_that("subset of wells with directly defined contrast matrix", {
 })
 
 ## opm_mcp
-test_that("linfct as predefined object", {
-  # TODO Lea: what precisely does this test that isn't tested elsewhere?
-  # that linfct is stored in an object is trivial
-  # see above
-  a <- multcomp::mcp(Well = "Dunnett")
-  rem <- -ncol(EXPL.DF):-(ncol(EXPL.DF) - 91L)
-  x <- opm_mcp(EXPL.DF[, rem],
-    model = Value ~ Well, m.type = "lm", linfct = a)
-  expect_is(x, "glht")
-  expect_equal(x$type, "Dunnett")
-  expect_true(is.list(x))
-  expect_equal(length(x), 9)
-  expect_equal(length(coef(x)), 3)
-})
-
-
-## opm_mcp
 test_that("linfct as predefined matrix-object", {
   x <- EXPL.DF[, -ncol(EXPL.DF):-(ncol(EXPL.DF) - 91L)]
   contr <- opm_mcp(x, model = ~ Well, output = "contrast")
@@ -442,11 +475,6 @@ test_that("'Pairs' contrast type can be combined with non-syntactic names", {
 ## UNTESTED
 
 
-################################################################################
-
-
-## annotated
-## UNTESTED
 
 
 

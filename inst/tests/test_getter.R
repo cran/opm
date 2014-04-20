@@ -19,6 +19,9 @@ test_that("all measurements are accessible", {
   m.got <- measurements(OPMS.INPUT, 3L)
   expect_is(m.got, "list")
   expect_true(all(vapply(m.got, is.matrix, NA)))
+  m.got <- measurements(MOPMX.1, 3L)
+  expect_is(m.got, "list")
+  expect_equal(length(m.got), length(MOPMX.1))
 })
 
 
@@ -36,6 +39,16 @@ test_that("the content of the wells can be subset", {
   expect_true(all(vapply(w.got, is.matrix, NA)))
 })
 
+## well
+test_that("the content of the wells can be obtained from MOPMX objects", {
+  w.got <- well(MOPMX.1)
+  expect_is(w.got, "list")
+  expect_false(all(vapply(w.got, is.matrix, NA)))
+  expect_true(any(vapply(w.got, is.matrix, NA)))
+  expect_false(all(vapply(w.got, is.list, NA)))
+  expect_true(any(vapply(w.got, is.list, NA)))
+})
+
 
 ## hours
 test_that("hours can be explicitely queried", {
@@ -46,6 +59,10 @@ test_that("hours can be explicitely queried", {
   h.got <- hours(OPMS.INPUT, what = "all")
   expect_is(h.got, "matrix")
   expect_equal(nrow(h.got), length(OPMS.INPUT))
+  h.got <- hours(MOPMX.1, what = "all")
+  expect_is(h.got, "list")
+  expect_is(h.got[[1L]], "numeric")
+  expect_is(h.got[[2L]], "matrix")
 })
 
 
@@ -113,6 +130,19 @@ test_that("the entire OPMS object can be subset", {
   expect_equal(dim(few), dims)
 })
 
+## [
+test_that("the entire MOPMX object can be subset", {
+  x <- MOPMX.1[]
+  expect_equal(x, MOPMX.1)
+  x <- MOPMX.1[1L:2L]
+  expect_equal(x, MOPMX.1)
+  x <- MOPMX.1[1L]
+  expect_is(x, "MOPMX")
+  x <- MOPMX.1[2L]
+  expect_is(x, "MOPMX")
+  expect_warning(x <- MOPMX.1[10L])
+  expect_is(x, "MOPMX")
+})
 
 
 ################################################################################
@@ -186,21 +216,14 @@ test_that("filename of example object can be explicitely queried", {
   expect_equal(csv_data(OPM.1, what = "filename"), INFILES[1L])
 })
 
-## filename
-## UNTESTED
 
-
-## setup_time
+## csv_data
 test_that("setup times can be explicitely queried", {
   expect_equal(csv_data(OPM.1, what = "setup_time"), "8/30/2010 11:28:54 AM")
   st.got <- csv_data(OPMS.INPUT, what = "setup_time")
   expect_is(st.got, "character")
   expect_equal(length(st.got), length(OPMS.INPUT))
 })
-
-
-## setup_time
-## UNTESTED
 
 
 ## csv_data
@@ -212,12 +235,33 @@ test_that("plate positions can be explicitely queried", {
 })
 
 
-## position
-## UNTESTED
+## csv_data
+test_that("CSV data of MOPMX objects can be accessed", {
+  got <- csv_data(MOPMX.1)
+  expect_is(got, "matrix")
+  expect_equal(nrow(got), length(plates(MOPMX.1)))
+  expect_true(all(got[1L, ] == csv_data(MOPMX.1[[1L]])))
+  expect_true(all(got[-1L, ] == csv_data(MOPMX.1[[2L]])))
+
+  got.2 <- csv_data(MOPMX.1, normalize = TRUE)
+  expect_equal(dim(got.2), dim(got))
+  expect_false(all(got == got.2))
+
+  got <- csv_data(MOPMX.1, what = "position")
+  expect_is(got, "character")
+  expect_equal(length(got), length(plates(MOPMX.1)))
+
+  got.2 <- csv_data(MOPMX.1, what = "position", normalize = TRUE)
+  expect_equal(got, got.2) # positions were already normalised
+})
+
+
+
+################################################################################
 
 
 ## has_aggr
-test_that("aggregated values can be obtained", {
+test_that("information on presense of aggregated values can be obtained", {
   expect_false(has_aggr(OPM.1))
   ha.got <- has_aggr(OPMS.INPUT)
   expect_is(ha.got, "logical")
@@ -226,11 +270,20 @@ test_that("aggregated values can be obtained", {
   expect_true(all(has_aggr(THIN.AGG)))
   expect_false(has_aggr(SMALL))
   expect_true(has_aggr(SMALL.AGG))
+  got <- has_aggr(MOPMX.1)
+  expect_is(got, "list")
+  expect_equal(length(got), length(MOPMX.1))
+  expect_false(any(vapply(got, any, NA)))
 })
 
 
 ## has_disc
-## UNTESTED
+test_that("information on presense of discretised values can be obtained", {
+  got <- has_disc(MOPMX.1)
+  expect_is(got, "list")
+  expect_equal(length(got), length(MOPMX.1))
+  expect_false(any(vapply(got, any, NA)))
+})
 
 
 ################################################################################
@@ -265,6 +318,13 @@ test_that("aggregated data in OPMS objects can be queried", {
   expect_true(all(vapply(ag.got, is.matrix, NA)))
 })
 
+## aggregated
+test_that("aggregated data in MOPMX objects can be queried", {
+  expect_error(aggregated(MOPMX.1))
+  got <- aggregated(new(MOPMX))
+  expect_equal(length(got), 0L)
+})
+
 
 ## aggr_settings
 test_that("aggregation settings can be queried", {
@@ -278,16 +338,31 @@ test_that("aggregation settings can be queried", {
   expect_true(all(vapply(settings, length, integer(1L)) == 4L))
 })
 
+## aggr_settings
+test_that("aggregation settings in MOPMX objects can be queried", {
+  expect_error(aggr_settings(MOPMX.1))
+  got <- aggr_settings(new(MOPMX))
+  expect_equal(length(got), 0L)
+})
+
 
 ################################################################################
 
 
 ## discretized
-## UNTESTED
+test_that("discretised data in MOPMX objects can be queried", {
+  expect_error(discretized(MOPMX.1))
+  got <- discretized(new(MOPMX))
+  expect_equal(length(got), 0L)
+})
 
 
 ## disc_settings
-## UNTESTED
+test_that("discretisation settings in MOPMX objects can be queried", {
+  expect_error(disc_settings(MOPMX.1))
+  got <- disc_settings(new(MOPMX))
+  expect_equal(length(got), 0L)
+})
 
 
 ################################################################################
@@ -321,6 +396,33 @@ test_that("the plates can be subset based on the metadata", {
 })
 
 ## subset
+test_that("an OPM object can be subset based on the metadata", {
+  query <- list(Organism = ORGN)
+  other.query <- list(Organism = "Elephas maximums") # wrong value
+  third.query <- list(organism = ORGN) # wrong key
+  got <- subset(OPM.WITH.MD, query = query, values = TRUE)
+  expect_is(got, OPM)
+  got <- subset(OPM.WITH.MD, query = query, use = "q")
+  expect_is(got, OPM)
+  got <- subset(OPM.WITH.MD, query = query, values = FALSE)
+  expect_is(got, OPM)
+  got <- subset(OPM.WITH.MD, query = query, use = "k")
+  expect_is(got, OPM)
+  got <- subset(OPM.WITH.MD, query = other.query, values = TRUE)
+  expect_is(got, "NULL")
+  got <- subset(OPM.WITH.MD, query = other.query, use = "q")
+  expect_is(got, "NULL")
+  got <- subset(OPM.WITH.MD, query = other.query, values = FALSE)
+  expect_is(got, OPM)
+  got <- subset(OPM.WITH.MD, query = other.query, use = "k")
+  expect_is(got, OPM)
+  got <- subset(OPM.WITH.MD, query = third.query, values = FALSE)
+  expect_is(got, "NULL")
+  got <- subset(OPM.WITH.MD, query = third.query, use = "k")
+  expect_is(got, "NULL")
+})
+
+## subset
 test_that("the plates can be subset based on common time points", {
   expect_warning(x <- c(OPM.1[1:50, ], OPM.2))
   expect_equal(as.vector(oapply(x, dim)), c(50L, 96L, 384L, 96L))
@@ -328,6 +430,16 @@ test_that("the plates can be subset based on common time points", {
   expect_equal(as.vector(oapply(got, dim)), c(50L, 96L, 50L, 96L))
   got <- subset(x, use = "t")
   expect_equal(as.vector(oapply(got, dim)), c(50L, 96L, 50L, 96L))
+  got <- subset(OPM.1, time = TRUE)
+  expect_equal(got, OPM.1)
+})
+
+## subset
+test_that("MOPMX objects can be subset", {
+  got <- subset(MOPMX.1, time = TRUE)
+  expect_equal(got, MOPMX.1)
+  expect_warning(got <- subset(MOPMX.1, ~ organism, use = "k"))
+  expect_equal(got, MOPMX.1[2L])
 })
 
 
@@ -351,15 +463,39 @@ test_that("OPMS example data can be thinned out", {
   expect_equal(metadata(thin), metadata(OPMS.INPUT))
 })
 
+## thin_out
+test_that("MOPMX example data can be thinned out", {
+  thin <- thin_out(MOPMX.1, 10)
+  expect_is(thin, MOPMX)
+  expect_equal(length(thin), length(MOPMX.1))
+  expect_false(identical(thin, MOPMX.1))
+})
+
 
 ################################################################################
 
 
 ## duplicated
-## UNTESTED
+test_that("MOPMX objects can be checked for duplicates #2", {
+  expect_equal(duplicated(MOPMX.1), c(FALSE, FALSE))
+  x <- MOPMX.1 + OPM.3
+  expect_equal(duplicated(x), c(FALSE, FALSE, TRUE))
+})
+
 
 ## anyDuplicated
-## UNTESTED
+test_that("MOPMX objects can be checked for duplicates #2", {
+  expect_equal(anyDuplicated(MOPMX.1), 0L)
+  x <- MOPMX.1 + OPM.3
+  expect_equal(anyDuplicated(x), 3L)
+})
+
+## contains
+test_that("MOPMX objects can be queried with contains()", {
+  expect_true(contains(MOPMX.1, OPM.3))
+  expect_false(contains(MOPMX.1, OPM.1))
+  expect_equal(contains(MOPMX.1, MOPMX.1), c(TRUE, TRUE))
+})
 
 
 ################################################################################
@@ -476,6 +612,13 @@ test_that("OPMS metadata can be queried with %k% and formula #3", {
 })
 
 
+## %k%
+test_that("MOPMX metadata can be queried with %k%", {
+  got <- MOPMX.1 %k% ~ organism
+  expect_equal(got, list(FALSE, c(TRUE, TRUE)))
+})
+
+
 #-------------------------------------------------------------------------------
 
 
@@ -585,6 +728,13 @@ test_that("OPMS metadata can be queried with %K% and formula #3", {
 })
 
 
+## %K%
+test_that("MOPMX metadata can be queried with %K%", {
+  got <- MOPMX.1 %K% ~ organism
+  expect_equal(got, list(FALSE, c(TRUE, TRUE)))
+})
+
+
 #-------------------------------------------------------------------------------
 
 
@@ -639,6 +789,13 @@ test_that("OPMS metadata values can be queried with %q%", {
 })
 
 
+## %q%
+test_that("MOPMX metadata can be queried with %q%", {
+  got <- MOPMX.1[2] %q% ~ organism == "Bacillus simplex"
+  expect_equal(got, list(c(TRUE, TRUE)))
+})
+
+
 #-------------------------------------------------------------------------------
 
 
@@ -678,6 +835,13 @@ test_that("OPMS metadata can be queried with %Q%", {
   expect_equal(c(FALSE, FALSE), list(missing = "not there") %Q% OPMS.INPUT)
   expect_equal(c(FALSE, FALSE), list("not there") %Q% OPMS.INPUT)
 })
+
+## %Q%
+test_that("MOPMX metadata can be queried with %Q%", {
+  got <- MOPMX.1[2] %Q% ~ organism == "Bacillus simplex"
+  expect_equal(got, list(c(TRUE, TRUE)))
+})
+
 
 
 ################################################################################

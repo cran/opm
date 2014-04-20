@@ -41,7 +41,7 @@
   expression or wildcard (see the \code{wildcard} argument)
   for selecting from the input files. If \code{NULL},
   ignored. If a list, used as arguments of
-  \code{\link{file_pattern}} and its result used as regular
+  \code{file_pattern} and its result used as regular
   expression. Note that selection is done \strong{after}
   expanding the directory names to file names.}
 
@@ -81,7 +81,7 @@
   or \code{io.fun}.}
 
   \item{...}{Optional further arguments passed to
-  \code{\link{explode_dir}}.}
+  \code{explode_dir}.}
 
   \item{proc}{Integer scalar. The number of processes to
   spawn. Cannot be set to more than 1 core if running under
@@ -102,8 +102,8 @@
   empty strings, the directory of each input file is used.}
 
   \item{in.ext}{Character scalar. Passed through
-  \code{\link{file_pattern}}, then used for the replacement
-  of old file extensions with new ones.}
+  \code{file_pattern}, then used for the replacement of old
+  file extensions with new ones.}
 
   \item{type}{Character scalar indicating the file types to
   be matched by extension. For historical reasons,

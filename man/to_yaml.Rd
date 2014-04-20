@@ -79,8 +79,9 @@ write(to_yaml(x), "out.yml")
   Other conversion-functions: \code{\link{as.data.frame}},
   \code{\link{extract}}, \code{\link{extract_columns}},
   \code{\link{flatten}}, \code{\link{merge}},
-  \code{\link{oapply}}, \code{\link{plates}},
-  \code{\link{rep}}, \code{\link{rev}}, \code{\link{sort}},
+  \code{\link{oapply}}, \code{\link{opmx}},
+  \code{\link{plates}}, \code{\link{rep}},
+  \code{\link{rev}}, \code{\link{sort}},
   \code{\link{split}}, \code{\link{unique}}
 }
 \keyword{IO}
@@ -91,9 +92,11 @@ write(to_yaml(x), "out.yml")
 \alias{to_yaml-methods}
 \alias{to_yaml,MOPMX-method}
 \alias{to_yaml,YAML_VIA_LIST-method}
+\alias{to_yaml,list-method}
 \usage{
   \S4method{to_yaml}{MOPMX}(object, ...) 
-  \S4method{to_yaml}{YAML_VIA_LIST}(object, sep = TRUE,
+  \S4method{to_yaml}{YAML_VIA_LIST}(object, ...) 
+  \S4method{to_yaml}{list}(object, sep = TRUE,
     line.sep = "\n", json = FALSE, listify = nodots, nodots = FALSE, ...) 
 }
 %% END INSERTION BY repair_S4_docu.rb

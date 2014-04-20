@@ -4,8 +4,9 @@ html_args <- function(
     multiple.sep = "/", organisms.start = "Organisms: ",
     states.start = "Symbols: ", legend.dot = TRUE,
     legend.sep.1 = ", ", legend.sep.2 = "; ",
-    table.summary = "character matrix", greek.letters = TRUE,
-    css.file = opm_opt("css.file"), ...) {
+    table.summary = "character matrix", no.html = TRUE,
+    greek.letters = TRUE, css.file = opm_opt("css.file"),
+    embed.css = FALSE, ...) {
   args <- as.list(match.call())[-1L]
   defaults <- formals()[setdiff(names(formals()), c(names(args), "..."))]
   lapply(c(defaults, args), eval)
@@ -76,7 +77,7 @@ setMethod("format", CMAT, function(x, how, enclose, digits, indent,
 
   # HTML helper methods.
   #
-  unhtml <- function(x) safe_labels(x, format = "html")
+  unhtml <- function(x) safe_labels(x, "html")
   span_class <- function(x, klass, title = klass) {
     hmakeTag("span", unhtml(x), class = klass, title = title)
   }
@@ -100,7 +101,7 @@ setMethod("format", CMAT, function(x, how, enclose, digits, indent,
       datatype <- sprintf("&[%s]", datatype)
       comments <- safe_labels(comments, "hennig", comment = TRUE)
       if (dims[1L] < 4L)
-        warning("TNT will not accept less than 4 organisms")
+        warning("TNT will not accept less than 4 organisms", call. = FALSE)
       dims <- paste0(rev(dims), collapse = " ")
       c(nstates, "xread", comments, dims, datatype)
     }
@@ -379,7 +380,8 @@ setMethod("format", CMAT, function(x, how, enclose, digits, indent,
         stop("missing character labels (column names)")
       if (length(variability <- attr(x, "variability")) != ncol(x))
         stop(BUG_MSG)
-      colnames(x) <- unhtml(colnames(x))
+      if (L(html.args$no.html))
+        colnames(x) <- unhtml(colnames(x))
       if (L(html.args$greek.letters))
         colnames(x) <- substrate_info(colnames(x), "html")
       colnames(x) <- div_class(colnames(x), variability)
@@ -395,7 +397,7 @@ setMethod("format", CMAT, function(x, how, enclose, digits, indent,
       HTML_DOCTYPE,
       "<html>",
       html_head(title, html.args$css.file,
-        html.args[names(html.args) == "meta"]),
+        html.args[names(html.args) == "meta"], html.args$embed.css),
       "<body>",
       headline(html.args[names(html.args) == "headline"], title),
       user_sections(html.args[names(html.args) == "prepend"]),
@@ -474,15 +476,13 @@ setMethod("phylo_data", "matrix", function(object,
 }, sealed = SEALED)
 
 setMethod("phylo_data", "data.frame", function(object, as.labels = NULL,
-    subset = what, sep = " ", what = "numeric", ...) {
-  if (!missing(what))
-    warning("'what' is deprecated, use 'subset'")
+    subset = "numeric", sep = " ", ...) {
   object <- extract_columns(object, as.labels = as.labels, what = subset,
     direct = FALSE, sep = sep)
   phylo_data(object, ...)
 }, sealed = SEALED)
 
-setMethod("phylo_data", OPMS, function(object, as.labels,
+setMethod("phylo_data", XOPMX, function(object, as.labels,
     subset = param_names("disc.name"), sep = " ", extract.args = list(),
     join = TRUE, discrete.args = list(range = TRUE, gap = TRUE), ...) {
   extract.args <- insert(as.list(extract.args), list(object = object,
@@ -510,7 +510,7 @@ setMethod("phylo_data", "OPMD_Listing", function(object,
     paste0(opm_string(version = TRUE), collapse = " version "))
   attr(head, opm_string()) <- TRUE
   head <- html_head(head, html.args$css.file,
-    html.args[names(html.args) == "meta"])
+    html.args[names(html.args) == "meta"], html.args$embed.css)
   x <- c(HTML_DOCTYPE, "<html>", head, "<body>", unname(object),
     "</body>", "</html>")
   if (L(run.tidy))
@@ -534,7 +534,7 @@ setMethod("phylo_data", "OPMS_Listing", function(object,
     paste0(opm_string(version = TRUE), collapse = " version "))
   attr(head, opm_string()) <- TRUE
   head <- html_head(head, html.args$css.file,
-    html.args[names(html.args) == "meta"])
+    html.args[names(html.args) == "meta"], html.args$embed.css)
   x <- apply(object, 1L, paste, collapse = "\n")
   x <- as.vector(rbind(prepare_headlines(names(x)), x))
   x <- c(HTML_DOCTYPE, "<html>", head, "<body>", x, "</body>", "</html>")

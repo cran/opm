@@ -120,6 +120,7 @@ stopifnot(length(x[[1]]) > length(x[[2]]))
   Other naming-functions: \code{\link{gen_iii}},
   \code{\link{listing}}, \code{\link{opm_files}},
   \code{\link{param_names}}, \code{\link{plate_type}},
+  \code{\link{register_plate}},
   \code{\link{select_colors}},
   \code{\link{substrate_info}}, \code{\link{wells}}
 }
@@ -129,6 +130,7 @@ stopifnot(length(x[[1]]) > length(x[[2]]))
 %% BEGIN INSERTION BY repair_S4_docu.rb
 \docType{methods}
 \alias{find_positions-methods}
+\alias{find_positions,MOPMX-method}
 \alias{find_positions,OPM-method}
 \alias{find_positions,OPMS-method}
 \alias{find_positions,character-method}
@@ -139,6 +141,7 @@ stopifnot(length(x[[1]]) > length(x[[2]]))
 \alias{find_substrate,character-method}
 \alias{find_substrate,factor-method}
 \usage{
+  \S4method{find_positions}{MOPMX}(object, ...) 
   \S4method{find_positions}{OPM}(object, type = NULL, ...) 
   \S4method{find_positions}{OPMS}(object, ...) 
   \S4method{find_positions}{character}(object, type = NULL, ...) 

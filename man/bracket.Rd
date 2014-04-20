@@ -7,9 +7,24 @@
 
   \item{i}{Vector or missing. For the \code{\link{OPM}} and
   \code{\link{OPMA}} method, the indexes of one to several
-  time points. For the \code{\link{OPMS}} method, the
-  indexes of one to several plates. It is an error to
-  select plates that are not present.}
+  time points.
+
+  For the \code{\link{OPMS}} method, the indexes of one to
+  several plates. A warning is issued if indexing goes
+  beyond the range. If \code{i} is neither a numeric nor a
+  logical vector, the \code{\link{OPMS}} method passes it
+  through \code{\link{infix.q}} to yield a logical vector
+  for indexing. If \code{i} is a formula, its left side can
+  be used to choose another infix operator as
+  \code{\link{infix.q}}.
+
+  For the \code{\link{MOPMX}} method, either missing or a
+  vector or a formula or expression. The latter work like
+  for \code{\link{OPMS}} objects and yield a list of
+  logical vectors (one per element of \code{x}) Such a list
+  is then further used for selecting subset within the
+  elements of \code{x}.  A list can also be provided
+  directly.}
 
   \item{j}{Vector or missing. \itemize{ \item For the
   \code{\link{OPM}} and \code{\link{OPMA}} method, the
@@ -113,8 +128,13 @@ stopifnot(!has_aggr(copy), !identical(copy, vaas_1))
 ## OPMS method
 
 # Create OPMS object with fewer plates (the first two ones)
-x <- vaas_4[1:2]
+(x <- vaas_4[1:2])
 stopifnot(is(x, "OPMS"), dim(x) == c(2, 384, 96))
+# we can select the same objects with a formula (which is passed through
+# the infix-q operator)
+stopifnot(identical(vaas_4[~ Species == "Escherichia coli"], x))
+# we can select another infix operator with the left side of the formula
+stopifnot(identical(vaas_4[k ~ Species], vaas_4))
 
 # If only a single plate is selected, this is reduced to OPM(A)
 x <- vaas_4[3]
@@ -145,6 +165,14 @@ for (i in seq(vaas_4)) { # OR: for (i in 1:length(vaas_4))
   stopifnot(dim(x) == c(384, 96))
 }
 # see also oapply() for a more elegant approach
+
+## MOPMX method
+(x <- new("MOPMX", list(vaas_1, vaas_4))) # create MOPMX object
+stopifnot(is(x, "MOPMX"), length(x) == 2)
+(y <- x[~ Species != "Escherichia coli"])
+stopifnot(is(y, "MOPMX"), length(y) == 1)
+(y <- x[list(1, 3:4)]) # only 2nd element reduced
+stopifnot(is(y, "MOPMX"), length(y) == 2, !identical(x, y))
 }
 \seealso{
   base::`[` base::`[[`
@@ -155,22 +183,79 @@ for (i in seq(vaas_4)) { # OR: for (i in 1:length(vaas_4))
 \docType{methods}
 \alias{bracket-methods}
 \alias{bracket,MOPMX,ANY,missing,ANY-method}
+\alias{bracket,MOPMX,ANY,missing-method}
 \alias{[,MOPMX,ANY,missing,ANY-method}
+\alias{[,MOPMX,ANY,missing-method}
+\alias{bracket,MOPMX,ANY,missing,missing-method}
+\alias{[,MOPMX,ANY,missing,missing-method}
 \alias{bracket,MOPMX,character,missing,ANY-method}
+\alias{bracket,MOPMX,character,missing-method}
 \alias{[,MOPMX,character,missing,ANY-method}
+\alias{[,MOPMX,character,missing-method}
+\alias{bracket,MOPMX,character,missing,missing-method}
+\alias{[,MOPMX,character,missing,missing-method}
+\alias{bracket,MOPMX,expression,missing,ANY-method}
+\alias{bracket,MOPMX,expression,missing-method}
+\alias{[,MOPMX,expression,missing,ANY-method}
+\alias{[,MOPMX,expression,missing-method}
+\alias{bracket,MOPMX,expression,missing,missing-method}
+\alias{[,MOPMX,expression,missing,missing-method}
+\alias{bracket,MOPMX,formula,missing,ANY-method}
+\alias{bracket,MOPMX,formula,missing-method}
+\alias{[,MOPMX,formula,missing,ANY-method}
+\alias{[,MOPMX,formula,missing-method}
+\alias{bracket,MOPMX,formula,missing,missing-method}
+\alias{[,MOPMX,formula,missing,missing-method}
+\alias{bracket,MOPMX,list,missing,ANY-method}
+\alias{bracket,MOPMX,list,missing-method}
+\alias{[,MOPMX,list,missing,ANY-method}
+\alias{[,MOPMX,list,missing-method}
+\alias{bracket,MOPMX,list,missing,missing-method}
+\alias{[,MOPMX,list,missing,missing-method}
+\alias{bracket,MOPMX,missing,missing,ANY-method}
+\alias{bracket,MOPMX,missing,missing-method}
+\alias{[,MOPMX,missing,missing,ANY-method}
+\alias{[,MOPMX,missing,missing-method}
+\alias{bracket,MOPMX,missing,missing,missing-method}
+\alias{[,MOPMX,missing,missing,missing-method}
 \alias{bracket,OPM,ANY,ANY,ANY-method}
+\alias{bracket,OPM-method}
 \alias{[,OPM,ANY,ANY,ANY-method}
+\alias{[,OPM-method}
 \alias{bracket,OPMA,ANY,ANY,ANY-method}
+\alias{bracket,OPMA-method}
 \alias{[,OPMA,ANY,ANY,ANY-method}
+\alias{[,OPMA-method}
 \alias{bracket,OPMD,ANY,ANY,ANY-method}
+\alias{bracket,OPMD-method}
 \alias{[,OPMD,ANY,ANY,ANY-method}
+\alias{[,OPMD-method}
 \alias{bracket,OPMS,ANY,ANY,ANY-method}
+\alias{bracket,OPMS-method}
 \alias{[,OPMS,ANY,ANY,ANY-method}
+\alias{[,OPMS-method}
 \usage{
-  \S4method{[}{MOPMX,ANY,missing,ANY}(x, i, j,
-    drop = FALSE) 
+  \S4method{[}{MOPMX,ANY,missing,ANY}(x, i, j, drop) 
+  \S4method{[}{MOPMX,ANY,missing,missing}(x, i, j, drop) 
   \S4method{[}{MOPMX,character,missing,ANY}(x, i, j,
-    drop = FALSE) 
+    drop) 
+  \S4method{[}{MOPMX,character,missing,missing}(x, i, j,
+    drop) 
+  \S4method{[}{MOPMX,expression,missing,ANY}(x, i, j,
+    drop) 
+  \S4method{[}{MOPMX,expression,missing,missing}(x, i, j,
+    drop) 
+  \S4method{[}{MOPMX,formula,missing,ANY}(x, i, j,
+    drop) 
+  \S4method{[}{MOPMX,formula,missing,missing}(x, i, j,
+    drop) 
+  \S4method{[}{MOPMX,list,missing,ANY}(x, i, j, drop) 
+  \S4method{[}{MOPMX,list,missing,missing}(x, i, j,
+    drop) 
+  \S4method{[}{MOPMX,missing,missing,ANY}(x, i, j,
+    drop) 
+  \S4method{[}{MOPMX,missing,missing,missing}(x, i, j,
+    drop) 
   \S4method{[}{OPM,ANY,ANY,ANY}(x, i, j, ...,
     drop = FALSE) 
   \S4method{[}{OPMA,ANY,ANY,ANY}(x, i, j, ...,

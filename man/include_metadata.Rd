@@ -2,10 +2,13 @@
 \alias{edit}
 \alias{include_metadata}
 \alias{map_metadata}
+\alias{map_values}
 \title{Add or map metadata or edit them by hand}
 \arguments{
   \item{object}{\code{\link{OPM}} (\code{\link{WMD}}),
-  \code{\link{OPMS}} or \code{\link{MOPMX}} object.}
+  \code{\link{OPMS}} (\code{\link{WMDS}}) or
+  \code{\link{MOPMX}} object. For \code{map_values}, a
+  list.}
 
   \item{name}{Like \code{object}, but for the \code{edit}
   method.}
@@ -28,22 +31,24 @@
   \code{md} in the metadata, discard the \code{keys}
   columns?}
 
-  \item{mapping}{In most cases passed to
-  \code{\link{map_values}}. \itemize{ \item If a function,
-  this is just a wrapper for \code{rapply}, with \code{how}
-  set to \sQuote{replace}, if \code{values} is \code{TRUE}.
-  It is applied to all non-list elements of
-  \code{\link{metadata}}, which is traversed recursively.
-  \item Alternatively, a character vector.
-  \code{\link{metadata_chars}} can be used to create a
-  template for such a vector.  \item \code{mapping} can
-  also be a formula; in that case, \code{\link{metadata}}
-  is replaced by the according method of
-  \code{\link{map_values}}. If the left side of the formula
-  is missing, the entire metadata are replaced by the
-  result, which is an error if the result is not a list.
-  \item If \code{mapping} is missing, the behaviour is
-  special; see the next two arguments. }}
+  \item{mapping}{In most cases passed to \code{map_values}.
+  \itemize{ \item If a function, this is just a wrapper for
+  \code{rapply}, with \code{how} set to \sQuote{replace},
+  if \code{values} is \code{TRUE}. It is applied to all
+  non-list elements of \code{\link{metadata}}, which is
+  traversed recursively.  \item Alternatively, a character
+  vector. \code{\link{metadata_chars}} can be used to
+  create a template for such a vector.  \item
+  \code{mapping} can also be a formula; in that case,
+  \code{\link{metadata}} is replaced by the according
+  method of \code{map_values}. If the left side of the
+  formula is missing, the entire metadata are replaced by
+  the result, which is an error if the result is not a
+  list.  \item If \code{mapping} is missing, the behaviour
+  is special; see the next two arguments. } The \pkg{opm}
+  package augments \code{map_values} with a method for
+  lists and formulae. For all other methods, see the
+  \pkg{pkgutils} package.}
 
   \item{values}{Mostly a logical scalar. \itemize{ \item
   For the function and character-vector methods, if
@@ -64,20 +69,24 @@
   If \code{classes} is \code{TRUE}, \code{mapping} is
   treated as a mapping between class names, and the
   according conversions are applied. See the \code{coerce}
-  argument of \code{\link{map_values}} for details.
+  argument of \code{map_values} for details.
 
   If \code{mapping} is missing, \code{classes} specifies
   classes that are converted to character vectors.}
 
+  \item{coerce}{Character vector or \code{TRUE}. See the
+  description of \code{map_values} in the \pkg{pkgutils}
+  package for details.}
+
   \item{...}{Optional arguments passed to \code{mapping} if
-  it is a function, and from the \code{\link{OPMS}} method
+  it is a function, and from the \code{\link{WMDS}} method
   to the \code{\link{WMD}} method, or from
   \code{include_metadata} to \code{\link{to_metadata}}, or
   as additional arguments to \code{edit} from the
   \pkg{utils} package.}
 }
 \value{
-  Novel \code{\link{WMD}} or \code{\link{OPMS}} object with
+  Novel \code{\link{WMD}} or \code{\link{WMDS}} object with
   modified metadata.
 }
 \description{
@@ -90,9 +99,9 @@
   editing the metadata by hand.
 }
 \details{
-  The \code{\link{OPMS}} method applies the inclusion and
+  The \code{\link{WMDS}} method applies the inclusion and
   mapping routines to all plates in turn and returns an
-  \code{\link{OPMS}} object with accordingly modified
+  \code{\link{WMDS}} object with accordingly modified
   metadata.
 
   Calling \code{edit} will only work if
@@ -104,6 +113,8 @@
   missing in some elements of \code{name} should not
   present a problem, however. Values that remained
   \code{NA} would be removed before returning the result.
+  The \code{\link{MOPMX}} method works by calling each
+  element in turn (allowing for independent editing).
 }
 \examples{
 ## include_metadata()
@@ -153,7 +164,7 @@ stopifnot(identical(copy, # same result with expression
 (x <- metadata(map_metadata(vaas_1)))
 stopifnot(identical(x, metadata(vaas_1))) # nothing to modify in that case
 
-# OPMS method
+# WMDS method
 
 # using a function
 copy <- map_metadata(vaas_4, identity)
@@ -188,6 +199,23 @@ stopifnot(identical(x, metadata(vaas_4))) # nothing to modify in that case
   x <- edit(x) # overwrite x in 2nd editing step
   ## This will not necessarily work if the metadata are nested!
 }
+
+## List/formula method of map_values()
+x <- list(a = 1:8, c = 9, d = 'x')
+(y <- map_values(x, ~ a + c))
+stopifnot(is.numeric(y), y == c(10:17))
+(y <- map_values(x, b ~ a + c))
+stopifnot(is.list(y), y$b == c(10:17))
+
+# ...applied to a data frame
+x <- data.frame(a = 1:5, b = 6:10)
+(y <- map_values(x, c ~ a + b))
+stopifnot(is.data.frame(y), dim(y) == c(5, 3))
+(z <- map_values(x, ~ a + b))
+stopifnot(identical(z, y$c))
+# same effect with an expression
+(z <- map_values(x, expression(c <- a + b)))
+stopifnot(identical(z, y))
 }
 \seealso{
   utils::edit
@@ -200,34 +228,39 @@ stopifnot(identical(x, metadata(vaas_4))) # nothing to modify in that case
 %% BEGIN INSERTION BY repair_S4_docu.rb
 \docType{methods}
 \alias{edit-methods}
-\alias{edit,OPMX-method}
+\alias{edit,MOPMX-method}
+\alias{edit,WMDX-method}
 \alias{include_metadata-methods}
 \alias{include_metadata,MOPMX-method}
 \alias{include_metadata,OPM-method}
-\alias{include_metadata,OPMS-method}
+\alias{include_metadata,WMD-method}
+\alias{include_metadata,WMDS-method}
 \alias{map_metadata-methods}
 \alias{map_metadata,MOPMX,ANY-method}
+\alias{map_metadata,MOPMX-method}
 \alias{map_metadata,MOPMX,missing-method}
-\alias{map_metadata,OPMS,ANY-method}
-\alias{map_metadata,OPMS,missing-method}
 \alias{map_metadata,WMD,FOE-method}
 \alias{map_metadata,WMD,character-method}
 \alias{map_metadata,WMD,function-method}
 \alias{map_metadata,WMD,missing-method}
+\alias{map_metadata,WMDS,ANY-method}
+\alias{map_metadata,WMDS-method}
+\alias{map_metadata,WMDS,missing-method}
+\alias{map_values-methods}
+\alias{map_values,list,formula-method}
 \usage{
-  \S4method{edit}{OPMX}(name, ...) 
+  \S4method{edit}{MOPMX}(name, ...) 
+  \S4method{edit}{WMDX}(name, ...) 
 
   \S4method{include_metadata}{MOPMX}(object, ...) 
   \S4method{include_metadata}{OPM}(object, md,
-    keys = opm_opt("csv.keys"), replace = FALSE, skip.failure = FALSE,
-    remove.keys = TRUE, ...) 
-  \S4method{include_metadata}{OPMS}(object, ...) 
+    keys = opm_opt("csv.keys"), ...) 
+  \S4method{include_metadata}{WMD}(object, md, keys, replace = FALSE,
+    skip.failure = FALSE, remove.keys = TRUE, ...) 
+  \S4method{include_metadata}{WMDS}(object, ...) 
 
   \S4method{map_metadata}{MOPMX,ANY}(object, mapping, ...) 
   \S4method{map_metadata}{MOPMX,missing}(object, mapping,
-    values = TRUE, classes = "factor") 
-  \S4method{map_metadata}{OPMS,ANY}(object, mapping, ...) 
-  \S4method{map_metadata}{OPMS,missing}(object, mapping,
     values = TRUE, classes = "factor") 
   \S4method{map_metadata}{WMD,FOE}(object, mapping,
     values = parent.frame(), classes = NULL) 
@@ -237,5 +270,11 @@ stopifnot(identical(x, metadata(vaas_4))) # nothing to modify in that case
     values = TRUE, classes = "ANY", ...) 
   \S4method{map_metadata}{WMD,missing}(object, mapping,
     values = TRUE, classes = "factor") 
+  \S4method{map_metadata}{WMDS,ANY}(object, mapping, ...) 
+  \S4method{map_metadata}{WMDS,missing}(object, mapping,
+    values = TRUE, classes = "factor") 
+
+  \S4method{map_values}{list,formula}(object, mapping,
+    coerce = parent.frame()) 
 }
 %% END INSERTION BY repair_S4_docu.rb

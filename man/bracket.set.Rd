@@ -15,6 +15,8 @@
 
   \item{j}{Must \strong{not} be set. See the examples.}
 
+  \item{...}{Must neither be used.}
+
   \item{name}{Unevaluated symbol used for as index of a
   single element.}
 
@@ -59,26 +61,14 @@ stopifnot(length(copy) == 5) # not 6
 \docType{methods}
 \alias{dollar.set-methods}
 \alias{dollar.set,MOPMX,ANY-method}
+\alias{dollar.set,MOPMX-method}
 \alias{$<-,MOPMX,ANY-method}
-\alias{dollar.set,MOPMX,NULL-method}
-\alias{$<-,MOPMX,NULL-method}
-\alias{dollar.set,MOPMX,OPMX-method}
-\alias{$<-,MOPMX,OPMX-method}
+\alias{$<-,MOPMX-method}
 \alias{bracket.set-methods}
 \alias{bracket.set,MOPMX,ANY,missing,ANY-method}
+\alias{bracket.set,MOPMX,ANY,missing-method}
 \alias{[<-,MOPMX,ANY,missing,ANY-method}
-\alias{bracket.set,MOPMX,ANY,missing,NULL-method}
-\alias{[<-,MOPMX,ANY,missing,NULL-method}
-\alias{bracket.set,MOPMX,ANY,missing,OPMX-method}
-\alias{[<-,MOPMX,ANY,missing,OPMX-method}
-\alias{bracket.set,MOPMX,ANY,missing,list-method}
-\alias{[<-,MOPMX,ANY,missing,list-method}
-\alias{bracket.set,MOPMX,character,missing,NULL-method}
-\alias{[<-,MOPMX,character,missing,NULL-method}
-\alias{bracket.set,MOPMX,character,missing,OPMX-method}
-\alias{[<-,MOPMX,character,missing,OPMX-method}
-\alias{bracket.set,MOPMX,character,missing,list-method}
-\alias{[<-,MOPMX,character,missing,list-method}
+\alias{[<-,MOPMX,ANY,missing-method}
 \alias{bracket.set,OPMS,ANY,missing,NULL-method}
 \alias{[<-,OPMS,ANY,missing,NULL-method}
 \alias{bracket.set,OPMS,ANY,missing,OPM-method}
@@ -89,36 +79,18 @@ stopifnot(length(copy) == 5) # not 6
 \alias{[<-,OPMS,ANY,missing,list-method}
 \alias{double.bracket.set-methods}
 \alias{double.bracket.set,MOPMX,ANY,missing,ANY-method}
+\alias{double.bracket.set,MOPMX,ANY,missing-method}
 \alias{[[<-,MOPMX,ANY,missing,ANY-method}
-\alias{double.bracket.set,MOPMX,ANY,missing,NULL-method}
-\alias{[[<-,MOPMX,ANY,missing,NULL-method}
-\alias{double.bracket.set,MOPMX,ANY,missing,OPMX-method}
-\alias{[[<-,MOPMX,ANY,missing,OPMX-method}
-\alias{double.bracket.set,MOPMX,character,missing,NULL-method}
-\alias{[[<-,MOPMX,character,missing,NULL-method}
-\alias{double.bracket.set,MOPMX,character,missing,OPMX-method}
-\alias{[[<-,MOPMX,character,missing,OPMX-method}
+\alias{[[<-,MOPMX,ANY,missing-method}
 \usage{
   \S4method{$}{MOPMX,ANY}(x, name) <- value
-  \S4method{$}{MOPMX,NULL}(x, name) <- value
-  \S4method{$}{MOPMX,OPMX}(x, name) <- value
 
-  \S4method{[}{MOPMX,ANY,missing,ANY}(x, i, j) <- value
-  \S4method{[}{MOPMX,ANY,missing,NULL}(x, i, j) <- value
-  \S4method{[}{MOPMX,ANY,missing,OPMX}(x, i, j) <- value
-  \S4method{[}{MOPMX,ANY,missing,list}(x, i, j) <- value
-  \S4method{[}{MOPMX,character,missing,NULL}(x, i, j) <- value
-  \S4method{[}{MOPMX,character,missing,OPMX}(x, i, j) <- value
-  \S4method{[}{MOPMX,character,missing,list}(x, i, j) <- value
+  \S4method{[}{MOPMX,ANY,missing,ANY}(x, i, ...) <- value
   \S4method{[}{OPMS,ANY,missing,NULL}(x, i, j) <- value
   \S4method{[}{OPMS,ANY,missing,OPM}(x, i, j) <- value
   \S4method{[}{OPMS,ANY,missing,OPMS}(x, i, j) <- value
   \S4method{[}{OPMS,ANY,missing,list}(x, i, j) <- value
 
-  \S4method{[[}{MOPMX,ANY,missing,ANY}(x, i, j) <- value
-  \S4method{[[}{MOPMX,ANY,missing,NULL}(x, i, j) <- value
-  \S4method{[[}{MOPMX,ANY,missing,OPMX}(x, i, j) <- value
-  \S4method{[[}{MOPMX,character,missing,NULL}(x, i, j) <- value
-  \S4method{[[}{MOPMX,character,missing,OPMX}(x, i, j) <- value
+  \S4method{[[}{MOPMX,ANY,missing,ANY}(x, i, ...) <- value
 }
 %% END INSERTION BY repair_S4_docu.rb

@@ -10,11 +10,13 @@
 \alias{OPMD-class}
 \alias{OPMS}
 \alias{OPMS-class}
+\alias{OPM_MCP_OUT}
+\alias{OPM_MCP_OUT-class}
 \title{Real classes of the \pkg{opm} package}
 \description{
-  Classes whose members can directly be generated and
-  manipulated by an \pkg{opm} user: \acronym{OPM},
-  \acronym{OPMA}, \acronym{OPMD} and \acronym{OPMS}.
+  Classes whose members can be generated and manipulated by
+  an \pkg{opm} user: \acronym{OPM}, \acronym{OPMA},
+  \acronym{OPMD}, \acronym{OPMS} and \acronym{MOPMX}.
 }
 \details{
   \acronym{OPM} is an acronym for
@@ -102,12 +104,14 @@
   and/or replicates, but \strong{must} correspond to the
   same plate type and \strong{must} contain the same wells.
 
-  As a rule, \acronym{OPMS} has the same methods as the
-  \acronym{OPM} class, but adapted to a collection of more
-  than one \acronym{OPM} object. Also, \acronym{OPMS} can
-  hold \acronym{OPMD} and \acronym{OPMA} as well as
-  \acronym{OPM} objects, even though this is not indicated
-  for all its methods in this manual.
+  \acronym{OPMS} inherits from \code{\link{WMDS}} and,
+  hence, has all its methods. As a rule, \acronym{OPMS} has
+  the same methods as the \acronym{OPM} class, but adapted
+  to a collection of more than one \acronym{OPM} object.
+  Also, \acronym{OPMS} can hold \acronym{OPMD} and
+  \acronym{OPMA} as well as \acronym{OPM} objects, even
+  though this is not indicated for all its methods in this
+  manual.
 
   \acronym{MOPMX} is an object for holding \acronym{OPMX}
   objects with potentially multiple plate types. Regarding
@@ -119,10 +123,21 @@
   lists. \acronym{MOPMX} objects can be created with
   \code{new} or \code{as} and then further manipulated; see
   the examples below.
+
+  \acronym{OPM_MCP_OUT} is a data-frame based class useful
+  as intermediate result of \code{\link{opm_mcp}}. See
+  there and its \code{\link{annotated}} method for usages.
 }
 \examples{
+## overview on the classes
+showClass("OPM")
+showClass("OPMA")
+showClass("OPMD")
+showClass("OPMS")
+showClass("MOPMX")
+
 ## OPMX conversions with as()
-showMethods("coerce", classes = c("OPM", "OPMA", "OPMD"))
+showMethods("coerce", classes = c("OPM", "OPMA", "OPMD", "OPMS"))
 data(vaas_1)
 data(vaas_4)
 (x <- as(vaas_1, "OPMA")) # drops the discretised data
@@ -136,12 +151,15 @@ stopifnot(has_aggr(vaas_1), !has_aggr(x))
 (x <- as(vaas_4, "MOPMX"))
 # conversion backwards is only possible as long as the MOPMX object contains
 # only a single OPMX object
+showMethods("coerce", classes = "MOPMX")
 }
 \seealso{
   methods::Methods methods::new
 
-  Other classes: \code{\link{FOE}}, \code{\link{MOA}},
-  \code{\link{OPMX}}, \code{\link{WMD}},
+  Other classes: \code{\link{FOE}}, \code{\link{OPMA_DB}},
+  \code{\link{OPMD_DB}}, \code{\link{OPMX}},
+  \code{\link{OPM_DB}}, \code{\link{WMD}},
+  \code{\link{WMDS}}, \code{\link{WMDX}},
   \code{\link{YAML_VIA_LIST}}
 }
 \keyword{classes}

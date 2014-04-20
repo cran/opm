@@ -2,12 +2,14 @@
 \alias{heat_map}
 \title{Heat map}
 \arguments{
-  \item{object}{Matrix, data frame or \code{\link{OPMS}}
-  object. The matrix method is mainly designed for
-  curve-parameter matrices as created by
+  \item{object}{Matrix, data frame or \code{\link{OPMS}} or
+  \code{\link{MOPMX}} object. The matrix method is mainly
+  designed for curve-parameter matrices as created by
   \code{\link{extract}} but can be used with any numeric
   matrix. If a data frame, it must contain at least one
-  column with numeric data.}
+  column with numeric data. Not all \code{\link{MOPMX}}
+  objects are suitable for this function; see the remarks
+  under \code{\link{extract}}.}
 
   \item{as.labels}{Character, numeric or logical vector
   indicating the positions of the columns to be joined and
@@ -99,13 +101,25 @@
   \item{asqr}{Logical scalar indicating whether the data
   should be treated with the arcsine-square root
   transformation. This usually only makes sense for
-  proportion data. If \code{NA}, percentages are assumed.}
+  proportion data and cannot be used in conjunction with
+  the \code{log1} argument set to \code{TRUE}. If
+  \code{NA}, percentages are assumed.}
+
+  \item{log1}{Logical scalar indicating whether
+  \code{log1p} should be used for transforming the data
+  prior to plotting.}
 
   \item{lmap}{Numeric scalar with at least three elements,
   or empty. If empty, ignored. Otherwise used for mapping
   logical values to numeric values. See
   \code{\link{map_values}} for details. Ignored if the data
   are not logical.}
+
+  \item{abbrev}{Character scalar indicating whether row or
+  column shall be abbreviated before plotting. Note that
+  abbreviation is done by shortening words and ending them
+  with a dot, so there is no guarantee that a certain
+  maximum length will be obtained.}
 
   \item{...}{Optional arguments passed to \code{heatmap} or
   \code{heatmap.2}.  Note that some defaults of
@@ -168,10 +182,14 @@ stopifnot(identical(metadata(vaas_4, "Species"), names(hm$rowColMap)))
 %% BEGIN INSERTION BY repair_S4_docu.rb
 \docType{methods}
 \alias{heat_map-methods}
+\alias{heat_map,MOPMX-method}
 \alias{heat_map,OPMS-method}
 \alias{heat_map,data.frame-method}
 \alias{heat_map,matrix-method}
 \usage{
+  \S4method{heat_map}{MOPMX}(object, as.labels,
+    subset = opm_opt("curve.param"), as.groups = NULL, sep = " ",
+    extract.args = list(), ...) 
   \S4method{heat_map}{OPMS}(object, as.labels,
     subset = opm_opt("curve.param"), as.groups = NULL, sep = " ",
     extract.args = list(), ...) 
@@ -189,7 +207,8 @@ stopifnot(identical(metadata(vaas_4, "Species"), names(hm$rowColMap)))
       borders[length(borders)] * cexRow * max(nchar(rownames(object))))
     else
       c(5, 5),
-    col = opm_opt("heatmap.colors"), asqr = FALSE, lmap = 1L:3L,
+    col = opm_opt("heatmap.colors"), asqr = FALSE, log1 = FALSE, lmap = 1L:3L,
+    abbrev = c("none", "row", "column", "both"),
     ...,
     use.fun = c("gplots", "stats")) 
 }

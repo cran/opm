@@ -43,6 +43,58 @@ test_that("predefined color sets can be obtained", {
 ################################################################################
 
 
+## custom_plate_is
+## UNTESTED
+
+
+## custom_plate_proper
+## UNTESTED
+
+
+## custom_plate_prepend
+## UNTESTED
+
+
+## custom_plate_prepend_full
+## UNTESTED
+
+
+## custom_plate_normalize_proper
+## UNTESTED
+
+
+## custom_plate_normalize
+## UNTESTED
+
+
+## custom_plate_normalize_all
+## UNTESTED
+
+
+## custom_plate_exists
+## UNTESTED
+
+
+## custom_plate_get
+## UNTESTED
+
+
+## custom_plate_assert
+## UNTESTED
+
+
+## custom_plate_set
+## UNTESTED
+
+
+## custom_plate_set_full
+## UNTESTED
+
+
+## normalize_predefined_plate
+## UNTESTED
+
+
 ## plate_type
 test_that("plate types can be explicitely queried", {
   expect_equal(plate_type(OPM.1), "PM01")
@@ -64,17 +116,44 @@ test_that("plate names can be normalized", {
   exp <- c("<strange>", "ECO", "SF-N2", "SF-P2", "SF-N2", "SF-N2")
   got <- plate_type(x, subtype = TRUE)
   expect_equal(got, exp)
+  # with expansion
+  expect_warning(got <- plate_type(x, subtype = TRUE, full = TRUE))
+  expect_true(all(substring(got, 1L, nchar(exp)) == exp))
+  expect_true(all(nchar(got[-1L]) > nchar(exp[-1L])))
   # Lately added identification plates
   x <- c("<strange>", " an2", "fF", "yT ")
   exp <- c("<strange>", "AN2", "FF", "YT")
   got <- plate_type(x, subtype = TRUE)
   expect_equal(got, exp)
-  # The internally used names must already be normalized
+  # with expansion
+  expect_warning(got <- plate_type(x, subtype = TRUE, full = TRUE))
+  expect_true(all(substring(got, 1L, nchar(exp)) == exp))
+  expect_true(all(nchar(got[-1L]) > nchar(exp[-1L])))
+  # User-defined plates
+  x <- c("<strange>", "CusToM: ABC.DEF", "pm10b", "custom: my plate ")
+  exp <- c("<strange>", "CUSTOM:ABC-DEF", "PM10", "CUSTOM:MY-PLATE")
+  got <- plate_type(x)
+  expect_equal(got, exp)
+  # with expansion
+  expect_warning(got <- plate_type(x, subtype = FALSE, full = TRUE))
+  expect_true(all(substring(got, 1L, nchar(exp)) == exp))
+  expect_true(any(nchar(got[-1L]) > nchar(exp[-1L])))
+})
+
+## plate_type
+test_that("the internally used names are already normalized", {
   standard.names <- names(PLATE_MAP)
   expect_equal(plate_type(standard.names), standard.names)
   appended <- paste(standard.names, letters)
   expect_equal(plate_type(appended), standard.names)
   expect_equal(names(PLATE_MAP), colnames(WELL_MAP))
+})
+
+## plate_type
+test_that("plate types from MOPMX objects can be queried", {
+  got <- plate_type(MOPMX.1)
+  expect_is(got, "character")
+  expect_equal(length(got), length(MOPMX.1))
 })
 
 
@@ -109,6 +188,36 @@ test_that("the plate type of OPMS objects can be changed", {
   expect_equal(class(x), class(OPMS.INPUT))
   expect_equal(dim(x), dim(OPMS.INPUT))
   expect_false(plate_type(x) == plate_type(OPMS.INPUT))
+})
+
+## gen_iii
+test_that("the plate type of MOPMX objects can be changed", {
+  got <- gen_iii(MOPMX.1, to <- c("ff", "sf.n2"))
+  expect_equal(plate_type(got), plate_type(to))
+  got <- gen_iii(MOPMX.1)
+  expect_equal(plate_type(got), rep(plate_type("gen.iii"), length(MOPMX.1)))
+})
+
+
+################################################################################
+
+
+## register_plate
+test_that("plate types can be registered", {
+  old <- plate_type()
+  register_plate(SIMPLE = 'simple plate')
+  expect_equal(old, plate_type())
+  norm <- custom_plate_prepend(custom_plate_normalize_proper('SIMPLE'))
+  exp <- paste(norm, "(simple plate)")
+  expect_equal(exp, plate_type("Custom:Simple", TRUE))
+  map <- c(A01 = "Glucose", B07 = "Fructose")
+  register_plate(SIMPLE = map)
+  expect_equal(c(old, norm), plate_type())
+  expect_equal(map, map_well_names(names(map), norm))
+  register_plate(SIMPLE = NULL)
+  expect_equal(old, plate_type())
+  register_plate(SIMPLE = 'simple plate', SIMPLE = NULL)
+  expect_equal(old, plate_type())
 })
 
 
@@ -165,6 +274,16 @@ test_that("well indices given as formula can be mapped", {
 ## UNTESTED
 
 
+## well_to_substrate
+test_that("full substrate names can be back-translated using '@' annotation", {
+  x <- c("A01@PM03", "B12@PM-M08", "A02@PM03", "C07@SF-N2")
+  got <- well_to_substrate(x, NULL)
+  expect_is(got, "character")
+  expect_equal(length(got), length(x))
+  expect_true(all(got != x))
+})
+
+
 ## to_sentence
 ## UNTESTED
 
@@ -187,29 +306,66 @@ test_that("information on the contained wells can be received", {
 test_that("substrate names can be translated", {
 
   plate.1 <- "PM01"
-  exp.1 <- c(A01 = "Negative Control", A02 = "L-Arabinose")
-  got <- wells(c("A01", "A02"), plate = plate.1, full = TRUE)
-
   plates.2 <- c(plate.1, "PM02")
+  exp.1 <- c(A01 = "Negative Control", A02 = "L-Arabinose")
   exp.2 <- c(A01 = "Negative Control", A02 = "Chondroitin Sulfate C")
   exp.2 <- cbind(exp.1, exp.2)
   colnames(exp.2) <- plates.2
-  got <- wells(c("A01", "A02"), plate = plates.2, full = TRUE)
+  class(exp.2) <- "well_coords_map"
+
+  got <- wells(c("A01", "A02"), plate = plate.1, full = TRUE, rm.num = TRUE)
+
+  got <- wells(c("A01", "A02"), plate = plates.2, full = TRUE, rm.num = TRUE)
   expect_equal(got, exp.2)
 
-  # Partial matching is allowed
-  plates.2 <- c(plate.1, "PM02")
-  exp.2 <- c(A01 = "Negative Control", A02 = "Chondroitin Sulfate C")
-  exp.2 <- cbind(exp.1, exp.2)
-  colnames(exp.2) <- c(plates.2[1L], "PM02")
-  got <- wells(c("A01", "A02"), plate = plates.2, full = TRUE)
-  expect_equal(got, exp.2)
+  got <- wells(c("A01", "A02"), plate = plates.2, full = TRUE, rm.num = TRUE,
+    paren.sep = "@")
+  wanted <- paste(rownames(got), rep(colnames(got), each = 2), sep = "@")
+  expect_true(all(wanted == got))
+})
 
+## wells
+test_that("information on the wells in a MOPMX object can be received", {
+  w.got <- wells(MOPMX.1)
+  expect_is(w.got, "list")
+  expect_equal(length(w.got), length(MOPMX.1))
+  expect_true(all(vapply(w.got, is.character, NA)))
 })
 
 
+
 ## listing
-## UNTESTED
+test_that("listings can be obtained from MOPMX objects", {
+
+  expect_error(got <- listing(MOPMX.2, ~ organism))
+
+  x <- do_disc(MOPMX.2)
+
+  got <- listing(x, NULL)
+  expect_is(got, "OPMS_Listing")
+  expect_equal(sum(sapply(x, length)), nrow(got))
+  expect_equal(ncol(got), 3)
+  expect_false(attr(got, "html"))
+
+  got <- listing(x, NULL, html = TRUE)
+  expect_is(got, "OPMS_Listing")
+  expect_equal(sum(sapply(x, length)), nrow(got))
+  expect_equal(ncol(got), 3)
+  expect_true(attr(got, "html"))
+
+  got <- listing(x, ~ organism)
+  expect_is(got, "OPMS_Listing")
+  expect_equal(length(unique(unlist(metadata(x, list("organism"))))), nrow(got))
+  expect_equal(ncol(got), 3)
+  expect_false(attr(got, "html"))
+
+  got <- listing(x, ~ organism, html = TRUE)
+  expect_is(got, "OPMS_Listing")
+  expect_equal(length(unique(unlist(metadata(x, list("organism"))))), nrow(got))
+  expect_equal(ncol(got), 3)
+  expect_true(attr(got, "html"))
+
+})
 
 
 ################################################################################
@@ -283,6 +439,14 @@ test_that("positions within PM plates can be found", {
 })
 
 
+## find_positions
+test_that("positions within plates in MOPMX objects can be found", {
+  got <- find_positions(MOPMX.1)
+  expect_is(got, "list")
+  expect_equal(length(got), length(MOPMX.1))
+})
+
+
 ################################################################################
 
 
@@ -337,6 +501,33 @@ test_that("URLs can be returned", {
     expect_equal(urls, got)
   }
 })
+
+
+## substrate_info
+test_that("substrate_info() works with MOPMX objects", {
+  got <- substrate_info(MOPMX.1)
+  expect_is(got, "list")
+  expect_equal(length(got), length(MOPMX.1))
+  expect_equal(got[[1]], substrate_info(MOPMX.1[[1]]))
+})
+
+
+## substrate_info
+test_that("substrate_info() can extract amino acids from peptides", {
+  x <- c("Ser-D-Val", "D-Fructose", "D-Serine #2", "Cyanide", "L-Arginine",
+    "Glycine", "D-Leu-D-Leu", "g-D-Glu-Gly")
+  got <- substrate_info(x, "peptide")
+  expect_is(got, "list")
+  expect_equal(names(got), x)
+  n <- vapply(got, length, 0L)
+  expect_equivalent(n, c(2L, 0L, 1L, 0L, 1L, 1L, 2L, 2L))
+  x <- "D,L-Diamino-Pimelic Acid"
+  got <- substrate_info(x, "peptide")
+  expect_is(got, "list")
+  expect_equal(names(got), x)
+  expect_equal(got[[1L]], "D,L-Dpm")
+})
+
 
 
 ################################################################################

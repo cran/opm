@@ -94,7 +94,7 @@ setMethod("discrete", "numeric", function(x, range, gap = FALSE,
   }
 }, sealed = SEALED)
 
-setMethod("discrete", MOA, function(x, ...) {
+setMethod("discrete", "array", function(x, ...) {
   map_values(object = x, mapping = discrete, ...)
 }, sealed = SEALED)
 

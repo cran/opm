@@ -50,8 +50,8 @@ names(AGGREGATION) <- c("no", "fast", "grofit", "p", "smooth", "thin")
 parse_key_list <- function(x) {
   if (!length(x))
     return(NULL)
-  x <- unlist(strsplit(x, ",", fixed = TRUE))
-  x <- do.call(cbind, strsplit(x, ":", fixed = TRUE))
+  x <- unlist(strsplit(x, ",", TRUE))
+  x <- do.call(cbind, strsplit(x, ":", TRUE))
   structure(x[nrow(x), ], names = x[1L, ])
 }
 

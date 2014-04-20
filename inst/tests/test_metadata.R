@@ -30,6 +30,19 @@ test_that("metadata can be included and CSV keys removed", {
 })
 
 
+## include_metadata
+test_that("metadata can be included in MOPMX objects", {
+  expect_false("A" %in% metadata_chars(MOPMX.1, value = FALSE))
+  tpl <- collect_template(MOPMX.1)
+  tpl$A <- 1:3
+  x <- include_metadata(MOPMX.1, tpl)
+  expect_true("A" %in% metadata_chars(x, value = FALSE))
+})
+
+
+## map_values
+## UNTESTED
+
 ## edit
 ## UNTESTED
 
@@ -81,6 +94,24 @@ test_that("the metadata can be modified by setting them", {
 })
 
 
+## metadata<-
+test_that("metadata of MOPMX objects can be set", {
+  x <- MOPMX.1
+  metadata(x) <- data.frame(A = 1:3)
+  got <- metadata_chars(x, value = FALSE)
+  expect_equal(got, structure("A", names = "A"))
+  x <- MOPMX.1
+  metadata(x, -1) <- data.frame(A = 1:3)
+  got <- metadata_chars(x, value = FALSE)
+  expect_true(length(got) > 1L && "A" %in% got)
+  metadata(x) <- list(X = "Y")
+  got <- metadata_chars(x)
+  expect_equal(got, structure("Y", names = "Y"))
+  got <- metadata_chars(x, value = FALSE)
+  expect_equal(got, structure("X", names = "X"))
+})
+
+
 ################################################################################
 
 
@@ -127,6 +158,17 @@ test_that("the metadata can be modified using a mapping function", {
     list(run = 3L, organism = "x")))
 })
 
+
+## map_metadata
+test_that("metadata within MOPMX objects can be mapped", {
+  got <- map_metadata(MOPMX.1)
+  expect_equal(got, MOPMX.1)
+  got <- map_metadata(MOPMX.1, c(`Bacillus simplex` = "E. coli"))
+  expect_false(identical(got, MOPMX.1))
+  got <- metadata_chars(got)
+  expect_true("E. coli" %in% got)
+  expect_false("Bacillus simplex" %in% got)
+})
 
 
 ################################################################################
@@ -176,6 +218,18 @@ test_that("the OPMS metadata can be queried", {
 })
 
 
+## metadata
+test_that("the MOPMX metadata can be queried", {
+  got <- metadata(MOPMX.1)
+  expect_is(got, "list")
+  expect_equal(length(got), length(MOPMX.1))
+  got <- metadata(MOPMX.1, "organism")
+  expect_is(got, "list")
+  expect_equal(length(got), length(MOPMX.1))
+  expect_error(got <- metadata(MOPMX.1, "organism", strict = TRUE))
+})
+
+
 ################################################################################
 
 
@@ -207,6 +261,15 @@ test_that("the metadata characters can be queried", {
   chars <- metadata_chars(OPMS.INPUT, values = FALSE)
   expect_equal(chars, structure(c("organism", "run"),
     names = c("organism", "run")))
+})
+
+
+## metadata_chars
+test_that("the MOPMX metadata characters can be queried", {
+  got <- metadata_chars(MOPMX.1)
+  expect_equal(got, structure(ORGN, names = ORGN))
+  got.2 <- metadata_chars(MOPMX.1, classes = "integer")
+  expect_true(length(got.2) > length(got))
 })
 
 

@@ -1,3 +1,70 @@
+Changes in version 1.1.0
+------------------------
+
+Bug fixes:
+
+- fixes of minor bugs in extract() and flatten()
+
+- bug fixes in 'MOPMX' bracket method and 'MOPMX' object creation
+
+- more consistent behaviour of read_opm()
+
+- metadata assignment with numeric keys and data frames as values works now
+  correctly
+
+- automatically generated conversion methods previously yielding invalid objects
+  now explicitely raise an error
+
+- fixed missing export of virtual classes
+
+Significant user-visible changes:
+
+- list method of contains() and all map_names() and map_values() methods moved
+  to pkgutils
+
+- removed deprecated functions filename(), position() and setup_time()
+
+- removed deprecated arguments 'what' of phylo_data(), 'examples' of opm_files()
+
+- wells() does not partially match plate names any more
+
+- the 'normalize' argument of csv_data() now triggers additional replacements
+
+- more restricted use of the 'paren.sep' argument of wells() and other functions
+
+New features:
+
+- much expanded vignette on substrate information, particularly regarding
+  feature selection
+
+- added vignette on analysing growth-curve (and user-defined PM) data
+
+- many new demos
+
+- new data set 'boccuto_et_al'
+
+- new register_plate() and opmx() methods for managing user-defined data
+
+- new methods opm_dbput(), opm_dbget(), opm_dbnext(), opm_dbfind(),
+  opm_dbclass() and opm_dbcheck() new classes'OPM_DB', 'OPMA_DB' and 'OPMD_DB'
+
+- new MOPMX methods: for extract(), heat_map(), thin_out(), edit(), flatten(),
+  as.data.frame(), find_positions(), substrate_info(), wells(), infix operators,
+  bracket operator, duplicated(), anyDuplicated(), sort(), `+`(), contains(),
+  split(), to_metadata(), phylo_data(), opm_mcp(), listing(), subset()
+
+- SEED compounds IDs have been added to the substrate information
+
+- new arguments: 'group.col' for radial_plot(), 'rm.num' and 'simplify' for
+  wells(), 'abbrev' and 'log1' for heat_map(), 'exact' and 'strict' for
+  duplicated(), 'no.html' and 'embed.css' for html_args(), 'rcr' for xy_plot()
+
+- the OPMS method of `[`() allows a large variety of 'i' arguments
+
+- new virtual class 'WMDS' into which 'OPMS' methods have been factored out,
+  similarly, more OPM methods are now WMD methods
+
+
 Changes in version 1.0.22
 -------------------------
 

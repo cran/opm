@@ -3,8 +3,8 @@
 \alias{aggregated}
 \title{Get aggregated data}
 \arguments{
-  \item{object}{\code{\link{OPMA}} or \code{\link{OPMS}}
-  object.}
+  \item{object}{\code{\link{OPMA}}, \code{\link{OPMS}} or
+  \code{\link{MOPMX}} object.}
 
   \item{subset}{Character vector. If not \code{NULL},
   restrict to this or these parameter(s). See
@@ -56,8 +56,8 @@
   set to \code{TRUE} but \code{stringsAsFactors} to
   \code{FALSE}.}
 
-  \item{...}{Optional arguments passed between the
-  methods.}
+  \item{...}{Optional arguments passed between the methods
+  or to \code{\link{wells}}.}
 }
 \value{
   \code{aggregated} yields a numeric matrix of aggregated
@@ -116,14 +116,13 @@ stopifnot(is.matrix(x), is.character(x), nrow(x) == 4)
 }
 \seealso{
   Other getter-functions: \code{\link{anyDuplicated}},
-  \code{\link{csv_data}}, \code{\link{dim}},
-  \code{\link{disc_settings}}, \code{\link{discretized}},
-  \code{\link{duplicated}}, \code{\link{filename}},
+  \code{\link{contains}}, \code{\link{csv_data}},
+  \code{\link{dim}}, \code{\link{disc_settings}},
+  \code{\link{discretized}}, \code{\link{duplicated}},
   \code{\link{has_aggr}}, \code{\link{has_disc}},
   \code{\link{hours}}, \code{\link{max}},
   \code{\link{measurements}}, \code{\link{minmax}},
-  \code{\link{position}}, \code{\link{seq}},
-  \code{\link{setup_time}}, \code{\link{subset}},
+  \code{\link{seq}}, \code{\link{subset}},
   \code{\link{thin_out}}, \code{\link{well}}
 }
 \keyword{attribute}

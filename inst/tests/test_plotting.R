@@ -21,16 +21,21 @@ rand_range <- function(n, minstart = 0, maxstart = 100, maxrange = 100) {
 ## summary
 test_that("a summary can be printed", {
   # OPM method
-  x <- summary(OPM.1)
-  expect_is(x, "OPM_Summary")
-  expect_true(length(x) > 7L)
-  capture.output(expect_equal(print(x), x))
+  s <- summary(OPM.1)
+  expect_is(s, "OPM_Summary")
+  expect_true(length(s) > 7L)
+  capture.output(expect_equal(print(s), s))
   # OPMS method
   s <- summary(OPMS.INPUT)
   capture.output(expect_equal(print(s), s))
   expect_is(s, "OPMS_Summary")
   expect_equal(length(s), length(OPMS.INPUT))
   expect_true(all(vapply(s, inherits, logical(1L), "OPM_Summary")))
+  # MOPMX method
+  s <- summary(MOPMX.1)
+  expect_is(s, "MOPMX_Summary")
+  capture.output(expect_equal(print(s), s))
+  expect_equal(nrow(s), length(MOPMX.1))
 })
 
 ## show
@@ -137,11 +142,15 @@ test_that("best ranges can be determined", {
 ## improved_max
 test_that("the improved maximum can be calculated", {
   for (i in 1:100) {
-    nums <- rand_range(10L)
-    im <- improved_max(nums)
+    m <- max(nums <- rand_range(10L))
     im.5 <- improved_max(nums, 5)
+    im.10 <- improved_max(nums, 10)
     im.20 <- improved_max(nums, 20)
-    expect_true(im.20 > im && im > im.5 && im.5 > max(nums))
+    if (m > 20)
+      expect_true(im.20 > im.10)
+    if (m > 10)
+      expect_true(im.10 > im.5)
+    expect_true(im.5 > m)
   }
 })
 
@@ -252,6 +261,18 @@ test_that("a heatmap can be drawn", {
   expect_equivalent(groups, names(hm$colColMap))
 
 })
+
+
+## heat_map
+test_that("a heat map can be drawn from a MOPMX object", {
+  hm <- heat_map(MOPMX.2, ~ run, as.groups = ~ organism)
+  expect_is(hm, "list")
+  expect_equal(NULL, hm$colColMap)
+  expect_true(setequal(names(hm$rowColMap), to_metadata(MOPMX.2)$organism))
+})
+
+
+################################################################################
 
 
 ## radial_plot

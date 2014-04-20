@@ -401,5 +401,15 @@ test_that("nexus matrices can be created with other conversions", {
 
 })
 
+## phylo_data
+test_that("phylogenetic matrices can be generated from MOPMX objects", {
+  got <- phylo_data(MOPMX.2, ~ run, subset = "A", discrete.args = NULL)
+  expect_is(got, "character")
+  expect_equal(length(got), sum(vapply(MOPMX.2, length, 0L)) + 1L)
+})
+
+
+################################################################################
+
 
 

@@ -321,8 +321,21 @@ read_opm <- function(names, convert = c("try", "no", "yes", "sep", "grp"),
     stop("'gen.iii' must either be logical or character scalar")
   )
   case(length(result),
-    switch(convert, no = result, NULL),
-    switch(convert, no = result, result[[1L]]),
+    case(convert,
+      no =,
+      grp = new(MOPMX),
+      sep = list(),
+      yes =,
+      try = NULL
+    ),
+    case(convert,
+      no = new(MOPMX, result),
+      grp = new(MOPMX, structure(result, names = plate_type(result[[1L]]))),
+      sep = structure(list(new(MOPMX, result)),
+        names = plate_type(result[[1L]])),
+      yes =,
+      try = result[[1L]]
+    ),
     case(convert,
       no = new(MOPMX, result),
       yes = new(OPMS, plates = result),
@@ -488,7 +501,7 @@ setMethod("to_metadata", WMD, function(object, stringsAsFactors = FALSE,
   x
 }, sealed = SEALED)
 
-setMethod("to_metadata", OPMS, function(object, stringsAsFactors = FALSE,
+setMethod("to_metadata", WMDS, function(object, stringsAsFactors = FALSE,
     optional = TRUE, sep = "\t", strip.white = FALSE, ...) {
   x <- collect(x = metadata(object), what = "values",
     optional = optional, stringsAsFactors = stringsAsFactors,
@@ -496,6 +509,12 @@ setMethod("to_metadata", OPMS, function(object, stringsAsFactors = FALSE,
   if (L(strip.white))
     x <- strip_whitespace(x)
   x
+}, sealed = SEALED)
+
+setMethod("to_metadata", MOPMX, function(object, stringsAsFactors = FALSE,
+    optional = TRUE, sep = "\t", strip.white = FALSE, ...) {
+  collect_rows(lapply(X = object, FUN = to_metadata, optional = optional,
+    sep = "\t", stringsAsFactors = stringsAsFactors, strip.white = FALSE, ...))
 }, sealed = SEALED)
 
 batch_opm <- function(names, md.args = NULL, aggr.args = NULL,

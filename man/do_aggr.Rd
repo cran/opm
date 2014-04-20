@@ -163,7 +163,7 @@ stopifnot(has_aggr(vaas_1), has_aggr(copy))
 # Compare the results to the ones precomputed with grofit
 # (1) A
 a.grofit <- aggregated(vaas_1, "A", ci = FALSE)
-a.fast <-  aggregated(copy, "A", ci = FALSE)
+a.fast <- aggregated(copy, "A", ci = FALSE)
 plot(a.grofit, a.fast)
 stopifnot(cor.test(a.fast, a.grofit)$estimate > 0.999)
 # (2) AUC

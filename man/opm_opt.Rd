@@ -113,12 +113,12 @@
   scalar indicating the default threshold used by
   \code{\link{annotated}}.} \item{time.zone}{Character
   scalar indicating the time zone to be used when parsing
-  \code{\link{setup_time}} entries. This is relevant for
+  \code{setup_time} entries. This is relevant for
   \code{\link{merge}}, which by default attempts to sort by
   parsed setup times} \item{time.fmt}{Character vector
   indicating the time formats used for parsing the
-  \code{\link{setup_time}} entries (in the given order).
-  Also relevant for \code{\link{merge}} by default. It is
+  \code{setup_time} entries (in the given order). Also
+  relevant for \code{\link{merge}} by default. It is
   advisable to put the more specific formats to the front
   because otherwise information such as an \sQuote{AM} or
   \sQuote{PM} indication might be lost. A wrong format
@@ -151,9 +151,7 @@ stopifnot(digits == 4)
 \seealso{
   base::options base::getOption
 
-  Other auxiliary-functions: \code{\link{contains}},
-  \code{\link{kubrick}}, \code{\link{map_names}},
-  \code{\link{map_values}}, \code{\link{separate}}
+  Other auxiliary-functions: \code{\link{separate}}
 }
 \keyword{utilities}
 

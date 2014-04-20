@@ -1,4 +1,12 @@
-multiple-plate-types    Apply opm to all CSV files in the working directory to generate HTML, YAML and PDF output
-cluster-with-pvalues    Use opm and pvclust to calculate clusterings with branch support values
-custom-PCA    Use opm and BiodiversityR/vegan to draw PCA biplots of Phenotype MicroArray data
-MongoDB-IO    Use opm and RMongo to insert Phenotype MicroArray data into MongoDB, query and delete them
+MongoDB-IO    conduct database I/O using MongoDB
+MySQL-IO    conduct database I/O using RMySQL
+PostgreSQL-IO    conduct database I/O using RPostgreSQL_IO
+RODBC-IO    conduct database I/O using RODBC
+SQLite-IO    conduct database I/O using RSQLite
+cluster-with-pvalues    use opm and pvclust to calculate clusterings with branch support values
+custom-PCA    use opm and BiodiversityR/vegan to draw PCA biplots of Phenotype MicroArray data
+multiple-plate-types    apply opm to all CSV files in the working directory to generate HTML, YAML and PDF output
+identify-positive-reactions    identify positive reactions and distinguish them from weak or negative reactions
+distinguish-curve-topologies    identify signficant differences in the curve topology of single curves by bootstrap estimates
+phenotype-vs-genotype    compare phenotypic clustering of organisms to their genotypic (phylogenetic) similarity
+

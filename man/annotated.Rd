@@ -2,8 +2,9 @@
 \alias{annotated}
 \title{Create vector or matrix with substrate annotation}
 \arguments{
-  \item{object}{An object of the classes \code{opm_glht} as
-  created by \code{\link{opm_mcp}}, \code{\link{OPMA}},
+  \item{object}{An object of the classes \code{opm_glht} or
+  \code{\link{OPM_MCP_OUT}} as created by
+  \code{\link{opm_mcp}}, \code{\link{OPMA}},
   \code{\link{OPMD}} or \code{\link{OPMS}}.}
 
   \item{what}{Character scalar indicating the kind of
@@ -11,8 +12,9 @@
   \code{\link{substrate_info}}.}
 
   \item{how}{Character scalar. Indicating how the
-  annotation is inserted.  Currently \sQuote{ids} and
-  \sQuote{values} are supported. See below for details.}
+  annotation is inserted.  Currently \sQuote{ids},
+  \sQuote{values} and \sQuote{data.frame} are supported.
+  See below for details.}
 
   \item{output}{For the \code{\link{OPMA}} and
   \code{\link{OPMS}} methods, the estimated parameter of
@@ -99,6 +101,12 @@
   names (see \code{make.names} from the \pkg{base}
   package), or to remove all rows and columns with missing
   values.
+
+  For \code{how = "data.frame"}, much like \code{how =
+  "values"}, but the numeric matrix is converted to a data
+  frame, the column names are made syntactic, and all
+  essentially binary (zero/one) columns are converted to
+  factors.
 }
 \description{
   These methods create vectors or matrices that include
@@ -205,11 +213,16 @@ stopifnot(is.numeric(y.ann.eq), !is.null(names(y.ann.eq)))
 %% BEGIN INSERTION BY repair_S4_docu.rb
 \docType{methods}
 \alias{annotated-methods}
+\alias{annotated,MOPMX-method}
 \alias{annotated,OPMA-method}
 \alias{annotated,OPMD-method}
 \alias{annotated,OPMS-method}
+\alias{annotated,OPM_MCP_OUT-method}
 \alias{annotated,opm_glht-method}
 \usage{
+  \S4method{annotated}{MOPMX}(object, what = "kegg", how = "ids",
+    output = opm_opt("curve.param"), lmap = NULL, sep = opm_opt("min.mode"),
+    conc = FALSE) 
   \S4method{annotated}{OPMA}(object, what = "kegg", how = "ids",
     output = opm_opt("curve.param"), lmap = NULL, sep = NULL, conc = FALSE) 
   \S4method{annotated}{OPMD}(object, what = "kegg", how = "ids",
@@ -217,6 +230,8 @@ stopifnot(is.numeric(y.ann.eq), !is.null(names(y.ann.eq)))
   \S4method{annotated}{OPMS}(object, what = "kegg", how = "ids",
     output = opm_opt("curve.param"), lmap = NULL, sep = opm_opt("min.mode"),
     conc = FALSE) 
+  \S4method{annotated}{OPM_MCP_OUT}(object, what = "kegg", how = "ids",
+    output = c("full", "plain"), lmap = NULL, sep = NULL, conc = FALSE) 
   \S4method{annotated}{opm_glht}(object, what = "kegg", how = "ids",
     output = "numeric", lmap = NULL, sep = opm_opt("comb.value.join"),
     conc = FALSE) 

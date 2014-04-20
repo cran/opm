@@ -25,6 +25,12 @@ expect_length <- function(actual, expected) {
 ## WMD
 ## UNTESTED
 
+## WMDS
+## UNTESTED
+
+## WMDX
+## UNTESTED
+
 ## OPM
 ## UNTESTED
 
@@ -43,13 +49,16 @@ expect_length <- function(actual, expected) {
 ## MOPMX
 ## UNTESTED
 
+## XOPMX
+## UNTESTED
+
+## OPM_MCP_OUT
+## UNTESTED
+
 ## YAML_VIA_LIST
 ## UNTESTED
 
 ## FOE
-## UNTESTED
-
-## MOA
 ## UNTESTED
 
 ## CMAT
@@ -115,6 +124,12 @@ test_that("the internally used reserved metadata names are OK", {
   # changing the constant
   wanted <- c("plate", "well", "time", "value", "parameter")
   expect_equal(names(RESERVED_NAMES), wanted)
+})
+
+
+## MEASUREMENT_COLUMN_MAP
+test_that("measurement column map is consitent with reserved metadata names", {
+  expect_true(all(names(MEASUREMENT_COLUMN_MAP) %in% RESERVED_NAMES))
 })
 
 
@@ -211,7 +226,7 @@ test_that("phylogeny formats are defined", {
 test_that("SUBSTRATE_PATTERN matches what it should match", {
   m <- function(s, p) grepl(p, s, FALSE, TRUE)
   e <- function(x) as.logical(unlist(strsplit(x, "", TRUE), FALSE, FALSE))
-  x <- c("B07 (Substrate(s))", "A02@[My [other] substrate]", "F11", "foo")
+  x <- c("B07\t\n(Substrate(s))", "A02 \r[My [other] substrate]", "F11", "foo")
   got <- m(x, SUBSTRATE_PATTERN["paren"])
   expect_equal(got, e("TFFF"))
   got <- m(x, SUBSTRATE_PATTERN["bracket"])
@@ -222,6 +237,16 @@ test_that("SUBSTRATE_PATTERN matches what it should match", {
   expect_equal(got, e("TTTF"))
   got <- m(x, SUBSTRATE_PATTERN["plain"])
   expect_equal(got, e("FFTF"))
+})
+
+
+## AMINO_ACIDS
+test_that("amino-acid spelling is consistent", {
+  aa <- names(AMINO_ACIDS)[1:20] # proteinogenic ones must come first
+  gly <- "Glycine"
+  expect_true(gly %in% aa)
+  expect_true(gly %in% WELL_MAP)
+  expect_true(all(paste0("L-", setdiff(aa, gly)) %in% WELL_MAP))
 })
 
 

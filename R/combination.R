@@ -39,7 +39,10 @@ to_opm_list.list <- function(object, precomputed = TRUE, skip = FALSE,
   else
     c(convert_recursively(object), recursive = TRUE)
   if (group)
-    result <- split(result, vapply(result, plate_type, ""))
+    result <- if (is.null(result))
+        list()
+      else
+        result <- split.default(result, vapply(result, plate_type, ""))
   result
 }
 
@@ -72,86 +75,25 @@ setMethod("[<-", c(OPMS, "ANY", "missing", "list"), function(x, i, j, value) {
   new(OPMS, plates = close_index_gaps(x@plates)) # checks and unnaming needed
 }, sealed = SEALED)
 
-setMethod("[<-", c(MOPMX, "ANY", "missing", OPMX), function(x, i, j, value) {
-  x@.Data[i] <- value
-  x@.Data <- close_index_gaps(x@.Data)
-  x
-})
-
-setMethod("[<-", c(MOPMX, "character", "missing", OPMX), function(x, i, j,
+setMethod("[<-", c(MOPMX, "ANY", "missing", "ANY"), function(x, i, ...,
     value) {
-  n <- names(x)
-  x@.Data[i] <- value
-  names(x) <- fix_names(names(x), n)
-  x@.Data <- close_index_gaps(x@.Data)
-  x
-})
-
-setMethod("[<-", c(MOPMX, "ANY", "missing", "list"), function(x, i, j, value) {
-  x@.Data[i] <- value
-  x@.Data <- close_index_gaps(x@.Data)
+  x <- callNextMethod(x, i, ..., value)
+  if (any(bad <- vapply(x, is.null, NA))) {
+    warning("closing gaps in indexes", call. = FALSE)
+    x <- x[!bad]
+  }
   validObject(x)
   x
 })
 
-setMethod("[<-", c(MOPMX, "character", "missing", "list"), function(x, i, j,
+setMethod("[[<-", c(MOPMX, "ANY", "missing", "ANY"), function(x, i, ...,
     value) {
-  n <- names(x)
-  x@.Data[i] <- value
-  names(x) <- fix_names(names(x), n)
-  x@.Data <- close_index_gaps(x@.Data)
+  x <- callNextMethod(x, i, ..., value)
+  if (any(bad <- vapply(x, is.null, NA))) {
+    warning("closing gaps in indexes", call. = FALSE)
+    x <- x[!bad]
+  }
   validObject(x)
-  x
-})
-
-setMethod("[<-", c(MOPMX, "ANY", "missing", "NULL"), function(x, i, j, value) {
-  x@.Data[i] <- NULL
-  x@.Data <- close_index_gaps(x@.Data)
-  x
-})
-
-setMethod("[<-", c(MOPMX, "character", "missing", "NULL"), function(x, i, j,
-    value) {
-  x@.Data[match(i, names(x), 0L)] <- NULL
-  x
-})
-
-setMethod("[<-", c(MOPMX, "ANY", "missing", "ANY"), function(x, i, j, value) {
-  stop("'value' must be object inheriting from 'OPMX' or list of such objects")
-})
-
-setMethod("[[<-", c(MOPMX, "ANY", "missing", OPMX), function(x, i, j, value) {
-  x@.Data[[i]] <- value
-  x@.Data <- close_index_gaps(x@.Data)
-  x
-})
-
-setMethod("[[<-", c(MOPMX, "character", "missing", OPMX), function(x, i, j,
-    value) {
-  n <- names(x)
-  x@.Data[[i]] <- value
-  names(x) <- fix_names(names(x), n)
-  x
-})
-
-setMethod("[[<-", c(MOPMX, "ANY", "missing", "NULL"), function(x, i, j, value) {
-  x@.Data[[i]] <- value
-  x
-})
-
-setMethod("[[<-", c(MOPMX, "character", "missing", "NULL"), function(x, i, j,
-    value) {
-  if (m <- match(i, names(x), 0L))
-    x@.Data[[m]] <- value
-  x
-})
-
-setMethod("[[<-", c(MOPMX, "ANY", "missing", "ANY"), function(x, i, j, value) {
-  stop("'value' must be NULL or inherit from 'OPMX'")
-})
-
-setMethod("$<-", c(MOPMX, "OPMX"), function(x, name, value) {
-  x[[name]] <- value
   x
 })
 
@@ -160,15 +102,10 @@ setMethod("$<-", c(MOPMX, "ANY"), function(x, name, value) {
   x
 })
 
-setMethod("$<-", c(MOPMX, "NULL"), function(x, name, value) {
-  x[[name]] <- value
-  x
-})
-
 setMethod("c", OPMX, function(x, ..., recursive = FALSE) {
   if (missing(..1))
     return(x)
-  try_opms.list(list(x, ...))
+  try_opms.list(c(list(x), ..., recursive = recursive))
 }, sealed = SEALED)
 
 setMethod("c", MOPMX, function(x, ..., recursive = FALSE) {
@@ -188,6 +125,11 @@ setMethod("+", c(OPM, OPMS), function(e1, e2) {
   e2
 }, sealed = SEALED)
 
+setMethod("+", c(OPM, MOPMX), function(e1, e2) {
+  e2@.Data <- c(list(e1), e2@.Data)
+  e2
+}, sealed = SEALED)
+
 setMethod("+", c(OPM, "list"), function(e1, e2) {
   new(OPMS, plates = c(list(e1), e2))
 }, sealed = SEALED)
@@ -204,8 +146,28 @@ setMethod("+", c(OPMS, OPM), function(e1, e2) {
   e1
 }, sealed = SEALED)
 
+setMethod("+", c(OPMS, MOPMX), function(e1, e2) {
+  e2@.Data <- c(list(e1), e2@.Data)
+  e2
+}, sealed = SEALED)
+
 setMethod("+", c(OPMS, "list"), function(e1, e2) {
   new(OPMS, plates = c(e1@plates, e2)) # unnaming also needed
+}, sealed = SEALED)
+
+setMethod("+", c(MOPMX, OPMX), function(e1, e2) {
+  e1@.Data <- c(e1@.Data, list(e2))
+  e1
+}, sealed = SEALED)
+
+setMethod("+", c(MOPMX, "ANY"), function(e1, e2) {
+  e1@.Data <- c(e1@.Data, as(e2, class(e1))@.Data)
+  e1
+}, sealed = SEALED)
+
+setMethod("+", c("ANY", MOPMX), function(e1, e2) {
+  e2@.Data <- c(as(e1, class(e2))@.Data, e2@.Data)
+  e2
 }, sealed = SEALED)
 
 opms <- function(..., precomputed = TRUE, skip = FALSE, group = FALSE) {

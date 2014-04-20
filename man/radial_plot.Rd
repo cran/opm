@@ -63,6 +63,10 @@
   drawn polygons, if any.  Use \code{NA} for no fill
   (recommended).}
 
+  \item{group.col}{Logical scalar indicating whether or not
+  wells from plates that belong to the same group shall
+  have the same colour.}
+
   \item{main}{The main title of the plot.}
 
   \item{...}{Optional other arguments passed to
@@ -121,6 +125,11 @@ data("vaas_4")
 (y <-radial_plot(vaas_4[, , 1:5], as.labels = list("Species", "Strain"),
   main = "Test", x = 200, y = 200, rp.type = "s", show.centroid = TRUE))
 
+# with the same colour for members of the same group
+(xy <-radial_plot(vaas_4[, , 1:5], as.labels = list("Species"),
+  group.col = TRUE, main = "Test", x = 200, y = 200, rp.type = "s",
+  show.centroid = TRUE))
+
 ## Data-frame method (rarely needed)
 x <- extract(vaas_4, as.labels = list("Species", "Strain"), dataframe = TRUE)
 (yy <- radial_plot(x[, 1:8], as.labels = c("Species", "Strain"),
@@ -133,6 +142,9 @@ x <- extract(vaas_4, as.labels = list("Species", "Strain"))
 (yy <- radial_plot(x[, 1:5], main = "Test"))
 stopifnot(identical(y, yy)) # should also yield the same picture than above
 stopifnot(is.character(yy), names(yy) == rownames(x))
+}
+\author{
+  Lea A.I. Vaas and Markus Goeker
 }
 \seealso{
   plotrix::radial.plot graphics::legend
@@ -160,7 +172,7 @@ stopifnot(is.character(yy), names(yy) == rownames(x))
     radlab = FALSE, show.centroid = TRUE, show.grid.labels = 1, lwd = 3,
     mar = c(2, 2, 2, 2), line.col = opm_opt("colors"), draw.legend = TRUE,
     x = "bottom", y = NULL, xpd = TRUE, pch = 15, legend.args = list(),
-    point.symbols = 15, point.col = opm_opt("colors"), poly.col = NA,
-    main = paste0(as.labels, sep = sep), ...) 
+    group.col = FALSE, point.symbols = 15, point.col = opm_opt("colors"),
+    poly.col = NA, main = paste0(as.labels, sep = sep), ...) 
 }
 %% END INSERTION BY repair_S4_docu.rb

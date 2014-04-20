@@ -10,7 +10,7 @@ test_that("CAS numbers and other IDs are OK", {
       sprintf("=> not all %s IDs matched expected pattern", what))
   }
   expect_true(setequal(colnames(SUBSTRATE_INFO),
-    c("METACYC", "CAS", "KEGG", "MESH", "DRUG", "CHEBI")))
+    c("METACYC", "CAS", "KEGG", "MESH", "DRUG", "CHEBI", "SEED")))
   na_or_match(cas <- SUBSTRATE_INFO[, "CAS"], "^\\d", "CAS")
   expect_true(all(is_cas(cas[!is.na(cas)]))) # more specific check
   na_or_match(SUBSTRATE_INFO[, "KEGG"], "^C\\d{5}$", "KEGG-compound")
@@ -19,5 +19,6 @@ test_that("CAS numbers and other IDs are OK", {
   # the Metacyc IDs are less regular, let alone the MeSH names
   na_or_match(SUBSTRATE_INFO[, "METACYC"], "^\\w+((\\+|--?)\\w+)*$", "Metacyc")
   na_or_match(SUBSTRATE_INFO[, "MESH"], "^[^\\s].*[^\\s]$", "MeSH")
+  na_or_match(SUBSTRATE_INFO[, "SEED"], "^cpd\\d+$", "SEED")
 })
 

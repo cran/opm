@@ -5,25 +5,36 @@
 \alias{unique}
 \title{Sort, unify, revert or repeat \acronym{OPMS} objects}
 \arguments{
-  \item{x}{\code{\link{OPMS}} or \code{\link{OPM}} object.}
+  \item{x}{\code{\link{OPM}} or \code{\link{OPMS}} or
+  \code{\link{MOPMX}} object.}
 
   \item{decreasing}{Logical scalar. Passed to \code{order}
-  from the \pkg{base} package.}
+  or \code{sort.list} from the \pkg{base} package.}
 
-  \item{by}{List or character vector. If a list, a list of
-  one to several keys passed as \code{key} argument to
+  \item{by}{List or character vector. For
+  \code{\link{OPMS}} objects, if a list, a list of one to
+  several keys passed as \code{key} argument to
   \code{\link{metadata}}. If a character vector of length
   one, \code{by} is passed as \sQuote{what} argument to
   \code{\link{csv_data}}. If longer, passed step-by-step to
-  \code{\link{csv_data}} as \code{keys} argument.}
+  \code{\link{csv_data}} as \code{keys} argument.
+
+  For \code{\link{MOPMX}} objects, either
+  \sQuote{plate.type}, which sorts according to the plate
+  types, \sQuote{length}, which sorts the elements
+  according to their lengths (i.e., number of plates), or a
+  metadata query that yields, for each element of \code{x},
+  a vector to which \code{max} can be applied. Sorting
+  \code{x} is then done according to these maxima.}
 
   \item{parse}{Logical scalar. Convert the
-  \code{\link{setup_time}} via \code{strptime} before
-  ordering? Has only an effect if \code{by} is
-  \sQuote{setup_time}. It is an error if the time format is
-  not recognised.  See \code{\link{opm_opt}}, arguments
-  \code{time.fmt} and \code{time.zone}, for modifying the
-  parsing of setup-time entries.}
+  \code{setup_time} via \code{strptime} before ordering?
+  Has only an effect if \code{by} is \sQuote{setup_time}.
+  It is an error if the time format is not recognised.  See
+  \code{\link{opm_opt}}, arguments \code{time.fmt} and
+  \code{time.zone}, for modifying the parsing of setup-time
+  entries, and \code{\link{csv_data}} for this kind of
+  entries.}
 
   \item{exact}{Logical scalar. Passed to
   \code{\link{metadata}}. Affects only metadata querying,
@@ -38,7 +49,7 @@
   \code{\link{plates}} but not in those of others.}
 
   \item{na.last}{Logical scalar. Also passed to
-  \code{order}.}
+  \code{order} or \code{sort.list}.}
 
   \item{incomparables}{Vector passed to
   \code{\link{duplicated}}. The default is \code{FALSE}.}
@@ -53,16 +64,14 @@
 }
 \description{
   Sort an \code{\link{OPMS}} object based on one to several
-  metadata or \acronym{CSV} data entries, or check whether
-  duplicated \code{\link{OPM}} or \code{\link{OPMA}}
-  objects are contained within an \code{\link{OPMS}} object
-  and remove the duplicated ones, or revert the order of
-  plates within an \code{\link{OPMS}} object.
-  Alternatively, repeat \code{\link{OPMS}} or
-  \code{\link{OPM}} objects zero times, once, or several
-  times, and accordingly create a novel \code{\link{OPMS}}
-  or \code{\link{OPM}} object (\code{NULL} if zero length
-  is chosen).
+  metadata or \acronym{CSV} data entries, or sort elements
+  of a \code{\link{MOPMX}} object based on plate type,
+  length, or a metadata entry. Alternatively, remove
+  duplicated elements from a \code{\link{OPMS}} or
+  \code{\link{MOPMX}} object, or revert the order of plates
+  within an \code{\link{OPMS}} object, or, repeat
+  \code{\link{OPMS}} or \code{\link{OPM}} objects zero
+  times, once, or several times.
 }
 \details{
   The \code{sort} \code{\link{OPM}} method just returns the
@@ -159,8 +168,9 @@ stopifnot(is.null(rep(vaas_4, 0)))
   Other conversion-functions: \code{\link{as.data.frame}},
   \code{\link{extract}}, \code{\link{extract_columns}},
   \code{\link{flatten}}, \code{\link{merge}},
-  \code{\link{oapply}}, \code{\link{plates}},
-  \code{\link{split}}, \code{\link{to_yaml}}
+  \code{\link{oapply}}, \code{\link{opmx}},
+  \code{\link{plates}}, \code{\link{split}},
+  \code{\link{to_yaml}}
 }
 \keyword{manip}
 
@@ -173,12 +183,24 @@ stopifnot(is.null(rep(vaas_4, 0)))
 \alias{rev,OPM-method}
 \alias{rev,OPMS-method}
 \alias{sort-methods}
-\alias{sort,OPM,logical-method}
-\alias{sort,OPMS,logical-method}
-\alias{sort,OPMX,missing-method}
+\alias{sort,MOPMX,ANY-method}
+\alias{sort,MOPMX-method}
+\alias{sort,MOPMX,missing-method}
+\alias{sort,OPM,ANY-method}
+\alias{sort,OPM-method}
+\alias{sort,OPM,missing-method}
+\alias{sort,OPMS,ANY-method}
+\alias{sort,OPMS-method}
+\alias{sort,OPMS,missing-method}
 \alias{unique-methods}
+\alias{unique,MOPMX,ANY-method}
+\alias{unique,MOPMX-method}
+\alias{unique,MOPMX,missing-method}
 \alias{unique,OPM,ANY-method}
+\alias{unique,OPM-method}
+\alias{unique,OPM,missing-method}
 \alias{unique,OPMS,ANY-method}
+\alias{unique,OPMS-method}
 \alias{unique,OPMS,missing-method}
 \usage{
   \S4method{rep}{OPM}(x, ...) 
@@ -187,12 +209,20 @@ stopifnot(is.null(rep(vaas_4, 0)))
   \S4method{rev}{OPM}(x) 
   \S4method{rev}{OPMS}(x) 
 
-  \S4method{sort}{OPM,logical}(x, decreasing, ...) 
-  \S4method{sort}{OPMS,logical}(x, decreasing, by = "setup_time",
+  \S4method{sort}{MOPMX,ANY}(x, decreasing,
+    by = c("plate.type", "length"), exact = TRUE, strict = TRUE,
+    na.last = TRUE, ...) 
+  \S4method{sort}{MOPMX,missing}(x, decreasing, ...) 
+  \S4method{sort}{OPM,ANY}(x, decreasing, ...) 
+  \S4method{sort}{OPM,missing}(x, decreasing, ...) 
+  \S4method{sort}{OPMS,ANY}(x, decreasing, by = "setup_time",
     parse = by == "setup_time", exact = TRUE, strict = TRUE, na.last = TRUE) 
-  \S4method{sort}{OPMX,missing}(x, decreasing, ...) 
+  \S4method{sort}{OPMS,missing}(x, decreasing, ...) 
 
+  \S4method{unique}{MOPMX,ANY}(x, incomparables, ...) 
+  \S4method{unique}{MOPMX,missing}(x, incomparables, ...) 
   \S4method{unique}{OPM,ANY}(x, incomparables, ...) 
+  \S4method{unique}{OPM,missing}(x, incomparables, ...) 
   \S4method{unique}{OPMS,ANY}(x, incomparables, ...) 
   \S4method{unique}{OPMS,missing}(x, incomparables, ...) 
 }

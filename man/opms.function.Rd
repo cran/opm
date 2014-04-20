@@ -36,23 +36,24 @@
   extracted.}
 }
 \value{
-  \code{\link{OPMS}} object, or list of such objects
-  (and/or \code{\link{OPM}} objects), or \code{\link{OPM}}
-  object, or \code{NULL}.
+  \code{\link{OPMS}} object, or list (\code{\link{MOPMX}}
+  object) of such objects (and/or \code{\link{OPM}}
+  objects), or \code{\link{OPM}} object, or \code{NULL}.
 }
 \description{
-  Easily build \code{\link{OPMS}} objects.
+  Easily build \code{\link{OPMS}} (or \code{\link{MOPMX}})
+  objects.
 }
 \details{
   While otherwise rather flexible, this function will fail
-  to return an \code{\link{OPMS}} object if the plate types
-  do not match (simply because such \code{\link{OPMS}}
-  objects are disallowed) and \code{group} is set to
-  \code{FALSE}. But if \code{group} is set to \code{TRUE},
-  a list, not a single \code{\link{OPMS}} object will be
-  returned; and if \code{group} is of mode
-  \sQuote{character}, this extracts the plate type(s) of
-  interest.
+  to return an \code{\link{OPMS}} object if \code{group} is
+  set to \code{FALSE} and the plate types do not match
+  (simply because such \code{\link{OPMS}} objects are
+  disallowed). But if \code{group} is set to \code{TRUE}, a
+  list (\code{\link{MOPMX}} object), not a single
+  \code{\link{OPMS}} object will be returned; and if
+  \code{group} is of mode \sQuote{character}, this extracts
+  the plate type(s) of interest.
 
   Note that \code{\link{read_opm}} already has plate-type
   selection options.
@@ -63,6 +64,8 @@
 
 (x <- opms()) # 0 objects
 stopifnot(is.null(x))
+(x <- opms(group = TRUE)) # 0 also objects
+stopifnot(is(x, "MOPMX"), length(x) == 0)
 
 dim(x <- opms(vaas_1)) # 1 object
 stopifnot(identical(x, vaas_1))

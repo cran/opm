@@ -4,7 +4,8 @@
 \arguments{
   \item{object}{Query character vector, factor or list, S3
   object of class \sQuote{substrate_match},
-  \code{\link{OPM}} or \code{\link{OPMS}} object.}
+  \code{\link{OPM}}, \code{\link{OPMS}} or
+  \code{\link{MOPMX}} object.}
 
   \item{what}{Character scalar indicating which kind of
   information to output.  \describe{ \item{all}{Create
@@ -36,8 +37,15 @@
   character vectors representing amino acids in
   three-letter code, in order, contained in the substrate
   if it is a peptide. Empty character vectors are returned
-  for non-peptide substrates.} } See the references for
-  information on the databases.}
+  for non-peptide substrates.  Amino acids without
+  \sQuote{L} or \sQuote{D} annotation are assumed to be in
+  \sQuote{L} conformation, i.e. \sQuote{L-} is removed from
+  the beginning of the amino acid codes.}
+  \item{peptide2}{Like \code{peptide}, but without removal
+  of \sQuote{L-} from the beginning of the amino acid
+  codes.} \item{seed}{\acronym{SEED} compound database ID,
+  optionally expanded to an \acronym{URL}.} } See the
+  references for information on the databases.}
 
   \item{browse}{Numeric scalar. If non-zero, an
   \acronym{URL} is generated from each \acronym{ID}. If
@@ -62,18 +70,25 @@
 \value{
   The character method returns a character vector with
   \code{object} used as names and either a matched entry or
-  \code{NA} as value. The factor method does the same,
-  whereas the list method traverses a list and calls
+  \code{NA} as value. Only if \code{what} is set to
+  \sQuote{peptide} a named list is returned instead.  The
+  factor method works like the character method, whereas
+  the list method traverses a list and calls
   \code{substrate_info} on suitable elements, leaving
   others unchanged. The \code{\link{OPM}} and
   \code{\link{OPMS}} methods work like the character
-  method, using their own substrates. Depending on the
-  \code{browse} argument, the returned \acronym{ID}s might
-  have been converted to \acronym{URL}s, and as a side
-  effect tabs in the default web browser might have been
-  opened. For suitable values of \code{what}, setting
-  \code{download} to \code{TRUE} yielded special objects as
-  described above.
+  method, using their own substrates.
+
+  Depending on the \code{browse} argument, the returned
+  \acronym{ID}s might have been converted to
+  \acronym{URL}s, and as a side effect tabs in the default
+  web browser might have been opened. For suitable values
+  of \code{what}, setting \code{download} to \code{TRUE}
+  yielded special objects as described above.
+
+  The \code{\link{MOPMX}} method yield a list with one
+  element of one of the kinds described above per element
+  of \code{object}.
 }
 \description{
   Return information on substrates such as their
@@ -187,6 +202,19 @@ stopifnot(identical(x, substrate_info(vaas_4[, , 1:3], "all")))
   reference database and ontology for biologically relevant
   chemistry: enhancements for 2013. \emph{Nucleic Acids
   Research} \strong{41}: D456--D463.
+
+  Overbeek, R., Begley, T., Butler, R., Choudhuri, J.,
+  Chuang, H., Cohoon, M., de Crecy-Lagard, V., Diaz, N.,
+  Disz, T., Edwards, R., Fonstein, M., Frank, E., Gerdes,
+  S., Glass, E., Goesmann, A., Hanson, A., Iwata-Reuyl, D.,
+  Jensen, R., Jamshidi, N., Krause, L., Kubal, M., Larsen,
+  N., Linke, B., McHardy, A., Meyer, F., Neuweger, H.,
+  Olsen, G., Olson, R., Osterman, A., Portnoy, V., Pusch,
+  G., Rodionov, D., Rueckert, C., Steiner, J., Stevens, R.,
+  Thiele, I., Vassieva, O., Ye, Y., Zagnitko, O., Vonstein,
+  V. 2005 The subsystems approach to genome annotation and
+  its use in the project to annotate 1000 genomes.
+  \emph{Nucleic Acids Research} \strong{33}: 5691--5702.
 }
 \seealso{
   utils::browseURL
@@ -195,6 +223,7 @@ stopifnot(identical(x, substrate_info(vaas_4[, , 1:3], "all")))
   \code{\link{find_substrate}}, \code{\link{gen_iii}},
   \code{\link{listing}}, \code{\link{opm_files}},
   \code{\link{param_names}}, \code{\link{plate_type}},
+  \code{\link{register_plate}},
   \code{\link{select_colors}}, \code{\link{wells}}
 }
 \keyword{utilities}
@@ -202,6 +231,7 @@ stopifnot(identical(x, substrate_info(vaas_4[, , 1:3], "all")))
 %% BEGIN INSERTION BY repair_S4_docu.rb
 \docType{methods}
 \alias{substrate_info-methods}
+\alias{substrate_info,MOPMX-method}
 \alias{substrate_info,OPM-method}
 \alias{substrate_info,OPMS-method}
 \alias{substrate_info,character-method}
@@ -209,12 +239,14 @@ stopifnot(identical(x, substrate_info(vaas_4[, , 1:3], "all")))
 \alias{substrate_info,list-method}
 \alias{substrate_info,substrate_match-method}
 \usage{
+  \S4method{substrate_info}{MOPMX}(object, ...) 
   \S4method{substrate_info}{OPM}(object, ...) 
   \S4method{substrate_info}{OPMS}(object, ...) 
   \S4method{substrate_info}{character}(object,
-    what = c("cas", "kegg", "drug", "metacyc", "chebi", "mesh", "downcase",
-      "greek", "concentration", "html", "peptide", "all"), browse = 0L,
-    download = FALSE, ...) 
+    what = c("cas", "kegg", "drug", "metacyc", "chebi", "mesh", "seed",
+      "downcase", "greek", "concentration", "html", "peptide", "peptide2",
+      "all"),
+    browse = 0L, download = FALSE, ...) 
   \S4method{substrate_info}{factor}(object, ...) 
   \S4method{substrate_info}{list}(object, ...) 
   \S4method{substrate_info}{substrate_match}(object, ...) 

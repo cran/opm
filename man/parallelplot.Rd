@@ -190,6 +190,7 @@ stopifnot(inherits(x, "try-error"))
 \alias{parallelplot-methods}
 \alias{parallelplot,NULL,OPMX-method}
 \alias{parallelplot,OPMX,ANY-method}
+\alias{parallelplot,OPMX-method}
 \alias{parallelplot,OPMX,missing-method}
 \alias{parallelplot,formula,OPMX-method}
 \alias{parallelplot,missing,OPMX-method}

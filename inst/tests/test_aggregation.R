@@ -103,5 +103,15 @@ test_that("OPMS objects can be aggregated using the fast method", {
 })
 
 
+## do_aggr
+test_that("MOPMX object can be agregated using the fast method", {
+  junk <- capture.output(got <- do_aggr(MOPMX.1, method = "opm-fast"))
+  expect_true(all(unlist(has_aggr(got))))
+  expect_false(any(unlist(has_disc(got))))
+  got <- do_disc(got, TRUE)
+  expect_true(any(unlist(has_disc(got))))
+})
+
+
 ################################################################################
 

@@ -33,6 +33,8 @@ get_and_remember <- function(x, prefix, default, getfun, single = FALSE, ...) {
   ok <- !is.na(x) & nzchar(x)
   result[!ok] <- rep.int(list(default), sum(!ok))
   result[ok] <- do_get(x[ok], MEMOIZED, prefix, default, getfun, single, ...)
+  #result[ok] <- reassign_duplicates(x[ok], do_get, MEMOIZED, prefix,
+  #  default, getfun, single, ...)
   names(result) <- x
   result
 }
@@ -47,6 +49,59 @@ setMethod("pick_from", "data.frame", function(object, selection) {
   matches <- apply(do.call(cbind, matches), 1L, all)
   matches[is.na(matches)] <- FALSE # we get NA from all-NA rows
   object[matches, , drop = FALSE]
+}, sealed = SEALED)
+
+setGeneric("common_times", function(x) standardGeneric("common_times"))
+
+setMethod("common_times", OPM, function(x) {
+  x
+}, sealed = SEALED)
+
+setMethod("common_times", OPMS, function(x) {
+  tp <- hours(x, what = "all")
+  if (is.matrix(tp))
+    tp <- lapply(seq_len(nrow(tp)), function(i) tp[i, ])
+  if (length(maxs <- unique.default(vapply(tp, max, 1))) < 2L)
+    return(x)
+  min.max <- min(maxs)
+  tp <- lapply(tp, function(x) which(x <= min.max))
+  x[, tp]
+}, sealed = SEALED)
+
+setGeneric("select_by_disc", function(x, ...) standardGeneric("select_by_disc"))
+
+setMethod("select_by_disc", OPMD, function(x, invert.1, invert.2, comb.fun) {
+  y <- discretized(x)
+  if (invert.1)
+    y <- !y
+  y[is.na(y)] <- FALSE
+  if (invert.2)
+    y <- !y
+  x[, y]
+}, sealed = SEALED)
+
+setMethod("select_by_disc", OPMS, function(x, invert.1, invert.2, comb.fun) {
+  y <- discretized(x)
+  if (invert.1)
+    y <- !y
+  y[is.na(y)] <- FALSE
+  y <- apply(y, 2L, comb.fun)
+  if (invert.2)
+    y <- !y
+  x[, , y]
+}, sealed = SEALED)
+
+setGeneric("do_select", function(x, query) standardGeneric("do_select"))
+
+setMethod("do_select", OPM, function(x, query) {
+  if (query)
+    x
+  else
+    NULL
+}, sealed = SEALED)
+
+setMethod("do_select", OPMS, function(x, query) {
+  x[query]
 }, sealed = SEALED)
 
 reduce_to_mode <- function(x, cutoff, use.na) UseMethod("reduce_to_mode")
@@ -102,6 +157,8 @@ sub_indexes <- function(x) {
 }
 
 simplify_conditionally <- function(x) {
+  if (!length(x))
+    return(NULL)
   if (any(vapply(x, is.list, NA)) || any(vapply(x, is.matrix, NA)))
     return(x)
   if (length(n <- unique.default(vapply(x, length, 0L))) > 1L)
@@ -114,16 +171,21 @@ simplify_conditionally <- function(x) {
 
 close_index_gaps <- function(x) {
   if (any(bad <- vapply(x, is.null, NA))) {
-    warning("closing gaps in indexes")
+    warning("closing gaps in indexes", call. = FALSE)
     return(x[!bad])
   }
   x
 }
 
-fix_names <- function(x, y) {
-  if (any(bad <- !nzchar(x)[i <- seq_along(y)] & nzchar(y)))
-    x[i][bad] <- y[bad]
-  x
+metadata2factorlist <- function(x, f) {
+  replace_null <- function(x) {
+    x[vapply(x, is.null, NA)] <- NA
+    x
+  }
+  f <- metadata(x, f)
+  f[simple] <- lapply(f[simple <- vapply(x, is, NA, OPM)], list)
+  f <- lapply(lapply(f, replace_null), lapply, replace_null)
+  lapply(lapply(f, vapply, paste0, "", collapse = " "), as.factor)
 }
 
 is_uniform <- function(x, na.rm = FALSE) {
@@ -132,6 +194,13 @@ is_uniform <- function(x, na.rm = FALSE) {
   if (length(x) < 2L || all((dup <- duplicated(x))[-1L]))
     return(TRUE)
   x[!dup]
+}
+
+reassign_duplicates <- function(x, FUN, ...) {
+  # this requires non-NA values (and non-empty values in the case of strings)
+  if (!any(dup <- duplicated.default(x)))
+    return(FUN(x, ...))
+  FUN(x[!dup], ...)[match(x, x[!dup])]
 }
 
 setGeneric("is_constant", function(x, ...) standardGeneric("is_constant"))
@@ -150,7 +219,7 @@ setMethod("is_constant", "list", function(x, na.rm = TRUE) {
   all(duplicated.default(x)[-1L])
 }, sealed = SEALED)
 
-setMethod("is_constant", MOA, function(x, margin = 1L, na.rm = TRUE) {
+setMethod("is_constant", "array", function(x, margin = 1L, na.rm = TRUE) {
   if (!margin)
     return(is_constant(as.vector(x), na.rm = na.rm))
   apply(X = x, MARGIN = margin, FUN = is_constant, na.rm = na.rm)
@@ -235,6 +304,21 @@ strip_whitespace <- function(x) {
 
 vector2row <- function(x) matrix(x, 1L, length(x), FALSE, list(NULL, names(x)))
 
+collect_rows <- function(x) {
+  #sortable_indexes <- function(x) {
+  #  n <- seq_along(x)
+  #  sprintf(sprintf("%%0%ii", ceiling(log(n[length(n)], 10))), n)
+  #}
+  add_cols <- function(x, cols) {
+    if (length(cols <- setdiff(cols, colnames(x))))
+      cbind(x, matrix(NA, nrow(x), length(cols), FALSE, list(NULL, cols)))
+    else
+      x
+  }
+  cn <- unique.default(unlist(lapply(x, colnames), FALSE, FALSE))
+  do.call(rbind, lapply(x, add_cols, cn))
+}
+
 metadata_key <- function(x, to.formula, ...) UseMethod("metadata_key")
 
 metadata_key.default <- function(x, to.formula = FALSE, remove = NULL, ...) {
@@ -242,14 +326,14 @@ metadata_key.default <- function(x, to.formula = FALSE, remove = NULL, ...) {
     stop(NOT_YET)
   if (length(x) == 1L && x %in% remove)
     return(NULL)
-  if (to.formula) ## TODO check whether this makes sense
+  if (to.formula) # no 'syntactic' argument here -- should always be syntactic
     create_formula("~ c(%s)", paste0(x, collapse = ", "))
   else
     x
 }
 
 metadata_key.factor <- function(x, ...) {
-  metadata_key.character(as.character(x), ...)
+  metadata_key.character(structure(as.character(x), names = names(x)), ...)
 }
 
 metadata_key.character <- function(x, to.formula = FALSE, remove = NULL,
@@ -396,6 +480,34 @@ metadata_key.formula <- function(x, to.formula = FALSE, remove = NULL,
 create_formula <- function(fmt, ..., .env = parent.frame()) {
   x <- c(list(fmt = fmt), lapply(list(...), as.list))
   formula(do.call(sprintf, unlist(x, FALSE, FALSE)), .env)
+}
+
+formula2infix <- function(f) {
+  if (length(f) > 2L)
+    sprintf("%%%s%%", all.vars(f[[2L]]))
+  else
+    "%q%"
+}
+
+reassign_args_using <- function(use) {
+  case(use,
+    i =, I = NULL,
+    k =, K = assign("values", FALSE, parent.frame()),
+    n = assign("negative", "any", parent.frame()),
+    N = assign("negative", "all", parent.frame()),
+    p = assign("positive", "any", parent.frame()),
+    P = assign("positive", "all", parent.frame()),
+    q = {
+      assign("values", TRUE, parent.frame())
+      assign("exact", FALSE, parent.frame())
+    },
+    Q = {
+      assign("values", TRUE, parent.frame())
+      assign("exact", TRUE, parent.frame())
+    },
+    t =, T = assign("time", TRUE, parent.frame())
+  )
+  invisible(NULL)
 }
 
 setGeneric("parse_time",
@@ -595,6 +707,8 @@ trim_string <- function(str, max, append = ".", clean = TRUE,
 add_in_parens <- function(str.1, str.2, max = 1000L, append = ".",
     clean = TRUE, brackets = FALSE, word.wise = FALSE, paren.sep = " ") {
   max <- max - nchar(str.1) - 3L
+  if (!grepl("^\\s*$", paren.sep))
+    stop("'paren.sep' must only contain whitespace characters")
   str.2 <- trim_string(str.2, max, append = append, clean = clean,
     word.wise = word.wise)
   if (brackets) {
@@ -606,7 +720,16 @@ add_in_parens <- function(str.1, str.2, max = 1000L, append = ".",
     str.2 <- chartr("()", "[]", str.2)
     remove <- " \\(\\)$"
   }
-  sub(remove, "", sprintf(template, str.1, paren.sep, str.2))
+  sub(remove, "", sprintf(template, str.1, paren.sep, str.2), FALSE, TRUE)
+}
+
+remove_concentration <- function(x) {
+  sub("\\s*#\\s*\\d+\\s*$", "", x, FALSE, TRUE)
+}
+
+get_partial_match <- function(i, m, string) {
+  start <- attr(m, "capture.start")[, i]
+  substr(string, start, start + attr(m, "capture.length")[, i] - 1L)
 }
 
 list2html <- function(x, level = 1L, fmt = opm_opt("html.class"), fac = 2L) {
@@ -632,13 +755,16 @@ list2html <- function(x, level = 1L, fmt = opm_opt("html.class"), fac = 2L) {
   }
 }
 
-html_head <- function(title, css, meta) {
-  single_tag <- function(x, ...) {
-    listing(list(...), c("<", x), ">", style = " %s=\"%s\"", collapse = "")
-  }
+single_tag <- function(x, ...) {
+  listing(list(...), c("<", x), ">", style = " %s=\"%s\"", collapse = "")
+}
+
+html_head <- function(title, css, meta, embed) {
+
   html_comment <- function(x) {
     safe_labels(x, "html", comment = TRUE, enclose = FALSE)
   }
+
   if (length(title)) {
     from.opm <- attr(title, opm_string())
     # Tidy accepts only a single title entry
@@ -647,21 +773,32 @@ html_head <- function(title, css, meta) {
       title <- c(html_comment("user-defined title"), title)
   } else
     title <- NULL
-  if (length(css <- css[nzchar(css)])) {
-    is.abs.path <- grepl("^(/|[a-zA-Z]:)", css, FALSE, TRUE)
-    css[is.abs.path] <- sprintf("file://%s", css[is.abs.path])
-    css <- vapply(css, function(y) {
-      single_tag("link", rel = "stylesheet", type = "text/css", href = y)
-    }, "")
-    css <- c(html_comment("user-defined CSS file(s)"), unname(css))
-  } else
+
+  if (length(css <- css[nzchar(css)]))
+    if (embed) {
+      x <- lapply(css, readLines, warn = FALSE)
+      css <- html_comment(paste("CSS from user-defined file", css))
+      css <- mapply(c, css, single_tag("style", type = "text/css"), x,
+        MoreArgs = list("</style>", ""), SIMPLIFY = FALSE, USE.NAMES = FALSE)
+      css <- unlist(css, FALSE, FALSE)
+    } else {
+      is.abs.path <- grepl("^(/|[a-zA-Z]:)", css, FALSE, TRUE)
+      css[is.abs.path] <- sprintf("file://%s", css[is.abs.path])
+      css <- vapply(css, function(y) {
+        single_tag("link", rel = "stylesheet", type = "text/css", href = y)
+      }, "")
+      css <- c(html_comment("user-defined CSS file(s)"), unname(css))
+    }
+  else
     css <- NULL
+
   generator <- single_tag("meta", name = "generator",
     content = paste0(opm_string(version = TRUE), collapse = " version "))
+
   # see http://www.w3.org/TR/NOTE-datetime
-  # but %s appears to be affected by a bug in R 2.15.2
   time <- format(Sys.time(), "%Y-%M-%dT%H:%M:%S%z")
   time <- single_tag("meta", name = "date", content = time)
+
   if (length(meta)) {
     meta <- vapply(meta, function(y) {
       if (is.null(names(y)))
@@ -671,6 +808,7 @@ html_head <- function(title, css, meta) {
     meta <- c(html_comment("user-defined metadata"), unname(meta))
   } else
     meta <- NULL
+
   c("<head>", title, generator, time, meta, css, "</head>")
 }
 
@@ -702,31 +840,6 @@ setMethod("tidy", "list", function(object, ...) {
   lapply(X = object, FUN = tidy, ...)
 }, sealed = SEALED)
 
-kubrick <- function(movie = character()) {
-  data <- c(
-    `Paths Of Glory` = paste(
-      "You see, George, those men know that I would never let them down."),
-    Spartacus = "I am Spartacus!",
-    Lolita = "The wedding was a quiet affair.",
-    `Dr. Strangelove` = paste(
-      "Gentlemen, you can't fight in here! This is the War Room!"),
-    `2001: A Space Odyssey` = "My God, it's full of stars.",
-    `A Clockwork Orange` = paste("It's a sin! Using Ludwig van like that.",
-      "He did no harm to anyone. Beethoven just wrote music."),
-    `Barry Lyndon` = paste(
-      "I'm under arrest? Captain Potzdorf, sir! I'm a British officer."),
-    `The Shining` = "All work and no play makes Jack a dull boy.",
-    `Full Metal Jacket` = "Sir, yes, sir!",
-    `Eyes Wide Shut` = "If you men only knew..."
-  )
-  idx <- if (length(movie))
-      as.character(movie)
-    else
-      as.integer(runif(1L, max = length(data))) + 1L
-  message(msg <- data[[idx, exact = FALSE]])
-  invisible(msg)
-}
-
 setAs(from = "ANY", to = "factor", function(from) as.factor(from))
 setAs(from = "ANY", to = "ordered", function(from) as.ordered(from))
 
@@ -739,312 +852,6 @@ prepare_class_names.character <- function(x) {
   else
     x
 }
-
-setGeneric("map_values",
-  function(object, mapping, ...) standardGeneric("map_values"))
-
-setMethod("map_values", c("list", "character"), function(object, mapping,
-    coerce = character()) {
-  if (isTRUE(coerce)) {
-    if (is.null(coerce <- names(mapping)))
-      return(object)
-    mapfun <- function(item) as(item, map_values(class(item), mapping))
-  } else
-    mapfun <- if (length(coerce) == 0L || all(coerce == "character"))
-      function(item) map_values(item, mapping)
-    else
-      function(item) {
-        result <- map_values(as.character(item), mapping)
-        mostattributes(result) <- attributes(item)
-        result
-      }
-  map_values(object, mapping = mapfun, coerce = coerce)
-}, sealed = SEALED)
-
-setMethod("map_values", c("list", "function"), function(object, mapping,
-    coerce = character(), ...) {
-  rapply(object = object, f = mapping, classes = prepare_class_names(coerce),
-    how = "replace", ...)
-}, sealed = SEALED)
-
-setMethod("map_values", c("list", "NULL"), function(object, mapping,
-    coerce = character()) {
-  clean_recursively <- function(x) {
-    if (!is.list(x))
-      return(x)
-    x <- lapply(x, clean_recursively)
-    x[vapply(x, length, 0L) > 0L]
-  }
-  if (length(coerce))
-    object <- rapply(object, as.character, prepare_class_names(coerce), NULL,
-      "replace")
-  clean_recursively(object)
-}, sealed = SEALED)
-
-setMethod("map_values", c("list", "missing"), function(object, mapping,
-    coerce = character()) {
-  if (isTRUE(coerce)) {
-    classes <- "ANY"
-    mapfun <- class
-  } else {
-    classes <- prepare_class_names(coerce)
-    mapfun <- as.character
-  }
-  map_values(rapply(object, mapfun, classes = classes))
-}, sealed = SEALED)
-
-setMethod("map_values", c("list", "formula"), function(object, mapping,
-    coerce = parent.frame()) {
-  if (length(mapping) > 2L) {
-    right <- eval(mapping[[3L]], object, coerce)
-    left <- metadata_key.formula(mapping[-3L], FALSE, envir = coerce)
-    if (is.list(left)) {
-      right <- rep(right, length.out = length(left))
-      for (i in seq_along(left))
-        object[[left[[i]]]] <- right[[i]]
-    } else
-      object[[left]] <- right
-    object
-  } else
-    eval(mapping[[2L]], object, coerce)
-}, sealed = SEALED)
-
-setMethod("map_values", c("list", "expression"), function(object, mapping,
-    coerce = parent.frame()) {
-  e <- list2env(object, NULL, coerce)
-  for (subexpr in mapping)
-    eval(subexpr, e)
-  e <- as.list(e) # return 'e' if the order of list elements doesn't matter
-  novel <- setdiff(names(e), names(object))
-  for (name in setdiff(names(object), names(e)))
-    object[[name]] <- NULL
-  object[novel] <- e[novel]
-  object
-}, sealed = SEALED)
-
-setMethod("map_values", c("data.frame", "function"), function(object, mapping,
-    coerce = character(), ...) {
-  if (identical("ANY", coerce <- prepare_class_names(coerce)))
-    coerce <- unique(unlist((lapply(object, class))))
-  for (i in which(vapply(object, inherits, NA, coerce)))
-    object[[i]] <- mapping(object[[i]], ...)
-  object
-}, sealed = SEALED)
-
-setMethod("map_values", c("data.frame", "character"), function(object, mapping,
-    coerce = character()) {
-  if (isTRUE(coerce)) {
-    if (is.null(coerce <- names(mapping)))
-      return(object)
-    mapfun <- function(item) as(item, map_values(class(item), mapping))
-  } else
-    mapfun <- function(item) map_values(as.character(item), mapping)
-  map_values(object, mapping = mapfun, coerce = coerce)
-}, sealed = SEALED)
-
-setMethod("map_values", c("data.frame", "NULL"), function(object, mapping,
-    coerce = character(), ...) {
-  if (identical("ANY", coerce <- prepare_class_names(coerce)))
-    coerce <- unique(unlist((lapply(object, class))))
-  for (i in which(vapply(object, inherits, NA, coerce)))
-    object[[i]] <- as.character(object[[i]])
-  object
-}, sealed = SEALED)
-
-setMethod("map_values", c("data.frame", "missing"), function(object,
-    coerce = character()) {
-  if (isTRUE(coerce))
-    result <- unlist(lapply(object, class))
-  else {
-    coerce <- prepare_class_names(coerce)
-    if (!"ANY" %in% coerce)
-      object <- object[, vapply(object, inherits, NA, coerce),
-        drop = FALSE]
-    result <- unlist(lapply(object, as.character))
-  }
-  map_values(result)
-}, sealed = SEALED)
-
-setMethod("map_values", c(MOA, "character"), function(object, mapping,
-    coerce = TRUE) {
-  if (isTRUE(coerce)) {
-    storage.mode(object) <- map_values(storage.mode(object), mapping)
-    object
-  } else {
-    coerce <- prepare_class_names(coerce)
-    if (!identical("ANY", coerce) && !storage.mode(object) %in% coerce)
-      stop("storage mode of 'object' not contained in 'coerce'")
-    result <- map_values(as.character(object), mapping)
-    attributes(result) <- attributes(object)
-    result
-  }
-}, sealed = SEALED)
-
-setMethod("map_values", c(MOA, "missing"), function(object, coerce = TRUE) {
-  if (isTRUE(coerce))
-    result <- storage.mode(object)
-  else {
-    coerce <- prepare_class_names(coerce)
-    if (!identical("ANY", coerce) && !storage.mode(object) %in% coerce)
-      stop("storage mode of 'object' not contained in 'coerce'")
-    result <- as.character(object)
-  }
-  map_values(result)
-}, sealed = SEALED)
-
-setMethod("map_values", c(MOA, "function"), function(object, mapping, ...) {
-  result <- mapping(as.vector(object), ...)
-  mostattributes(result) <- c(attributes(result), attributes(object))
-  result
-}, sealed = SEALED)
-
-setMethod("map_values", c("character", "function"), function(object, mapping,
-    ...) {
-  result <- mapping(object, ...)
-  mostattributes(result) <- attributes(object)
-  result
-}, sealed = SEALED)
-
-setMethod("map_values", c("character", "character"), function(object, mapping) {
-  mapped <- match(object, names(mapping))
-  object[found] <- mapping[mapped[found <- !is.na(mapped)]]
-  object
-}, sealed = SEALED)
-
-setMethod("map_values", c("character", "missing"), function(object) {
-  object <- sort.int(unique.default(object))
-  structure(object, names = object)
-}, sealed = SEALED)
-
-setMethod("map_values", c("factor", "function"), function(object, mapping,
-    ...) {
-  levels(object) <- map_values(levels(object), mapping, ...)
-  object
-}, sealed = SEALED)
-
-setMethod("map_values", c("factor", "character"), function(object, mapping) {
-  levels(object) <- map_values(levels(object), mapping)
-  object
-}, sealed = SEALED)
-
-setMethod("map_values", c("factor", "missing"), function(object) {
-  map_values(levels(object))
-}, sealed = SEALED)
-
-setMethod("map_values", c("logical", "function"), function(object, mapping,
-    ...) {
-  result <- mapping(object, ...)
-  mostattributes(result) <- attributes(object)
-  result
-}, sealed = SEALED)
-
-setMethod("map_values", c("logical", "vector"), function(object, mapping) {
-  result <- ifelse(object, mapping[[3L]], mapping[[1L]])
-  result[is.na(result)] <- mapping[[2L]]
-  attributes(result) <- attributes(object)
-  result
-}, sealed = SEALED)
-
-setMethod("map_values", c("logical", "NULL"), function(object, mapping) {
-  object
-}, sealed = SEALED)
-
-setMethod("map_values", c("logical", "missing"), function(object) {
-  result <- object * 2L + 1L
-  result[is.na(result)] <- 2L
-  attributes(result) <- attributes(object)
-  result
-}, sealed = SEALED)
-
-setMethod("map_values", c("NULL", "function"), function(object, mapping, ...) {
-  NULL
-}, sealed = SEALED)
-
-setMethod("map_values", c("NULL", "character"), function(object, mapping) {
-  NULL
-}, sealed = SEALED)
-
-setMethod("map_values", c("NULL", "missing"), function(object, mapping) {
-  map_values(character())
-}, sealed = SEALED)
-
-setGeneric("map_names",
-  function(object, mapping, ...) standardGeneric("map_names"))
-
-setMethod("map_names", c("list", "function"), function(object, mapping, ...) {
-  map_names_recursively <- function(item) {
-    if (is.list(item)) {
-      names(item) <- map_values(names(item), mapping, ...)
-      lapply(item, FUN = map_names_recursively)
-    } else
-      item
-  }
-  map_names_recursively(object)
-}, sealed = SEALED)
-
-setMethod("map_names", c("list", "character"), function(object, mapping) {
-  map_names_recursively <- function(item) {
-    if (is.list(item)) {
-      names(item) <- map_values(names(item), mapping)
-      lapply(item, FUN = map_names_recursively)
-    } else
-      item
-  }
-  map_names_recursively(object)
-}, sealed = SEALED)
-
-setMethod("map_names", c("list", "missing"), function(object) {
-  get_names_recursively <- function(item) {
-    if (is.list(item))
-      c(names(item), unlist(lapply(item, FUN = get_names_recursively)))
-    else
-      character()
-  }
-  map_values(get_names_recursively(object))
-}, sealed = SEALED)
-
-setMethod("map_names", c("data.frame", "function"), function(object, mapping,
-    ...) {
-  dimnames(object) <- map_values(dimnames(object), mapping, ...)
-  object
-}, sealed = SEALED)
-
-setMethod("map_names", c("data.frame", "character"), function(object, mapping) {
-  dimnames(object) <- map_values(dimnames(object), mapping)
-  object
-}, sealed = SEALED)
-
-setMethod("map_names", c("data.frame", "missing"), function(object) {
-  map_values(dimnames(object))
-}, sealed = SEALED)
-
-setMethod("map_names", c(MOA, "function"), function(object, mapping, ...) {
-  dimnames(object) <- map_values(dimnames(object), mapping, ...)
-  object
-}, sealed = SEALED)
-
-setMethod("map_names", c(MOA, "character"), function(object, mapping) {
-  dimnames(object) <- map_values(dimnames(object), mapping)
-  object
-}, sealed = SEALED)
-
-setMethod("map_names", c(MOA, "missing"), function(object) {
-  map_values(dimnames(object))
-}, sealed = SEALED)
-
-setMethod("map_names", c("ANY", "function"), function(object, mapping, ...) {
-  names(object) <- map_values(names(object), mapping, ...)
-  object
-}, sealed = SEALED)
-
-setMethod("map_names", c("ANY", "character"), function(object, mapping) {
-  names(object) <- map_values(names(object), mapping)
-  object
-}, sealed = SEALED)
-
-setMethod("map_names", c("ANY", "missing"), function(object) {
-  map_values(names(object))
-}, sealed = SEALED)
 
 repair_na_strings <- function(object, ...) UseMethod("repair_na_strings")
 
@@ -1103,66 +910,6 @@ insert.list <- function(object, other, ..., .force = FALSE, .strict = FALSE) {
   object[keys] <- other[keys]
   object
 }
-
-setGeneric("contains",
-  function(object, other, ...) standardGeneric("contains"))
-
-setMethod("contains", c("list", "list"), function(object, other,
-    values = TRUE, exact = FALSE, ...) {
-  query.keys <- names(other)
-  if (length(query.keys) == 0L && length(other) > 0L)
-    return(FALSE)
-  found <- match(query.keys, names(object), incomparables = "")
-  if (any(is.na(found)))
-    return(FALSE)
-  for (idx in seq_along(query.keys)) {
-    query.subset <- other[[idx]]
-    data.subset <- object[[found[idx]]]
-    result <- if (is.list(query.subset)) {
-      if (is.list(data.subset))
-        Recall(object = data.subset, other = query.subset, values = values,
-          exact = exact, ...)
-      else if (values)
-        FALSE
-      else
-        is.null(names(query.subset))
-    } else if (values) {
-      if (exact)
-        identical(x = data.subset, y = query.subset, ...)
-      else
-        all(data.subset %in% query.subset)
-    } else
-      TRUE
-    if (!result)
-      return(FALSE)
-  }
-  TRUE
-}, sealed = SEALED)
-
-setMethod("contains", c(OPMS, OPM), function(object, other, ...) {
-  for (plate in object@plates)
-    if (identical(x = plate, y = other, ...))
-      return(TRUE)
-  FALSE
-}, sealed = SEALED)
-
-setMethod("contains", c(OPMS, OPMS), function(object, other, ...) {
-  single_contained <- function(x) {
-    for (plate in object@plates)
-      if (identical(x = plate, y = x, ...))
-        return(TRUE)
-    FALSE
-  }
-  vapply(other@plates, single_contained, NA)
-}, sealed = SEALED)
-
-setMethod("contains", c(OPM, OPMS), function(object, other, ...) {
-  FALSE
-}, sealed = SEALED)
-
-setMethod("contains", c(OPM, OPM), function(object, other, ...) {
-  identical(x = object, y = other, ...)
-}, sealed = SEALED)
 
 setGeneric("opm_opt", function(x, ...) standardGeneric("opm_opt"))
 

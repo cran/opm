@@ -4,8 +4,8 @@
 \alias{well}
 \title{Stored measurements}
 \arguments{
-  \item{object}{\code{\link{OPM}} or \code{\link{OPMS}}
-  object.}
+  \item{object}{\code{\link{OPM}}, \code{\link{OPMS}} or
+  \code{\link{MOPMX}} object.}
 
   \item{i}{Optional character or numeric vector with
   name(s) or position(s) of well(s). Wells are originally
@@ -69,7 +69,7 @@ stopifnot(is.matrix(x), is.numeric(x))
 stopifnot(dim(x) == c(384, 97))
 head(x <- measurements(vaas_1, "B03"))
 stopifnot(is.matrix(x), is.numeric(x), dim(x) == c(384, 2))
-head(y <- measurements(vaas_1, ~B03)) # => same result with formula
+head(y <- measurements(vaas_1, ~ B03)) # => same result with formula
 stopifnot(identical(y, x))
 
 head(x <- well(vaas_1, "B04")) # => numeric vector
@@ -110,13 +110,12 @@ stopifnot(length(x) == 4, x == 95.75)
 \seealso{
   Other getter-functions: \code{\link{aggr_settings}},
   \code{\link{aggregated}}, \code{\link{anyDuplicated}},
-  \code{\link{csv_data}}, \code{\link{dim}},
-  \code{\link{disc_settings}}, \code{\link{discretized}},
-  \code{\link{duplicated}}, \code{\link{filename}},
+  \code{\link{contains}}, \code{\link{csv_data}},
+  \code{\link{dim}}, \code{\link{disc_settings}},
+  \code{\link{discretized}}, \code{\link{duplicated}},
   \code{\link{has_aggr}}, \code{\link{has_disc}},
   \code{\link{max}}, \code{\link{minmax}},
-  \code{\link{position}}, \code{\link{seq}},
-  \code{\link{setup_time}}, \code{\link{subset}},
+  \code{\link{seq}}, \code{\link{subset}},
   \code{\link{thin_out}}
 }
 \keyword{attribute}

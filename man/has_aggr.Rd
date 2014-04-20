@@ -3,8 +3,8 @@
 \alias{has_disc}
 \title{Are aggregated or discretised data present?}
 \arguments{
-  \item{object}{\code{\link{OPM}} or \code{\link{OPMS}}
-  object.}
+  \item{object}{\code{\link{OPM}}, \code{\link{OPMS}} or
+  \code{\link{MOPMX}} object.}
 
   \item{...}{Optional arguments passed between the
   methods.}
@@ -26,13 +26,12 @@ stopifnot(has_aggr(vaas_4), has_disc(vaas_4)) # OPMS methods
 \seealso{
   Other getter-functions: \code{\link{aggr_settings}},
   \code{\link{aggregated}}, \code{\link{anyDuplicated}},
-  \code{\link{csv_data}}, \code{\link{dim}},
-  \code{\link{disc_settings}}, \code{\link{discretized}},
-  \code{\link{duplicated}}, \code{\link{filename}},
+  \code{\link{contains}}, \code{\link{csv_data}},
+  \code{\link{dim}}, \code{\link{disc_settings}},
+  \code{\link{discretized}}, \code{\link{duplicated}},
   \code{\link{hours}}, \code{\link{max}},
   \code{\link{measurements}}, \code{\link{minmax}},
-  \code{\link{position}}, \code{\link{seq}},
-  \code{\link{setup_time}}, \code{\link{subset}},
+  \code{\link{seq}}, \code{\link{subset}},
   \code{\link{thin_out}}, \code{\link{well}}
 }
 \keyword{attribute}

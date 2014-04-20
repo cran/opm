@@ -4,9 +4,15 @@ setClass(WMD,
   sealed = SEALED
 )
 
+setClass(WMDS,
+  slots = c(plates = "list"),
+  contains = "VIRTUAL",
+  sealed = SEALED
+)
+
 NULL
 
-setClassUnion(MOA, c("matrix", "array"))
+setClassUnion(WMDX, c(WMD, WMDS))
 
 NULL
 
@@ -58,7 +64,7 @@ setClass(OPMD,
 )
 
 setClass(OPMS,
-  slots = c(plates = "list"),
+  contains = WMDS,
   validity = function(object) {
     if (length(errs <- opms_problems(object@plates)))
       errs
@@ -70,7 +76,9 @@ setClass(OPMS,
 
 setClass(MOPMX,
   contains = "list",
-  prototype = structure(list(), names = character()),
+  slots = c(names = "character"),
+  prototype = prototype(names = character()),
+  #prototype = structure(list(), names = character()),
   validity = function(object) {
     if (all(vapply(object@.Data, is, NA, OPMX)))
       TRUE
@@ -79,13 +87,34 @@ setClass(MOPMX,
   }, sealed = SEALED
 )
 
+setClass(OPM_MCP_OUT,
+  contains = "data.frame",
+  validity = function(object) {
+    errs <- NULL
+    for (name in RESERVED_NAMES[c("well", "value")])
+      if (!name %in% colnames(object))
+        errs <- c(errs, sprintf("missing column named '%s'", name))
+    if (length(errs))
+      errs
+    else
+      TRUE
+  },
+  sealed = SEALED
+)
+
 NULL
 
 setClassUnion(OPMX, c(OPM, OPMS))
 
 NULL
 
-setClassUnion(YAML_VIA_LIST, c(OPM, OPMS, "list"))
+setClassUnion(XOPMX, c(MOPMX, OPMS))
+
+NULL
+
+setOldClass("print_easy")
+
+setClassUnion(YAML_VIA_LIST, c(OPM, OPMS, "print_easy"))
 
 setClass(CMAT,
   contains = "matrix",
@@ -101,7 +130,8 @@ setClass(CMAT,
       if (any(vapply(object, length, 0L) < 1L))
         errs <- c(errs, "empty list elements contained")
     }
-    if (!all(mode %in% c("character", "integer", "double", "logical")))
+    mode <- setdiff(mode, c("character", "integer", "double", "logical"))
+    if (length(mode))
       errs <- c(errs, sprintf("unsupported storage mode: '%s'", mode))
     if (length(errs))
       errs
@@ -253,7 +283,7 @@ setMethod("opmd_problems", "matrix", function(object, disc, param) {
     if (get("strict.OPMD", OPM_OPTIONS))
       errs <- c(errs, text)
     else
-      warning(text)
+      warning(text, call. = FALSE)
   }
   errs
 }, sealed = SEALED)
@@ -465,5 +495,166 @@ setAs(from = MOPMX, to = OPMX, function(from) {
 
 setAs(from = "matrix", to = CMAT, function(from) {
   new(CMAT, from) # overwritten to enforce consistency checks
+})
+
+setClass("OPM_DB",
+  contains = "DBTABLES",
+  slots = c(plates = "data.frame", wells = "data.frame",
+    measurements = "data.frame"),
+  prototype = list(plates = data.frame(id = integer(), machine_id = integer()),
+    wells = data.frame(id = integer(), plate_id = integer()),
+    measurements = data.frame(id = integer(), well_id = integer())),
+  validity = fkeys_valid,
+  sealed = SEALED
+)
+
+setClass("OPMA_DB",
+  contains = "OPM_DB",
+  # the superclass slots must be repeated here to enforce the ordering
+  slots = c(plates = "data.frame", wells = "data.frame",
+    measurements = "data.frame", aggr_settings = "data.frame",
+    aggregated = "data.frame"),
+  prototype = list(plates = data.frame(id = integer(), machine_id = integer()),
+    wells = data.frame(id = integer(), plate_id = integer()),
+    measurements = data.frame(id = integer(), well_id = integer()),
+    aggr_settings = data.frame(id = integer(), plate_id = integer()),
+    aggregated = data.frame(id = integer(), well_id = integer(),
+      aggr_setting_id = integer())),
+  validity = fkeys_valid,
+  sealed = SEALED
+)
+
+setClass("OPMD_DB",
+  contains = "OPMA_DB",
+  # the superclass slots must be repeated here to enforce the ordering
+  slots = c(plates = "data.frame", wells = "data.frame",
+    measurements = "data.frame", aggr_settings = "data.frame",
+    aggregated = "data.frame", disc_settings = "data.frame",
+    discretized = "data.frame"),
+  prototype = list(plates = data.frame(id = integer(), machine_id = integer()),
+    wells = data.frame(id = integer(), plate_id = integer()),
+    measurements = data.frame(id = integer(), well_id = integer()),
+    aggr_settings = data.frame(id = integer(), plate_id = integer()),
+    aggregated = data.frame(id = integer(), well_id = integer(),
+      aggr_setting_id = integer()),
+    disc_settings = data.frame(id = integer(), plate_id = integer()),
+    discretized = data.frame(id = integer(), well_id = integer(),
+      disc_setting_id = integer())),
+  validity = fkeys_valid,
+  sealed = SEALED
+)
+
+setAs("OPM", "OPMA", function(from) {
+  stop("do_aggr() is needed to aggregate OPM objects")
+})
+
+setAs("OPM", "OPMD", function(from) {
+  stop("do_aggr() and do_disc() are needed to discretise OPM objects")
+})
+
+setAs("OPMA", "OPMD", function(from) {
+  stop("do_disc() is needed to discretise OPMA objects")
+})
+
+setAs("OPM", "OPM_DB", function(from) {
+  x <- forward_OPM_to_list(from)
+  new("OPM_DB", plates = x$plates, wells = x$wells,
+    measurements = x$measurements)
+})
+
+setAs("OPM_DB", "OPM", function(from) {
+  as(backward_OPM_to_list(from), "OPM")
+})
+
+setAs("OPMA", "OPMA_DB", function(from) {
+  x <- forward_OPMA_to_list(from)
+  new("OPMA_DB", plates = x$plates, wells = x$wells,
+    measurements = x$measurements, aggr_settings = x$aggr_settings,
+    aggregated = x$aggregated)
+})
+
+setAs("OPMA_DB", "OPMA", function(from) {
+  as(backward_OPMA_to_list(from), "OPMA")
+})
+
+setAs("OPMD", "OPMD_DB", function(from) {
+  x <- forward_OPMA_to_list(from)
+  d.sets <- settings_forward(from@disc_settings, x$plates[, "id"])
+  d.data <- from@discretized
+  d.data <- data.frame(id = seq_along(d.data), stringsAsFactors = FALSE,
+    well_id = match(names(d.data), x$wells[, "coordinate"]),
+    disc_setting_id = 1L, value = unname(d.data), check.names = FALSE)
+  new("OPMD_DB", plates = x$plates, wells = x$wells,
+    measurements = x$measurements, aggr_settings = x$aggr_settings,
+    aggregated = x$aggregated, disc_settings = d.sets, discretized = d.data)
+})
+
+setAs("OPMD_DB", "OPMD", function(from) {
+  as(backward_OPMD_to_list(from), "OPMD")
+})
+
+setAs("list", "OPM_DB", function(from) {
+  do.call(c, rapply(object = from, f = as, Class = "OPM_DB"))
+})
+
+setAs("list", "OPMA_DB", function(from) {
+  do.call(c, rapply(object = from, f = as, Class = "OPMA_DB"))
+})
+
+setAs("list", "OPMD_DB", function(from) {
+  do.call(c, rapply(object = from, f = as, Class = "OPMD_DB"))
+})
+
+setAs("OPM_DB", "list", function(from) {
+  lapply(split(from), as, "OPM")
+})
+
+setAs("OPMA_DB", "list", function(from) {
+  lapply(split(from), as, "OPMA")
+})
+
+setAs("OPMD_DB", "list", function(from) {
+  lapply(split(from), as, "OPMD")
+})
+
+setAs("OPMS", "OPM_DB", function(from) {
+  do.call(c, lapply(from@plates, as, "OPM_DB"))
+})
+
+setAs("OPMS", "OPMA_DB", function(from) {
+  do.call(c, lapply(from@plates, as, "OPMA_DB"))
+})
+
+setAs("OPMS", "OPMD_DB", function(from) {
+  do.call(c, lapply(from@plates, as, "OPMD_DB"))
+})
+
+setAs("OPM_DB", "OPMS", function(from) {
+  as(lapply(split(from), backward_OPM_to_list), "OPMS")
+})
+
+setAs("OPMA_DB", "OPMS", function(from) {
+  as(lapply(split(from), backward_OPMA_to_list), "OPMS")
+})
+
+setAs("OPMD_DB", "OPMS", function(from) {
+  as(lapply(split(from), backward_OPMD_to_list), "OPMS")
+})
+
+setAs("MOPMX", "OPM_DB", function(from) {
+  do.call(c, lapply(unname(from), as, "OPM_DB"))
+})
+
+setAs("MOPMX", "OPMA_DB", function(from) {
+  do.call(c, lapply(unname(from), as, "OPMA_DB"))
+})
+
+setAs("MOPMX", "OPMD_DB", function(from) {
+  do.call(c, lapply(unname(from), as, "OPMD_DB"))
+})
+
+setAs("OPM_DB", "MOPMX", function(from) {
+  do.call(opms, c(as(from, "list"),
+    list(precomputed = TRUE, skip = FALSE, group = TRUE)))
 })
 
